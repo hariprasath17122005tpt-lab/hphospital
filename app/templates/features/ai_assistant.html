@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}AI Medical Assistant{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Chat Interface -->
+        <div class="col-md-8 mx-auto">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3"
+                    style="width: 80px; height: 80px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                    <i class="fas fa-brain fa-2x"></i>
+                </div>
+                <h2 class="fw-bold">AI Medical Assistant</h2>
+                <p class="text-muted">Conversational health information powered by local BioMistral AI.</p>
+                <div class="badge bg-primary mb-3">● Local AI (Privacy Secured)</div>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-body p-4 bg-light"
+                    style="height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;"
+                    id="chatContainer">
+                    <!-- Initial AI Message -->
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 bg-primary text-white rounded-circle p-2 me-3"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="bg-white shadow-sm rounded-3 p-3 text-dark border" style="max-width: 80%;">
+                            Hello! I am your AI Medical Assistant. I can help with general medical questions and health
+                            information.
+                            How can I assist you today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-top-0 p-4">
+                    <div class="input-group">
+                        <input type="text"
+                            class="form-control form-control-lg border-start-0 border-end-0 border-top-0 rounded-0 bg-transparent"
+                            placeholder="Ask about symptoms, health tips..." id="userInput" style="box-shadow: none;">
+                        <button class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm" id="sendBtn" type="button">
+                            <i class="fas fa-paper-plane me-2"></i> Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-white rounded-3 border border-warning">
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    <strong>Important Disclaimer:</strong> This AI assistant provides informational lookup only.
+                    It is not a substitute for professional medical advice, diagnosis, or treatment.
+                    <strong>Always consult a doctor</strong> before making medical decisions.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #chatContainer::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #chatContainer::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .user-bubble {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border-radius: 18px 18px 2px 18px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .ai-bubble {
+        background: white;
+        color: #1e293b;
+        border-radius: 18px 18px 18px 2px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
+        white-space: pre-line;
+    }
+</style>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const container = document.getElementById('chatContainer');
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        // Add User Message
+        const userHtml = `
+            <div class="d-flex align-items-start justify-content-end">
+                <div class="user-bubble p-3" style="max-width: 80%;">
+                    ${text}
+                </div>
+                <div class="flex-shrink-0 bg-secondary text-white rounded-circle p-2 ms-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', userHtml);
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+
+        // Loading indicator
+        const loadingId = 'loading-' + Date.now();
+        const loadingHtml = `
+            <div class="d-flex align-items-start" id="${loadingId}">
+                <div class="flex-shrink-0 bg-primary text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="ai-bubble p-3">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2">AI is thinking...</span>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', loadingHtml);
+        container.scrollTop = container.scrollHeight;
+
+        try {
+            const response = await fetch("{{ url_for('features.ai_chat') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}"
+                },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await response.json();
+            document.getElementById(loadingId).remove();
+
+            const aiHtml = `
+                <div class="d-flex align-items-start mb-3">
+                    <div class="flex-shrink-0 bg-primary text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="ai-bubble p-3" style="max-width: 80%;">
+                        ${data.response}
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', aiHtml);
+
+        } catch (error) {
+            console.error("Chat Error:", error);
+            document.getElementById(loadingId).remove();
+            const errorHtml = `
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 bg-danger text-white rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3" style="max-width: 80%;">
+                        System Error: Could not connect to the AI model. Ensure Ollama is running locally.
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', errorHtml);
+        }
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+{% endblock %}

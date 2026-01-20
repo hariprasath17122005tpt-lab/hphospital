@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Login - HealthCare AI{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row min-vh-75 align-items-center justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="modern-card p-4 p-md-5" style="border-top: 5px solid var(--success-color);">
+                <div class="text-center mb-4">
+                    <div class="icon-box success mx-auto mb-3">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="fw-bold text-success">Doctor Portal</h3>
+                    <p class="text-secondary small">Authorized Personnel Only</p>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="mb-4">
+                        <label for="username"
+                            class="form-label text-secondary small text-uppercase fw-bold ls-1">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Dr. Username"
+                            required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password"
+                            class="form-label text-secondary small text-uppercase fw-bold ls-1">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 btn-lg shadow-md mb-3">
+                        Secure Login <i class="fas fa-lock ms-2"></i>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="text-secondary small mb-2">New Doctor? <a href="{{ url_for('auth.doctor_register') }}"
+                                class="fw-bold text-success">Register Now</a></p>
+                        <a href="{{ url_for('main.index') }}" class="text-muted small text-decoration-underline">Back to
+                            Home</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{
+  "organ_benefits": {
+    "DASH": {
+      "Heart": "Reduced sodium → Lower BP & improved cardiac output",
+      "Brain": "Potassium-rich foods → Enhanced cognitive function & stroke prevention",
+      "Kidneys": "Controlled sodium → Reduced glomerular filtration burden",
+      "Gut": "High fiber content → Improved digestion & microbiome diversity",
+      "Blood Vessels": "Potassium & magnesium → Improved endothelial function"
+    },
+    "MEDITERRANEAN": {
+      "Heart": "Omega-3 rich → Reduced inflammation & improved lipid profile",
+      "Brain": "Olive oil & nuts → Enhanced memory & neuroprotection",
+      "Arteries": "Antioxidants → Reduced arterial plaque formation",
+      "Liver": "Polyphenols → Enhanced hepatic antioxidant defense",
+      "Bones": "Calcium & vitamin D → Improved bone density"
+    },
+    "LOW_GLYCEMIC": {
+      "Pancreas": "Low GI foods → Reduced insulin demand & beta-cell preservation",
+      "Heart": "Better glucose control → Reduced cardiovascular risk",
+      "Brain": "Stable blood sugar → Better focus & mood regulation",
+      "Blood Vessels": "Reduced inflammation → Better vascular function",
+      "Eyes": "Stable glucose → Reduced retinopathy risk"
+    },
+    "RENAL_FRIENDLY": {
+      "Kidneys": "Protein restriction → Reduced glomerular hyperfiltration",
+      "Heart": "Potassium control → Normal cardiac rhythm",
+      "Bones": "Phosphorus control → Preserved bone density",
+      "Blood Vessels": "Reduced sodium → Better vascular compliance",
+      "Overall": "Reduced waste products → Delayed dialysis need"
+    }
+  },
+  "food_specific_benefits": {
+    "Spinach": {
+      "organs": ["Heart", "Brain", "Kidneys"],
+      "mechanism": "Nitrates dilate blood vessels → lower BP, improved oxygen delivery"
+    },
+    "Salmon": {
+      "organs": ["Heart", "Brain", "Eyes"],
+      "mechanism": "Omega-3 fatty acids reduce inflammation throughout the body"
+    },
+    "Oats": {
+      "organs": ["Heart", "Gut", "Brain"],
+      "mechanism": "Beta-glucan soluble fiber reduces cholesterol & stabilizes glucose"
+    },
+    "Broccoli": {
+      "organs": ["Heart", "Eyes", "Immune"],
+      "mechanism": "Sulforaphane activates antioxidant defense systems"
+    },
+    "Berries": {
+      "organs": ["Brain", "Heart", "Eyes"],
+      "mechanism": "Anthocyanins protect against cellular aging & inflammation"
+    }
+  }
+}

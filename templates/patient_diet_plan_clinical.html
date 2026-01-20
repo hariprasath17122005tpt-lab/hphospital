@@ -1,0 +1,903 @@
+<!-- Professional Clinical Diet Plan Component for Patient Portal -->
+<!-- This template generates professional, condition-specific diet plans -->
+
+<div class="diet-plan-container">
+  
+  <!-- CLINICAL NUTRITION SUMMARY SECTION -->
+  <section class="clinical-summary">
+    <div class="section-header">
+      <h2>🧾 Clinical Nutrition Summary</h2>
+      <p class="medical-notation">Prepared by: Clinical Dietetics Department</p>
+    </div>
+    
+    <div class="summary-content">
+      <p class="clinical-text">
+        Your personalized nutrition prescription has been developed based on clinical assessment of your metabolic profile, 
+        chronic disease risk factors, and medical history. This plan integrates evidence-based dietary interventions targeting 
+        your specific pathophysiology to optimize therapeutic outcomes and improve long-term health trajectory.
+      </p>
+      
+      <div class="clinical-metrics">
+        <div class="metric-card">
+          <span class="metric-label">Patient Status:</span>
+          <span class="metric-value">{{ status }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Clinical Priority:</span>
+          <span class="metric-value">{{ priority }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Intervention Level:</span>
+          <span class="metric-value">{{ intervention }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRESCRIBED DIET STRATEGY -->
+  <section class="diet-strategy">
+    <div class="section-header">
+      <h2>🥗 Prescribed Diet Strategy</h2>
+    </div>
+    
+    <div class="strategy-box">
+      <div class="strategy-item">
+        <h4>Medical Diet Classification</h4>
+        <p class="diet-type">{{ diet_classification }}</p>
+        <p class="rationale">{{ diet_rationale }}</p>
+      </div>
+      
+      <div class="strategy-item">
+        <h4>Caloric Prescription</h4>
+        <div class="calorie-targets">
+          <div class="target">
+            <span class="label">Maintenance:</span>
+            <span class="value">{{ maintenance_kcal }} kcal/day</span>
+          </div>
+          <div class="target">
+            <span class="label">Therapeutic Target:</span>
+            <span class="value">{{ therapeutic_kcal }} kcal/day</span>
+          </div>
+          <p class="note">{{ caloric_justification }}</p>
+        </div>
+      </div>
+      
+      <div class="strategy-item">
+        <h4>Macronutrient Distribution</h4>
+        <div class="macro-breakdown">
+          <div class="macro">
+            <span class="macro-name">Carbohydrates</span>
+            <span class="macro-percentage">{{ carb_percent }}%</span>
+            <span class="macro-grams">({{ carb_grams }}g/day)</span>
+            <p class="macro-reason">{{ carb_rationale }}</p>
+          </div>
+          <div class="macro">
+            <span class="macro-name">Protein</span>
+            <span class="macro-percentage">{{ protein_percent }}%</span>
+            <span class="macro-grams">({{ protein_grams }}g/day)</span>
+            <p class="macro-reason">{{ protein_rationale }}</p>
+          </div>
+          <div class="macro">
+            <span class="macro-name">Lipids</span>
+            <span class="macro-percentage">{{ fat_percent }}%</span>
+            <span class="macro-grams">({{ fat_grams }}g/day)</span>
+            <p class="macro-reason">{{ fat_rationale }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRUCTURED DAILY MEAL PLAN -->
+  <section class="meal-plan">
+    <div class="section-header">
+      <h2>🍽️ Structured Daily Meal Plan</h2>
+      <p class="meal-note">Nutritional targets & clinical rationale provided for each meal</p>
+    </div>
+    
+    <!-- BREAKFAST -->
+    <div class="meal-block">
+      <div class="meal-header breakfast-header">
+        <h3>🌅 BREAKFAST (07:00-08:00)</h3>
+        <span class="meal-nutrition">{{ breakfast_kcal }} kcal | {{ breakfast_carb }}g CHO | {{ breakfast_protein }}g PRO | {{ breakfast_fat }}g FAT</span>
+      </div>
+      
+      <div class="meal-content">
+        <div class="foods">
+          <div class="food-item">
+            <span class="food-name">{{ breakfast_item1 }}</span>
+            <span class="food-portion">{{ breakfast_portion1 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ breakfast_item2 }}</span>
+            <span class="food-portion">{{ breakfast_portion2 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ breakfast_item3 }}</span>
+            <span class="food-portion">{{ breakfast_portion3 }}</span>
+          </div>
+        </div>
+        
+        <div class="clinical-rationale">
+          <strong>Clinical Rationale:</strong>
+          <p>{{ breakfast_rationale }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LUNCH -->
+    <div class="meal-block">
+      <div class="meal-header lunch-header">
+        <h3>🍲 LUNCH (12:30-13:30)</h3>
+        <span class="meal-nutrition">{{ lunch_kcal }} kcal | {{ lunch_carb }}g CHO | {{ lunch_protein }}g PRO | {{ lunch_fat }}g FAT</span>
+      </div>
+      
+      <div class="meal-content">
+        <div class="foods">
+          <div class="food-item">
+            <span class="food-name">{{ lunch_item1 }}</span>
+            <span class="food-portion">{{ lunch_portion1 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ lunch_item2 }}</span>
+            <span class="food-portion">{{ lunch_portion2 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ lunch_item3 }}</span>
+            <span class="food-portion">{{ lunch_portion3 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ lunch_item4 }}</span>
+            <span class="food-portion">{{ lunch_portion4 }}</span>
+          </div>
+        </div>
+        
+        <div class="clinical-rationale">
+          <strong>Clinical Rationale:</strong>
+          <p>{{ lunch_rationale }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DINNER -->
+    <div class="meal-block">
+      <div class="meal-header dinner-header">
+        <h3>🍗 DINNER (19:00-20:00)</h3>
+        <span class="meal-nutrition">{{ dinner_kcal }} kcal | {{ dinner_carb }}g CHO | {{ dinner_protein }}g PRO | {{ dinner_fat }}g FAT</span>
+      </div>
+      
+      <div class="meal-content">
+        <div class="foods">
+          <div class="food-item">
+            <span class="food-name">{{ dinner_item1 }}</span>
+            <span class="food-portion">{{ dinner_portion1 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ dinner_item2 }}</span>
+            <span class="food-portion">{{ dinner_portion2 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ dinner_item3 }}</span>
+            <span class="food-portion">{{ dinner_portion3 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ dinner_item4 }}</span>
+            <span class="food-portion">{{ dinner_portion4 }}</span>
+          </div>
+        </div>
+        
+        <div class="clinical-rationale">
+          <strong>Clinical Rationale:</strong>
+          <p>{{ dinner_rationale }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNACKS IF APPLICABLE -->
+    {% if snacks_allowed %}
+    <div class="meal-block">
+      <div class="meal-header snack-header">
+        <h3>🥤 PERMITTED SNACKS (As tolerated)</h3>
+        <span class="meal-nutrition">{{ snack_kcal }} kcal each</span>
+      </div>
+      
+      <div class="meal-content">
+        <div class="foods">
+          <div class="food-item">
+            <span class="food-name">{{ snack_item1 }}</span>
+            <span class="food-portion">{{ snack_portion1 }}</span>
+          </div>
+          <div class="food-item">
+            <span class="food-name">{{ snack_item2 }}</span>
+            <span class="food-portion">{{ snack_portion2 }}</span>
+          </div>
+        </div>
+        
+        <div class="clinical-rationale">
+          <strong>Justification:</strong>
+          <p>{{ snack_rationale }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- RESTRICTED FOODS SECTION -->
+  <section class="restricted-foods">
+    <div class="section-header alert-header">
+      <h2>🚫 Foods Strictly Contraindicated</h2>
+      <p class="alert-subtitle">Consumption may precipitate clinical deterioration</p>
+    </div>
+    
+    <div class="restriction-categories">
+      <div class="restriction-category">
+        <h4>{{ restriction_category1 }}</h4>
+        <ul class="restriction-list">
+          <li>{{ restriction1_item1 }} - {{ restriction1_rationale1 }}</li>
+          <li>{{ restriction1_item2 }} - {{ restriction1_rationale2 }}</li>
+          <li>{{ restriction1_item3 }} - {{ restriction1_rationale3 }}</li>
+        </ul>
+      </div>
+      
+      <div class="restriction-category">
+        <h4>{{ restriction_category2 }}</h4>
+        <ul class="restriction-list">
+          <li>{{ restriction2_item1 }} - {{ restriction2_rationale1 }}</li>
+          <li>{{ restriction2_item2 }} - {{ restriction2_rationale2 }}</li>
+          <li>{{ restriction2_item3 }} - {{ restriction2_rationale3 }}</li>
+        </ul>
+      </div>
+      
+      {% if restriction_category3 %}
+      <div class="restriction-category">
+        <h4>{{ restriction_category3 }}</h4>
+        <ul class="restriction-list">
+          <li>{{ restriction3_item1 }} - {{ restriction3_rationale1 }}</li>
+          <li>{{ restriction3_item2 }} - {{ restriction3_rationale2 }}</li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- STRONGLY RECOMMENDED FOODS -->
+  <section class="recommended-foods">
+    <div class="section-header">
+      <h2>✅ Foods Strongly Recommended</h2>
+      <p class="subtitle">Therapeutic agents with evidence-based clinical benefits</p>
+    </div>
+    
+    <div class="recommendation-grid">
+      <div class="recommendation-card">
+        <h4>{{ recommendation_category1 }}</h4>
+        <ul class="recommendation-list">
+          <li><strong>{{ rec1_item1 }}</strong> - {{ rec1_benefit1 }}</li>
+          <li><strong>{{ rec1_item2 }}</strong> - {{ rec1_benefit2 }}</li>
+          <li><strong>{{ rec1_item3 }}</strong> - {{ rec1_benefit3 }}</li>
+        </ul>
+      </div>
+      
+      <div class="recommendation-card">
+        <h4>{{ recommendation_category2 }}</h4>
+        <ul class="recommendation-list">
+          <li><strong>{{ rec2_item1 }}</strong> - {{ rec2_benefit1 }}</li>
+          <li><strong>{{ rec2_item2 }}</strong> - {{ rec2_benefit2 }}</li>
+          <li><strong>{{ rec2_item3 }}</strong> - {{ rec2_benefit3 }}</li>
+        </ul>
+      </div>
+      
+      <div class="recommendation-card">
+        <h4>{{ recommendation_category3 }}</h4>
+        <ul class="recommendation-list">
+          <li><strong>{{ rec3_item1 }}</strong> - {{ rec3_benefit1 }}</li>
+          <li><strong>{{ rec3_item2 }}</strong> - {{ rec3_benefit2 }}</li>
+          <li><strong>{{ rec3_item3 }}</strong> - {{ rec3_benefit3 }}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRUG-NUTRIENT INTERACTIONS & SAFETY -->
+  <section class="drug-interactions">
+    <div class="section-header warning-header">
+      <h2>💊 Medication-Nutrient Interactions & Safety Protocols</h2>
+    </div>
+    
+    {% for interaction in drug_interactions %}
+    <div class="interaction-box">
+      <h4>{{ interaction.medication }}</h4>
+      <div class="interaction-detail">
+        <strong>⚠️ Interaction Risk:</strong>
+        <p>{{ interaction.risk }}</p>
+      </div>
+      <div class="interaction-detail">
+        <strong>→ Management Strategy:</strong>
+        <p>{{ interaction.management }}</p>
+      </div>
+      <div class="interaction-detail">
+        <strong>⏰ Timing Recommendation:</strong>
+        <p>{{ interaction.timing }}</p>
+      </div>
+    </div>
+    {% endfor %}
+    
+    <div class="safety-protocols">
+      <h4>Monitoring & Safety Precautions</h4>
+      <ul class="protocol-list">
+        <li>{{ safety_protocol1 }}</li>
+        <li>{{ safety_protocol2 }}</li>
+        <li>{{ safety_protocol3 }}</li>
+        <li>{{ safety_protocol4 }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- EXPECTED CLINICAL BENEFITS -->
+  <section class="expected-benefits">
+    <div class="section-header">
+      <h2>🎯 Expected Clinical Benefits (4-6 Week Timeline)</h2>
+    </div>
+    
+    <div class="timeline">
+      <div class="timeline-phase">
+        <h4>Weeks 1-2: Acute Metabolic Phase</h4>
+        <ul class="benefit-list">
+          <li>{{ benefit_week1_1 }}</li>
+          <li>{{ benefit_week1_2 }}</li>
+          <li>{{ benefit_week1_3 }}</li>
+        </ul>
+      </div>
+      
+      <div class="timeline-phase">
+        <h4>Weeks 3-4: Adaptation Phase</h4>
+        <ul class="benefit-list">
+          <li>{{ benefit_week3_1 }}</li>
+          <li>{{ benefit_week3_2 }}</li>
+          <li>{{ benefit_week3_3 }}</li>
+        </ul>
+      </div>
+      
+      <div class="timeline-phase">
+        <h4>Weeks 5-6: Stabilization Phase</h4>
+        <ul class="benefit-list">
+          <li>{{ benefit_week5_1 }}</li>
+          <li>{{ benefit_week5_2 }}</li>
+          <li>{{ benefit_week5_3 }}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEDICAL DISCLAIMER & FOLLOW-UP -->
+  <section class="medical-disclaimer">
+    <div class="section-header">
+      <h2>⚠️ Clinical Disclaimer & Mandatory Follow-up</h2>
+    </div>
+    
+    <div class="disclaimer-box">
+      <p class="disclaimer-text">
+        This nutrition plan is <strong>individualized medical therapy</strong> developed based on your clinical assessment. 
+        It should <strong>NOT</strong> be applied to other individuals. Adherence to this plan requires ongoing medical supervision.
+      </p>
+      
+      <h4>Mandatory Follow-up Schedule</h4>
+      <ul class="followup-list">
+        <li><strong>Week 4:</strong> Reassessment of clinical response & adherence barriers</li>
+        <li><strong>Week 8:</strong> Laboratory re-evaluation & macronutrient adjustment if needed</li>
+        <li><strong>Week 12:</strong> Comprehensive outcome assessment & plan modification</li>
+      </ul>
+      
+      <h4>Escalation Criteria</h4>
+      <p class="escalation-text">
+        Contact your physician or dietician immediately if you experience:
+      </p>
+      <ul class="escalation-list">
+        <li>{{ escalation_symptom1 }}</li>
+        <li>{{ escalation_symptom2 }}</li>
+        <li>{{ escalation_symptom3 }}</li>
+        <li>{{ escalation_symptom4 }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section class="footer-section">
+    <p class="footer-text">
+      <strong>Prepared by:</strong> Clinical Dietetics Department<br>
+      <strong>Date:</strong> {{ generated_date }}<br>
+      <strong>Valid Until:</strong> {{ valid_until }}<br>
+      <strong>Physician:</strong> {{ physician_name }}<br>
+      <strong>Patient ID:</strong> {{ patient_id }}
+    </p>
+    <p class="confidentiality">
+      This is a confidential medical document for authorized healthcare providers only.
+    </p>
+  </section>
+
+</div>
+
+<style>
+  .diet-plan-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    color: #1f2937;
+    line-height: 1.7;
+  }
+
+  section {
+    background: white;
+    margin: 2rem 0;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 5px solid #1e40af;
+  }
+
+  .section-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 3px solid #059669;
+    padding-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+  }
+
+  .medical-notation, .meal-note, .subtitle, .alert-subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .clinical-text {
+    background: #f0f4ff;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #1e40af;
+    margin-bottom: 1rem;
+  }
+
+  .clinical-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .metric-card {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+  }
+
+  .metric-label {
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .metric-value {
+    font-weight: 700;
+    color: #1e40af;
+  }
+
+  .strategy-box {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .strategy-item {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .strategy-item h4 {
+    color: #1e40af;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .diet-type {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #059669;
+    margin-bottom: 0.5rem;
+  }
+
+  .rationale {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+  .calorie-targets, .macro-breakdown {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .target, .macro {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #059669;
+  }
+
+  .target .label, .macro-name {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .target .value, .macro-percentage {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #1e40af;
+  }
+
+  .macro-grams {
+    color: #6b7280;
+    font-size: 0.9rem;
+    display: block;
+    margin: 0.25rem 0;
+  }
+
+  .macro-reason, .note {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+
+  .meal-block {
+    margin-bottom: 1.5rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+
+  .meal-header {
+    padding: 1.5rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .breakfast-header { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
+  .lunch-header { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+  .dinner-header { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+  .snack-header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+
+  .meal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .meal-nutrition {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 600;
+  }
+
+  .meal-content {
+    padding: 1.5rem;
+    background: white;
+  }
+
+  .foods {
+    margin-bottom: 1.5rem;
+  }
+
+  .food-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+  }
+
+  .food-item:last-child {
+    border-bottom: none;
+  }
+
+  .food-name {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .food-portion {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .clinical-rationale {
+    background: #eff6ff;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #1e40af;
+  }
+
+  .clinical-rationale strong {
+    color: #1e40af;
+  }
+
+  .clinical-rationale p {
+    margin-top: 0.5rem;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  .restricted-foods {
+    border-left-color: #dc2626;
+  }
+
+  .alert-header {
+    border-bottom-color: #dc2626;
+  }
+
+  .alert-header h2 {
+    color: #dc2626;
+  }
+
+  .restriction-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .restriction-category, .recommendation-card {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .restriction-category h4, .recommendation-card h4 {
+    color: #1e40af;
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+  }
+
+  .restriction-list, .recommendation-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .restriction-list li, .recommendation-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.95rem;
+    color: #374151;
+  }
+
+  .restriction-list li:last-child, .recommendation-list li:last-child {
+    border-bottom: none;
+  }
+
+  .recommended-foods {
+    border-left-color: #059669;
+  }
+
+  .recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .drug-interactions {
+    border-left-color: #f59e0b;
+  }
+
+  .warning-header {
+    border-bottom-color: #f59e0b;
+  }
+
+  .warning-header h2 {
+    color: #f59e0b;
+  }
+
+  .interaction-box {
+    background: #fffbeb;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    border-left: 4px solid #f59e0b;
+  }
+
+  .interaction-box h4 {
+    color: #92400e;
+    margin-bottom: 1rem;
+  }
+
+  .interaction-detail {
+    margin-bottom: 1rem;
+  }
+
+  .interaction-detail strong {
+    color: #92400e;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .interaction-detail p {
+    color: #78350f;
+    font-size: 0.95rem;
+  }
+
+  .safety-protocols {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+  }
+
+  .safety-protocols h4 {
+    color: #1e40af;
+    margin-bottom: 1rem;
+  }
+
+  .protocol-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .protocol-list li {
+    padding: 0.75rem 0 0.75rem 2rem;
+    position: relative;
+    color: #374151;
+  }
+
+  .protocol-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: #059669;
+  }
+
+  .expected-benefits {
+    border-left-color: #1e40af;
+  }
+
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .timeline-phase {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    border-top: 4px solid #059669;
+  }
+
+  .timeline-phase h4 {
+    color: #1e40af;
+    margin-bottom: 1rem;
+  }
+
+  .benefit-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .benefit-list li {
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    position: relative;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  .benefit-list li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #059669;
+    font-weight: bold;
+  }
+
+  .medical-disclaimer {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+  }
+
+  .disclaimer-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 6px;
+  }
+
+  .disclaimer-text {
+    background: #fee2e2;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #dc2626;
+    color: #991b1b;
+    margin-bottom: 1.5rem;
+  }
+
+  .medical-disclaimer h4 {
+    color: #dc2626;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .followup-list, .escalation-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .followup-list li, .escalation-list li {
+    padding: 0.75rem 0 0.75rem 2rem;
+    position: relative;
+    color: #374151;
+  }
+
+  .followup-list li:before, .escalation-list li:before {
+    content: "⚠";
+    position: absolute;
+    left: 0;
+    color: #dc2626;
+  }
+
+  .escalation-text {
+    color: #6b7280;
+    margin: 1rem 0;
+    font-weight: 500;
+  }
+
+  .footer-section {
+    background: #1f2937;
+    color: white;
+    text-align: center;
+    border: none;
+    border-top: 3px solid #059669;
+  }
+
+  .footer-text {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .confidentiality {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-style: italic;
+  }
+
+  @media print {
+    body {
+      background: white;
+    }
+    section {
+      page-break-inside: avoid;
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    section {
+      padding: 1.5rem;
+    }
+    .meal-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .meal-nutrition {
+      width: 100%;
+    }
+    .strategy-box, .restriction-categories, .recommendation-grid, .timeline {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

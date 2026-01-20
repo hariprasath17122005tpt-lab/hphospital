@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}System Settings - Host{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold mb-0">System Configuration</h2>
+                <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">Back</a>
+            </div>
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-sliders-h me-2"></i> Global Controls</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <!-- Emergency Mode -->
+                        <div class="mb-4 p-3 bg-danger bg-opacity-10 rounded border border-danger">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emergencyMode" name="emergency_mode"
+                                    {% if settings.emergency_mode %}checked{% endif %}>
+                                <label class="form-check-label fw-bold text-danger fs-5" for="emergencyMode">
+                                    <i class="fas fa-ambulance me-2"></i> EMERGENCY OVERRIDE
+                                </label>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">
+                                When active, a global banner is shown to all users. Non-critical features may be
+                                disabled (simulation).
+                                Use this during mass casualty incidents or hospital lockdowns.
+                            </p>
+                        </div>
+
+                        <!-- Maintenance Mode -->
+                        <div class="mb-4 p-3 bg-warning bg-opacity-10 rounded border border-warning">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="maintMode" name="maintenance_mode"
+                                    {% if settings.maintenance_mode %}checked{% endif %}>
+                                <label class="form-check-label fw-bold text-dark fs-5" for="maintMode">
+                                    <i class="fas fa-tools me-2"></i> Maintenance Mode
+                                </label>
+                            </div>
+                            <p class="text-muted small mt-2 mb-0">
+                                Prevents new patient registrations and non-emergency appointments.
+                            </p>
+                        </div>
+
+
+
+                        <!-- Legal & Compliance -->
+                        <h6 class="fw-bold mb-3 mt-4"><i class="fas fa-gavel me-2"></i> Legal & Compliance</h6>
+                        <div class="mb-4">
+                            <label class="form-label">System Disclaimer / Consent Form</label>
+                            <textarea name="disclaimer_text" class="form-control" rows="4"
+                                placeholder="Enter legal disclaimer text here. This will be visible on login pages.">{{ settings.disclaimer_text or '' }}</textarea>
+                            <div class="form-text">This text will be displayed in the footer or login screens as a
+                                mandatory notice.</div>
+                        </div>
+
+                        <hr>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-dark px-4">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle me-2"></i> All changes are logged in the Audit Trail for compliance.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

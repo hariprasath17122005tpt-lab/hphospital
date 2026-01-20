@@ -1,0 +1,75 @@
+{
+  "food_safety_classifications": {
+    "safe_green": {
+      "color": "success",
+      "emoji": "🟢",
+      "foods": [
+        "Leafy greens (spinach, kale, lettuce)",
+        "Broccoli, cauliflower, Brussels sprouts",
+        "Carrots, celery, cucumber",
+        "Tomatoes, bell peppers",
+        "Whole grains (brown rice, oats, quinoa)",
+        "Lean poultry (chicken, turkey - skinless)",
+        "Fish (salmon, mackerel, herring)",
+        "Legumes (beans, lentils, chickpeas)",
+        "Nuts and seeds (unsalted)",
+        "Low-fat dairy (yogurt, cottage cheese)",
+        "Olive oil, avocado oil",
+        "Berries, apples, oranges"
+      ],
+      "recommendation": "Eat freely - Daily consumption recommended"
+    },
+    "occasional_yellow": {
+      "color": "warning",
+      "emoji": "🟡",
+      "foods": [
+        "Red meat (lean cuts - once weekly)",
+        "Processed meats (limited to 1-2x monthly)",
+        "Egg yolks (limit to 3 per week)",
+        "Cheese (limit to 1 oz per day)",
+        "Whole milk (use 1-2x monthly if lactose tolerant)",
+        "Fruit juice (small quantities - 4 oz)",
+        "Dark chocolate (1 oz, 70% cocoa+)",
+        "Olive oil-based salad dressings",
+        "Nuts & seeds (limit to 1 oz daily)",
+        "Whole wheat bread (2-3 slices daily)"
+      ],
+      "recommendation": "Use in moderation - 1-2 times weekly maximum"
+    },
+    "avoid_red": {
+      "color": "danger",
+      "emoji": "🔴",
+      "foods": [
+        "Fried foods (french fries, fried chicken)",
+        "Fast food items",
+        "Sugary drinks (soda, energy drinks, sports drinks)",
+        "High-sodium snacks (chips, salted nuts)",
+        "Processed meats (bacon, sausage, deli meat)",
+        "Cakes, pastries, donuts",
+        "Candy, chocolate bars (< 70% cocoa)",
+        "Full-fat dairy (whole milk, ice cream)",
+        "Butter, lard, shortening",
+        "White bread, white rice, refined grains",
+        "Alcohol (wine, beer, spirits)",
+        "Instant noodles, frozen dinners"
+      ],
+      "recommendation": "Avoid completely - Exception: 1 cheat meal per week maximum"
+    }
+  },
+  "traffic_light_system": {
+    "principle": "Simple visual system for food safety decisions at grocery store & restaurant",
+    "green_strategy": "Fill half plate with green foods",
+    "yellow_strategy": "Quarter of plate, limited frequency",
+    "red_strategy": "Zero grams in daily diet, allowed only 1x monthly",
+    "effectiveness": "Visual systems improve food choice compliance by 35-45%"
+  },
+  "food_substitutions": {
+    "instead_of_fried_chicken": "Try grilled or baked chicken breast",
+    "instead_of_soda": "Try unsweetened tea or flavored water",
+    "instead_of_white_rice": "Try brown rice or quinoa",
+    "instead_of_butter": "Try olive oil or avocado",
+    "instead_of_bacon": "Try lean turkey sausage",
+    "instead_of_candy": "Try fresh fruit or dark chocolate (70%+)",
+    "instead_of_chips": "Try unsalted nuts or air-popped popcorn"
+  }
+}

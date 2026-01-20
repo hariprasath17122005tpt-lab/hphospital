@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Feedback{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow border-0">
+                <div class="card-body p-5 text-center">
+                    <h2 class="mb-4">How was your visit?</h2>
+                    <p class="text-muted mb-5">Your feedback helps us provide world-class care.</p>
+
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <div class="mb-5">
+                            <h5 class="mb-3">Rate your experience</h5>
+                            <div class="d-flex justify-content-center gap-3 display-4 text-warning">
+                                <i class="far fa-star custom-star" onclick="rate(1)" style="cursor: pointer;"></i>
+                                <i class="far fa-star custom-star" onclick="rate(2)" style="cursor: pointer;"></i>
+                                <i class="far fa-star custom-star" onclick="rate(3)" style="cursor: pointer;"></i>
+                                <i class="far fa-star custom-star" onclick="rate(4)" style="cursor: pointer;"></i>
+                                <i class="far fa-star custom-star" onclick="rate(5)" style="cursor: pointer;"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 text-start">
+                            <label class="form-label fw-bold">What did we do well?</label>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <input type="checkbox" class="btn-check" id="tag1" autocomplete="off">
+                                <label class="btn btn-outline-secondary rounded-pill" for="tag1">Doctor's Care</label>
+
+                                <input type="checkbox" class="btn-check" id="tag2" autocomplete="off">
+                                <label class="btn btn-outline-secondary rounded-pill" for="tag2">Staff
+                                    Friendliness</label>
+
+                                <input type="checkbox" class="btn-check" id="tag3" autocomplete="off">
+                                <label class="btn btn-outline-secondary rounded-pill" for="tag3">Cleanliness</label>
+
+                                <input type="checkbox" class="btn-check" id="tag4" autocomplete="off">
+                                <label class="btn btn-outline-secondary rounded-pill" for="tag4">Wait Time</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 text-start">
+                            <label class="form-label fw-bold">Any suggestions for improvement?</label>
+                            <textarea class="form-control" rows="4" placeholder="Tell us more..."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function rate(stars) {
+        const icons = document.querySelectorAll('.custom-star');
+        icons.forEach((icon, index) => {
+            if (index < stars) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        });
+    }
+</script>
+{% endblock %}

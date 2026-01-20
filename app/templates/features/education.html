@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Health Education Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Your Personalized Health Academy</h2>
+        <p class="text-muted">AI-Curated content based on your medical history</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- AI Recommendation -->
+        <div class="col-12">
+            <div class="card bg-info text-white border-0 shadow-sm mb-4">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="badge bg-light text-primary mb-2">AI Recommended</span>
+                        <h3 class="mb-1">Managing Blood Pressure Naturally</h3>
+                        <p class="mb-0 text-white-50">Based on your recent BP reading (140/90)</p>
+                    </div>
+                    <button class="btn btn-light text-primary px-4 rounded-pill">Start Learning</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Modules -->
+        {% for video in videos %}
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="position-relative">
+                    <iframe src="https://www.youtube.com/embed/{{ video.id }}" title="{{ video.title }}"
+                        class="w-100 rounded-top" style="height: 200px;" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                    <span class="position-absolute bottom-0 end-0 bg-black text-white px-2 py-1 m-2 rounded small">{{
+                        video.duration }}</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-bold fs-6">{{ video.title }}</h5>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="badge bg-light text-primary border">{{ video.category }}</span>
+                        <a href="https://www.youtube.com/watch?v={{ video.id }}" target="_blank"
+                            class="btn btn-sm btn-outline-primary rounded-pill">Watch on YT <i
+                                class="fas fa-external-link-alt ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

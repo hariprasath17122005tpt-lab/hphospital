@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-user"></i> Patient Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Personal Information</h5>
+                            <p>
+                                <strong>Name:</strong> {{ patient.first_name }} {{ patient.last_name }}<br>
+                                <strong>Email:</strong> {{ patient.user.email }}<br>
+                                <strong>Phone:</strong> {{ patient.phone or 'N/A' }}<br>
+                                <strong>Date of Birth:</strong> {{ patient.dob or 'N/A' }}<br>
+                                <strong>Address:</strong> {{ patient.address or 'N/A' }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Medical Information</h5>
+                            <p>
+                                <strong>Blood Type:</strong> {{ patient.blood_type or 'N/A' }}<br>
+                                <strong>Allergies:</strong> {{ patient.allergies or 'N/A' }}<br>
+                                <strong>Medical History:</strong>
+                            </p>
+                            <p class="text-muted">{{ patient.medical_history or 'No information provided' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-heartbeat"></i> Recent Health Data</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if health_data %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>BP</th>
+                                            <th>HR</th>
+                                            <th>Temp</th>
+                                            <th>Weight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in health_data[:5] %}
+                                        <tr>
+                                            <td>{{ data.recorded_at.strftime('%m/%d/%Y') }}</td>
+                                            <td>
+                                                {% if data.systolic_bp and data.diastolic_bp %}
+                                                {{ data.systolic_bp }}/{{ data.diastolic_bp }}
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ data.heart_rate or '--' }}</td>
+                                            <td>--</td>
+                                            <td>{{ data.bmi or '--' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No health data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('doctor.patient_list') }}" class="btn btn-secondary">Back to Patient
+                            List</a>
+                        </a>
+                        <a href="{{ url_for('doctor.write_prescription', patient_id=patient.id) }}"
+                            class="btn btn-info text-white">
+                            <i class="fas fa-prescription"></i> Write Prescription
+                        </a>
+                        <a href="{{ url_for('doctor.upload_lab_report', patient_id=patient.id) }}"
+                            class="btn btn-warning text-dark">
+                            <i class="fas fa-file-medical-alt"></i> Upload Report
+                        </a>
+                        <a href="{{ url_for('doctor.create_bill', patient_id=patient.id) }}" class="btn btn-success">
+                            <i class="fas fa-file-invoice-dollar"></i> Create Bill
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

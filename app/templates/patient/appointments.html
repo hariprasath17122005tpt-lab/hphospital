@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-alt"></i> My Appointments
+                    </h4>
+                    <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> Book New Appointment
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-user-md"></i> Doctor</th>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-clock"></i> Time</th>
+                                    <th><i class="fas fa-stethoscope"></i> Reason</th>
+                                    <th><i class="fas fa-info-circle"></i> Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>
+                                        <strong>Dr. {{ appointment.doctor.user.username }}</strong>
+                                    </td>
+                                    <td>{{ appointment.appointment_date.strftime('%B %d, %Y') }}</td>
+                                    <td>{{ appointment.appointment_date.strftime('%I:%M %p') }}</td>
+                                    <td>{{ appointment.reason if appointment.reason else '-' }}</td>
+                                    <td>
+                                        {% if appointment.status == 'confirmed' %}
+                                        <span class="badge bg-success">Confirmed</span>
+                                        {% elif appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-info">Completed</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.status != 'cancelled' %}
+                                        <a href="#" class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('patient.chat', doctor_id=appointment.doctor.id) }}"
+                                            class="btn btn-sm btn-outline-success" title="Message Doctor">
+                                            <i class="fas fa-comment-medical"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-inbox"></i><br>
+                        You don't have any appointments yet.
+                        <a href="{{ url_for('patient.book_appointment') }}" class="alert-link">Book one now!</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+        padding: 1.5rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

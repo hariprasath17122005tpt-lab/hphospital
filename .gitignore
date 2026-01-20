@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Databases
+instance/
+*.sqlite3
+*.db
+
+# Environment variables
+.env
+
+# Logs
+*.log
+server.log
+notifications.log
+training_log.txt
+
+# OS details
+.DS_Store
+Thumbs.db
+
+# Large CSV/JSON if they are just samples
+# medical_sample.csv
+# medical_data.json
+
+# Build and IDE
+.idea/
+.vscode/
+*.swp
+*.bak

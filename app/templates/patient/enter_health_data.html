@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Health Data{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 animate-fade-in">
+            <div class="text-center mb-5">
+                <div class="icon-circle bg-success text-white mx-auto mb-3 shadow"
+                    style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h2 class="fw-bold mb-2">Update Health Vitals</h2>
+                <p class="text-muted">Enter your latest measurements for real-time AI risk assessment.</p>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="row g-4">
+                    <!-- Left Column: Vitals -->
+                    <div class="col-md-8">
+                        <div class="card shadow-lg border-0 mb-4 h-100">
+                            <div class="card-header bg-transparent border-0 p-4 pb-0">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-microchip me-2"></i> Physiological
+                                    Metrics</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <!-- BP Section -->
+                                <div class="bg-light p-4 rounded-3 mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-white text-primary shadow-sm me-3"
+                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-tachometer-alt"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-0">Blood Pressure</h6>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted text-uppercase fw-bold">Systolic
+                                                (Top)</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="systolic_bp"
+                                                    placeholder="120" min="40" max="250" required>
+                                                <span class="input-group-text bg-white">mmHg</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted text-uppercase fw-bold">Diastolic
+                                                (Bottom)</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="diastolic_bp"
+                                                    placeholder="80" min="30" max="150" required>
+                                                <span class="input-group-text bg-white">mmHg</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sugar Section -->
+                                <div class="bg-light p-4 rounded-3 mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-white text-warning shadow-sm me-3"
+                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-tint"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-0">Blood Glucose</h6>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label small text-muted text-uppercase fw-bold">Fasting</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control"
+                                                    name="fasting_sugar" placeholder="90" required>
+                                                <span class="input-group-text bg-white">mg/dL</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted text-uppercase fw-bold">Post-Meal
+                                                (Random)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control" name="random_sugar"
+                                                    placeholder="140" required>
+                                                <span class="input-group-text bg-white">mg/dL</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Heart Rate -->
+                                <div class="bg-light p-4 rounded-3 mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-white text-danger shadow-sm me-3"
+                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-heartbeat"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-0">Heart Rate</h6>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label small text-muted text-uppercase fw-bold">Beats Per
+                                                Minute</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="heart_rate"
+                                                    placeholder="72" min="30" max="220" required>
+                                                <span class="input-group-text bg-white">bpm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Body Temperature (New) -->
+                                <div class="bg-light p-4 rounded-3 mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-white text-info shadow-sm me-3"
+                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-thermometer-half"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-0">Body Temperature</h6>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <label class="form-label small text-muted text-uppercase fw-bold">Fahrenheit
+                                                (°F)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.1" class="form-control" name="temperature"
+                                                    placeholder="98.6" min="90" max="110" required>
+                                                <span class="input-group-text bg-white">°F</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Symptoms -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Current Symptoms</label>
+                                    <textarea class="form-control" name="symptoms" rows="3"
+                                        placeholder="Describe how you are feeling (e.g., headache, dizziness, fatigue)..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Lifestyle & Submit -->
+                    <div class="col-md-4">
+                        <div class="card shadow-lg border-0 mb-4">
+                            <div class="card-header bg-transparent border-0 p-4 pb-0">
+                                <h5 class="fw-bold text-success"><i class="fas fa-apple-alt me-2"></i> Lifestyle</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted text-uppercase fw-bold">Exercise
+                                        Today</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="exercise_minutes" value="0">
+                                        <span class="input-group-text bg-white">mins</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted text-uppercase fw-bold">Sleep
+                                        Duration</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.5" class="form-control" name="sleep_hours"
+                                            placeholder="7.5">
+                                        <span class="input-group-text bg-white">hours</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label small text-muted text-uppercase fw-bold">Stress
+                                        Level</label>
+                                    <select class="form-select" name="stress_level">
+                                        <option value="Low">Low</option>
+                                        <option value="Medium" selected>Medium</option>
+                                        <option value="High">High</option>
+                                    </select>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-2 border rounded p-3">
+                                    <label class="form-check-label mb-0" for="smoking">Smoker?</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="smoking" name="smoking">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mb-4 border rounded p-3">
+                                    <label class="form-check-label mb-0" for="alcohol">Alcohol Consumption?</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="alcohol" name="alcohol">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 shadow fw-bold">
+                                    <i class="fas fa-save me-2"></i> Save & Analyze
+                                </button>
+                                <a href="{{ url_for('patient.dashboard') }}"
+                                    class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                            </div>
+                        </div>
+
+                        <!-- Reference Ranges -->
+                        <div class="card border-0 bg-info bg-opacity-10">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-info mb-3"><i class="fas fa-info-circle me-2"></i>Quick
+                                    Reference</h6>
+                                <ul class="list-unstyled small text-muted mb-0">
+                                    <li class="mb-2"><strong>Normal BP:</strong> &lt; 120/80</li>
+                                    <li class="mb-2"><strong>Normal Sugar:</strong> 70-100 (Fasting)</li>
+                                    <li><strong>Normal Heart Rate:</strong> 60-100 bpm</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Health Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4"><i class="fas fa-chart-line"></i> Your Health Analysis</h1>
+
+    <!-- Warnings -->
+    {% if warnings %}
+    <div class="row mb-4">
+        {% for warning in warnings %}
+        <div class="col-md-12">
+            <div class="alert alert-danger" role="alert">
+                <strong><i class="fas fa-exclamation-circle"></i> {{ warning }}</strong>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Health Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-heart"></i> Current Vital Signs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Blood Pressure:</strong>
+                            <p class="h5 text-primary">{{ health_data.systolic_bp }}/{{ health_data.diastolic_bp }} mmHg
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <strong>Heart Rate:</strong>
+                            <p class="h5 text-info">{{ health_data.heart_rate }} bpm</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Fasting Sugar:</strong>
+                            <p class="h5 text-warning">{{ health_data.fasting_sugar }} mg/dL</p>
+                        </div>
+                        <div class="col-6">
+                            <strong>Random Sugar:</strong>
+                            <p class="h5 text-warning">{{ health_data.random_sugar }} mg/dL</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>BMI:</strong>
+                            <p class="h5 text-success">{{ "%.1f"|format(health_data.bmi) }}</p>
+                        </div>
+                        <div class="col-6">
+                            <strong>Category:</strong>
+                            <p class="h5">{{ health_data.bmi_category }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-life-ring"></i> Lifestyle Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Exercise Today:</strong> {{ health_data.exercise_minutes }} minutes</p>
+                    <p><strong>Sleep Last Night:</strong> {{ "%.1f"|format(health_data.sleep_hours) }} hours</p>
+                    <p><strong>Stress Level:</strong> <span class="badge bg-info">{{ health_data.stress_level }}</span>
+                    </p>
+                    <p>
+                        <strong>Smoking:</strong>
+                        <span class="badge bg-{{ 'danger' if health_data.smoking else 'success' }}">
+                            {{ 'Yes' if health_data.smoking else 'No' }}
+                        </span>
+                    </p>
+                    <p>
+                        <strong>Alcohol:</strong>
+                        <span class="badge bg-{{ 'danger' if health_data.alcohol else 'success' }}">
+                            {{ 'Yes' if health_data.alcohol else 'No' }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Health Risk Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-brain"></i> AI Risk Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <h6 class="fw-bold">Diabetes Risk</h6>
+                            <div class="mb-2">
+                                <span
+                                    class="badge bg-{{ 'danger' if health_data.diabetes_risk > 60 else 'warning' if health_data.diabetes_risk > 30 else 'success' }}">
+                                    {{ risk_status.diabetes }}
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-danger" role="progressbar" id="diabetes-progress"
+                                    aria-valuenow="{{ health_data.diabetes_risk|int }}" aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    {{ health_data.diabetes_risk|int }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h6 class="fw-bold">Heart Disease Risk</h6>
+                            <div class="mb-2">
+                                <span
+                                    class="badge bg-{{ 'danger' if health_data.heart_disease_risk > 60 else 'warning' if health_data.heart_disease_risk > 30 else 'success' }}">
+                                    {{ risk_status.heart }}
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-warning" role="progressbar" id="heart-progress"
+                                    aria-valuenow="{{ health_data.heart_disease_risk|int }}" aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    {{ health_data.heart_disease_risk|int }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <h6 class="fw-bold">Hypertension Risk</h6>
+                            <div class="mb-2">
+                                <span
+                                    class="badge bg-{{ 'danger' if health_data.hypertension_risk > 60 else 'warning' if health_data.hypertension_risk > 30 else 'success' }}">
+                                    {{ risk_status.hypertension }}
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-info" role="progressbar" id="hypertension-progress"
+                                    aria-valuenow="{{ health_data.hypertension_risk|int }}" aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    {{ health_data.hypertension_risk|int }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Symptom Information -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow border-left-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Verified Symptom Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if health_data.symptoms %}
+                    <p class="mb-3"><strong>Symptoms reported:</strong> {{ health_data.symptoms }}</p>
+
+                    {% if symptom_analysis %}
+                    <div class="mb-4">
+                        {% for item in symptom_analysis %}
+                        <div class="p-3 bg-light rounded border-start border-success border-4 mb-3">
+                            <h6 class="fw-bold"><i class="fas fa-stethoscope me-2"></i> Analysis for: {{ item.symptom }}
+                            </h6>
+                            <div class="text-dark" style="white-space: pre-line;">
+                                {{ item.analysis }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="fas fa-info-circle me-3 fa-2x"></i>
+                        <div>
+                            Our system uses a <strong>Strict Verified Knowledge Base</strong>.
+                            We couldn't find a direct match for your symptoms in our verified database.
+                            Please use the search tool below for more specific queries or consult a doctor.
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <p class="text-muted">No symptoms reported in this assessment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-apple-alt"></i> Next Steps</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">Immediate Actions:</h6>
+                    <ul>
+                        <li>View your personalized diet plan</li>
+                        <li>Get exercise recommendations</li>
+                        <li>Book an appointment with a doctor</li>
+                        <li>Track your progress weekly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Health Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Stay hydrated - Drink at least 8 glasses of water daily</li>
+                        <li>Regular exercise - Even 30 minutes of walking helps</li>
+                        <li>Healthy diet - Reduce salt, sugar, and processed foods</li>
+                        <li>Quality sleep - Aim for 7-8 hours daily</li>
+                        <li>Stress management - Try meditation and breathing exercises</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            <a href="{{ url_for('patient.diet_plan') }}" class="btn btn-success btn-lg me-2">
+                <i class="fas fa-apple-alt"></i> View Diet Plan
+            </a>
+            <a href="{{ url_for('patient.exercise_plan') }}" class="btn btn-info btn-lg me-2">
+                <i class="fas fa-dumbbell"></i> View Exercise Plan
+            </a>
+            <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-check"></i> Book Appointment
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

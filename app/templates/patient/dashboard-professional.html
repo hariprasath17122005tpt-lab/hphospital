@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Patient Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header Section -->
+    <div class="mb-4">
+        <h1>Welcome, {{ patient.first_name }}</h1>
+        <p class="text-muted mb-0">Patient ID: {{ patient.id }} | Last updated: Today</p>
+    </div>
+
+    <!-- Quick Status Overview -->
+    <div class="row g-3 mb-4">
+        <!-- Health Score -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon success mb-3">
+                        <i class="fas fa-heart-pulse"></i>
+                    </div>
+                    <h5>Health Score</h5>
+                    {% if latest_health %}
+                        {% set diabetes = latest_health.diabetes_risk or 0 %}
+                        {% set heart = latest_health.heart_disease_risk or 0 %}
+                        {% set hyper = latest_health.hypertension_risk or 0 %}
+                        {% set total_risk = diabetes + heart + hyper %}
+                        {% set health_score = 100 - (total_risk / 3) %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ "%.0f"|format(health_score) }}/100</p>
+                        <p class="text-muted" style="font-size: 12px;">AI-assessed health status</p>
+                    {% else %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">--</p>
+                        <p class="text-muted" style="font-size: 12px;">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon info mb-3">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h5>Appointments</h5>
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ appointments|length }}</p>
+                    <p class="text-muted" style="font-size: 12px;">Active appointments</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heart Rate -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon warning mb-3">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h5>Heart Rate</h5>
+                    {% if latest_health %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ latest_health.heart_rate }}</p>
+                        <p class="text-muted" style="font-size: 12px;">beats per minute</p>
+                    {% else %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">--</p>
+                        <p class="text-muted" style="font-size: 12px;">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Blood Pressure -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon danger mb-3">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h5>Blood Pressure</h5>
+                    {% if latest_health %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ latest_health.systolic_bp }}/{{ latest_health.diastolic_bp }}</p>
+                        <p class="text-muted" style="font-size: 12px;">mmHg</p>
+                    {% else %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">--/--</p>
+                        <p class="text-muted" style="font-size: 12px;">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Information Section -->
+    <div class="row g-4 mb-4">
+        <!-- Vital Statistics -->
+        <div class="col-lg-6">
+            <div class="card border-0">
+                <div class="card-header">
+                    <h4>Vital Statistics</h4>
+                </div>
+                <div class="card-body">
+                    {% if latest_health %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h5>Blood Sugar</h5>
+                                <p style="font-size: 24px; font-weight: 600;">{{ latest_health.blood_sugar }}</p>
+                                <p class="text-muted" style="font-size: 12px;">mg/dL</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>BMI</h5>
+                                <p style="font-size: 24px; font-weight: 600;">{{ "%.1f"|format(latest_health.bmi or 0) }}</p>
+                                <p class="text-muted" style="font-size: 12px;">{{ latest_health.bmi_category }}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>Age</h5>
+                                <p style="font-size: 24px; font-weight: 600;">{{ patient.age }}</p>
+                                <p class="text-muted" style="font-size: 12px;">years old</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>Gender</h5>
+                                <p style="font-size: 24px; font-weight: 600;">{{ patient.gender }}</p>
+                                <p class="text-muted" style="font-size: 12px;">biological</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No health data available. <a href="{{ url_for('patient.enter_health_data') }}">Enter your health data</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Risks Assessment -->
+        <div class="col-lg-6">
+            <div class="card border-0">
+                <div class="card-header">
+                    <h4>Health Risk Assessment</h4>
+                </div>
+                <div class="card-body">
+                    {% if latest_health %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5>Diabetes Risk</h5>
+                                <span class="badge badge-{% if latest_health.diabetes_risk > 70 %}danger{% elif latest_health.diabetes_risk > 40 %}warning{% else %}success{% endif %}">
+                                    {{ "%.0f"|format(latest_health.diabetes_risk) }}%
+                                </span>
+                            </div>
+                            <div style="height: 6px; background: #EEF2F5; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: {% if latest_health.diabetes_risk > 70 %}#DC2626{% elif latest_health.diabetes_risk > 40 %}#F59E0B{% else %}#059669{% endif %}; width: {{ latest_health.diabetes_risk }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5>Heart Disease Risk</h5>
+                                <span class="badge badge-{% if latest_health.heart_disease_risk > 70 %}danger{% elif latest_health.heart_disease_risk > 40 %}warning{% else %}success{% endif %}">
+                                    {{ "%.0f"|format(latest_health.heart_disease_risk) }}%
+                                </span>
+                            </div>
+                            <div style="height: 6px; background: #EEF2F5; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: {% if latest_health.heart_disease_risk > 70 %}#DC2626{% elif latest_health.heart_disease_risk > 40 %}#F59E0B{% else %}#059669{% endif %}; width: {{ latest_health.heart_disease_risk }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5>Hypertension Risk</h5>
+                                <span class="badge badge-{% if latest_health.hypertension_risk > 70 %}danger{% elif latest_health.hypertension_risk > 40 %}warning{% else %}success{% endif %}">
+                                    {{ "%.0f"|format(latest_health.hypertension_risk) }}%
+                                </span>
+                            </div>
+                            <div style="height: 6px; background: #EEF2F5; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: {% if latest_health.hypertension_risk > 70 %}#DC2626{% elif latest_health.hypertension_risk > 40 %}#F59E0B{% else %}#059669{% endif %}; width: {{ latest_health.hypertension_risk }}%;"></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No risk assessment available. Enter your health data to get a personalized assessment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="row g-3">
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.appointments') }}" class="card border-0 text-decoration-none text-reset" style="transition: all 0.2s;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-calendar-alt" style="font-size: 32px; color: #0052A3; margin-bottom: 12px; display: block;"></i>
+                    <h5>Appointments</h5>
+                    <p class="text-muted" style="font-size: 12px;">Book or manage appointments</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.lab_reports') }}" class="card border-0 text-decoration-none text-reset" style="transition: all 0.2s;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-file-medical" style="font-size: 32px; color: #00897B; margin-bottom: 12px; display: block;"></i>
+                    <h5>Lab Reports</h5>
+                    <p class="text-muted" style="font-size: 12px;">View test results</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.diet_plan') }}" class="card border-0 text-decoration-none text-reset" style="transition: all 0.2s;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-apple-alt" style="font-size: 32px; color: #F59E0B; margin-bottom: 12px; display: block;"></i>
+                    <h5>Diet Plan</h5>
+                    <p class="text-muted" style="font-size: 12px;">Personalized nutrition</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.profile') }}" class="card border-0 text-decoration-none text-reset" style="transition: all 0.2s;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-user-circle" style="font-size: 32px; color: #059669; margin-bottom: 12px; display: block;"></i>
+                    <h5>Profile</h5>
+                    <p class="text-muted" style="font-size: 12px;">Manage your information</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Express Check-ins - Doctor Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h1><i class="fas fa-clipboard-check me-2"></i>Express Check-in Management</h1>
+        <p class="text-muted">Review and respond to patient express check-ins</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5>Pending</h5>
+                    <p class="h3 text-warning">{{ stats.pending_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5>Accepted</h5>
+                    <p class="h3 text-success">{{ stats.accepted_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5>Rejected</h5>
+                    <p class="h3 text-danger">{{ stats.rejected_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h5>Completed</h5>
+                    <p class="h3 text-primary">{{ stats.completed_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#pending" role="tab">
+                <i class="fas fa-hourglass-half me-2"></i>Pending ({{ stats.pending_count }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#accepted" role="tab">
+                <i class="fas fa-check-circle me-2"></i>Accepted ({{ stats.accepted_count }})
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Pending Check-ins Tab -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            {% if pending_checkins|length > 0 %}
+            <div class="row g-3">
+                {% for checkin in pending_checkins %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-left-primary h-100" id="checkin-{{ checkin.id }}">
+                        <div class="card-header bg-white border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">{{ checkin.patient.user.full_name }}</h5>
+                                    <p class="text-muted mb-0" style="font-size: 12px;">ID: #{{ checkin.patient_id }}
+                                    </p>
+                                </div>
+                                <span class="badge bg-warning text-dark">{{ checkin.created_at.strftime('%H:%M')
+                                    }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Check-in Details -->
+                            <div class="mb-3">
+                                <h6 class="text-secondary mb-2">Reason for Check-in</h6>
+                                <p class="mb-0"><strong>{{ checkin.check_in_reason }}</strong></p>
+                            </div>
+
+                            <!-- Visit Type & Severity -->
+                            <div class="mb-3">
+                                <span class="badge bg-light text-dark me-2">{{ checkin.visit_type|title }}</span>
+                                {% if checkin.severity == 'severe' %}
+                                <span class="badge bg-danger">Severe</span>
+                                {% elif checkin.severity == 'moderate' %}
+                                <span class="badge bg-warning text-dark">Moderate</span>
+                                {% else %}
+                                <span class="badge bg-success">Mild</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Symptoms (if provided) -->
+                            {% if checkin.symptoms %}
+                            <div class="mb-3">
+                                <h6 class="text-secondary mb-2">Reported Symptoms</h6>
+                                <p class="mb-0 small">{{ checkin.symptoms }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Vital Signs (if available) -->
+                            {% if checkin.temperature or checkin.blood_pressure or checkin.heart_rate %}
+                            <div class="mb-3">
+                                <h6 class="text-secondary mb-2">Vital Signs</h6>
+                                {% if checkin.temperature %}
+                                <p class="mb-1 small"><strong>Temp:</strong> {{ checkin.temperature }}°C</p>
+                                {% endif %}
+                                {% if checkin.blood_pressure %}
+                                <p class="mb-1 small"><strong>BP:</strong> {{ checkin.blood_pressure }}</p>
+                                {% endif %}
+                                {% if checkin.heart_rate %}
+                                <p class="mb-0 small"><strong>HR:</strong> {{ checkin.heart_rate }} bpm</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Check-in Time -->
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-clock me-1"></i>{{ checkin.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </p>
+                        </div>
+
+                        <div class="card-footer bg-white border-0 pt-0">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success btn-sm"
+                                    onclick="showAcceptModal({{ checkin.id }}, '{{ checkin.patient.user.full_name }}')">
+                                    <i class="fas fa-check-circle me-1"></i> Accept Check-in
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                    onclick="showRejectModal({{ checkin.id }}, '{{ checkin.patient.user.full_name }}')">
+                                    <i class="fas fa-times-circle me-1"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-inbox fa-3x mb-3 d-block text-muted"></i>
+                <h5>No Pending Check-ins</h5>
+                <p class="text-muted mb-0">All patient check-in requests have been addressed</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Accepted Check-ins Tab -->
+        <div class="tab-pane fade" id="accepted" role="tabpanel">
+            {% if accepted_checkins|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Check-in Reason</th>
+                            <th>Severity</th>
+                            <th>Accepted At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for checkin in accepted_checkins %}
+                        <tr>
+                            <td><strong>{{ checkin.patient.user.full_name }}</strong></td>
+                            <td>{{ checkin.check_in_reason }}</td>
+                            <td>
+                                {% if checkin.severity == 'severe' %}
+                                <span class="badge bg-danger">Severe</span>
+                                {% elif checkin.severity == 'moderate' %}
+                                <span class="badge bg-warning text-dark">Moderate</span>
+                                {% else %}
+                                <span class="badge bg-success">Mild</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ checkin.acceptance_time.strftime('%Y-%m-%d %H:%M') if checkin.acceptance_time else
+                                'N/A' }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                    onclick="showCompleteModal({{ checkin.id }}, '{{ checkin.patient.user.full_name }}')">
+                                    <i class="fas fa-flag-checkered me-1"></i> Complete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-check-circle fa-3x mb-3 d-block text-muted"></i>
+                <h5>No Accepted Check-ins</h5>
+                <p class="text-muted mb-0">Accept pending check-ins to see them here</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Accept Modal -->
+<div class="modal fade" id="acceptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Accept Check-in</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>You are accepting the check-in request from <strong id="acceptPatientName"></strong></p>
+                <div class="form-group">
+                    <label for="acceptNotes">Notes (Optional)</label>
+                    <textarea class="form-control" id="acceptNotes" rows="3"
+                        placeholder="Add any notes about this check-in..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmAcceptBtn">
+                    <i class="fas fa-check-circle me-1"></i> Accept Check-in
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reject Check-in</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>You are rejecting the check-in request from <strong id="rejectPatientName"></strong></p>
+                <div class="form-group">
+                    <label for="rejectReason">Reason for Rejection</label>
+                    <textarea class="form-control" id="rejectReason" rows="3"
+                        placeholder="Please provide a reason for rejection..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">
+                    <i class="fas fa-times-circle me-1"></i> Reject Check-in
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Modal -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Complete Check-in</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Mark check-in as completed for <strong id="completePatientName"></strong></p>
+                <div class="form-group">
+                    <label for="completeNotes">Completion Notes</label>
+                    <textarea class="form-control" id="completeNotes" rows="3"
+                        placeholder="Document the outcome of this check-in..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmCompleteBtn">
+                    <i class="fas fa-flag-checkered me-1"></i> Mark Complete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #007bff !important;
+    }
+
+    .card {
+        transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #007bff;
+        background-color: transparent;
+        border-bottom: 3px solid #007bff;
+    }
+</style>
+
+<script>
+    let currentCheckinId = null;
+
+    function showAcceptModal(checkinId, patientName) {
+        currentCheckinId = checkinId;
+        document.getElementById('acceptPatientName').textContent = patientName;
+        document.getElementById('acceptNotes').value = '';
+        new bootstrap.Modal(document.getElementById('acceptModal')).show();
+    }
+
+    function showRejectModal(checkinId, patientName) {
+        currentCheckinId = checkinId;
+        document.getElementById('rejectPatientName').textContent = patientName;
+        document.getElementById('rejectReason').value = '';
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function showCompleteModal(checkinId, patientName) {
+        currentCheckinId = checkinId;
+        document.getElementById('completePatientName').textContent = patientName;
+        document.getElementById('completeNotes').value = '';
+        new bootstrap.Modal(document.getElementById('completeModal')).show();
+    }
+
+    // Accept Check-in
+    document.getElementById('confirmAcceptBtn').addEventListener('click', function () {
+        const notes = document.getElementById('acceptNotes').value;
+        const formData = new FormData();
+        formData.append('notes', notes);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/features/doctor/checkin/${currentCheckinId}/accept`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error processing request: ' + error);
+            });
+
+        bootstrap.Modal.getInstance(document.getElementById('acceptModal')).hide();
+    });
+
+    // Reject Check-in
+    document.getElementById('confirmRejectBtn').addEventListener('click', function () {
+        const reason = document.getElementById('rejectReason').value;
+
+        if (!reason.trim()) {
+            alert('⚠️ Please provide a reason for rejection');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('reason', reason);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/features/doctor/checkin/${currentCheckinId}/reject`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error processing request: ' + error);
+            });
+
+        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+    });
+
+    // Complete Check-in
+    document.getElementById('confirmCompleteBtn').addEventListener('click', function () {
+        const notes = document.getElementById('completeNotes').value;
+        const formData = new FormData();
+        formData.append('notes', notes);
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/features/doctor/checkin/${currentCheckinId}/complete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error processing request: ' + error);
+            });
+
+        bootstrap.Modal.getInstance(document.getElementById('completeModal')).hide();
+    });
+</script>
+{% endblock %}

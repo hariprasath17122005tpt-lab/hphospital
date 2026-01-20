@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}HR & Payroll Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="fw-bold mb-4"><i class="fas fa-id-card text-primary me-2"></i> HR Management</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-primary text-white">
+                <div class="card-body">
+                    <h6>Total Staff</h6>
+                    <h2>{{ stats.total_staff }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success text-white">
+                <div class="card-body">
+                    <h6>Present Today</h6>
+                    <h2>{{ stats.present_today }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-warning text-dark">
+                <div class="card-body">
+                    <h6>On Leave</h6>
+                    <h2>{{ stats.on_leave }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info text-white">
+                <div class="card-body">
+                    <h6>Payroll Due In</h6>
+                    <h2>{{ stats.payroll_due }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff List -->
+    <div class="card shadow border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Staff Directory</h5>
+            <button class="btn btn-primary btn-sm">Add Employee</button>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Shift</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#EMP001</td>
+                        <td>Dr. John Davis</td>
+                        <td>Doctor</td>
+                        <td>Cardiology</td>
+                        <td>Day</td>
+                        <td><span class="badge bg-success">Present</span></td>
+                        <td><button class="btn btn-sm btn-outline-secondary">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td>#EMP024</td>
+                        <td>Sarah Wilson</td>
+                        <td>Nurse</td>
+                        <td>ICU</td>
+                        <td>Night</td>
+                        <td><span class="badge bg-secondary">Off Duty</span></td>
+                        <td><button class="btn btn-sm btn-outline-secondary">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td>#EMP105</td>
+                        <td>Mike Miller</td>
+                        <td>Technician</td>
+                        <td>Lab</td>
+                        <td>Day</td>
+                        <td><span class="badge bg-warning">Leave</span></td>
+                        <td><button class="btn btn-sm btn-outline-secondary">Details</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

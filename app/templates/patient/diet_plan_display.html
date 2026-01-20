@@ -1,0 +1,1028 @@
+{% extends "base.html" %}
+
+{% block title %}Your Personalized Diet Plan - Smart Medical Nutrition{% endblock %}
+
+{% block content %}
+<div class="diet-plan-container">
+    <!-- Header Section -->
+    <div class="diet-plan-header">
+        <div class="diet-plan-header-content">
+            <div class="diet-plan-icon-box">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <div class="diet-plan-text">
+                <h1>Your Personalized Diet Plan</h1>
+                <p class="diet-plan-subtitle">Clinical-Grade Nutrition Protocol</p>
+            </div>
+        </div>
+        <div class="diet-plan-meta">
+            <div class="meta-item">
+                <span class="meta-label">Plan ID:</span>
+                <span class="meta-value">{{ diet_plan.plan_id }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Generated:</span>
+                <span class="meta-value">{{ diet_plan.generated_date }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Protocol Selection Card -->
+    <div class="diet-card diet-card-primary">
+        <div class="diet-card-header">
+            <h2>{{ diet_plan.protocol_name }}</h2>
+            <div class="protocol-badge">Clinical Protocol</div>
+        </div>
+        <div class="diet-card-body">
+            <p class="protocol-background">{{ diet_plan.protocol_background }}</p>
+            
+            <div class="diet-selection-rationale">
+                <h3>Why This Plan Was Selected</h3>
+                <p>{{ diet_plan.why_this_plan }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Profile Summary -->
+    <div class="diet-card diet-card-info">
+        <div class="diet-card-header">
+            <h3>Your Profile Summary</h3>
+        </div>
+        <div class="diet-card-body">
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <span class="profile-label">Age:</span>
+                    <span class="profile-value">{{ diet_plan.patient_age }} years</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">BMI:</span>
+                    <span class="profile-value">{{ diet_plan.patient_bmi }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-label">Protocol:</span>
+                    <span class="profile-value">{{ diet_plan.diet_protocol }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Meal Plan -->
+    <div class="diet-card">
+        <div class="diet-card-header">
+            <h2>Daily Meal Plan</h2>
+            <p class="card-subheader">Your personalized daily nutrition structure</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="meal-plan-grid">
+                <!-- Breakfast -->
+                <div class="meal-item">
+                    <div class="meal-icon breakfast-icon">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <div class="meal-content">
+                        <h4>Breakfast</h4>
+                        <p class="meal-description">{{ diet_plan.daily_meal_plan.breakfast }}</p>
+                        <span class="meal-timing">7:00 AM - 8:00 AM</span>
+                    </div>
+                </div>
+
+                <!-- Lunch -->
+                <div class="meal-item">
+                    <div class="meal-icon lunch-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="meal-content">
+                        <h4>Lunch</h4>
+                        <p class="meal-description">{{ diet_plan.daily_meal_plan.lunch }}</p>
+                        <span class="meal-timing">12:00 PM - 1:00 PM</span>
+                    </div>
+                </div>
+
+                <!-- Dinner -->
+                <div class="meal-item">
+                    <div class="meal-icon dinner-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="meal-content">
+                        <h4>Dinner</h4>
+                        <p class="meal-description">{{ diet_plan.daily_meal_plan.dinner }}</p>
+                        <span class="meal-timing">6:00 PM - 7:00 PM</span>
+                    </div>
+                </div>
+
+                <!-- Snacks -->
+                <div class="meal-item">
+                    <div class="meal-icon snack-icon">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <div class="meal-content">
+                        <h4>Healthy Snack</h4>
+                        <p class="meal-description">{{ diet_plan.daily_meal_plan.snacks }}</p>
+                        <span class="meal-timing">3:00 PM - 4:00 PM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Serving Guidelines -->
+            {% if diet_plan.meal_guidelines %}
+            <div class="serving-guidelines">
+                <h4>Daily Serving Guidelines</h4>
+                <div class="guidelines-grid">
+                    {% for guideline, servings in diet_plan.meal_guidelines.items() %}
+                    <div class="guideline-item">
+                        <span class="guideline-label">{{ guideline.replace('_', ' ').title() }}:</span>
+                        <span class="guideline-value">{{ servings }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Why These Foods Are Recommended -->
+    {% if diet_plan.food_explanations %}
+    <div class="diet-card">
+        <div class="diet-card-header">
+            <h2>Why These Foods Are Recommended</h2>
+            <p class="card-subheader">Medical rationale for each key nutrient</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="food-explanations">
+                {% for food, reason in diet_plan.food_explanations.items() %}
+                <div class="food-explanation-item">
+                    <div class="food-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="food-details">
+                        <h4>{{ food }}</h4>
+                        <p class="food-reason">{{ reason }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Expected Clinical Benefits -->
+    {% if diet_plan.health_benefits %}
+    <div class="diet-card diet-card-success">
+        <div class="diet-card-header">
+            <h2>Expected Clinical Benefits</h2>
+            <p class="card-subheader">Medical research-based outcome ranges</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="benefits-grid">
+                {% for benefit, range_value in diet_plan.health_benefits.items() %}
+                <div class="benefit-item">
+                    <h4>{{ benefit.replace('_', ' ').title() }}</h4>
+                    <p class="benefit-value">{{ range_value }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="benefits-note">
+                <p><strong>Important:</strong> These are clinical ranges from medical literature. Individual results vary based on adherence, genetics, and other health factors.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Medication & Diet Safety Notes -->
+    {% if diet_plan.medication_safety_notes %}
+    <div class="diet-card diet-card-warning">
+        <div class="diet-card-header">
+            <h2>Medication & Diet Safety Notes</h2>
+            <p class="card-subheader">Important drug-food interaction warnings</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="safety-notes">
+                {% for note in diet_plan.medication_safety_notes %}
+                <div class="safety-note-item severity-{{ note.severity.lower() }}">
+                    <div class="safety-icon">
+                        {% if note.severity == 'HIGH' %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif note.severity == 'MODERATE' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="safety-details">
+                        <h4>{{ note.medication }}</h4>
+                        <p class="safety-warning">⚠️ {{ note.warning }}</p>
+                        <p class="safety-reason">{{ note.reason }}</p>
+                        <span class="severity-badge severity-{{ note.severity.lower() }}">{{ note.severity }} Severity</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Foods to Avoid -->
+    {% if diet_plan.foods_to_avoid %}
+    <div class="diet-card diet-card-danger">
+        <div class="diet-card-header">
+            <h2>Foods to Avoid</h2>
+            <p class="card-subheader">Items that may interfere with your treatment goals</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="avoid-foods-grid">
+                {% for food in diet_plan.foods_to_avoid %}
+                <div class="avoid-food-item">
+                    <i class="fas fa-times-circle"></i>
+                    <span>{{ food }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Risk Information -->
+    {% if diet_plan.risk_warnings %}
+    <div class="diet-card diet-card-alert">
+        <div class="diet-card-header">
+            <h2>Important Risk Information</h2>
+            <p class="card-subheader">What happens if the plan is not followed</p>
+        </div>
+        <div class="diet-card-body">
+            {% for risk_type, risk_data in diet_plan.risk_warnings.items() %}
+            <div class="risk-section">
+                <h3>{{ risk_data.title }}</h3>
+                <ul class="risk-list">
+                    {% for risk in risk_data.risks %}
+                    <li>{{ risk }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Diet Adherence Potential Score -->
+    <div class="diet-card">
+        <div class="diet-card-header">
+            <h2>Diet Adherence Potential Score</h2>
+            <p class="card-subheader">Your likelihood of successful diet plan adherence</p>
+        </div>
+        <div class="diet-card-body">
+            <div class="adherence-score-container">
+                <div class="score-circle">
+                    <div class="score-value">{{ diet_plan.adherence_score }}%</div>
+                    <div class="score-label">Adherence Potential</div>
+                </div>
+                
+                <div class="score-interpretation">
+                    {% if diet_plan.adherence_score >= 80 %}
+                        <p class="score-text success"><strong>Excellent Adherence Potential</strong></p>
+                        <p>Your profile suggests high likelihood of successful diet plan adherence. Continue with your current lifestyle while implementing the diet recommendations.</p>
+                    {% elif diet_plan.adherence_score >= 60 %}
+                        <p class="score-text info"><strong>Good Adherence Potential</strong></p>
+                        <p>You have favorable conditions for diet success. Address identified lifestyle factors to improve adherence potential.</p>
+                    {% elif diet_plan.adherence_score >= 40 %}
+                        <p class="score-text warning"><strong>Moderate Adherence Potential</strong></p>
+                        <p>Several lifestyle factors may challenge diet adherence. Work with your healthcare team to address barriers.</p>
+                    {% else %}
+                        <p class="score-text danger"><strong>Challenge Areas Identified</strong></p>
+                        <p>Your profile indicates significant adherence challenges. Close monitoring and support from your healthcare team is essential.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Adherence Factors -->
+            {% if diet_plan.adherence_factors %}
+            <div class="adherence-factors">
+                <h4>Factors Affecting Your Score:</h4>
+                <ul class="factors-list">
+                    {% for factor in diet_plan.adherence_factors %}
+                    <li>{{ factor }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Medical Disclaimer -->
+    <div class="diet-card diet-card-disclaimer">
+        <div class="diet-card-header">
+            <h2>Medical Disclaimer</h2>
+        </div>
+        <div class="diet-card-body">
+            <p class="disclaimer-text">{{ diet_plan.disclaimer }}</p>
+            <div class="disclaimer-actions">
+                <p><strong>Next Steps:</strong></p>
+                <ul>
+                    <li>Review this plan with your healthcare provider or registered dietitian</li>
+                    <li>Discuss any questions about food selections or meal timing</li>
+                    <li>Report any side effects or difficulties with adherence</li>
+                    <li>Schedule follow-up appointments to monitor progress</li>
+                    <li>Keep a food diary to track adherence and health outcomes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="diet-plan-actions">
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Diet Plan
+        </button>
+        <button class="btn btn-secondary" onclick="downloadDietPlan()">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+        <a href="{{ url_for('patient_dashboard') }}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<style>
+/* Diet Plan Specific Styles */
+.diet-plan-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.diet-plan-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.diet-plan-header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.diet-plan-icon-box {
+    font-size: 48px;
+    opacity: 0.9;
+}
+
+.diet-plan-text h1 {
+    margin: 0;
+    font-size: 28px;
+    color: white;
+}
+
+.diet-plan-subtitle {
+    margin: 5px 0 0 0;
+    opacity: 0.95;
+    font-size: 14px;
+}
+
+.diet-plan-meta {
+    text-align: right;
+}
+
+.meta-item {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.meta-label {
+    opacity: 0.9;
+}
+
+.meta-value {
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+/* Diet Cards */
+.diet-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.diet-card-primary {
+    border-top: 4px solid var(--primary-color);
+}
+
+.diet-card-info {
+    border-top: 4px solid var(--secondary-color);
+}
+
+.diet-card-success {
+    border-top: 4px solid #059669;
+}
+
+.diet-card-warning {
+    border-top: 4px solid #f59e0b;
+}
+
+.diet-card-danger {
+    border-top: 4px solid #dc2626;
+}
+
+.diet-card-alert {
+    border-top: 4px solid #f59e0b;
+}
+
+.diet-card-disclaimer {
+    background: #f8fafc;
+    border-top: 4px solid var(--primary-color);
+}
+
+.diet-card-header {
+    background: #f8fafb;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.diet-card-header h2,
+.diet-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1a202c;
+}
+
+.card-subheader {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.protocol-badge {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.diet-card-body {
+    padding: 25px;
+}
+
+.protocol-background {
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.diet-selection-rationale {
+    background: #f8fafb;
+    padding: 15px;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+.diet-selection-rationale h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.diet-selection-rationale p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Profile Grid */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.profile-item {
+    text-align: center;
+}
+
+.profile-label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.profile-value {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Meal Plan Grid */
+.meal-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.meal-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: #f8fafb;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.meal-icon {
+    font-size: 28px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.breakfast-icon {
+    background: #ffe4d4;
+    color: #ea580c;
+}
+
+.lunch-icon {
+    background: #d4f4dd;
+    color: #059669;
+}
+
+.dinner-icon {
+    background: #d4e6ff;
+    color: #0052a3;
+}
+
+.snack-icon {
+    background: #fef3d4;
+    color: #ca8a04;
+}
+
+.meal-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #1a202c;
+}
+
+.meal-description {
+    margin: 0 0 8px 0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.meal-timing {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* Serving Guidelines */
+.serving-guidelines {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.serving-guidelines h4 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.guidelines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.guideline-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.guideline-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.guideline-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Food Explanations */
+.food-explanations {
+    display: grid;
+    gap: 15px;
+}
+
+.food-explanation-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: #f8fafb;
+    border-radius: 8px;
+}
+
+.food-icon {
+    font-size: 18px;
+    color: #059669;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.food-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.food-reason {
+    margin: 0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Benefits Grid */
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.benefit-item {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #d1fae5;
+    text-align: center;
+}
+
+.benefit-item h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    color: #059669;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.benefit-value {
+    margin: 0;
+    color: #1a202c;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.benefits-note {
+    background: #d1fae5;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #065f46;
+}
+
+/* Safety Notes */
+.safety-notes {
+    display: grid;
+    gap: 15px;
+}
+
+.safety-note-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.safety-note-item.severity-high {
+    background: #fee2e2;
+    border-left-color: #dc2626;
+}
+
+.safety-note-item.severity-moderate {
+    background: #fef3c7;
+    border-left-color: #f59e0b;
+}
+
+.safety-note-item.severity-low {
+    background: #dbeafe;
+    border-left-color: #0284c7;
+}
+
+.safety-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.safety-note-item.severity-high .safety-icon {
+    color: #dc2626;
+}
+
+.safety-note-item.severity-moderate .safety-icon {
+    color: #f59e0b;
+}
+
+.safety-note-item.severity-low .safety-icon {
+    color: #0284c7;
+}
+
+.safety-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.safety-warning {
+    margin: 5px 0;
+    color: #1a202c;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.safety-reason {
+    margin: 5px 0 10px 0;
+    color: #4b5563;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.severity-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+}
+
+.severity-badge.severity-high {
+    background: #dc2626;
+}
+
+.severity-badge.severity-moderate {
+    background: #f59e0b;
+}
+
+.severity-badge.severity-low {
+    background: #0284c7;
+}
+
+/* Avoid Foods Grid */
+.avoid-foods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.avoid-food-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #7f1d1d;
+}
+
+.avoid-food-item i {
+    color: #dc2626;
+}
+
+/* Risk Sections */
+.risk-section {
+    margin-bottom: 20px;
+}
+
+.risk-section h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.risk-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.risk-list li {
+    margin-bottom: 8px;
+}
+
+/* Adherence Score */
+.adherence-score-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.score-value {
+    font-size: 48px;
+    font-weight: 700;
+}
+
+.score-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.score-interpretation p {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.score-text {
+    font-size: 15px;
+    margin-bottom: 10px !important;
+}
+
+.score-text.success {
+    color: #059669;
+}
+
+.score-text.info {
+    color: #0284c7;
+}
+
+.score-text.warning {
+    color: #ca8a04;
+}
+
+.score-text.danger {
+    color: #dc2626;
+}
+
+/* Adherence Factors */
+.adherence-factors {
+    background: #f8fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.adherence-factors h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #1a202c;
+}
+
+.factors-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.factors-list li {
+    margin-bottom: 6px;
+}
+
+/* Disclaimer */
+.disclaimer-text {
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.disclaimer-actions {
+    background: #f8fafb;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.disclaimer-actions p {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+.disclaimer-actions ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.disclaimer-actions li {
+    margin-bottom: 6px;
+}
+
+/* Action Buttons */
+.diet-plan-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #e5e7eb;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.diet-plan-actions .btn {
+    min-width: 150px;
+}
+
+/* Print Styles */
+@media print {
+    .diet-plan-actions {
+        display: none;
+    }
+    
+    .diet-card {
+        page-break-inside: avoid;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .diet-plan-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .diet-plan-meta {
+        text-align: center;
+    }
+    
+    .meal-plan-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .adherence-score-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .score-circle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .score-value {
+        font-size: 36px;
+    }
+}
+</style>
+
+<script>
+function downloadDietPlan() {
+    alert('PDF download functionality will be implemented. For now, use the Print function and save as PDF.');
+}
+</script>
+{% endblock %}

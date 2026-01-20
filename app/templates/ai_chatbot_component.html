@@ -1,0 +1,468 @@
+<!-- AI Medical Chatbot Component for Healthcare System -->
+
+<div id="ai-chatbot-container" class="ai-chatbot-card">
+    <style>
+        .ai-chatbot-card {
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chatbot-header h2 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+
+        .chatbot-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chatbot-status {
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: #4ade80;
+        }
+
+        .status-dot.inactive {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chatbot-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message.ai .message-content {
+            background: #e0e7ff;
+            color: #1f2937;
+            border-left: 4px solid #667eea;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 5px;
+        }
+
+        .ai-indicator {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #e0e7ff;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .chatbot-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #ai-message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #ai-message-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #ai-send-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #ai-send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        #ai-send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .disclaimer {
+            padding: 12px 16px;
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .chat-history-link {
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .chat-history-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .chat-history-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .ai-chatbot-card {
+                margin: 0;
+                border-radius: 0;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .chatbot-messages {
+                flex: 1;
+                height: auto;
+            }
+
+            .message-content {
+                max-width: 90%;
+            }
+        }
+    </style>
+
+    <!-- Header -->
+    <div class="chatbot-header">
+        <h2>🏥 Medical Assistant</h2>
+        <p>AI-Powered Health Information</p>
+        <div class="chatbot-status">
+            <span class="status-dot active" id="status-indicator"></span>
+            <span id="status-text">Ready</span>
+        </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="chatbot-messages" id="chatbot-messages">
+        <div class="message ai">
+            <div>
+                <div class="ai-indicator">AI Medical Assistant</div>
+                <div class="message-content">
+                    Hello! I'm your AI medical assistant. I can help you understand medical conditions, symptoms, and general health information. 
+                    
+                    <strong>Remember:</strong> I'm not a replacement for a doctor. Always consult with a healthcare professional for diagnosis and treatment.
+                    
+                    How can I help you today?
+                </div>
+                <div class="message-time">Just now</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="error-message" id="error-message"></div>
+
+    <!-- Input Area -->
+    <div class="chatbot-input-area">
+        <div class="disclaimer">
+            ⚠️ <strong>Medical Disclaimer:</strong> This AI provides general health information only. 
+            It is not a diagnostic tool and cannot prescribe medication. Always consult a healthcare professional.
+        </div>
+
+        <div style="margin-top: 15px;">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="ai-message-input" 
+                    placeholder="Ask about a symptom or medical condition..."
+                    autocomplete="off"
+                >
+                <button id="ai-send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat History Link -->
+    <div class="chat-history-link">
+        <a href="#" onclick="showChatHistory(); return false;">📋 View Chat History</a>
+    </div>
+</div>
+
+<script>
+// AI Chatbot JavaScript
+const chatContainer = document.getElementById('chatbot-messages');
+const messageInput = document.getElementById('ai-message-input');
+const sendBtn = document.getElementById('ai-send-btn');
+const statusIndicator = document.getElementById('status-indicator');
+const statusText = document.getElementById('status-text');
+const errorMessage = document.getElementById('error-message');
+
+// Check Ollama health on load
+document.addEventListener('DOMContentLoaded', function() {
+    checkChatbotHealth();
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+}
+
+async function checkChatbotHealth() {
+    try {
+        const response = await fetch('/api/ai/health');
+        const data = await response.json();
+        
+        if (data.ollama_running) {
+            statusIndicator.className = 'status-dot active';
+            statusText.textContent = 'Ready';
+        } else {
+            statusIndicator.className = 'status-dot inactive';
+            statusText.textContent = 'Ollama Offline';
+        }
+    } catch (error) {
+        statusIndicator.className = 'status-dot inactive';
+        statusText.textContent = 'Offline';
+    }
+}
+
+async function sendMessage() {
+    const message = messageInput.value.trim();
+    
+    if (!message) {
+        showError('Please enter a message');
+        return;
+    }
+
+    if (message.length > 500) {
+        showError('Message is too long (max 500 characters)');
+        return;
+    }
+
+    // Add user message to chat
+    addMessage(message, 'user');
+    messageInput.value = '';
+    sendBtn.disabled = true;
+
+    // Show typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message ai';
+    typingDiv.innerHTML = `
+        <div>
+            <div class="ai-indicator">AI Medical Assistant</div>
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    `;
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+
+        const data = await response.json();
+
+        // Remove typing indicator
+        typingDiv.remove();
+
+        if (data.success) {
+            hideError();
+            addMessage(data.response, 'ai');
+        } else {
+            showError(data.error || 'Failed to get response from AI');
+        }
+    } catch (error) {
+        typingDiv.remove();
+        showError('Connection error. Please try again.');
+        console.error('Error:', error);
+    } finally {
+        sendBtn.disabled = false;
+        messageInput.focus();
+    }
+}
+
+function addMessage(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    const time = new Date().toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+
+    if (sender === 'ai') {
+        messageDiv.innerHTML = `
+            <div>
+                <div class="ai-indicator">AI Medical Assistant</div>
+                <div class="message-content">${escapeHtml(text)}</div>
+                <div class="message-time">${time}</div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div>
+                <div class="message-content">${escapeHtml(text)}</div>
+                <div class="message-time">${time}</div>
+            </div>
+        `;
+    }
+
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showError(message) {
+    errorMessage.textContent = '❌ ' + message;
+    errorMessage.style.display = 'block';
+}
+
+function hideError() {
+    errorMessage.style.display = 'none';
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// Check health every 30 seconds
+setInterval(checkChatbotHealth, 30000);
+
+function showChatHistory() {
+    // This would navigate to chat history page
+    window.location.href = '/ai/chat-history';
+}
+</script>

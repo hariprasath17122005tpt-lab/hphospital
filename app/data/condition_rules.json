@@ -1,0 +1,124 @@
+{
+  "BMI_GT_30": {
+    "name": "Overweight/Obese",
+    "condition": "BMI > 30",
+    "action": "reduce_calories",
+    "calorie_reduction": "500 cal/day",
+    "additional_rules": ["increase_physical_activity", "portion_control"],
+    "reason": "Excess adiposity increases cardiovascular risk, exacerbates hypertension, increases diabetes risk, and increases joint stress.",
+    "adherence_penalty": -10
+  },
+  "BMI_25_30": {
+    "name": "Overweight",
+    "condition": "BMI 25-30",
+    "action": "moderate_calorie_reduction",
+    "calorie_reduction": "250 cal/day",
+    "additional_rules": ["increase_activity"],
+    "reason": "Modest weight loss can improve blood pressure control and metabolic parameters.",
+    "adherence_penalty": -5
+  },
+  "SEDENTARY": {
+    "name": "Sedentary Lifestyle",
+    "condition": "Activity Level = Sedentary",
+    "action": "increase_activity_recommendations",
+    "reason": "Physical inactivity is a major risk factor for cardiovascular disease and metabolic syndrome.",
+    "adherence_penalty": -10,
+    "recommendation": "Start with 150 minutes of moderate activity per week, as tolerated. Consult with healthcare provider before starting new exercise program."
+  },
+  "LIGHT_ACTIVITY": {
+    "name": "Light Activity",
+    "condition": "Activity Level = Light",
+    "action": "maintain_current_plan",
+    "reason": "Light activity level provides some cardiovascular benefit.",
+    "adherence_penalty": 0
+  },
+  "MODERATE_ACTIVITY": {
+    "name": "Moderate Activity",
+    "condition": "Activity Level = Moderate",
+    "action": "standard_plan",
+    "reason": "Regular moderate activity supports cardiovascular health and metabolic control.",
+    "adherence_penalty": 0
+  },
+  "AGE_GT_60": {
+    "name": "Age > 60 years",
+    "condition": "Age > 60",
+    "action": "add_nutrient_density",
+    "additional_focus": ["calcium", "vitamin_d", "vitamin_b12"],
+    "reason": "Older adults have increased nutrient needs and higher risk of micronutrient deficiencies.",
+    "adherence_penalty": -5,
+    "special_considerations": "Consider digestive changes with age; smaller, more frequent meals may be beneficial."
+  },
+  "AGE_GT_75": {
+    "name": "Age > 75 years",
+    "condition": "Age > 75",
+    "action": "optimize_nutrient_density",
+    "focus": ["muscle_preservation", "bone_health", "cognitive_support"],
+    "reason": "Very elderly patients need higher nutrient density due to reduced appetite and absorption changes.",
+    "adherence_penalty": -10,
+    "special_considerations": "Small frequent meals, easy-to-chew options, attention to swallowing if needed."
+  },
+  "DIABETES_TYPE_2": {
+    "name": "Type 2 Diabetes",
+    "condition": "Diagnosis includes Diabetes Type 2",
+    "action": "select_low_glycemic_diet",
+    "diet_protocol": "LOW_GLYCEMIC",
+    "additional_focus": ["carbohydrate_counting", "fiber_increase"],
+    "reason": "Low glycemic index foods minimize postprandial glucose spikes and reduce insulin demand.",
+    "adherence_penalty": 0
+  },
+  "HYPERTENSION_STAGE_2": {
+    "name": "Stage 2 Hypertension",
+    "condition": "BP >= 140/90 mmHg",
+    "action": "select_dash_diet",
+    "diet_protocol": "DASH",
+    "additional_focus": ["sodium_reduction", "potassium_increase"],
+    "sodium_target": "< 1500 mg per day",
+    "reason": "Severe hypertension requires aggressive sodium reduction and DASH protocol adherence.",
+    "adherence_penalty": 0
+  },
+  "HYPERLIPIDEMIA": {
+    "name": "High Cholesterol",
+    "condition": "Diagnosis includes Hyperlipidemia or High Cholesterol",
+    "action": "select_mediterranean_diet",
+    "diet_protocol": "MEDITERRANEAN",
+    "additional_focus": ["saturated_fat_reduction", "fiber_increase", "plant_sterols"],
+    "reason": "Mediterranean diet has strongest evidence for LDL reduction and cardiovascular protection.",
+    "adherence_penalty": 0
+  },
+  "CHRONIC_KIDNEY_DISEASE": {
+    "name": "Chronic Kidney Disease",
+    "condition": "Diagnosis includes CKD or Kidney Disease",
+    "action": "select_renal_friendly_diet",
+    "diet_protocol": "RENAL_FRIENDLY",
+    "additional_focus": ["protein_control", "potassium_monitoring", "phosphorus_control"],
+    "reason": "Renal-friendly diet reduces filtration burden and prevents electrolyte imbalances.",
+    "adherence_penalty": 0
+  },
+  "CELIAC_DISEASE": {
+    "name": "Celiac Disease",
+    "condition": "Diagnosis includes Celiac Disease or Gluten Sensitivity",
+    "action": "select_gluten_free_diet",
+    "diet_protocol": "CELIAC_FRIENDLY",
+    "additional_focus": ["gluten_elimination", "nutrient_restoration"],
+    "reason": "Complete gluten elimination is the only treatment for celiac disease.",
+    "adherence_penalty": 0
+  },
+  "CARDIOVASCULAR_DISEASE": {
+    "name": "Established Cardiovascular Disease",
+    "condition": "Diagnosis includes Heart Disease, CAD, or Prior MI",
+    "action": "select_mediterranean_diet",
+    "diet_protocol": "MEDITERRANEAN",
+    "additional_focus": ["omega3_increase", "antioxidants", "sodium_control"],
+    "reason": "Mediterranean diet has strongest evidence for secondary prevention after cardiac events.",
+    "adherence_penalty": 0
+  },
+  "METABOLIC_SYNDROME": {
+    "name": "Metabolic Syndrome",
+    "condition": "Multiple metabolic risk factors present",
+    "action": "select_low_glycemic_dash",
+    "diet_protocol": "LOW_GLYCEMIC",
+    "additional_rules": ["increase_activity", "weight_loss_focus"],
+    "reason": "Metabolic syndrome benefits from combined glucose control, sodium reduction, and weight management.",
+    "adherence_penalty": -5
+  }
+}

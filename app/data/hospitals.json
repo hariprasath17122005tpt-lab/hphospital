@@ -1,0 +1,5619 @@
+[
+    {
+        "district": "Ariyalur",
+        "hospitals": [
+            {
+                "hospital_name": "Government District Headquarters Hospital",
+                "location": "Ariyalur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04329-221933"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Jayankondam",
+                "location": "Jayankondam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sendurai",
+                "location": "Sendurai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Andimadam",
+                "location": "Andimadam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ariyalur Urban",
+                "location": "Ariyalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Jayankondam Urban",
+                "location": "Jayankondam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Andimadam",
+                "location": "Andimadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sendurai",
+                "location": "Sendurai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Varadarajanpettai",
+                "location": "Ariyalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Udayarpalayam",
+                "location": "Udayarpalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC T.Palur",
+                "location": "T.Palur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Meensuruti",
+                "location": "Meensuruti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kallankurichi",
+                "location": "Kallankurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Elakurichi",
+                "location": "Elakurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poondi",
+                "location": "Poondi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pottaveli",
+                "location": "Pottaveli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karuppilakattalai",
+                "location": "Karuppilakattalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Keelapalur",
+                "location": "Keelapalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Melapalur",
+                "location": "Melapalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Irumbulikurichi",
+                "location": "Irumbulikurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ayyur",
+                "location": "Ayyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vilandhai",
+                "location": "Vilandhai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Chengalpattu",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Chengalpattu",
+                "location": "Chengalpattu",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "044-27431500"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Madurantakam",
+                "location": "Madurantakam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Cheyyur",
+                "location": "Cheyyur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thirukazhukundram",
+                "location": "Thirukazhukundram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Lathur",
+                "location": "Lathur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chengalpattu Urban",
+                "location": "Chengalpattu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Madurantakam Urban",
+                "location": "Madurantakam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Acharapakkam",
+                "location": "Acharapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karunguzhi",
+                "location": "Karunguzhi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chithamur",
+                "location": "Chithamur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vembakkam",
+                "location": "Vembakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC L.Endathur",
+                "location": "L.Endathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruporur",
+                "location": "Thiruporur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kalpakkam",
+                "location": "Kalpakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kattankolathur",
+                "location": "Kattankolathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nandivaram",
+                "location": "Nandivaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Singaperumal Koil",
+                "location": "Singaperumal Koil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kelambakkam",
+                "location": "Kelambakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Uthiramerur",
+                "location": "Uthiramerur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vedal",
+                "location": "Vedal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ottivakkam",
+                "location": "Ottivakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Salavakkam",
+                "location": "Salavakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Orathy",
+                "location": "Orathy",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thozhupedu",
+                "location": "Thozhupedu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Chennai",
+        "hospitals": [
+            {
+                "hospital_name": "Rajiv Gandhi Government General Hospital",
+                "location": "Park Town, Chennai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "044-25305000"
+                ]
+            },
+            {
+                "hospital_name": "Government Kilpauk Medical College Hospital",
+                "location": "Kilpauk",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "044-28364951"
+                ]
+            },
+            {
+                "hospital_name": "Government Royapettah Hospital",
+                "location": "Royapettah",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "044-28192000"
+                ]
+            },
+            {
+                "hospital_name": "Institute of Child Health and Hospital for Children",
+                "location": "Egmore",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "044-28191135"
+                ]
+            },
+            {
+                "hospital_name": "Government Stanley Medical College Hospital",
+                "location": "Old Washermenpet",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "044-25281351"
+                ]
+            },
+            {
+                "hospital_name": "Institute of Obstetrics and Gynaecology",
+                "location": "Egmore",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "044-28193000"
+                ]
+            },
+            {
+                "hospital_name": "Government Peripheral Hospital Anna Nagar",
+                "location": "Anna Nagar",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Peripheral Hospital Tondiarpet",
+                "location": "Tondiarpet",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Peripheral Hospital Saidapet",
+                "location": "Saidapet",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Tondiarpet",
+                "location": "Tondiarpet",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pulianthope",
+                "location": "Pulianthope",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perambur",
+                "location": "Perambur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Royapuram",
+                "location": "Royapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mylapore",
+                "location": "Mylapore",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Triplicane",
+                "location": "Triplicane",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kodambakkam",
+                "location": "Kodambakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ashok Nagar",
+                "location": "Ashok Nagar",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Velachery",
+                "location": "Velachery",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Adyar",
+                "location": "Adyar",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruvanmiyur",
+                "location": "Thiruvanmiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nungambakkam",
+                "location": "Nungambakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ayanavaram",
+                "location": "Ayanavaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Villivakkam",
+                "location": "Villivakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Basin Bridge",
+                "location": "Basin Bridge",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruvottiyur",
+                "location": "Thiruvottiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Coimbatore",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Coimbatore",
+                "location": "Coimbatore",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0422-2301393"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Pollachi",
+                "location": "Pollachi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mettupalayam",
+                "location": "Mettupalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Valparai",
+                "location": "Valparai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Annur",
+                "location": "Annur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Peelamedu",
+                "location": "Peelamedu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sulur",
+                "location": "Sulur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Madukkarai",
+                "location": "Madukkarai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karamadai",
+                "location": "Karamadai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thondamuthur",
+                "location": "Thondamuthur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kinathukadavu",
+                "location": "Kinathukadavu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Periyanaickenpalayam",
+                "location": "Periyanaickenpalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Saravanampatti",
+                "location": "Saravanampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Singanallur",
+                "location": "Singanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ukkadam",
+                "location": "Ukkadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Podanur",
+                "location": "Podanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kalapatti",
+                "location": "Kalapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chinniampalayam",
+                "location": "Chinniampalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vadavalli",
+                "location": "Vadavalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Selvapuram",
+                "location": "Selvapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Town Hall",
+                "location": "Town Hall",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ganapathy",
+                "location": "Ganapathy",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kurichi",
+                "location": "Kurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Saibaba Colony",
+                "location": "Saibaba Colony",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC RS Puram",
+                "location": "RS Puram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Cuddalore",
+        "hospitals": [
+            {
+                "hospital_name": "Government Headquarters Hospital Cuddalore",
+                "location": "Cuddalore",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04142-230910"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Chidambaram",
+                "location": "Chidambaram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Virudhachalam",
+                "location": "Virudhachalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Panruti",
+                "location": "Panruti",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Neyveli",
+                "location": "Neyveli",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kurinjipadi",
+                "location": "Kurinjipadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Bhuvanagiri",
+                "location": "Bhuvanagiri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kattumannarkoil",
+                "location": "Kattumannarkoil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Parangipettai",
+                "location": "Parangipettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Srimushnam",
+                "location": "Srimushnam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Melbhuvanagiri",
+                "location": "Melbhuvanagiri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thittagudi",
+                "location": "Thittagudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pennadam",
+                "location": "Pennadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Veppur",
+                "location": "Veppur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mangalore",
+                "location": "Mangalore",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Alapakkam",
+                "location": "Alapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Naduveerapattu",
+                "location": "Naduveerapattu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sethiyathope",
+                "location": "Sethiyathope",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Keerapalayam",
+                "location": "Keerapalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ramanatham",
+                "location": "Ramanatham",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruvanthipuram",
+                "location": "Thiruvanthipuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Puduchathiram",
+                "location": "Puduchathiram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kothattai",
+                "location": "Kothattai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sivapuri",
+                "location": "Sivapuri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nallathur",
+                "location": "Nallathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Dharmapuri",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Dharmapuri",
+                "location": "Dharmapuri",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04342-232099"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Palacode",
+                "location": "Palacode",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pennagaram",
+                "location": "Pennagaram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Harur",
+                "location": "Harur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Karimangalam",
+                "location": "Karimangalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Dharmapuri Rural",
+                "location": "Dharmapuri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Hogenakkal",
+                "location": "Hogenakkal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nallampalli",
+                "location": "Nallampalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kadathur",
+                "location": "Kadathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Morappur",
+                "location": "Morappur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Papparapatti",
+                "location": "Papparapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pappireddipatti",
+                "location": "Pappireddipatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Theerthamalai",
+                "location": "Theerthamalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Belrampatti",
+                "location": "Belrampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Indur",
+                "location": "Indur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sitling",
+                "location": "Sitling",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Hale Dharmapuri",
+                "location": "Hale Dharmapuri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kambainallur",
+                "location": "Kambainallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Linginaickenahalli",
+                "location": "Linginaickenahalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Periyampatti",
+                "location": "Periyampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kombur",
+                "location": "Kombur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Bommidi",
+                "location": "Bommidi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mookanur",
+                "location": "Mookanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Jakkasamudram",
+                "location": "Jakkasamudram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Balajangamanahalli",
+                "location": "Balajangamanahalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Erode",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Erode",
+                "location": "Perundurai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04294-234343"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Erode",
+                "location": "Erode",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Bhavani",
+                "location": "Bhavani",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Gobichettipalayam",
+                "location": "Gobichettipalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sathyamangalam",
+                "location": "Sathyamangalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perundurai",
+                "location": "Perundurai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Modakurichi",
+                "location": "Modakurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kodumudi",
+                "location": "Kodumudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ammapettai",
+                "location": "Ammapettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Anthiyur",
+                "location": "Anthiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nambiyur",
+                "location": "Nambiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thalavadi",
+                "location": "Thalavadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chennimalai",
+                "location": "Chennimalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kanjikovil",
+                "location": "Kanjikovil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poondurai",
+                "location": "Poondurai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Arachalur",
+                "location": "Arachalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Elumathur",
+                "location": "Elumathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kasipalayam",
+                "location": "Kasipalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pudukaraipudur",
+                "location": "Pudukaraipudur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kugalur",
+                "location": "Kugalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Alukuli",
+                "location": "Alukuli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vellode",
+                "location": "Vellode",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sivagiri",
+                "location": "Sivagiri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Olagadam",
+                "location": "Olagadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Dindigul",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Dindigul",
+                "location": "Dindigul",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0451-2447000"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Palani",
+                "location": "Palani",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Oddanchatram",
+                "location": "Oddanchatram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Nilakottai",
+                "location": "Nilakottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Vedasandur",
+                "location": "Vedasandur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Dindigul Rural",
+                "location": "Dindigul",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Begampur",
+                "location": "Begampur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Batlagundu",
+                "location": "Batlagundu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Guziliamparai",
+                "location": "Guziliamparai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kodaikanal",
+                "location": "Kodaikanal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pallapatti",
+                "location": "Pallapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Reddiyarchatram",
+                "location": "Reddiyarchatram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sanarpatti",
+                "location": "Sanarpatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thoppampatti",
+                "location": "Thoppampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Eriodu",
+                "location": "Eriodu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kannivadi",
+                "location": "Kannivadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Natham",
+                "location": "Natham",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Seelapadi",
+                "location": "Seelapadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ayyalur",
+                "location": "Ayyalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chinnalapatti",
+                "location": "Chinnalapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Viruveedu",
+                "location": "Viruveedu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sithayankottai",
+                "location": "Sithayankottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Keeranur",
+                "location": "Keeranur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kallimandayam",
+                "location": "Kallimandayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Kanchipuram",
+        "hospitals": [
+            {
+                "hospital_name": "Government District Headquarters Hospital Kanchipuram",
+                "location": "Kanchipuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Walajabad",
+                "location": "Walajabad",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sriperumbudur",
+                "location": "Sriperumbudur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Uthiramerur",
+                "location": "Uthiramerur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kundrathur",
+                "location": "Kundrathur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kanchipuram Urban",
+                "location": "Kanchipuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Padappai",
+                "location": "Padappai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Madurantakam",
+                "location": "Madurantakam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karapakkam",
+                "location": "Karapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruporur",
+                "location": "Thiruporur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Acharapakkam",
+                "location": "Acharapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Salavakkam",
+                "location": "Salavakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sunguvarchatram",
+                "location": "Sunguvarchatram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Manampathy",
+                "location": "Manampathy",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Oragadam",
+                "location": "Oragadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kattankulathur",
+                "location": "Kattankulathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruneermalai",
+                "location": "Thiruneermalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirukalukundram",
+                "location": "Thirukalukundram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nandivaram",
+                "location": "Nandivaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perungalathur",
+                "location": "Perungalathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Somangalam",
+                "location": "Somangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sembakkam",
+                "location": "Sembakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Malayambakkam",
+                "location": "Malayambakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pammal",
+                "location": "Pammal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Anakaputhur",
+                "location": "Anakaputhur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Madurai",
+        "hospitals": [
+            {
+                "hospital_name": "Government Rajaji Hospital",
+                "location": "Panagal Road, Madurai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0452-2532538",
+                    "0452-2532535"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital for Thoracic Medicine",
+                "location": "Thoppur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0452-2482339"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Balarangapuram",
+                "location": "Balarangapuram",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0452-2337902"
+                ]
+            },
+            {
+                "hospital_name": "Government Homeopathy College Hospital",
+                "location": "Tirumangalam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0452-280727"
+                ]
+            },
+            {
+                "hospital_name": "Government Medical College",
+                "location": "Madurai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0452-2526028"
+                ]
+            },
+            {
+                "hospital_name": "Government Tuberculosis Hospital",
+                "location": "Thoppur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0452-2482439"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kallanthiri",
+                "location": "Kallanthiri",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9443000647"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karungalakudy",
+                "location": "Karungalakudy",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9943306626"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kalimangalam",
+                "location": "Kalimangalam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9585585412"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Keelavalavu",
+                "location": "Keelavalavu",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "7010893812"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vellalore",
+                "location": "Vellalore",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "8870524800"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thiruvathavur",
+                "location": "Thiruvathavur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9042565480"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Melur",
+                "location": "Melur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9943045122"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Therkutheru",
+                "location": "Therkutheru",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9865515235"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Othakadai",
+                "location": "Othakadai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9443000647"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vadipatty",
+                "location": "Vadipatty",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "8778599327"
+                ]
+            },
+            {
+                "hospital_name": "PHC Valayankulam",
+                "location": "Valayankulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9597141113"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kanjarampettai",
+                "location": "Kanjarampettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7373764689"
+                ]
+            },
+            {
+                "hospital_name": "PHC Rajakur",
+                "location": "Rajakur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9443189369"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kottampatti",
+                "location": "Kottampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7010213117"
+                ]
+            },
+            {
+                "hospital_name": "PHC A.Vallalapatti",
+                "location": "A.Vallalapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8301984818"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sekkipatti",
+                "location": "Sekkipatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9487054382"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Salem",
+        "hospitals": [
+            {
+                "hospital_name": "Government Mohan Kumaramangalam Medical College Hospital",
+                "location": "Salem",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0427-2210563"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Attur",
+                "location": "Attur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mettur",
+                "location": "Mettur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Omalur",
+                "location": "Omalur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sankagiri",
+                "location": "Sankagiri",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Gangavalli",
+                "location": "Gangavalli",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Edappady",
+                "location": "Edappady",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Yercaud",
+                "location": "Yercaud",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Valapady",
+                "location": "Valapady",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Vembadithalam",
+                "location": "Vembadithalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Jalagandapuram",
+                "location": "Jalagandapuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Nainampatty",
+                "location": "Nainampatty",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pethanaickenpalayam",
+                "location": "Pethanaickenpalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ariyapalayam",
+                "location": "Ariyapalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ethapur",
+                "location": "Ethapur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karumanthurai",
+                "location": "Karumanthurai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kunnur",
+                "location": "Kunnur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Soolankurichi",
+                "location": "Soolankurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thumbal",
+                "location": "Thumbal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Belur",
+                "location": "Belur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Elampillai",
+                "location": "Elampillai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kadayampatti",
+                "location": "Kadayampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kannankurichi",
+                "location": "Kannankurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Thiruchirappalli",
+        "hospitals": [
+            {
+                "hospital_name": "Mahatma Gandhi Memorial Government Hospital",
+                "location": "Puthur, Trichy",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0431-2771465"
+                ]
+            },
+            {
+                "hospital_name": "Government Headquarters Hospital",
+                "location": "Fort Station Road, Trichy",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0431-2333503"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Srirangam",
+                "location": "Srirangam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0431-2432227"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Lalgudi",
+                "location": "Lalgudi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Manaparai",
+                "location": "Manaparai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mannachanallur",
+                "location": "Mannachanallur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Musiri",
+                "location": "Musiri",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Andimadam",
+                "location": "Andimadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9787202620"
+                ]
+            },
+            {
+                "hospital_name": "PHC Chettikulam",
+                "location": "Chettikulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6382565537"
+                ]
+            },
+            {
+                "hospital_name": "PHC Murugankudi",
+                "location": "Murugankudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pearumathur",
+                "location": "Pearumathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9790500000"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ayyampalayam",
+                "location": "Ayyampalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9629357279"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ayekudi",
+                "location": "Ayekudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9445136431"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kamarajar Colony",
+                "location": "Kamarajar Colony",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Puthuchetty Theru",
+                "location": "Puthuchetty Theru",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Malaiyur",
+                "location": "Malaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thandalai",
+                "location": "Thandalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Teppakulam",
+                "location": "Teppakulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Srirangam",
+                "location": "Srirangam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Inamkulathur",
+                "location": "Inamkulathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tirunelveli",
+        "hospitals": [
+            {
+                "hospital_name": "Tirunelveli Medical College Hospital",
+                "location": "Highground, Tirunelveli",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0462-2572944"
+                ]
+            },
+            {
+                "hospital_name": "ESIC Hospital",
+                "location": "Vannarpettai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "1800-11-3839"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sankarankovil",
+                "location": "Sankarankovil",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04636-222399"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Melapalayam",
+                "location": "Melapalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Chettikulam",
+                "location": "Chettikulam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Ambai",
+                "location": "Solaipuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government General Hospital Cheranmahadevi",
+                "location": "Cheranmahadevi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kudankulam",
+                "location": "Kudankulam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Gangaikondan",
+                "location": "Gangaikondan",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kadayanallur",
+                "location": "Kadayanallur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04633-240438"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kumanthapuram",
+                "location": "Kumanthapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6354833395"
+                ]
+            },
+            {
+                "hospital_name": "PHC Krishnapuram",
+                "location": "Krishnapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04633-211108"
+                ]
+            },
+            {
+                "hospital_name": "PHC Melakadayanallur",
+                "location": "Melakadayanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04633-212342"
+                ]
+            },
+            {
+                "hospital_name": "PHC Nainaragaram",
+                "location": "Nainaragaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04633-267455"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sendamaram",
+                "location": "Sendamaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8825759470"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thalaivankottai",
+                "location": "Thalaivankottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04636-211334"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ayyapuram",
+                "location": "Ayyapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8838871633"
+                ]
+            },
+            {
+                "hospital_name": "PHC Puliangudi",
+                "location": "Puliangudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04636-233649"
+                ]
+            },
+            {
+                "hospital_name": "PHC Chokkampatti",
+                "location": "Chokkampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04633-243126"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kalingapatti",
+                "location": "Kalingapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7598165509"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kuruvikulam",
+                "location": "Kuruvikulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9965338201"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thiruvengadam",
+                "location": "Thiruvengadam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04636-291450"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Vellore",
+        "hospitals": [
+            {
+                "hospital_name": "Government Vellore Medical College Hospital",
+                "location": "Adukkamparai, Vellore",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "0416-2260900",
+                    "0416-2261900"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vellore",
+                "location": "Vellore",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0416-2221973"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Gudiyatham",
+                "location": "Gudiyatham",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04171-221111"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Anaicut",
+                "location": "Anaicut",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Alangayam",
+                "location": "Alangayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Pentaland Hospital",
+                "location": "Vellore",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kanguppam",
+                "location": "Kanguppam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pernambut",
+                "location": "Pernambut",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Latheri",
+                "location": "Latheri",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0416-2239284"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thorapadi",
+                "location": "Thorapadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0416-2223650"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kaspa",
+                "location": "Kaspa",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0416-2214133"
+                ]
+            },
+            {
+                "hospital_name": "PHC Konavattam",
+                "location": "Konavattam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0416-2292033"
+                ]
+            },
+            {
+                "hospital_name": "PHC K.V.Kuppam",
+                "location": "K.V.Kuppam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poigai",
+                "location": "Poigai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nariyambattu",
+                "location": "Nariyambattu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sumaithangi",
+                "location": "Sumaithangi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Odugathur",
+                "location": "Odugathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ussoor",
+                "location": "Ussoor",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vaduganthangal",
+                "location": "Vaduganthangal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pallikonda",
+                "location": "Pallikonda",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Thanjavur",
+        "hospitals": [
+            {
+                "hospital_name": "Govt. Raja Mirasudhar Hospital",
+                "location": "Thanjavur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04362-276880",
+                    "8148601484"
+                ]
+            },
+            {
+                "hospital_name": "Thanjavur Medical College Hospital",
+                "location": "Thanjavur",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04362-240822"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kumbakonam",
+                "location": "Kumbakonam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pattukkottai",
+                "location": "Pattukkottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Orathanadu",
+                "location": "Orathanadu",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Peravurani",
+                "location": "Peravurani",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thiruvaiyaru",
+                "location": "Thiruvaiyaru",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thennangudi",
+                "location": "Thennangudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Chakrapalli",
+                "location": "Chakrapalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vallam",
+                "location": "Vallam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Budalur",
+                "location": "Budalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirukkattupalli",
+                "location": "Thirukkattupalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ammapettai",
+                "location": "Ammapettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Saliamangalam",
+                "location": "Saliamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Papanasam",
+                "location": "Papanasam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ayyampettai",
+                "location": "Ayyampettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kabisthalam",
+                "location": "Kabisthalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Madukkur",
+                "location": "Madukkur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Adirampattinam",
+                "location": "Adirampattinam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sethubavachatram",
+                "location": "Sethubavachatram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Thoothukudi",
+        "hospitals": [
+            {
+                "hospital_name": "Tuticorin Government Hospital",
+                "location": "Subbiah Puram, Thoothukudi",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Vilathikulam",
+                "location": "Vilathikulam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04638-233179"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kayalpatnam",
+                "location": "Kayalpatnam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mullaakadu",
+                "location": "Mullaakadu",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Tiruchendur",
+                "location": "Tiruchendur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kovilpatti",
+                "location": "Kovilpatti",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sathankulam",
+                "location": "Sathankulam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Srivaikuntam",
+                "location": "Srivaikuntam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Eral",
+                "location": "Eral",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Ettayapuram",
+                "location": "Ettayapuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Fathima Nagar",
+                "location": "Fathima Nagar",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "0461-2335605"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Cruz Puram",
+                "location": "Cruz Puram",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Subbiah Puram",
+                "location": "Subbiah Puram",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Veppalodai",
+                "location": "Veppalodai",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Chatram St",
+                "location": "Chatram St",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Kamaraj Nagar",
+                "location": "Kamaraj Nagar",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Alwarthirunagari",
+                "location": "Alwarthirunagari",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ananthapuram",
+                "location": "Ananthapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mapillaioorani",
+                "location": "Mapillaioorani",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pudukottai",
+                "location": "Pudukottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sawyerpuram",
+                "location": "Sawyerpuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tiruppur",
+        "hospitals": [
+            {
+                "hospital_name": "Government Hospital Head Quarters Tiruppur",
+                "location": "Tiruppur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0421-2422201"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Avinashi",
+                "location": "Avinashi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "954296-272082"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Dharapuram",
+                "location": "Dharapuram",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04258-220226"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Jallipatti",
+                "location": "Jallipatti",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "954252-265464"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kangeyam",
+                "location": "Kangeyam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04257-220642"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karadivavi",
+                "location": "Karadivavi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "954255-265100"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Madathukulam",
+                "location": "Madathukulam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04252-252108"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Palladam",
+                "location": "Palladam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "954255-253077"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Udumalpet",
+                "location": "Udumalpet",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "954252-223065"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Uthukuli",
+                "location": "Uthukuli",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04294-260501"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Perichipalayam",
+                "location": "Perichipalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Velliangadu",
+                "location": "Velliangadu",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Tiruppur",
+                "location": "Tiruppur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sevur",
+                "location": "Sevur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vijayapuram",
+                "location": "Vijayapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Arasur",
+                "location": "Arasur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9047367205"
+                ]
+            },
+            {
+                "hospital_name": "PHC Karumathampatti",
+                "location": "Karumathampatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9486444708"
+                ]
+            },
+            {
+                "hospital_name": "PHC Avanashi",
+                "location": "Avanashi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perumanallur",
+                "location": "Perumanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pongalur",
+                "location": "Pongalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kunnathur",
+                "location": "Kunnathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vellakoil",
+                "location": "Vellakoil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mulanur",
+                "location": "Mulanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tiruvallur",
+        "hospitals": [
+            {
+                "hospital_name": "District Head Quarter Government Hospital",
+                "location": "Tiruvallur",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "044-27660242"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Tiruttani",
+                "location": "Tiruttani",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "044-27880588"
+                ]
+            },
+            {
+                "hospital_name": "Government General Hospital Kakkalur",
+                "location": "Kakkalur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Poondi",
+                "location": "Poondi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Ponneri",
+                "location": "Ponneri",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Gummidipoondi",
+                "location": "Gummidipoondi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Avadi",
+                "location": "Avadi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pattabiram",
+                "location": "Pattabiram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Ambattur",
+                "location": "Ambattur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thiruvottiyur",
+                "location": "Thiruvottiyur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perumalpattu",
+                "location": "Perumalpattu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "044-27699525"
+                ]
+            },
+            {
+                "hospital_name": "PHC Suryanagaram",
+                "location": "Suryanagaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Soranchery",
+                "location": "Soranchery",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Minjur",
+                "location": "Minjur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Naravarikuppam",
+                "location": "Naravarikuppam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Villivakkam",
+                "location": "Villivakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poonamallee",
+                "location": "Poonamallee",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirumazhisai",
+                "location": "Thirumazhisai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Porur",
+                "location": "Porur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kadambathur",
+                "location": "Kadambathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tiruvannamalai",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Tiruvannamalai",
+                "location": "Tiruvannamalai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04175-238455",
+                    "04175-233315"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Arni",
+                "location": "Arni",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04173-226052"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Chengam",
+                "location": "Chengam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04188-222399"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Cheyyar",
+                "location": "Cheyyar",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04182-222219"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Polur",
+                "location": "Polur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04181-223048"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thanipadi",
+                "location": "Thanipadi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04188-247110"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vandavasi",
+                "location": "Vandavasi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04183-225041"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kalasapakkam",
+                "location": "Kalasapakkam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Chetpet",
+                "location": "Chetpet",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Peranamallur",
+                "location": "Peranamallur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Adhamangalam Pudhur",
+                "location": "Adhamangalam Pudhur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9159633620"
+                ]
+            },
+            {
+                "hospital_name": "PHC Akkur",
+                "location": "Akkur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8939676383"
+                ]
+            },
+            {
+                "hospital_name": "PHC Akrapalayam",
+                "location": "Akrapalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9500428244"
+                ]
+            },
+            {
+                "hospital_name": "PHC Anaibogi",
+                "location": "Anaibogi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6374928309"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kannamangalam",
+                "location": "Kannamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9486528249"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kazhikulam",
+                "location": "Kazhikulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9994075072"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kilpennathur",
+                "location": "Kilpennathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9994075072"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kolathur",
+                "location": "Kolathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9994075072"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kollapalur",
+                "location": "Kollapalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6374928309"
+                ]
+            },
+            {
+                "hospital_name": "PHC Konalur",
+                "location": "Konalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9994075072"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kovilur",
+                "location": "Kovilur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8939676383"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kunakkampoondi",
+                "location": "Kunakkampoondi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8939037427"
+                ]
+            },
+            {
+                "hospital_name": "PHC Peranamallur",
+                "location": "Peranamallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6374928309"
+                ]
+            },
+            {
+                "hospital_name": "PHC Perungattur",
+                "location": "Perungattur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9688116113"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ponnur",
+                "location": "Ponnur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8939037427"
+                ]
+            },
+            {
+                "hospital_name": "PHC S.V.Nagaram",
+                "location": "S.V.Nagaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9500428244"
+                ]
+            },
+            {
+                "hospital_name": "PHC Somasipadi",
+                "location": "Somasipadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9994075072"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sorakulathur",
+                "location": "Sorakulathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9159766755"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thatchur",
+                "location": "Thatchur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9486528249"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thellar",
+                "location": "Thellar",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8939037427"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thozepedu",
+                "location": "Thozepedu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7639302050"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thurinjapuram",
+                "location": "Thurinjapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9159766755"
+                ]
+            },
+            {
+                "hospital_name": "PHC Northampoondi",
+                "location": "Northampoondi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9159766755"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Kilnathur",
+                "location": "Tiruvennanallur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Adiannamalai",
+                "location": "Adiannamalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Kanyakumari",
+        "hospitals": [
+            {
+                "hospital_name": "Government Hospital Kanniyakumari",
+                "location": "Kanniyakumari",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04652-248505"
+                ]
+            },
+            {
+                "hospital_name": "Kanyakumari Government Medical College Hospital",
+                "location": "Aasaripallam",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04652-223201",
+                    "04652-223202"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thuckalay",
+                "location": "Thuckalay",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Colachel",
+                "location": "Colachel",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kulasekharam",
+                "location": "Kulasekharam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Killiyoor",
+                "location": "Tholayavattai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Padmanabhapuram",
+                "location": "Padmanabhapuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kuzhithurai",
+                "location": "Kuzhithurai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Aralvaimozhi",
+                "location": "Aralvaimozhi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Bhoothapandi",
+                "location": "Bhoothapandi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC C.R. Puthoor",
+                "location": "C.R. Puthoor",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-263865"
+                ]
+            },
+            {
+                "hospital_name": "PHC Aralvoimozhy",
+                "location": "Aralvoimozhy",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-289526"
+                ]
+            },
+            {
+                "hospital_name": "PHC Arumanallur",
+                "location": "Arumanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-289525"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thadikarankonam",
+                "location": "Thadikarankonam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-263860"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thovalai",
+                "location": "Thovalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-262124"
+                ]
+            },
+            {
+                "hospital_name": "PHC Agasteeswaram",
+                "location": "Agasteeswaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-270352"
+                ]
+            },
+            {
+                "hospital_name": "PHC Azhagappapuram",
+                "location": "Azhagappapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-267809"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kottaram",
+                "location": "Kottaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04652-270699"
+                ]
+            },
+            {
+                "hospital_name": "PHC Madhavapuram",
+                "location": "Madhavapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Rajakkamangalam",
+                "location": "Rajakkamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ganapathipuram",
+                "location": "Ganapathipuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Shenbagaramanputhur",
+                "location": "Shenbagaramanputhur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Karur",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Karur",
+                "location": "Karur",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04324-242281",
+                    "8056731034"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karur",
+                "location": "Karur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04323-222069",
+                    "04324-30280"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Krishnarayapuram",
+                "location": "Krishnarayapuram",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04323-243555"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kulithalai",
+                "location": "Kulithalai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pallapatti",
+                "location": "Pallapatti",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Velayuthampalayam",
+                "location": "Velayuthampalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Seplapatti",
+                "location": "Seplapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04323-290712"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thogaimalai",
+                "location": "Thogaimalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04323-252217"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thumbivadi",
+                "location": "Thumbivadi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-290357"
+                ]
+            },
+            {
+                "hospital_name": "PHC Uppidamangalam",
+                "location": "Uppidamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8098474109"
+                ]
+            },
+            {
+                "hospital_name": "PHC Vadakkupalayam",
+                "location": "Vadakkupalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-228590"
+                ]
+            },
+            {
+                "hospital_name": "PHC Valayapatti",
+                "location": "Valayapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04323-290650"
+                ]
+            },
+            {
+                "hospital_name": "PHC Vangal",
+                "location": "Vangal",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-296937"
+                ]
+            },
+            {
+                "hospital_name": "PHC Velliyanai",
+                "location": "Velliyanai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-281300"
+                ]
+            },
+            {
+                "hospital_name": "PHC Veppangudi",
+                "location": "Veppangudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04323-290600"
+                ]
+            },
+            {
+                "hospital_name": "PHC Viswanathapuri",
+                "location": "Viswanathapuri",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-290145"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Inam Karur",
+                "location": "Inam Karur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "7373675085"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Karur",
+                "location": "Karur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "7010001097"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Karur Municipality",
+                "location": "Karur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "8883070426"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Kulithalai",
+                "location": "Kulithalai",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "04323-222399"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Thanthoni",
+                "location": "Thanthoni",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "9843623706"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kasipalayam",
+                "location": "Kasipalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04324-285300"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Krishnagiri",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Krishnagiri",
+                "location": "Polupalli, Krishnagiri",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04343-291793",
+                    "04343-291877"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Krishnagiri",
+                "location": "Gandhi Road, Krishnagiri",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04343-462007"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Hosur",
+                "location": "Hosur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Denkanikottai",
+                "location": "Denkanikottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Pochampalli",
+                "location": "Pochampalli",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Uthangarai",
+                "location": "Uthangarai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kaveripattinam",
+                "location": "Kaveripattinam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC M.C.Palli",
+                "location": "M.C.Palli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Orappam",
+                "location": "Orappam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Bagalur",
+                "location": "Bagalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Berigai",
+                "location": "Berigai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Shoolagiri",
+                "location": "Shoolagiri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Veppanapalli",
+                "location": "Veppanapalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kelamangalam",
+                "location": "Kelamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thally",
+                "location": "Thally",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Anchetty",
+                "location": "Anchetty",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Barugur",
+                "location": "Barugur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mathur",
+                "location": "Mathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Singarapettai",
+                "location": "Singarapettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kallavi",
+                "location": "Kallavi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Kallakurichi",
+        "hospitals": [
+            {
+                "hospital_name": "Kallakurichi Government Medical College Hospital",
+                "location": "Kallakurichi",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "9176054312",
+                    "04151-222331"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Chinnasalem",
+                "location": "Chinnasalem",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04151-258374"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sankarapuram",
+                "location": "Sankarapuram",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04151-254537"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Tirukoilur",
+                "location": "Tirukoilur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04153-253055"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Ulundurpet",
+                "location": "Ulundurpet",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04149-222201"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Rishivandiyam",
+                "location": "Rishivandiyam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thiyagadurgam",
+                "location": "Thiyagadurgam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Gandhi Road",
+                "location": "Kallakurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vadakanandal",
+                "location": "Vadakanandal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kariyalur",
+                "location": "Kariyalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Melnariappanur",
+                "location": "Melnariappanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Eduthavainatham",
+                "location": "Eduthavainatham",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vanapuram",
+                "location": "Vanapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mugaiyur",
+                "location": "Mugaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Elavanasurkottai",
+                "location": "Elavanasurkottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirunavalur",
+                "location": "Thirunavalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pidagam",
+                "location": "Pidagam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Manalurpet",
+                "location": "Manalurpet",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Alathur",
+                "location": "Alathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Mayiladuthurai",
+        "hospitals": [
+            {
+                "hospital_name": "Periyar Government District Headquarters Hospital",
+                "location": "Mayiladuthurai",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04364-222459"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sirkazhi",
+                "location": "Sirkazhi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Tarangambadi",
+                "location": "Tarangambadi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Porayar",
+                "location": "Porayar",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kuthalam",
+                "location": "Kuthalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "CHC Nallur",
+                "location": "Nallur",
+                "type": "Community Health Centre",
+                "contact_numbers": [
+                    "9894400781"
+                ]
+            },
+            {
+                "hospital_name": "CHC Konerirajapuram",
+                "location": "Konerirajapuram",
+                "type": "Community Health Centre",
+                "contact_numbers": [
+                    "7358144620"
+                ]
+            },
+            {
+                "hospital_name": "CHC Kali",
+                "location": "Kali",
+                "type": "Community Health Centre",
+                "contact_numbers": [
+                    "9840522886"
+                ]
+            },
+            {
+                "hospital_name": "CHC Sembanarkoil",
+                "location": "Sembanarkoil",
+                "type": "Community Health Centre",
+                "contact_numbers": [
+                    "8754099610"
+                ]
+            },
+            {
+                "hospital_name": "PHC Manalmedu",
+                "location": "Manalmedu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vaideeswarankoil",
+                "location": "Vaideeswarankoil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poombuhar",
+                "location": "Poombuhar",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Akkur",
+                "location": "Akkur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirukkadaiyur",
+                "location": "Thirukkadaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Peralam",
+                "location": "Peralam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Manganallur",
+                "location": "Manganallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kuttalam",
+                "location": "Kuttalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Elanthope",
+                "location": "Elanthope",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mangainallur",
+                "location": "Mangainallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Nagapattinam",
+        "hospitals": [
+            {
+                "hospital_name": "Government District Headquarters Hospital",
+                "location": "Nagapattinam",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04365-242459"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital (Siddha)",
+                "location": "Nagapattinam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04365-242459"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital (Ayurvedic)",
+                "location": "Nagapattinam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04365-242459"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital for Women and Children",
+                "location": "Nagapattinam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04365-242901"
+                ]
+            },
+            {
+                "hospital_name": "Government Medical College Hospital Nagapattinam",
+                "location": "Nagapattinam",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04365-290080",
+                    "04365-211491"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Nagore",
+                "location": "Nagore",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Vedaranyam",
+                "location": "Vedaranyam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mayiladuthurai",
+                "location": "Mayiladuthurai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sirkazhi",
+                "location": "Sirkazhi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Tharangambadi",
+                "location": "Tharangambadi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thitacheery",
+                "location": "Thitacheery",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8825427463"
+                ]
+            },
+            {
+                "hospital_name": "PHC Vadugacherry",
+                "location": "Vadugacherry",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358144218"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thalanayar",
+                "location": "Thalanayar",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirumarugal",
+                "location": "Thirumarugal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Konerirajapuram",
+                "location": "Akkur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sankaranpandal",
+                "location": "Sankaranpandal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kiliyanur",
+                "location": "Kiliyanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kali",
+                "location": "Kali",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Nagapattinam",
+                "location": "Nagapattinam",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Namakkal",
+        "hospitals": [
+            {
+                "hospital_name": "Government Headquarters Hospital Namakkal",
+                "location": "Mohanur Road, Namakkal",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04286-221203",
+                    "04286-222230",
+                    "04286-221411",
+                    "9942933213"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Rasipuram",
+                "location": "Rasipuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Tiruchengode",
+                "location": "Tiruchengode",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Paramathi Velur",
+                "location": "Paramathi Velur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Komarapalayam",
+                "location": "Komarapalayam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Powerkadu",
+                "location": "Powerkadu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145043"
+                ]
+            },
+            {
+                "hospital_name": "PHC Puduchatram",
+                "location": "Puduchatram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145631"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ramapuram",
+                "location": "Ramapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145149"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sevinthipatti",
+                "location": "Sevinthipatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358144953"
+                ]
+            },
+            {
+                "hospital_name": "PHC Singalandapuram",
+                "location": "Singalandapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145686"
+                ]
+            },
+            {
+                "hospital_name": "PHC Solakkadu",
+                "location": "Solakkadu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145048"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thimmaravuthampatty",
+                "location": "Thimmaravuthampatty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358144909"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thindamangalam",
+                "location": "Thindamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145442"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thirumalaipatty",
+                "location": "Thirumalaipatty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145642"
+                ]
+            },
+            {
+                "hospital_name": "PHC Jedarpalayam",
+                "location": "Tho Jedarpalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145351"
+                ]
+            },
+            {
+                "hospital_name": "PHC Belukurichi",
+                "location": "Belukurichi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145743"
+                ]
+            },
+            {
+                "hospital_name": "PHC Chithalanthur",
+                "location": "Chithalanthur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145784"
+                ]
+            },
+            {
+                "hospital_name": "PHC Elachipalayam",
+                "location": "Elachipalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358144864"
+                ]
+            },
+            {
+                "hospital_name": "PHC Elanthakuttai",
+                "location": "Elanthakuttai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145495"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kalappanaickenpatty",
+                "location": "Kalappanaickenpatty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145775"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kallankattuvalasu",
+                "location": "Kallankattuvalasu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145509"
+                ]
+            },
+            {
+                "hospital_name": "PHC Konur",
+                "location": "Konur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145430"
+                ]
+            },
+            {
+                "hospital_name": "PHC Mallasamuthiram",
+                "location": "Mallasamuthiram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145098"
+                ]
+            },
+            {
+                "hospital_name": "PHC Manickampalayam",
+                "location": "Manickampalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358144873"
+                ]
+            },
+            {
+                "hospital_name": "PHC Mohanur",
+                "location": "Mohanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145220"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kokkarayanpettai",
+                "location": "Kokkarayanpettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145520"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kallankulam",
+                "location": "Kallankulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145853"
+                ]
+            },
+            {
+                "hospital_name": "PHC Pallakkapalayam",
+                "location": "Pallakkapalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7358145564"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Rasipuram",
+                "location": "Rasipuram",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "7358804287"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Seetharampalayam",
+                "location": "Seetharampalayam",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "7358142387"
+                ]
+            },
+            {
+                "hospital_name": "UPHC Thiruchengode",
+                "location": "Thiruchengode",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "7358141857"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Nilgiris",
+        "hospitals": [
+            {
+                "hospital_name": "Government Head Quarters Hospital Ooty",
+                "location": "Ooty",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "0423-2442212",
+                    "0423-2442712"
+                ]
+            },
+            {
+                "hospital_name": "Government Sait Hospital",
+                "location": "Ooty",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0423-2442240"
+                ]
+            },
+            {
+                "hospital_name": "Government Lawley Hospital",
+                "location": "Coonoor",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0423-2231050"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kotagiri",
+                "location": "Kotagiri",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04266-271309"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Gudalur",
+                "location": "Gudalur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04262-296366"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Pandalur",
+                "location": "Pandalur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04262-220184"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kundah",
+                "location": "Kundah",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0423-2508365"
+                ]
+            },
+            {
+                "hospital_name": "Cantonment Hospital Wellington",
+                "location": "Wellington",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0423-2231450"
+                ]
+            },
+            {
+                "hospital_name": "Military Hospital Wellington",
+                "location": "Wellington",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0423-2233111"
+                ]
+            },
+            {
+                "hospital_name": "PHC T.Oranally",
+                "location": "T.Oranally",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2590510"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thengumaradha",
+                "location": "Thengumaradha",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04266-278133"
+                ]
+            },
+            {
+                "hospital_name": "PHC Theppakkadu",
+                "location": "Theppakkadu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9751381012"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thummanatty",
+                "location": "Thummanatty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2507589"
+                ]
+            },
+            {
+                "hospital_name": "PHC Thuneri",
+                "location": "Thuneri",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2900789"
+                ]
+            },
+            {
+                "hospital_name": "PHC Uppatty",
+                "location": "Uppatty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04262-220601"
+                ]
+            },
+            {
+                "hospital_name": "PHC Yedapalli",
+                "location": "Yedapalli",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2230404"
+                ]
+            },
+            {
+                "hospital_name": "PHC Melur Hossaty",
+                "location": "Melur Hossaty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2286074"
+                ]
+            },
+            {
+                "hospital_name": "PHC Naduvattam",
+                "location": "Naduvattam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2256033"
+                ]
+            },
+            {
+                "hospital_name": "PHC Nedugula",
+                "location": "Nedugula",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04266-270950"
+                ]
+            },
+            {
+                "hospital_name": "PHC Nellakottai",
+                "location": "Nellakottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04262-222538"
+                ]
+            },
+            {
+                "hospital_name": "PHC Nelliyalam Urban",
+                "location": "Nelliyalam",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "9486687372"
+                ]
+            },
+            {
+                "hospital_name": "PHC O'Valley",
+                "location": "O'Valley",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04262-269778"
+                ]
+            },
+            {
+                "hospital_name": "PHC Ooty Urban",
+                "location": "Ooty",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2223430"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sholur",
+                "location": "Sholur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2256549"
+                ]
+            },
+            {
+                "hospital_name": "PHC Sholurmattam",
+                "location": "Sholurmattam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04266-276476"
+                ]
+            },
+            {
+                "hospital_name": "PHC Srimadurai",
+                "location": "Srimadurai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04262-226073"
+                ]
+            },
+            {
+                "hospital_name": "PHC Adigaratty",
+                "location": "Adigaratty",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "0423-2590467"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Perambalur",
+        "hospitals": [
+            {
+                "hospital_name": "Government Hospital Perambalur",
+                "location": "Perambalur",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04328-277128"
+                ]
+            },
+            {
+                "hospital_name": "Dhanalakshmi Srinivasan Medical College & Hospital",
+                "location": "Perambalur",
+                "type": "Medical College Hospital",
+                "contact_numbers": [
+                    "04328-254500",
+                    "9477694776",
+                    "8489923822"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karai",
+                "location": "Karai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Veppanthattai",
+                "location": "Veppanthattai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kunnam",
+                "location": "Kunnam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ammapalayam",
+                "location": "Ammapalayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04328-269262"
+                ]
+            },
+            {
+                "hospital_name": "PHC Karai",
+                "location": "Karai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04328-254393"
+                ]
+            },
+            {
+                "hospital_name": "PHC Lebbaikudikadu",
+                "location": "Lebbaikudikadu",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04328-244844"
+                ]
+            },
+            {
+                "hospital_name": "PHC Valikandapuram",
+                "location": "Valikandapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04328-265297"
+                ]
+            },
+            {
+                "hospital_name": "PHC Chettikulam",
+                "location": "Chettikulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6382565537"
+                ]
+            },
+            {
+                "hospital_name": "PHC Murugankudi",
+                "location": "Murugankudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "8838019951"
+                ]
+            },
+            {
+                "hospital_name": "PHC Pearumathur",
+                "location": "Pearumathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "9790500000"
+                ]
+            },
+            {
+                "hospital_name": "UPHC New Bus Stand",
+                "location": "Perambalur",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Pudukkottai",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Pudukkottai",
+                "location": "Pudukkottai",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04322-270244"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Pudukkottai",
+                "location": "Pudukkottai",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04322-222382"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Alangudi",
+                "location": "Alangudi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04322-251233"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Annavasal",
+                "location": "Annavasal",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04339-231331"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Aranthangi",
+                "location": "Aranthangi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04371-270544"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Avudaiyarkoil",
+                "location": "Avudaiyarkoil",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04371-233400"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Gandarvakottai",
+                "location": "Gandarvakottai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04322-275669"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Illuppur",
+                "location": "Illuppur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04339-272427"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karambakudi",
+                "location": "Karambakudi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04322-258058"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Keeranur",
+                "location": "Keeranur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04339-262228"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Manamelgudi",
+                "location": "Manamelgudi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04371-250010"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Subramaniapuram",
+                "location": "Subramaniapuram",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04373-235450"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thirumayam",
+                "location": "Thirumayam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04333-274222"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Valayapatti",
+                "location": "Valayapatti",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04333-262047"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Viralimalai",
+                "location": "Viralimalai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04339-220200"
+                ]
+            },
+            {
+                "hospital_name": "Government Ranee's Hospital",
+                "location": "Pudukkottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Adhanakottai",
+                "location": "Adhanakottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04322-293124"
+                ]
+            },
+            {
+                "hospital_name": "PHC Andakulam",
+                "location": "Andakulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04339-248309"
+                ]
+            },
+            {
+                "hospital_name": "PHC Parambur",
+                "location": "Parambur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04339-241230"
+                ]
+            },
+            {
+                "hospital_name": "PHC Karaiyur",
+                "location": "Karaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04333-294994"
+                ]
+            },
+            {
+                "hospital_name": "PHC Natchandupatti",
+                "location": "Natchandupatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04333-277276"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kodumbalur",
+                "location": "Kodumbalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04339-220484"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kadiyapatti",
+                "location": "Kadiyapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04333-272361"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Ramanathapuram",
+        "hospitals": [
+            {
+                "hospital_name": "Government District Headquarters Hospital",
+                "location": "Ramanathapuram",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04567-220566"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Paramakudi",
+                "location": "Paramakudi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04564-226566"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kamuthi",
+                "location": "Kamuthi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thiruvadanai",
+                "location": "Thiruvadanai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Rameswaram",
+                "location": "Rameswaram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Mudukulathur",
+                "location": "Mudukulathur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kadaladi",
+                "location": "Kadaladi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mandapam",
+                "location": "Mandapam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perunazhi",
+                "location": "Perunazhi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Uchipuli",
+                "location": "Uchipuli",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Parthibanur",
+                "location": "Parthibanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sikkal",
+                "location": "Sikkal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thondi",
+                "location": "Thondi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sayalkudi",
+                "location": "Sayalkudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Ramanathapuram",
+                "location": "Ramanathapuram",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Ramanathapuram (Sungam)",
+                "location": "Ramanathapuram",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "0422-2320026"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Ranipet",
+        "hospitals": [
+            {
+                "hospital_name": "Government Hospital Sholinghur",
+                "location": "Sholinghur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04172-262900"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Ranipet",
+                "location": "Ranipet",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Walajapet",
+                "location": "Walajapet",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Arakkonam",
+                "location": "Arakkonam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kalavai",
+                "location": "Kalavai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Alapakkam",
+                "location": "Alapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Banavaram",
+                "location": "Banavaram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kaveripakkam",
+                "location": "Kaveripakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Minnal",
+                "location": "Minnal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Nemili",
+                "location": "Nemili",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Panapakkam",
+                "location": "Panapakkam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thakkolam",
+                "location": "Thakkolam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Timiri",
+                "location": "Timiri",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Ranipet",
+                "location": "Ranipet",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Sivaganga",
+        "hospitals": [
+            {
+                "hospital_name": "Government Sivagangai Medical College Hospital",
+                "location": "Sivaganga",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04575-243344"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thiruppuvanam",
+                "location": "Thiruppuvanam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9442511559"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Thiruppathur",
+                "location": "Thiruppathur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9486611775"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Karaikudi",
+                "location": "Karaikudi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Devakottai",
+                "location": "Devakottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Manamadurai",
+                "location": "Manamadurai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Singampunari",
+                "location": "Singampunari",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Ilayangudi",
+                "location": "Ilayangudi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Piranmalai",
+                "location": "Piranmalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04577-246106"
+                ]
+            },
+            {
+                "hospital_name": "PHC Mallakottai",
+                "location": "Mallakottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04577-252233"
+                ]
+            },
+            {
+                "hospital_name": "PHC M.Soorakudi",
+                "location": "M.Soorakudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04577-293302"
+                ]
+            },
+            {
+                "hospital_name": "PHC Vaniyangudi",
+                "location": "Vaniyangudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "7994082600"
+                ]
+            },
+            {
+                "hospital_name": "PHC Puduvayal",
+                "location": "Puduvayal",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Eriyur",
+                "location": "Eriyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC V.Pudur",
+                "location": "V.Pudur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kalayarkoil",
+                "location": "Kalayarkoil",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Sivagangai",
+                "location": "Sivagangai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Sivagangai",
+                "location": "Sivagangai",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tenkasi",
+        "hospitals": [
+            {
+                "hospital_name": "Government Headquarters Hospital Tenkasi",
+                "location": "Tenkasi",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04633-281161"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sengottai",
+                "location": "Sengottai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0462-222309",
+                    "0462-228044"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Alangulam",
+                "location": "Alangulam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sankarankovil",
+                "location": "Sankarankovil",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kadayanallur",
+                "location": "Kadayanallur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Sivagiri",
+                "location": "Sivagiri",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Shencottai",
+                "location": "Shencottai",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kumanthapuram",
+                "location": "Kumanthapuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "6354833395"
+                ]
+            },
+            {
+                "hospital_name": "PHC Alangulam",
+                "location": "Alangulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Keezhapavoor",
+                "location": "Keezhapavoor",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Pavoorchatram",
+                "location": "Pavoorchatram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vasudevanallur",
+                "location": "Vasudevanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Karivalamvandanallur",
+                "location": "Karivalamvandanallur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kuruvikulam",
+                "location": "Kuruvikulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Tenkasi",
+                "location": "Tenkasi",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "04633-280707"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Theni",
+        "hospitals": [
+            {
+                "hospital_name": "Government Medical College Hospital Theni",
+                "location": "Theni",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04546-231292",
+                    "04546-234292"
+                ]
+            },
+            {
+                "hospital_name": "Government Headquarters Hospital Periyakulam",
+                "location": "Periyakulam",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Aundipatty",
+                "location": "Aundipatty",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9790981765"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Bodinayakanur",
+                "location": "Bodinayakanur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9750115580"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Chinnamanur",
+                "location": "Chinnamanur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9442292332"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Uthamapalayam",
+                "location": "Uthamapalayam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9842542048"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Cumbum",
+                "location": "Cumbum",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9842131667"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital K.Mayiladumparai",
+                "location": "K.Mayiladumparai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "9942048908"
+                ]
+            },
+            {
+                "hospital_name": "PHC Kuppanasaripatti",
+                "location": "Kuppanasaripatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04546-2226605"
+                ]
+            },
+            {
+                "hospital_name": "PHC Virapandi",
+                "location": "Virapandi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Veerapandi",
+                "location": "Veerapandi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Dombuchery",
+                "location": "Dombuchery",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kadamalaikundu",
+                "location": "Kadamalaikundu",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Odaipatti",
+                "location": "Odaipatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Rayappanpatti",
+                "location": "Rayappanpatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Gudalur",
+                "location": "Gudalur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Theni Allinagaram",
+                "location": "Theni",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": [
+                    "04546-252660"
+                ]
+            }
+        ]
+    },
+    {
+        "district": "Thiruvarur",
+        "hospitals": [
+            {
+                "hospital_name": "Government Thiruvarur Medical College Hospital",
+                "location": "Thiruvarur",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04366-244494"
+                ]
+            },
+            {
+                "hospital_name": "Government District Headquarters Hospital Mannargudi",
+                "location": "Mannargudi",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Thiruthuraipoondi",
+                "location": "Thiruthuraipoondi",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Koothanallur",
+                "location": "Koothanallur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Nannilam",
+                "location": "Nannilam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Kodavasal",
+                "location": "Kodavasal",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Valangaiman",
+                "location": "Valangaiman",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Needamangalam",
+                "location": "Needamangalam",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Women And Children Hospital Vijayapuram",
+                "location": "Vijayapuram",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Punavasal",
+                "location": "Erukattur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04367-245344"
+                ]
+            },
+            {
+                "hospital_name": "PHC Adiyakkamangalam",
+                "location": "Adiyakkamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Poonthottam",
+                "location": "Poonthottam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiruvizhimilalai",
+                "location": "Thiruvizhimilalai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Perumpannaiyur",
+                "location": "Perumpannaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Alangudi",
+                "location": "Alangudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Ullikottai",
+                "location": "Ullikottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vaduvoor",
+                "location": "Vaduvoor",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thirumakottai",
+                "location": "Thirumakottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Senganthi Edaiyur",
+                "location": "Senganthi Edaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Muthupettai",
+                "location": "Muthupettai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Tirupathur",
+        "hospitals": [
+            {
+                "hospital_name": "Government Hospital Tirupathur",
+                "location": "Tirupathur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04179-220080"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Ambur",
+                "location": "Ambur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04174-242636"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vaniyambadi",
+                "location": "Vaniyambadi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04174-225700"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Natrampalli",
+                "location": "Natrampalli",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "Government Hospital Patchur",
+                "location": "Patchur",
+                "type": "Government Hospital",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Tirupathur",
+                "location": "Tirupathur",
+                "type": "Primary Health Centre",
+                "contact_numbers": [
+                    "04179-222290"
+                ]
+            },
+            {
+                "hospital_name": "PHC Alangayam",
+                "location": "Alangayam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Jolarpet",
+                "location": "Jolarpet",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Viluppuram",
+        "hospitals": [
+            {
+                "hospital_name": "Government Viluppuram Medical College Hospital",
+                "location": "Mundiyampakkam",
+                "type": "Government Medical College Hospital",
+                "contact_numbers": [
+                    "04146-232400"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Viluppuram",
+                "location": "Viluppuram",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04146-220400"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Tindivanam",
+                "location": "Tindivanam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04147-222250"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Gingee",
+                "location": "Gingee",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04145-222015"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Marakkanam",
+                "location": "Marakkanam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04147-239589"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Valavanur",
+                "location": "Valavanur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04146-260919"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vanur",
+                "location": "Vanur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "0413-2677181"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Vikravandi",
+                "location": "Vikravandi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04146-220567"
+                ]
+            },
+            {
+                "hospital_name": "PHC Mogaiyur",
+                "location": "Mogaiyur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Thiyagadurugam",
+                "location": "Thiyagadurugam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kandamangalam",
+                "location": "Kandamangalam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Madukarai",
+                "location": "Madukarai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Kanjanur",
+                "location": "Kanjanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Koliyanur",
+                "location": "Koliyanur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mailam",
+                "location": "Mailam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Olakkur",
+                "location": "Olakkur",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vallam",
+                "location": "Vallam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    },
+    {
+        "district": "Virudhunagar",
+        "hospitals": [
+            {
+                "hospital_name": "Government Headquarters Hospital Virudhunagar",
+                "location": "Virudhunagar",
+                "type": "Government Headquarters Hospital",
+                "contact_numbers": [
+                    "04562-242722",
+                    "9345081022"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Aruppukottai",
+                "location": "Aruppukottai",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04566-220264"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Kariapatti",
+                "location": "Kariapatti",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04566-255130",
+                    "9443123776"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Rajapalayam",
+                "location": "Rajapalayam",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04563-221301",
+                    "9842131590"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sattur",
+                "location": "Sattur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04562-260215",
+                    "9843972362"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Sivakasi",
+                "location": "Sivakasi",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04562-220301",
+                    "9894165420"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Srivilliputtur",
+                "location": "Srivilliputtur",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04563-260220",
+                    "9442215232"
+                ]
+            },
+            {
+                "hospital_name": "Government Hospital Tiruchuli",
+                "location": "Tiruchuli",
+                "type": "Government Hospital",
+                "contact_numbers": [
+                    "04566-282141",
+                    "9443271802"
+                ]
+            },
+            {
+                "hospital_name": "PHC R Reddiapatty",
+                "location": "Chatrapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC M Reddiapatti",
+                "location": "M Reddiapatti",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Savaspuram",
+                "location": "Savaspuram",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mudukkankulam",
+                "location": "Mudukkankulam",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Mallankinaru",
+                "location": "Mallankinaru",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Watrap",
+                "location": "Watrap",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Vembakottai",
+                "location": "Vembakottai",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "PHC Narikudi",
+                "location": "Narikudi",
+                "type": "Primary Health Centre",
+                "contact_numbers": []
+            },
+            {
+                "hospital_name": "UPHC Virudhunagar",
+                "location": "Virudhunagar",
+                "type": "Urban Primary Health Centre",
+                "contact_numbers": []
+            }
+        ]
+    }
+]

@@ -1,0 +1,71 @@
+/* ===================== Persistent Sidebar (Patient) ===================== */
+:root {
+    --sidebar-w: 100px;
+}
+
+body.patient-layout {
+    background: #f1f5f9;
+    /* Override body bg for patient dash */
+}
+
+/* Floating Sidebar */
+.global-sidebar {
+    width: 80px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    height: 96vh;
+    position: fixed;
+    left: 2vh;
+    top: 2vh;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    /* High z-index */
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.nav-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    text-decoration: none;
+}
+
+.nav-icon:hover,
+.nav-icon.active {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+    transform: translateY(-2px);
+}
+
+.nav-icon.active::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    width: 4px;
+    height: 20px;
+    background: #6366f1;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+/* Main Content Adjustment for Patient Layout */
+.main-pane-global {
+    margin-left: 120px;
+    width: calc(100% - 140px);
+    padding: 2rem 0;
+    position: relative;
+}

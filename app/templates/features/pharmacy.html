@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Pharmacy Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-5">
+            <h2 class="fw-bold"><i class="fas fa-prescription-bottle-alt text-success me-2"></i> Pharmacy & Inventory
+            </h2>
+            <p class="text-muted">AI-Powered Stock Management</p>
+        </div>
+        <div class="col-md-4">
+            <form action="{{ url_for('features.pharmacy') }}" method="GET" class="d-flex">
+                <input type="text" name="search" class="form-control me-2" placeholder="Search medicine..."
+                    value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        <div class="col-md-3 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMedicineModal"><i
+                    class="fas fa-plus"></i> Add Stock</button>
+            <a href="{{ url_for('features.export_pharmacy_report') }}" class="btn btn-outline-secondary"><i
+                    class="fas fa-file-export"></i> Export</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Low Stock Alerts</h6>
+                    <h2 class="mb-0">{{ stats.low_stock }}</h2>
+                    <small>Items below threshold</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="text-black-50">Expiring Soon</h6>
+                    <h2 class="mb-0">{{ stats.expiring_soon }}</h2>
+                    <small>In current year</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Total Value</h6>
+                    <h2 class="mb-0">{{ stats.total_value }}</h2>
+                    <small>Current Inventory</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Daily Sales</h6>
+                    <h2 class="mb-0">{{ stats.daily_sales }}</h2>
+                    <small>Prescriptions Filled</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card shadow border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">Current Stock Status</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Stock Level</th>
+                            <th>Status (AI Prediction)</th>
+                            <th>Expiry Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% if inventory|length > 0 %}
+                        {% for item in inventory %}
+                        <tr>
+                            <td class="fw-bold">{{ item.name }}</td>
+                            <td>
+                                <div class="progress" style="height: 6px; width: 100px;">
+                                    <div class="progress-bar {% if item.stock < 50 %}bg-danger{% elif item.stock < 150 %}bg-warning{% else %}bg-success{% endif %}"
+                                        role="progressbar" style="width: {{ (item.stock / 500) * 100 }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ item.stock }} units</small>
+                            </td>
+                            <td>
+                                {% if item.stock == 0 %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                                {% elif item.stock < 50 %} <span class="badge bg-warning text-dark">Low - Reorder
+                                    Soon</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Optimal</span>
+                                    {% endif %}
+                            </td>
+                            <td>{{ item.expiry_date }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary restock-btn"
+                                    data-id="{{ item.id }}">Restock</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No medicines found. Click "Add Stock" to
+                                add inventory.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Medicine Modal -->
+<div class="modal fade" id="addMedicineModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Medicine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMedicineForm">
+                    <div class="mb-3">
+                        <label class="form-label">Medicine Name</label>
+                        <input type="text" class="form-control" id="medName" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Initial Stock</label>
+                            <input type="number" class="form-control" id="medStock" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit Price (₹)</label>
+                            <input type="number" step="0.01" class="form-control" id="medPrice" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Expiry Date (YYYY-MM)</label>
+                        <input type="month" class="form-control" id="medExpiry" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Manufacturer</label>
+                        <input type="text" class="form-control" id="medManufacturer">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveMedicineBtn">Save Medicine</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Restock Button Logic
+        document.querySelectorAll('.restock-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const medId = this.dataset.id;
+                const amount = prompt("Enter amount to add:", "50");
+
+                if (amount && !isNaN(amount)) {
+                    fetch('/features/api/pharmacy/restock', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ id: medId, amount: parseInt(amount) })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch(err => console.error(err));
+                }
+            });
+        });
+
+        // Add Medicine Logic
+        document.getElementById('saveMedicineBtn').addEventListener('click', function () {
+            const data = {
+                name: document.getElementById('medName').value,
+                stock: document.getElementById('medStock').value,
+                unit_price: document.getElementById('medPrice').value,
+                expiry_date: document.getElementById('medExpiry').value,
+                manufacturer: document.getElementById('medManufacturer').value
+            };
+
+            if (!data.name || !data.stock || !data.unit_price) {
+                alert("Please fill all required fields");
+                return;
+            }
+
+            fetch('/features/api/pharmacy/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

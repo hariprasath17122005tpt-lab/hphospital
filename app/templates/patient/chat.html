@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-comments"></i> Chat with Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                    </h4>
+                    <small>{{ doctor.specialization }}</small>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-3">
+                        {% if message.sender_type == 'patient' %}
+                        <div class="text-end">
+                            <div class="d-inline-block bg-primary p-3 rounded-4 shadow-sm"
+                                style="max-width: 75%; border-bottom-right-radius: 2px !important;">
+                                <p class="mb-1 text-white">{{ message.message_text }}</p>
+                                <div class="text-end">
+                                    <small class="text-white-50" style="font-size: 0.7rem;">{{
+                                        message.created_at.strftime('%I:%M %p') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-start">
+                            <div class="d-inline-block bg-dark bg-opacity-75 p-3 rounded-4 shadow-sm"
+                                style="max-width: 75%; border-top-left-radius: 2px !important;">
+                                <p class="mb-1 text-white">{{ message.message_text }}</p>
+                                <div class="text-start">
+                                    <small class="text-white-50" style="font-size: 0.7rem;">{{
+                                        message.created_at.strftime('%I:%M %p') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-inbox"></i><br>
+                        No messages yet. Start a conversation!
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <form id="chatForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="messageInput" placeholder="Type your message..."
+                                autocomplete="off">
+                            <button class="btn btn-primary" type="submit" id="sendBtn">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ url_for('patient.messages') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Messages
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatBody = document.querySelector('.card-body');
+
+        // Auto-scroll to bottom on load
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        chatForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable button and show loading state
+            const originalBtnContent = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            // Security Token
+            const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfTokenMeta ? csrfTokenMeta.getAttribute('content') : '';
+
+            fetch('{{ url_for("patient.send_message", doctor_id=doctor.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ message: message })
+            })
+                .then(async response => {
+                    const isJson = response.headers.get('content-type')?.includes('application/json');
+                    const data = isJson ? await response.json() : null;
+
+                    if (!response.ok) {
+                        const errorMsg = data?.error || `Server returned ${response.status}`;
+                        throw new Error(errorMsg);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        messageInput.value = '';
+                        // Reload to show the message in the list
+                        window.location.reload();
+                    } else {
+                        throw new Error('Message sending failed on server');
+                    }
+                })
+                .catch(error => {
+                    console.error('Chat Error:', error);
+                    alert('Error: ' + error.message);
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = originalBtnContent;
+                });
+        });
+    });
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+        padding: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+    }
+
+    .card-footer {
+        border-radius: 0 0 10px 10px;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}

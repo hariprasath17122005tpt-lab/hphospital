@@ -1,0 +1,94 @@
+{
+  "lab_reference_ranges": {
+    "Blood_Pressure": {
+      "normal": "< 120/80 mmHg",
+      "elevated": "120-129 / < 80 mmHg",
+      "stage1_hypertension": "130-139 / 80-89 mmHg",
+      "stage2_hypertension": ">= 140/90 mmHg",
+      "diet_recommendation": "DASH diet - Reduce sodium to < 2300mg daily"
+    },
+    "HbA1c": {
+      "normal": "< 5.7%",
+      "prediabetic": "5.7% - 6.4%",
+      "diabetic": ">= 6.5%",
+      "target_diabetic": "< 7%",
+      "diet_recommendation": "Low Glycemic Index diet - Focus on complex carbohydrates"
+    },
+    "Total_Cholesterol": {
+      "desirable": "< 200 mg/dL",
+      "borderline_high": "200-239 mg/dL",
+      "high": ">= 240 mg/dL",
+      "diet_recommendation": "Mediterranean diet - Increase unsaturated fats, reduce saturated fats"
+    },
+    "LDL_Cholesterol": {
+      "optimal": "< 100 mg/dL",
+      "near_optimal": "100-129 mg/dL",
+      "borderline_high": "130-159 mg/dL",
+      "high": "160-189 mg/dL",
+      "very_high": ">= 190 mg/dL",
+      "diet_recommendation": "Reduce saturated fats, increase fiber, add plant sterols"
+    },
+    "HDL_Cholesterol": {
+      "low": "< 40 mg/dL (men), < 50 mg/dL (women)",
+      "desirable": ">= 60 mg/dL",
+      "diet_recommendation": "Increase omega-3 foods, aerobic exercise, whole grains"
+    },
+    "Triglycerides": {
+      "normal": "< 150 mg/dL",
+      "borderline_high": "150-199 mg/dL",
+      "high": "200-499 mg/dL",
+      "very_high": ">= 500 mg/dL",
+      "diet_recommendation": "Reduce refined carbs & added sugars, increase fiber"
+    },
+    "Fasting_Glucose": {
+      "normal": "< 100 mg/dL",
+      "impaired_fasting": "100-125 mg/dL",
+      "diabetes": ">= 126 mg/dL",
+      "diet_recommendation": "Low GI foods, balanced macronutrients, portion control"
+    },
+    "Creatinine_GFR": {
+      "normal": ">= 90 mL/min/1.73m2",
+      "mild": "60-89 mL/min/1.73m2",
+      "moderate": "30-59 mL/min/1.73m2",
+      "severe": "15-29 mL/min/1.73m2",
+      "kidney_failure": "< 15 mL/min/1.73m2",
+      "diet_recommendation": "Renal-friendly diet - Restrict protein, sodium, potassium, phosphorus"
+    },
+    "Potassium": {
+      "low": "< 3.5 mEq/L",
+      "normal": "3.5-5.0 mEq/L",
+      "high": "> 5.0 mEq/L",
+      "diet_recommendation_low": "Increase potassium-rich foods: bananas, spinach, beans",
+      "diet_recommendation_high": "Reduce potassium intake, focus on low-K vegetables"
+    },
+    "Sodium": {
+      "normal": "135-145 mEq/L",
+      "low": "< 135 mEq/L",
+      "high": "> 145 mEq/L",
+      "diet_recommendation": "Limit sodium to < 2300mg daily, avoid processed foods"
+    },
+    "TSH": {
+      "normal": "0.4-4.0 mIU/L",
+      "hypothyroid": "> 4.0 mIU/L",
+      "hyperthyroid": "< 0.4 mIU/L",
+      "diet_recommendation": "Include iodine-rich foods, selenium, manage autoimmune triggers"
+    },
+    "BMI": {
+      "underweight": "< 18.5",
+      "normal": "18.5-24.9",
+      "overweight": "25.0-29.9",
+      "obese_class1": "30.0-34.9",
+      "obese_class2": "35.0-39.9",
+      "obese_class3": ">= 40.0",
+      "diet_recommendation": "Calorie reduction + increased physical activity for weight loss"
+    }
+  },
+  "lab_to_diet_mapping": {
+    "high_bp": "Implement DASH protocol immediately",
+    "high_glucose": "Transition to Low Glycemic Index foods",
+    "high_cholesterol": "Mediterranean diet emphasizes healthy fats",
+    "low_gfr": "Renal-protective diet limits nephrotoxic loads",
+    "high_potassium": "Reduce high-K vegetables, focus on low-K options",
+    "low_potassium": "Increase potassium-rich foods (if kidney function permits)"
+  }
+}

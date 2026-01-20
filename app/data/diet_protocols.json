@@ -1,0 +1,250 @@
+{
+  "DASH": {
+    "name": "DASH Diet (Dietary Approaches to Stop Hypertension)",
+    "target_conditions": ["Hypertension", "High Blood Pressure"],
+    "medical_background": "The DASH diet is a clinically-proven dietary pattern designed to lower blood pressure and reduce cardiovascular disease risk. It emphasizes whole grains, lean proteins, fruits, vegetables, and low-fat dairy while limiting sodium, saturated fats, and added sugars.",
+    "primary_focus": "Sodium reduction and nutrient-dense foods",
+    "sodium_limit_mg": 2300,
+    "daily_servings": {
+      "vegetables": "4-5 servings",
+      "fruits": "4-5 servings",
+      "whole_grains": "6-8 servings",
+      "lean_proteins": "6 oz or less per day",
+      "low_fat_dairy": "2-3 servings",
+      "fats_oils": "2-3 teaspoons",
+      "sweets": "limited to 5 or fewer per week"
+    },
+    "breakfast_options": [
+      "Oatmeal with berries and almonds",
+      "Whole wheat toast with avocado and egg white",
+      "Greek yogurt with granola and fruits",
+      "Whole grain cereal with low-fat milk",
+      "Vegetable egg white omelet with whole wheat toast"
+    ],
+    "lunch_options": [
+      "Grilled salmon with steamed broccoli and brown rice",
+      "Lean turkey sandwich on whole wheat with spinach",
+      "Chicken salad with mixed vegetables and olive oil dressing",
+      "Lentil soup with whole grain crackers",
+      "Quinoa bowl with roasted vegetables and tofu"
+    ],
+    "dinner_options": [
+      "Baked chicken breast with roasted sweet potato and green beans",
+      "Grilled fish with whole wheat pasta and tomato sauce",
+      "Lean beef stir-fry with brown rice and mixed vegetables",
+      "Vegetable curry with chickpeas over brown rice",
+      "Turkey meatballs with whole wheat spaghetti and marinara"
+    ],
+    "snack_options": [
+      "Apple with almond butter",
+      "Unsalted nuts (1 ounce)",
+      "Carrot sticks with hummus",
+      "Low-fat string cheese with whole grain crackers",
+      "Berries with plain Greek yogurt"
+    ],
+    "foods_to_avoid": [
+      "High-sodium processed foods",
+      "Cured meats (bacon, sausage, deli meats)",
+      "Full-fat dairy products",
+      "Sugary beverages and desserts",
+      "High-sodium canned foods",
+      "Fried foods"
+    ]
+  },
+  "MEDITERRANEAN": {
+    "name": "Mediterranean Diet",
+    "target_conditions": ["Cardiovascular Disease", "High Cholesterol", "Diabetes Type 2"],
+    "medical_background": "The Mediterranean diet emphasizes heart-healthy monounsaturated fats from olive oil, fish rich in omega-3 fatty acids, whole grains, legumes, vegetables, and moderate wine consumption. This pattern has been associated with reduced cardiovascular mortality and better metabolic control.",
+    "primary_focus": "Heart health and metabolic wellness",
+    "daily_servings": {
+      "vegetables": "3-4 servings",
+      "fruits": "2-3 servings",
+      "whole_grains": "6-8 servings",
+      "fish_seafood": "2-3 times per week",
+      "lean_poultry": "2-3 times per week",
+      "legumes": "2-3 times per week",
+      "olive_oil": "3-4 tablespoons",
+      "nuts": "1 ounce",
+      "dairy": "low to moderate (cheese, yogurt)"
+    },
+    "breakfast_options": [
+      "Whole grain toast with olive oil and tomatoes",
+      "Greek yogurt with honey and walnuts",
+      "Whole grain cereal with feta cheese and olives",
+      "Mediterranean egg scramble with vegetables",
+      "Whole wheat bread with sardines and lemon"
+    ],
+    "lunch_options": [
+      "Grilled sardines with olive oil drizzle and roasted vegetables",
+      "Mediterranean chickpea salad with cucumber and tomatoes",
+      "Whole grain pasta with olive oil, garlic, and spinach",
+      "Grilled fish with lemon and herbs, served with quinoa",
+      "Minestrone soup with white beans and vegetables"
+    ],
+    "dinner_options": [
+      "Baked sea bass with olive oil and herbs, roasted root vegetables",
+      "Lentil and vegetable stew with whole grain bread",
+      "Grilled chicken with Mediterranean salad and feta",
+      "Whole wheat pasta with white fish and tomato sauce",
+      "Bean and vegetable cassoulet"
+    ],
+    "snack_options": [
+      "Handful of almonds and walnuts",
+      "Olives and whole grain crackers",
+      "Feta cheese with cucumber slices",
+      "Fig and walnut snack",
+      "Dates and almonds"
+    ],
+    "foods_to_avoid": [
+      "Processed meats",
+      "High-sugar foods",
+      "Refined grains",
+      "Excessive red meat",
+      "Trans fats"
+    ]
+  },
+  "LOW_GLYCEMIC": {
+    "name": "Low Glycemic Index Diet",
+    "target_conditions": ["Diabetes Type 2", "Prediabetes", "Metabolic Syndrome"],
+    "medical_background": "The Low Glycemic Index diet focuses on carbohydrates that are slowly absorbed, promoting stable blood glucose levels and reducing insulin spikes. This pattern is particularly beneficial for patients with impaired glucose metabolism.",
+    "primary_focus": "Blood glucose stabilization",
+    "daily_servings": {
+      "low_gi_carbs": "6-8 servings",
+      "protein": "5-6 oz per day",
+      "vegetables": "5-6 servings",
+      "fruits_low_gi": "2 servings",
+      "fats": "2-3 servings"
+    },
+    "breakfast_options": [
+      "Steel-cut oatmeal with cinnamon and berries",
+      "Whole grain bread with natural peanut butter",
+      "Greek yogurt with seeds and low-GI fruit",
+      "Vegetable and egg white scramble with whole grain toast",
+      "Barley porridge with apple and walnuts"
+    ],
+    "lunch_options": [
+      "Lentil soup with whole grain bread",
+      "Grilled chicken with sweet potato and broccoli",
+      "Chickpea salad with vegetables and olive oil",
+      "Quinoa and vegetable bowl with beans",
+      "Whole grain sandwich with lean turkey and vegetables"
+    ],
+    "dinner_options": [
+      "Baked salmon with pearl barley and green vegetables",
+      "Bean chili with brown rice",
+      "Lean beef with sweet potato and asparagus",
+      "Whole wheat pasta with legume-based sauce",
+      "Lentil and vegetable stir-fry with brown rice"
+    ],
+    "snack_options": [
+      "Apple with unsalted almonds",
+      "Chickpea snack",
+      "Whole grain crackers with hummus",
+      "Plain Greek yogurt with berries",
+      "Raw vegetables with bean dip"
+    ],
+    "foods_to_avoid": [
+      "White bread and refined grains",
+      "High-sugar fruits (watermelon, pineapple)",
+      "Sugary beverages",
+      "Processed snacks",
+      "Instant oatmeal and cereals"
+    ]
+  },
+  "RENAL_FRIENDLY": {
+    "name": "Renal-Friendly Diet",
+    "target_conditions": ["Chronic Kidney Disease", "End-Stage Renal Disease"],
+    "medical_background": "The Renal-Friendly diet is designed to reduce the workload on compromised kidneys by controlling sodium, potassium, phosphorus, and protein intake. This helps slow kidney disease progression and manage electrolyte balance.",
+    "primary_focus": "Kidney function protection",
+    "daily_servings": {
+      "protein": "Limited to 5-6 oz per day",
+      "potassium": "Restricted based on kidney function",
+      "phosphorus": "Limited sources",
+      "sodium": "Less than 2000 mg",
+      "fluid": "As per nephrologist recommendations"
+    },
+    "breakfast_options": [
+      "Rice cereal with white bread toast",
+      "Egg white omelet with low-potassium vegetables",
+      "Unsalted oatmeal with apple",
+      "White toast with unsalted butter and jam",
+      "Plain bagel with low-sodium spread"
+    ],
+    "lunch_options": [
+      "Grilled chicken with white rice and green beans",
+      "White bread sandwich with lean turkey",
+      "Baked tilapia with white pasta and carrots",
+      "Vegetable soup (low-sodium) with white crackers",
+      "Egg salad with white bread and cucumber"
+    ],
+    "dinner_options": [
+      "Small portion grilled fish with rice pilaf and cauliflower",
+      "Roasted chicken breast with white potato and cabbage",
+      "Lean ground turkey with noodles and zucchini",
+      "Broiled cod with white beans and celery",
+      "Turkey meatloaf with white rice and green beans"
+    ],
+    "snack_options": [
+      "Apple slices",
+      "Rice crackers",
+      "White bread with unsalted peanut butter",
+      "Unsalted popcorn",
+      "Melon slices (small portion)"
+    ],
+    "foods_to_avoid": [
+      "High-potassium foods (bananas, oranges, potatoes)",
+      "Processed meats",
+      "High-sodium products",
+      "High-phosphorus foods (dairy, nuts, seeds)",
+      "Chocolate and dark colas"
+    ]
+  },
+  "CELIAC_FRIENDLY": {
+    "name": "Gluten-Free Diet",
+    "target_conditions": ["Celiac Disease", "Non-Celiac Gluten Sensitivity"],
+    "medical_background": "The Gluten-Free diet eliminates all sources of gluten (found in wheat, barley, rye) to allow intestinal healing in individuals with celiac disease. This diet prevents autoimmune intestinal damage and allows nutrient absorption.",
+    "primary_focus": "Intestinal healing and nutrient absorption",
+    "daily_servings": {
+      "gluten_free_grains": "6-8 servings",
+      "vegetables": "4-5 servings",
+      "fruits": "2-4 servings",
+      "proteins": "5-6 oz",
+      "dairy": "2-3 servings",
+      "fats": "2-3 servings"
+    },
+    "breakfast_options": [
+      "Gluten-free oatmeal with berries",
+      "Rice cakes with almond butter",
+      "Eggs with gluten-free toast",
+      "Corn porridge with milk",
+      "Gluten-free cereal with milk and fruits"
+    ],
+    "lunch_options": [
+      "Corn tortilla tacos with grilled chicken",
+      "Rice and beans with grilled fish",
+      "Gluten-free pasta with tomato sauce and vegetables",
+      "Quinoa salad with roasted vegetables",
+      "Corn and vegetable soup"
+    ],
+    "dinner_options": [
+      "Grilled salmon with rice and steamed broccoli",
+      "Corn polenta with roasted chicken",
+      "Potato and vegetable curry",
+      "Gluten-free pasta with shrimp and vegetables",
+      "Rice bowl with stir-fried vegetables and tofu"
+    ],
+    "snack_options": [
+      "Gluten-free crackers with cheese",
+      "Fruit with nuts",
+      "Corn chips and salsa",
+      "Rice cakes with honey",
+      "Yogurt with gluten-free granola"
+    ],
+    "foods_to_avoid": [
+      "Wheat, barley, rye products",
+      "Regular pasta and bread",
+      "Processed foods with hidden gluten",
+      "Beer and some sauces"
+    ]
+  }
+}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Express Check-in{% endblock %}
+
+{% block content %}
+<style>
+    .qr-container {
+        background: white;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .wait-time-card {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .wait-time-card::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .check-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .check-step:last-child {
+        margin-bottom: 0;
+    }
+
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0f2fe;
+        color: #0284c7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .step-line {
+        position: absolute;
+        left: 20px;
+        top: 40px;
+        bottom: -20px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+
+    .check-step:last-child .step-line {
+        display: none;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row g-5">
+        <!-- Quick Check-in Form -->
+        <div class="col-lg-7">
+            <h2 class="fw-bold mb-4">Express Check-in</h2>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('features.digital_checkin') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                        <!-- Doctor Selection (Added) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Doctor</label>
+                            <select class="form-select form-select-lg" name="doctor_id" required>
+                                <option value="" disabled selected>Choose available doctor...</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }} ({{
+                                    doctor.specialization }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Visit Reason</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="reason" id="r1" value="Regular Check-up"
+                                        autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary w-100 p-3 text-start" for="r1">
+                                        <i class="fas fa-stethoscope me-2"></i> Regular Check-up
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="reason" id="r2" value="Sick / Urgent"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-danger w-100 p-3 text-start" for="r2">
+                                        <i class="fas fa-ambulance me-2"></i> Sick / Urgent
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="reason" id="r3" value="Lab Test"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-info w-100 p-3 text-start" for="r3">
+                                        <i class="fas fa-file-medical-alt me-2"></i> Lab Test
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="reason" id="r4" value="Pharmacy Pickup"
+                                        autocomplete="off">
+                                    <label class="btn btn-outline-secondary w-100 p-3 text-start" for="r4">
+                                        <i class="fas fa-pills me-2"></i> Pharmacy Pickup
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div
+                                class="form-check form-switch p-0 d-flex justify-content-between align-items-center bg-light p-3 rounded-3">
+                                <label class="form-check-label ms-4 fw-bold mb-0" for="autoLoad">
+                                    <i class="fas fa-history me-2 text-primary"></i> Auto-load details from previous
+                                    visit?
+                                </label>
+                                <input class="form-check-input ms-0 float-none" type="checkbox" id="autoLoad" checked>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Current Symptoms (Optional)</label>
+                            <textarea class="form-control" name="symptoms" rows="2"
+                                placeholder="e.g. Mild fever since morning..."></textarea>
+                        </div>
+
+                        <!-- Severity hidden field logic to be improved later, defaulting to normal -->
+                        <input type="hidden" name="severity" value="normal" id="severityInput">
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                            <i class="fas fa-paper-plane me-2"></i> Submit & Generate Pass
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Steps -->
+            <div class="ps-2">
+                <div class="check-step">
+                    <div class="step-icon">1</div>
+                    <div class="step-line"></div>
+                    <div>
+                        <h6 class="fw-bold">Pre-fill Details</h6>
+                        <p class="small text-muted mb-0">Save time at the reception desk.</p>
+                    </div>
+                </div>
+                <div class="check-step">
+                    <div class="step-icon">2</div>
+                    <div class="step-line"></div>
+                    <div>
+                        <h6 class="fw-bold">Show QR Code</h6>
+                        <p class="small text-muted mb-0">Scan at the self-service kiosk or reception.</p>
+                    </div>
+                </div>
+                <div class="check-step">
+                    <div class="step-icon">3</div>
+                    <div class="step-line"></div>
+                    <div>
+                        <h6 class="fw-bold">Doctor Preview</h6>
+                        <p class="small text-muted mb-0">Doctor gets notified before you even sit implies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Status -->
+        <div class="col-lg-5">
+            <!-- Live Wait Time -->
+            <div class="wait-time-card mb-4 text-center">
+                <h6 class="text-uppercase text-white-50 letter-spacing-1 mb-3">Estimated Wait Time</h6>
+                <div class="display-1 fw-bold mb-0">12 <span class="fs-4 fw-normal">min</span></div>
+                <div class="small mt-2 text-white-50"><i class="fas fa-circle text-success me-1"></i> OPD Running
+                    Smoothly</div>
+            </div>
+
+            <!-- Active Ticket (Hidden by default until generated) -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                    <h6 class="fw-bold">Active Ticket</h6>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-ticket-alt fa-3x text-muted mb-3 opacity-25"></i>
+                    <p class="text-muted">No active check-in ticket.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .prescription-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .prescription-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .verified-badge {
+        background: #e0f2fe;
+        color: #0284c7;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .stamp-seal {
+        width: 60px;
+        opacity: 0.8;
+        transform: rotate(-15deg);
+        border: 2px solid #10b981;
+        color: #10b981;
+        border-radius: 50%;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        text-align: center;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">My Pharmacy</h2>
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#requestRefillModal">
+            <i class="fas fa-sync-alt me-2"></i> Request Refill
+        </button>
+    </div>
+
+    <!-- Active Prescriptions -->
+    <div class="row g-4 mb-5">
+        {% if prescriptions %}
+        {% for prescription in prescriptions %}
+        <div class="col-lg-6">
+            <div class="card prescription-card h-100 border-0 shadow-sm position-relative overflow-hidden">
+                <!-- Verified Stamp -->
+                {% if prescription.is_verified %}
+                <div class="stamp-seal">Verified<br>Hospital</div>
+                {% endif %}
+
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2">Rx #{{ prescription.id
+                                }}</span>
+                            <h5 class="fw-bold mb-1">{{ prescription.medicines }}</h5>
+                            <small class="text-muted">Dr. {{ prescription.doctor.last_name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="fw-bold text-dark mb-0">{{ prescription.frequency }}</h6>
+                            <small class="text-muted">{{ prescription.duration }}</small>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-center">
+                                <i class="fas fa-pills fa-2x text-secondary"></i>
+                            </div>
+                            <div class="border-start ps-3">
+                                <div class="small fw-bold text-uppercase text-muted">Dosage</div>
+                                <div class="fw-bold text-dark">{{ prescription.dosage }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    {% if prescription.instructions %}
+                    <div class="mb-3">
+                        <div class="small fw-bold text-muted mb-1"><i class="fas fa-info-circle me-1"></i> Doctor's Note
+                        </div>
+                        <p class="small mb-0 fst-italic">"{{ prescription.instructions }}"</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Handwritten Image View -->
+                    {% if prescription.image_path %}
+                    <div class="mb-3">
+                        <button class="btn btn-sm btn-outline-dark w-100" data-bs-toggle="modal"
+                            data-bs-target="#viewImageModal{{ prescription.id }}">
+                            <i class="fas fa-file-image me-2"></i> View Handwritten Rx
+                        </button>
+                    </div>
+
+                    <!-- Image Modal -->
+                    <div class="modal fade" id="viewImageModal{{ prescription.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Original Prescription</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img src="{{ url_for('static', filename=prescription.image_path) }}"
+                                        class="img-fluid rounded shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Medicine Tracker -->
+                    <!-- Medicine Tracker -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
+                        <div class="small text-muted">Daily Tracker</div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                id="btn-taken-{{ prescription.id }}"
+                                onclick="trackMedicine({{ prescription.id }}, 'taken')">
+                                <i class="fas fa-check"></i> Taken
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                id="btn-missed-{{ prescription.id }}"
+                                onclick="trackMedicine({{ prescription.id }}, 'missed')">
+                                <i class="fas fa-times"></i> Missed
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <script>
+            function trackMedicine(id, status) {
+                const dateKey = new Date().toISOString().split('T')[0];
+                const storageKey = `med_track_${dateKey}_${id}`;
+
+                // Clear previous
+                localStorage.removeItem(storageKey);
+
+                // Set new
+                localStorage.setItem(storageKey, status);
+
+                updateButtonState(id, status);
+            }
+
+            function updateButtonState(id, status) {
+                const btnTaken = document.getElementById(`btn-taken-${id}`);
+                const btnMissed = document.getElementById(`btn-missed-${id}`);
+
+                btnTaken.classList.remove('active', 'btn-success');
+                btnTaken.classList.add('btn-outline-success');
+
+                btnMissed.classList.remove('active', 'btn-danger');
+                btnMissed.classList.add('btn-outline-danger');
+
+                if (status === 'taken') {
+                    btnTaken.classList.add('active', 'btn-success');
+                    btnTaken.classList.remove('btn-outline-success');
+                } else if (status === 'missed') {
+                    btnMissed.classList.add('active', 'btn-danger');
+                    btnMissed.classList.remove('btn-outline-danger');
+                }
+            }
+
+            // Initialize on load
+            document.addEventListener('DOMContentLoaded', function () {
+                const dateKey = new Date().toISOString().split('T')[0];
+                // Find all tracking buttons to identify IDs
+                document.querySelectorAll('[id^="btn-taken-"]').forEach(btn => {
+                    const id = btn.id.replace('btn-taken-', '');
+                    const storageKey = `med_track_${dateKey}_${id}`;
+                    const status = localStorage.getItem(storageKey);
+                    if (status) {
+                        updateButtonState(id, status);
+                    }
+                });
+            });
+        </script>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-prescription-bottle-alt fa-3x text-muted mb-3"></i>
+                <h5>No Active Prescriptions</h5>
+                <p class="text-muted">Your prescribed medications will appear here.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Refill Request Modal -->
+<div class="modal fade" id="requestRefillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Medication Refill</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('patient.request_refill') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Select Medication</label>
+                        <select class="form-select" name="medication" required>
+                            {% for p in prescriptions %}
+                            <option value="{{ p.medicines }}">{{ p.medicines }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity Needed</label>
+                        <input type="text" class="form-control" name="quantity" placeholder="e.g. 1 Month Supply"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="modal-footer px-0 pb-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Send Request</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Footer removed as it is now inside the form -->
+        </div>
+    </div>
+</div>
+{% endblock %}

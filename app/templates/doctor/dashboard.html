@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - CarePoint{% endblock %}
+
+{% set hide_navbar = True %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --primary-color: #0ea5e9;
+        /* Sky Blue */
+        --primary-dark: #0284c7;
+        --secondary-bg: #f8fafc;
+        --card-bg: #ffffff;
+        --text-color: #334155;
+        --text-muted: #94a3b8;
+        --border-color: #e2e8f0;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --info-color: #6366f1;
+    }
+
+    body {
+        background-color: var(--secondary-bg);
+        color: var(--text-color);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Main Container */
+    .dashboard-container {
+        padding: 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .welcome-text h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+
+    .welcome-text p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .date-badge {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+        color: var(--primary-dark);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Cards */
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border-color: var(--primary-color);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .icon-blue {
+        background: #e0f2fe;
+        color: var(--primary-dark);
+    }
+
+    .icon-green {
+        background: #dcfce7;
+        color: var(--success-color);
+    }
+
+    .icon-orange {
+        background: #ffedd5;
+        color: var(--warning-color);
+    }
+
+    .icon-purple {
+        background: #f3e8ff;
+        color: var(--info-color);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Content Layout */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2.5fr 1fr;
+        gap: 2rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .btn-link-custom {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .btn-link-custom:hover {
+        text-decoration: underline;
+    }
+
+    /* Tables */
+    .table-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .custom-table th {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    .custom-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .custom-table tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.85rem;
+    }
+
+    /* Buttons */
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-approve {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .btn-approve:hover {
+        background: #22c55e;
+        color: white;
+    }
+
+    .btn-reject {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-reject:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    /* Right Sidebar - Quick Actions & Operations */
+    .quick-actions-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .action-button-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .action-button-card:hover {
+        border-color: var(--primary-color);
+        background: #f0f9ff;
+    }
+
+    .ops-list {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+    }
+
+    .ops-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .ops-item:last-child {
+        border-bottom: none;
+    }
+
+    .ops-item:hover {
+        color: var(--primary-dark);
+    }
+
+    .ops-item i {
+        width: 24px;
+        color: var(--text-muted);
+    }
+
+    /* Tags */
+    .tag {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .tag-danger {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    .tag-warning {
+        background: #ffedd5;
+        color: #f59e0b;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="header-section animate-fade-in">
+        <div class="welcome-text">
+            <h1>Good Morning, Dr. {{ doctor.last_name }}</h1>
+            <p>Here is your daily medical overview and schedule.</p>
+        </div>
+        <div class="date-badge">
+            <i class="far fa-calendar-alt"></i>
+            <span id="current-date">Today</span>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-5 animate-fade-in">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fas fa-user-injured"></i></div>
+                <div class="stat-value">{{ total_patients }}</div>
+                <div class="stat-label">Total Patients</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-value">{{ today_appointments }}</div>
+                <div class="stat-label">Appointments Today</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon icon-orange"><i class="fas fa-clock"></i></div>
+                <div class="stat-value">{{ pending_appointments|length }}</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('doctor.messages') }}" class="text-decoration-none">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><i class="fas fa-comment-medical"></i></div>
+                    <div class="stat-value">{{ unread_messages }}</div>
+                    <div class="stat-label">Unread Messages</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="content-grid animate-fade-in delay-200">
+        <!-- LEFT COLUMN: Tables -->
+        <div class="main-column">
+
+            <!-- Critical Patients -->
+            {% if critical_patients %}
+            <div class="mb-5">
+                <div class="section-header">
+                    <div class="section-title text-danger"><i class="fas fa-heartbeat me-2"></i> Critical Care Needed
+                    </div>
+                </div>
+                <div class="table-card">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Risk Factors (AI)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for health in critical_patients %}
+                            <tr>
+                                <td>
+                                    <div class="patient-info">
+                                        <div class="avatar-circle">{{ health.patient.first_name[0] }}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ health.patient.first_name }} {{
+                                                health.patient.last_name }}</div>
+                                            <small class="text-muted">ID: #{{ health.patient.id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if health.diabetes_risk > 50 %}
+                                    <span class="tag tag-danger me-1">Diabetes {{ health.diabetes_risk|int }}%</span>
+                                    {% endif %}
+                                    {% if health.heart_disease_risk > 50 %}
+                                    <span class="tag tag-danger">Heart {{ health.heart_disease_risk|int }}%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('doctor.view_patient', patient_id=health.patient_id) }}"
+                                        class="btn btn-sm btn-outline-primary rounded-pill px-3">Review</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Appointment Requests -->
+            <div class="mb-4">
+                <div class="section-header">
+                    <div class="section-title">Pending Appointments</div>
+                    <a href="{{ url_for('doctor.appointments') }}" class="btn-link-custom">View All Schedule</a>
+                </div>
+
+                <div class="table-card">
+                    {% if pending_appointments %}
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Requested Time</th>
+                                <th>Reason</th>
+                                <th class="text-end">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in pending_appointments %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ appt.patient.first_name }} {{
+                                        appt.patient.last_name }}</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-medium">{{ appt.appointment_date.strftime('%b %d, %Y') }}</span>
+                                        <small class="text-muted">{{ appt.appointment_date.strftime('%I:%M %p')
+                                            }}</small>
+                                    </div>
+                                </td>
+                                <td class="text-muted">{{ appt.reason }}</td>
+                                <td class="text-end">
+                                    <button class="btn-action btn-approve me-1 approve-btn"
+                                        data-appointment-id="{{ appt.id }}">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn-action btn-reject reject-btn"
+                                        data-appointment-id="{{ appt.id }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="far fa-calendar-check fa-2x mb-3 text-secondary opacity-50"></i>
+                        <p class="mb-0">No pending appointment requests.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Express Checks -->
+            {% if pending_checkins %}
+            <div class="mb-4">
+                <div class="section-header">
+                    <div class="section-title">Express Check-ins (Pending)</div>
+                </div>
+                <div class="table-card">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Symptoms/Reason</th>
+                                <th>Priority</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for checkin in pending_checkins %}
+                            <tr>
+                                <td class="fw-bold">{{ checkin.patient.user.full_name }}</td>
+                                <td class="text-muted">{{ checkin.check_in_reason }}</td>
+                                <td>
+                                    {% if checkin.severity == 'severe' %}
+                                    <span class="tag tag-danger">Severe</span>
+                                    {% else %}
+                                    <span class="tag tag-warning">Moderate</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('features.doctor_pending_checkins') }}"
+                                        class="btn btn-sm btn-outline-dark rounded-pill">Process</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT COLUMN: Operations -->
+        <div class="quick-actions-panel">
+            <!-- Shortcuts -->
+            <div>
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Quick Actions</h6>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{{ url_for('doctor.patient_list') }}" class="action-button-card d-block h-100">
+                            <i class="fas fa-users text-primary mb-2 fa-lg"></i>
+                            <div class="fw-bold text-dark small">All Patients</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('doctor.analytics') }}" class="action-button-card d-block h-100">
+                            <i class="fas fa-chart-pie text-info mb-2 fa-lg"></i>
+                            <div class="fw-bold text-dark small">Analytics</div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('features.doctor_pending_checkins') }}"
+                            class="action-button-card d-block h-100">
+                            <i class="fas fa-qrcode text-success mb-2 fa-lg"></i>
+                            <div class="fw-bold text-dark small">Check-ins</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Links -->
+            <div>
+                <h6 class="text-uppercase text-muted small fw-bold mb-3">Hospital Management</h6>
+                <div class="ops-list">
+                    <a href="{{ url_for('features.operations') }}" class="ops-item">
+                        <i class="fas fa-procedures"></i> Bed Management
+                    </a>
+                    <a href="{{ url_for('features.pharmacy') }}" class="ops-item">
+                        <i class="fas fa-capsules"></i> Pharmacy Inventory
+                    </a>
+                    <a href="{{ url_for('features.schedule') }}" class="ops-item">
+                        <i class="fas fa-user-nurses"></i> Staff Schedule
+                    </a>
+                    <a href="{{ url_for('features.blood_bank') }}" class="ops-item">
+                        <i class="fas fa-burn text-danger"></i> Blood Bank
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Live Date
+    document.addEventListener("DOMContentLoaded", () => {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', options);
+    });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Approve Buttons
+        document.querySelectorAll('.approve-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const appointmentId = this.getAttribute('data-appointment-id');
+                if (confirm('Approve this appointment?')) {
+                    fetch(`/doctor/appointments/${appointmentId}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        });
+                }
+            });
+        });
+
+        // Reject Buttons
+        document.querySelectorAll('.reject-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const appointmentId = this.getAttribute('data-appointment-id');
+                if (confirm('Reject this appointment request?')) {
+                    fetch(`/doctor/appointments/${appointmentId}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

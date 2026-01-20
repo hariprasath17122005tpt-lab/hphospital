@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Hospital Governance & Host Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-6">
+            <h1 class="fw-bold text-dark mb-1">Governance Dashboard</h1>
+            <p class="text-secondary mb-0">Central Command for Hospital Administration</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="badge bg-danger text-white p-2 px-3 rounded-pill shadow-sm">
+                <i class="fas fa-shield-alt me-2"></i> SUPER ADMIN ACCESS
+            </div>
+            <div class="mt-2 text-muted small">
+                Logged in as: <strong>{{ current_user.username }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Banners -->
+    {% if settings.emergency_mode %}
+    <div class="alert alert-danger shadow border-0 mb-4 d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+            <h5 class="fw-bold mb-0">EMERGENCY OVERRIDE ACTIVE</h5>
+            <p class="mb-0">System is in lockdown mode. Only critical services operational.</p>
+        </div>
+        <a href="{{ url_for('host.settings') }}" class="btn btn-light btn-sm ms-auto fw-bold text-danger">Manage</a>
+    </div>
+    {% endif %}
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="icon-box primary rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px;">
+                            <i class="fas fa-user-md fa-lg"></i>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary">Active</span>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ total_doctors }}</h2>
+                    <p class="text-secondary small mb-0">Total Doctors</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift border-start border-4 border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="icon-box warning rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px; background: #fff7ed; color: #f59e0b;">
+                            <i class="fas fa-user-clock fa-lg"></i>
+                        </div>
+                        <span class="badge bg-warning text-dark">Action Needed</span>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ pending_doctors }}</h2>
+                    <p class="text-secondary small mb-0">Pending Approvals</p>
+                    <a href="{{ url_for('host.doctor_management') }}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="icon-box success rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px; background: #ecfdf5; color: #10b981;">
+                            <i class="fas fa-users-medical fa-lg"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ total_patients }}</h2>
+                    <p class="text-secondary small mb-0">Registered Patients</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="icon-box danger rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px; background: #fef2f2; color: #ef4444;">
+                            <i class="fas fa-shield-virus fa-lg"></i>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success">Secure</span>
+                    </div>
+                    <h2 class="fw-bold mb-1">100%</h2>
+                    <p class="text-secondary small mb-0">System Integrity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Logs -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Recent Audit Logs</h5>
+                    <a href="{{ url_for('host.audit_logs') }}" class="btn btn-outline-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Action</th>
+                                    <th>Actor</th>
+                                    <th>Details</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td class="ps-4">
+                                        {% if 'APPROVE' in log.action or 'UNSUSPEND' in log.action %}
+                                        <span class="badge bg-success">{{ log.action }}</span>
+                                        {% elif 'SUSPEND' in log.action or 'REJECT' in log.action %}
+                                        <span class="badge bg-danger">{{ log.action }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ log.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">{{ log.actor_name }}</td>
+                                    <td class="text-muted small">{{ log.details[:50] }}...</td>
+                                    <td class="text-muted small">{{ log.timestamp.strftime('%H:%M | %b %d') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">No recent logs.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">System Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('host.doctor_management') }}"
+                            class="btn btn-primary d-flex align-items-center justify-content-between p-3">
+                            <span><i class="fas fa-user-md me-2"></i> Doctor Approvals</span>
+                            {% if pending_doctors > 0 %}
+                            <span class="badge bg-white text-primary rounded-pill">{{ pending_doctors }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('host.create_staff') }}"
+                            class="btn btn-success d-flex align-items-center justify-content-between p-3">
+                            <span><i class="fas fa-user-plus me-2"></i> Add Staff</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{{ url_for('host.settings') }}"
+                            class="btn btn-dark d-flex align-items-center justify-content-between p-3">
+                            <span><i class="fas fa-cogs me-2"></i> Settings & Emergency</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <button class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-3"
+                            disabled>
+                            <span><i class="fas fa-file-invoice me-2"></i> Content Governance (Soon)</span>
+                            <i class="fas fa-lock"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

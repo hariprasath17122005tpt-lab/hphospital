@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check"></i> Appointments Management
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-user"></i> Patient</th>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-clock"></i> Time</th>
+                                    <th><i class="fas fa-stethoscope"></i> Reason</th>
+                                    <th><i class="fas fa-info-circle"></i> Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td><strong>{{ appointment.patient.user.username }}</strong></td>
+                                    <td>{{ appointment.appointment_date.strftime('%B %d, %Y') }}</td>
+                                    <td>{{ appointment.appointment_date.strftime('%I:%M %p') }}</td>
+                                    <td>{{ appointment.reason if appointment.reason else '-' }}</td>
+                                    <td>
+                                        {% if appointment.status == 'confirmed' %}
+                                        <span class="badge bg-success">Confirmed</span>
+                                        {% elif appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-info">Completed</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success"
+                                            onclick="confirmAppointment('{{ appointment.id }}')">
+                                            <i class="fas fa-check"></i> Confirm
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="cancelAppointment('{{ appointment.id }}')">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-inbox"></i><br>
+                        No appointments scheduled.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmAppointment(appointmentId) {
+        if (confirm('Confirm this appointment?')) {
+            fetch(`/doctor/appointments/${appointmentId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        }
+    }
+
+    function cancelAppointment(appointmentId) {
+        if (confirm('Are you sure you want to cancel this appointment?')) {
+            fetch(`/doctor/appointments/${appointmentId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        }
+    }
+
+    function completeAppointment(appointmentId) {
+        if (confirm('Mark this appointment as completed?')) {
+            fetch(`/doctor/appointments/${appointmentId}/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        }
+    }
+</script>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+        padding: 1.5rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

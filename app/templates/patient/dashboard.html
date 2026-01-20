@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Dashboard - CarePoint BioTrack{% endblock %}
+
+{% set hide_navbar = True %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+    :root {
+        --bio-bg: #f8fafc;
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        --neon-blue: #00f2fe;
+        --neon-purple: #4facfe;
+    }
+
+    body {
+        background: #f1f5f9;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #0f172a;
+        overflow-x: hidden;
+    }
+
+
+    /* Main Content Area - Handled primarily by base.html now, but ensuring overrides if needed */
+
+
+    /* Search & Header */
+    .glass-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 50;
+        /* Ensuring header is on top */
+    }
+
+    .search-pill {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 20px;
+        padding: 0.8rem 1.5rem;
+        width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .search-pill:focus-within {
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+        border-color: #6366f1;
+    }
+
+    .search-pill input {
+        border: none;
+        outline: none;
+        width: 100%;
+        margin-left: 12px;
+        color: #334155;
+        font-size: 0.95rem;
+        background: transparent;
+    }
+
+    /* Hero Section */
+    .hero-container {
+        position: relative;
+        min-height: 450px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 4.5rem;
+        font-weight: 700;
+        letter-spacing: -2px;
+        line-height: 1;
+        margin-bottom: 2.5rem;
+        color: #0f172a;
+        position: relative;
+        z-index: 5;
+    }
+
+    .hero-title span {
+        display: block;
+        font-weight: 300;
+        font-size: 3.5rem;
+        background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Futuristic Vitals Cards */
+    .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+        position: relative;
+        z-index: 5;
+    }
+
+    .vital-card {
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 1.25rem;
+        border-radius: 28px;
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .vital-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 20px 50px -10px rgba(99, 102, 241, 0.15);
+        border-color: #fff;
+    }
+
+    .vital-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+    }
+
+    .card-value-lg {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1;
+    }
+
+    .card-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    /* Body Stats HUD */
+    .body-stats-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .stat-item {
+        text-align: center;
+        position: relative;
+    }
+
+    .stat-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: -50%;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background: #cbd5e1;
+        opacity: 0.5;
+    }
+
+    .stat-val {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #334155;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .stat-lbl {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+    }
+
+    /* 3D Visual */
+    .visual-wrapper {
+        position: relative;
+        height: 600px;
+        margin-top: -60px;
+        /* Reduced negative margin */
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .visual-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.2));
+        transform: scale(1.1);
+    }
+
+    .visual-bg-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        height: 70%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+        z-index: -1;
+        filter: blur(40px);
+    }
+
+    /* Premium Grid Action Cards */
+    .dashboard-grid-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .premium-card {
+        border-radius: 24px;
+        padding: 1.75rem;
+        height: 220px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-decoration: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .premium-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+    }
+
+    .card-icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title-lg {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+
+    .card-sub {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        opacity: 0.85;
+        margin: 0;
+    }
+
+    /* Colors and Themes */
+    .card-glass {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        color: #0c4a6e;
+    }
+
+    .card-dark {
+        background: #1e293b;
+        color: #f8fafc;
+    }
+
+    .card-light {
+        background: white;
+        color: #1e293b;
+    }
+
+    .card-light.card-blue {
+        background: #eff6ff;
+    }
+
+    .float-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+    }
+</style>
+
+<div class="dashboard-layout">
+    <!-- Sidebar is now global in base.html -->
+
+    <!-- Main Content -->
+    <div class="main-content-dashboard">
+        <!-- Header -->
+        <div class="glass-header">
+            <div class="search-pill">
+                <i class="fas fa-search text-secondary"></i>
+                <input type="text" placeholder="Search records, doctors, or symptoms...">
+            </div>
+
+            <div class="d-flex align-items-center gap-4">
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('patient.appointments') }}"
+                        class="btn btn-white rounded-circle p-0 d-flex align-items-center justify-content-center text-decoration-none"
+                        style="width: 45px; height: 45px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <i class="far fa-calendar text-secondary"></i>
+                    </a>
+                    <a href="{{ url_for('patient.messages') }}"
+                        class="btn btn-white rounded-circle p-0 d-flex align-items-center justify-content-center text-decoration-none"
+                        style="width: 45px; height: 45px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <i class="far fa-bell text-secondary"></i>
+                    </a>
+                </div>
+
+                <a href="{{ url_for('patient.edit_profile') }}"
+                    class="text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name={{ patient.first_name }}+{{ patient.last_name }}&background=E0E7FF&color=4361EE"
+                        class="rounded-circle shadow-sm" width="50" height="50">
+                    <div class="d-none d-md-block">
+                        <h6 class="mb-0 fw-bold" style="font-family: 'Outfit', sans-serif;">{{ patient.first_name }} {{
+                            patient.last_name }}</h6>
+                        <small class="text-muted">{{ patient.age if patient.age else '25' }} years • {{ patient.address
+                            if patient.address else 'City, Country' }}</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Enhanced Hero Section with Grid Layout -->
+        <div class="hero-container mb-5">
+            <div class="row align-items-center">
+                <!-- Left Side: Title & Vitals -->
+                <div class="col-lg-7 position-relative z-index-2">
+                    <h1 class="hero-title animate-fade-in mb-5">
+                        Medical
+                        <span>Dashboard</span>
+                    </h1>
+
+                    <div class="vitals-grid w-100 animate-fade-in delay-100">
+                        <!-- Heart Rate -->
+                        <div class="vital-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="card-label">Heart Rate</span>
+                                <i class="fas fa-heartbeat text-danger"></i>
+                            </div>
+                            <div class="position-relative d-flex justify-content-center align-items-center"
+                                style="height: 120px;">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#ef4444" stroke-width="8"
+                                        stroke-dasharray="339.292" stroke-dashoffset="85" stroke-linecap="round"
+                                        transform="rotate(-90 60 60)" />
+                                </svg>
+                                <div class="position-absolute text-center">
+                                    <div class="card-value-lg">{% if latest_health %}{{ latest_health.heart_rate }}{%
+                                        else %}72{% endif %}</div>
+                                    <small class="text-muted fw-bold">BPM</small>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <span class="badge bg-soft-success text-success rounded-pill px-3">Normal</span>
+                            </div>
+                        </div>
+
+                        <!-- Blood Pressure -->
+                        <div class="vital-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="card-label">Blood Pressure</span>
+                                <i class="fas fa-tint text-primary"></i>
+                            </div>
+                            <div class="position-relative d-flex justify-content-center align-items-center"
+                                style="height: 120px;">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#3b82f6" stroke-width="8"
+                                        stroke-dasharray="339.292" stroke-dashoffset="60" stroke-linecap="round"
+                                        transform="rotate(-90 60 60)" />
+                                </svg>
+                                <div class="position-absolute text-center">
+                                    <div class="h3 fw-bold mb-0 text-dark">{% if latest_health %}{{
+                                        latest_health.systolic_bp }}{% else %}120{% endif %}</div>
+                                    <div style="height: 1px; width: 30px; background: #cbd5e1; margin: 2px auto;"></div>
+                                    <div class="h5 fw-bold text-muted mb-0">{% if latest_health %}{{
+                                        latest_health.diastolic_bp }}{% else %}80{% endif %}</div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <span class="badge bg-soft-primary text-primary rounded-pill px-3">Optimal</span>
+                            </div>
+                        </div>
+
+                        <!-- Temperature (NEW) -->
+                        <div class="vital-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="card-label">Temperature</span>
+                                <i class="fas fa-thermometer-half text-warning"></i>
+                            </div>
+                            <div class="position-relative d-flex justify-content-center align-items-center"
+                                style="height: 120px;">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="8" />
+                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#f59e0b" stroke-width="8"
+                                        stroke-dasharray="339.292" stroke-dashoffset="250" stroke-linecap="round"
+                                        transform="rotate(-90 60 60)" />
+                                </svg>
+                                <div class="position-absolute text-center">
+                                    <div class="card-value-lg">{% if latest_health and latest_health.temperature %}{{
+                                        latest_health.temperature }}{% else %}98.6{% endif %}</div>
+                                    <small class="text-muted fw-bold">°F</small>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <span class="badge bg-soft-warning text-warning rounded-pill px-3">Normal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body Stats HUD (Correctly Placed) -->
+                    <div class="body-stats-card mt-4 w-75 animate-fade-in delay-200">
+                        <div class="stat-item px-3">
+                            <i class="fas fa-tint text-danger mb-2 d-block mx-auto"></i>
+                            <div class="stat-val">{% if patient.blood_type %}{{ patient.blood_type }}{% else %}O+{%
+                                endif %}</div>
+                            <div class="stat-lbl">Blood</div>
+                        </div>
+                        <div class="stat-item px-3">
+                            <i class="fas fa-ruler-vertical text-primary mb-2 d-block mx-auto"></i>
+                            <div class="stat-val">{% if patient.height %}{{ patient.height }}{% else %}186{% endif %}
+                                <span class="fs-6 text-muted">cm</span>
+                            </div>
+                            <div class="stat-lbl">Height</div>
+                        </div>
+                        <div class="stat-item px-3">
+                            <i class="fas fa-weight text-success mb-2 d-block mx-auto"></i>
+                            <div class="stat-val">{% if patient.weight %}{{ patient.weight }}{% else %}90{% endif %}
+                                <span class="fs-6 text-muted">kg</span>
+                            </div>
+                            <div class="stat-lbl">Weight</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: 3D Visual -->
+                <div class="col-lg-5 position-relative">
+                    <div class="visual-wrapper animate-fade-in delay-300">
+                        <div class="visual-bg-glow"></div>
+                        <img src="{{ url_for('static', filename='img/body_visual_dark.png') }}" class="visual-img"
+                            alt="3D Human Visual">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Services -->
+        <h5 class="fw-bold mb-4 position-relative z-index-2 animate-fade-in delay-200">Core Services</h5>
+
+        <div class="dashboard-grid-section position-relative z-index-2 animate-fade-in delay-300">
+            <!-- AI Assistant (Primary/Gradient Theme) -->
+            <a href="{{ url_for('features.ai_assistant') }}" class="premium-card"
+                style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white;">
+                <div class="card-icon-circle"
+                    style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">AI Assistant</h3>
+                    <p class="card-sub text-white-50">Instant health answers and symptom analysis.</p>
+                </div>
+            </a>
+
+            <!-- Book Appointment (Dark Theme) -->
+            <a href="{{ url_for('patient.appointments') }}" class="premium-card"
+                style="background: linear-gradient(135deg, #1fa2ff 0%, #12d8fa 100%); color: white;">
+                <div class="card-icon-circle"
+                    style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">Book Visit</h3>
+                    <p class="card-sub text-white-50">Schedule an appointment with a doctor.</p>
+                </div>
+            </a>
+        </div>
+        <h5 class="fw-bold mb-4 position-relative z-index-2 animate-fade-in delay-200">My Records</h5>
+
+        <div class="dashboard-grid-section position-relative z-index-2 animate-fade-in delay-300">
+            <!-- 1. Prescriptions (Light/Blue Theme) -->
+            <a href="{{ url_for('patient.prescriptions') }}" class="premium-card card-light"
+                style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+                <div class="card-icon-circle" style="color: #2563eb; background: white;">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">Prescriptions</h3>
+                    <p class="card-sub">View and manage your active medications.</p>
+                </div>
+            </a>
+
+            <!-- 2. Lab Reports (Glass/Blue Theme) -->
+            <a href="{{ url_for('patient.lab_reports') }}" class="premium-card card-glass">
+                <div class="card-icon-circle">
+                    <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">Lab Reports</h3>
+                    <p class="card-sub">Track your test results and health metrics.</p>
+                </div>
+            </a>
+
+            <!-- 3. My Invoices (Green Theme) -->
+            <a href="{{ url_for('patient.billing') }}" class="premium-card"
+                style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #166534;">
+                <div class="card-icon-circle"
+                    style="color: #166534; background: white; border-color: rgba(22, 101, 52, 0.1);">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">My Invoices</h3>
+                    <p class="card-sub" style="color: #166534; opacity: 0.8;">Manage your billing and payments.</p>
+                </div>
+            </a>
+
+            <!-- 4. Risk Check (Dark Theme) -->
+            <a href="{{ url_for('patient.enter_health_data') }}" class="premium-card card-dark">
+                <div class="card-icon-circle">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg">Risk Check</h3>
+                    <p class="card-sub text-white-50">Early detection of health risks.</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- More Tools Section -->
+        <h5 class="fw-bold mb-4 position-relative z-index-2 animate-fade-in delay-400">More Tools</h5>
+
+        <div class="dashboard-grid-section position-relative z-index-2 animate-fade-in delay-500">
+            <!-- 5. Health Videos (Primary Theme) -->
+            <a href="{{ url_for('features.education') }}" class="premium-card"
+                style="background: white; border: 1px solid #e2e8f0;">
+                <div class="card-icon-circle" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg" style="font-size: 1.5rem;">Health Videos</h3>
+                    <p class="card-sub text-muted">Educational content for your well-being.</p>
+                </div>
+            </a>
+
+            <!-- 6. Exercise Plan (Success Theme) -->
+            <a href="{{ url_for('patient.exercise_plan') }}" class="premium-card"
+                style="background: white; border: 1px solid #e2e8f0;">
+                <div class="card-icon-circle" style="background: #f0fdf4; color: #16a34a;">
+                    <i class="fas fa-running"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg" style="font-size: 1.5rem;">Exercise Plan</h3>
+                    <p class="card-sub text-muted">AI-generated fitness routines.</p>
+                </div>
+            </a>
+
+            <!-- 7. Diet Plan (Warning Theme) - RESTORED -->
+            <a href="{{ url_for('patient.diet_plan') }}" class="premium-card"
+                style="background: white; border: 1px solid #e2e8f0;">
+                <div class="card-icon-circle" style="background: #fff7ed; color: #ea580c;">
+                    <i class="fas fa-carrot"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg" style="font-size: 1.5rem;">Diet Plan</h3>
+                    <p class="card-sub text-muted">Personalized nutrition & meal plans.</p>
+                </div>
+            </a>
+
+            <!-- 7. Express Check-in (Info Theme) -->
+            <a href="{{ url_for('features.digital_checkin') }}" class="premium-card"
+                style="background: white; border: 1px solid #e2e8f0;">
+                <div class="card-icon-circle" style="background: #e0f2fe; color: #0284c7;">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg" style="font-size: 1.5rem;">Express Check-in</h3>
+                    <p class="card-sub text-muted">Skip the queue with digital check-in.</p>
+                </div>
+            </a>
+
+            <!-- 8. Emergency (Red/Danger Theme) -->
+            <a href="{{ url_for('features.emergency_sos') }}" class="premium-card"
+                style="background: #fef2f2; border: 1px solid #fee2e2;">
+                <div class="card-icon-circle"
+                    style="background: #fee2e2; color: #dc2626; border-color: rgba(220, 38, 38, 0.1);">
+                    <i class="fas fa-ambulance"></i>
+                </div>
+                <div>
+                    <h3 class="card-title-lg text-danger" style="font-size: 1.5rem;">Emergency</h3>
+                    <p class="card-sub text-danger opacity-75">Quick access to emergency services.</p>
+                </div>
+            </a>
+        </div>
+
+
+
+
+
+    </div>
+</div>
+{% endblock %}

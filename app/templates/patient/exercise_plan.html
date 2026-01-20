@@ -1,0 +1,638 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Rehabilitation Hub{% endblock %}
+
+{% block content %}
+<!-- Google Fonts: Inter for that clean, premium tech look -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+        --shadow-md: 0 12px 24px -6px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        --radius-lg: 24px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+        --danger-soft: #fef2f2;
+        --danger-solid: #ef4444;
+        --success-soft: #ecfdf5;
+        --success-solid: #10b981;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafc;
+        color: #1e293b;
+    }
+
+    /* --- PREMIUM COMPONENTS --- */
+
+    /* 1. Glassmorphism Card */
+    .premium-card {
+        background: #ffffff;
+        border-radius: var(--radius-lg);
+        border: 1px solid #e2e8f0;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+
+    .premium-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* 2. Urgent Safety Banner */
+    .safety-banner {
+        background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+        border-radius: var(--radius-md);
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.3);
+    }
+
+    .safety-banner::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: repeating-linear-gradient(45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.05) 10px,
+                rgba(255, 255, 255, 0.05) 20px);
+    }
+
+    /* 3. Modern Pain Slider */
+    .pain-container {
+        padding: 1.5rem;
+        background: #fafafa;
+        border-radius: var(--radius-md);
+        border: 1px solid #f1f5f9;
+    }
+
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+        margin: 10px 0;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 2px solid #64748b;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        margin-top: -10px;
+        transition: transform 0.1s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
+        border-radius: 2px;
+    }
+
+    /* 4. Timeline Navigation */
+    .phase-nav {
+        background: white;
+        padding: 0.5rem;
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .phase-btn {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid transparent;
+        background: transparent;
+        color: #64748b;
+        text-align: left;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .phase-btn:hover {
+        background: #f8fafc;
+    }
+
+    .phase-btn.active {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1e40af;
+        box-shadow: 0 4px 6px -2px rgba(37, 99, 235, 0.1);
+    }
+
+    .phase-btn.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 10%;
+        bottom: 10%;
+        width: 4px;
+        background: #2563eb;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* 5. Apple-style Exercise Cards */
+    .exercise-card-modern {
+        background: white;
+        border-radius: var(--radius-md);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+        display: flex;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .exercise-card-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: #e2e8f0;
+    }
+
+    .ex-image-container {
+        width: 200px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ex-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .exercise-card-modern:hover .ex-image {
+        transform: scale(1.05);
+    }
+
+    .ex-content {
+        flex: 1;
+        padding: 1.5rem;
+    }
+
+    /* 6. Medical Tags */
+    .med-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    .tag-reason {
+        background: #f0f9ff;
+        color: #0284c7;
+        border: 1px solid #e0f2fe;
+    }
+
+    /* 7. Floating Day Tabs */
+    .day-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        scrollbar-width: none;
+    }
+
+    .day-tab {
+        padding: 0.5rem 1.25rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #64748b;
+        white-space: nowrap;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .day-tab:hover {
+        border-color: #cbd5e1;
+        color: #334155;
+    }
+
+    .day-tab.active {
+        background: #0f172a;
+        color: white;
+        border-color: #0f172a;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    /* Utilities */
+    .text-gradient {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .blur-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: var(--radius-md);
+    }
+</style>
+
+<div class="container-fluid px-4 py-5">
+
+    <!-- HEADER: DOCTOR STATUS -->
+    <div class="row mb-5 align-items-end">
+        <div class="col-md-8">
+            <span class="med-tag mb-2" style="background:#e0e7ff; color:#4338ca;">
+                <i class="fas fa-hospital me-2"></i> CLINICAL REHABILITATION
+            </span>
+            <h1 class="fw-bold display-5 mb-0 ls-tight">
+                {{ full_plan.doctor_note.focus }} Protocol
+            </h1>
+            <p class="text-muted mt-2 mb-0" style="font-size: 1.1rem;">
+                Prescription ID: <strong>{{ full_plan.doctor_note.prescription_id }}</strong> • Assigned to {{
+                patient.first_name }} {{ patient.last_name }}
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="d-inline-flex align-items-center bg-white px-4 py-2 rounded-pill shadow-sm border">
+                <div class="bg-success rounded-circle me-3"
+                    style="width:10px; height:10px; animation: pulse 2s infinite;"></div>
+                <span class="fw-bold text-success small">ACTIVE • MONITORED</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAFETY ALERT -->
+    <div class="safety-banner p-4 mb-5 d-flex align-items-center gap-4">
+        <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center"
+            style="width: 60px; height: 60px;">
+            <i class="fas fa-heart-pulse fa-2x"></i>
+        </div>
+        <div>
+            <h5 class="fw-bold text-uppercase mb-1" style="letter-spacing: 1px;">Clinical Safety Warning</h5>
+            <p class="mb-0 opacity-90 small">Stop immediately if you experience:
+                <span class="fw-bold mx-1">Chest Pain</span> •
+                <span class="fw-bold mx-1">Dizziness</span> •
+                <span class="fw-bold mx-1">Shortness of Breath</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-5">
+
+        <!-- SIDEBAR: CONTROLS & INFO -->
+        <div class="col-lg-3">
+            <div class="d-flex flex-column gap-4 sticky-top" style="top: 2rem; z-index: 1;">
+
+                <!-- DOCTOR CARD REMOVED -->
+
+                <!-- 2. PAIN SLIDER -->
+                <div class="premium-card pain-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="fw-bold small text-uppercase text-muted">Pain Assessment</label>
+                        <span id="painVal"
+                            class="badge bg-success bg-opacity-10 text-success border border-success px-3 rounded-pill">0
+                            - No Pain</span>
+                    </div>
+
+                    <input type="range" min="0" max="10" step="1" value="0" oninput="updatePainLevel(this.value)">
+
+                    <div class="d-flex justify-content-between small fw-bold text-muted mt-2">
+                        <span>Safe</span>
+                        <span>Severe</span>
+                    </div>
+                </div>
+
+                <!-- 3. COMPLIANCE -->
+                <div class="premium-card p-4">
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div>
+                            <span class="d-block text-muted small fw-bold text-uppercase">Adherence</span>
+                            <span class="d-block display-6 fw-bold text-dark" id="adherence-badge">72%</span>
+                        </div>
+                        <div style="width: 40px; height: 40px;">
+                            <!-- Simple circular chart placeholder -->
+                            <svg viewBox="0 0 36 36" class="w-100 h-100">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none" stroke="#e2e8f0" stroke-width="4" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="72, 100" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <label class="d-flex align-items-center gap-3 p-2 rounded hover-bg-light cursor-pointer">
+                            <input type="checkbox" class="form-check-input flex-shrink-0"
+                                style="width: 20px; height: 20px;" data-type="morning" onclick="updateCompliance(this)">
+                            <div>
+                                <span class="d-block fw-bold small text-dark">Morning Routine</span>
+                                <span class="d-block text-muted" style="font-size: 0.75rem;">Before 10:00 AM</span>
+                            </div>
+                        </label>
+                        <label class="d-flex align-items-center gap-3 p-2 rounded hover-bg-light cursor-pointer">
+                            <input type="checkbox" class="form-check-input flex-shrink-0"
+                                style="width: 20px; height: 20px;" data-type="evening" onclick="updateCompliance(this)">
+                            <div>
+                                <span class="d-block fw-bold small text-dark">Evening Mobility</span>
+                                <span class="d-block text-muted" style="font-size: 0.75rem;">After 6:00 PM</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 4. RULES MINI -->
+                <div class="premium-card p-4 bg-light border-0">
+                    <h6 class="fw-bold small text-uppercase text-muted mb-3">Protocol Rules</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for s in full_plan.analysis.safe[:3] %}
+                        <span class="badge bg-white text-success border shadow-sm">{{ s }}</span>
+                        {% endfor %}
+                        {% for f in full_plan.analysis.forbidden[:2] %}
+                        <span class="badge bg-white text-danger border shadow-sm text-decoration-line-through">{{ f
+                            }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="col-lg-9">
+
+            <div class="d-flex align-items-start gap-4" id="main-interface">
+                <!-- Phases Sidebar (Timeline) -->
+                <div class="nav flex-column phase-nav w-25" id="v-pills-tab" role="tablist">
+                    {% for week in full_plan.plan.keys()|sort %}
+                    <button class="phase-btn {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-{{ week|replace(' ', '') }}" type="button" role="tab"
+                        aria-controls="v-pills-{{ week|replace(' ', '') }}"
+                        aria-selected="{{ 'true' if loop.first else 'false' }}">
+                        <div>
+                            <div class="small fw-bold text-uppercase opacity-75 mb-1">{{ week }}</div>
+                            <div class="fw-bold text-dark mb-1">{{ full_plan.plan[week].meta.title }}</div>
+                            <span class="badge bg-gray-200 text-dark border fw-normal" style="font-size: 0.7rem;">{{
+                                full_plan.plan[week].meta.zone }}</span>
+                        </div>
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <!-- Phases Content -->
+                <div class="tab-content w-75" id="v-pills-tabContent">
+                    {% for week, data in full_plan.plan.items()|sort %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                        id="v-pills-{{ week|replace(' ', '') }}" role="tabpanel">
+
+                        <!-- Day Tabs -->
+                        <div class="day-tabs nav nav-pills" role="tablist">
+                            {% for day in data.days.keys()|sort %}
+                            <button class="day-tab {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
+                                data-bs-target="#content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}"
+                                type="button" role="tab"
+                                aria-controls="content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}"
+                                aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                {{ day }}
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Day Content -->
+                        <div class="tab-content">
+                            {% for day, exercises in data.days.items()|sort %}
+                            <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                                id="content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}">
+
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="fw-bold mb-0">Scheduled Tasks</h5>
+                                    <span class="text-muted small">{{ exercises|length }} Exercises</span>
+                                </div>
+
+                                {% for ex in exercises %}
+                                <div class="exercise-card-modern exercise-item"
+                                    data-intensity="{% if ex.tag_color == 'warning' %}high{% elif ex.tag_color == 'primary' %}medium{% else %}low{% endif %}">
+                                    <div class="ex-image-container">
+                                        <img src="{{ ex.image }}" class="ex-image">
+                                        <div class="position-absolute top-0 start-0 m-2">
+                                            <span class="badge bg-white text-dark shadow-sm border">{{ ex.tag }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ex-content">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="fw-bold text-dark mb-0">{{ ex.name }}</h5>
+                                            {% if ex.approved %}
+                                            <i class="fas fa-certificate text-primary" title="Doctor Approved"></i>
+                                            {% endif %}
+                                        </div>
+
+                                        <p class="text-muted small mb-3">{{ ex.desc }}</p>
+
+                                        <div class="d-flex align-items-center justify-content-between mt-auto">
+                                            <div class="text-muted small fw-bold">
+                                                <i class="far fa-clock me-1"></i> <span class="rep-text"
+                                                    data-original="{{ ex.sets }}">{{ ex.sets }}</span>
+                                            </div>
+
+                                            <div class="med-tag tag-reason">
+                                                <i class="fas fa-stethoscope me-1"></i> {{ ex.reason }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Pain Overlay -->
+                                    <div class="blur-overlay pain-overlay d-none">
+                                        <div class="text-center">
+                                            <div
+                                                class="bg-white rounded-circle p-3 shadow-lg mb-2 d-inline-block text-danger">
+                                                <i class="fas fa-ban fa-2x"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-danger">Skipped due to Pain</h6>
+                                            <span class="small text-muted">Safety Protocol Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                                <div class="text-end mt-4">
+                                    <button class="btn btn-dark btn-lg rounded-pill px-5 shadow-lg complete-btn"
+                                        onclick="markDayComplete(this, '{{ day }}')">
+                                        Mark {{ day }} Complete <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. PAIN SLIDER LOGIC ---
+    function updatePainLevel(val) {
+        const badge = document.getElementById('painVal');
+        const cards = document.querySelectorAll('.exercise-item');
+
+        // Update Badge UI
+        if (val < 4) {
+            badge.innerText = val + " - Safe";
+            badge.className = "badge bg-success bg-opacity-10 text-success border border-success px-3 rounded-pill";
+        } else if (val < 7) {
+            badge.innerText = val + " - Moderate";
+            badge.className = "badge bg-warning bg-opacity-10 text-warning border border-warning px-3 rounded-pill";
+        } else {
+            badge.innerText = val + " - Severe Alert";
+            badge.className = "badge bg-danger bg-opacity-10 text-danger border border-danger px-3 rounded-pill";
+        }
+
+        // Apply Logic to Cards
+        cards.forEach(card => {
+            const intensity = card.dataset.intensity;
+            const repText = card.querySelector('.rep-text');
+            const overlay = card.querySelector('.pain-overlay');
+            const originalReps = repText.dataset.original;
+
+            // Reset
+            overlay.classList.add('d-none');
+            repText.innerText = originalReps;
+
+            if (val >= 7) {
+                // Severe: Disable Med/High
+                if (intensity === 'high' || intensity === 'medium') {
+                    overlay.classList.remove('d-none');
+                } else {
+                    repText.innerText = "Reduce by 50%";
+                }
+            } else if (val >= 4) {
+                // Moderate: Disable High, Reduce Med
+                if (intensity === 'high') {
+                    overlay.classList.remove('d-none');
+                } else if (intensity === 'medium') {
+                    repText.innerText = "Do 50% Reps";
+                }
+            }
+        });
+    }
+
+    // --- 2. DOCTOR SUSPEND LOGIC ---
+    function togglePlanSuspend() {
+        const btn = event.currentTarget;
+        const msg = document.getElementById('suspend-msg');
+        const mainInterface = document.getElementById('main-interface');
+
+        if (msg.classList.contains('d-none')) {
+            msg.classList.remove('d-none');
+            btn.classList.remove('btn-outline-danger');
+            btn.classList.add('btn-danger', 'text-white');
+            btn.innerHTML = '<i class="fas fa-play me-2"></i> RESUME PLAN';
+            mainInterface.style.opacity = "0.3";
+            mainInterface.style.pointerEvents = "none";
+            mainInterface.style.filter = "grayscale(100%)";
+        } else {
+            msg.classList.add('d-none');
+            btn.classList.add('btn-outline-danger');
+            btn.classList.remove('btn-danger', 'text-white');
+            btn.innerHTML = '<i class="fas fa-pause-circle me-2"></i> SUSPEND PLAN';
+            mainInterface.style.opacity = "1";
+            mainInterface.style.pointerEvents = "all";
+            mainInterface.style.filter = "none";
+        }
+    }
+
+    // --- 3. COMPLIANCE TRACKER LOGIC ---
+    document.addEventListener('DOMContentLoaded', function () {
+        loadCompliance();
+    });
+
+    function updateCompliance(checkbox) {
+        const type = checkbox.dataset.type;
+        const today = new Date().toISOString().split('T')[0];
+        const key = `compliance_${today}_${type}`;
+
+        if (checkbox.checked) {
+            localStorage.setItem(key, 'done');
+        } else {
+            localStorage.removeItem(key);
+        }
+
+        calculateAdherence();
+    }
+
+    function markDayComplete(btn, day) {
+        btn.innerHTML = '<i class="fas fa-check-circle me-2"></i> Completed';
+        btn.classList.remove('btn-dark');
+        btn.classList.add('btn-success');
+
+        const morningBox = document.querySelector('input[data-type="morning"]');
+        if (morningBox && !morningBox.checked) {
+            morningBox.checked = true;
+            updateCompliance(morningBox);
+        }
+    }
+
+    function loadCompliance() {
+        const today = new Date().toISOString().split('T')[0];
+        const morningBox = document.querySelector('input[data-type="morning"]');
+        const eveningBox = document.querySelector('input[data-type="evening"]');
+
+        if (localStorage.getItem(`compliance_${today}_morning`)) morningBox.checked = true;
+        if (localStorage.getItem(`compliance_${today}_evening`)) eveningBox.checked = true;
+
+        calculateAdherence();
+    }
+
+    function calculateAdherence() {
+        let score = 72;
+        const m = document.querySelector('input[data-type="morning"]').checked;
+        const e = document.querySelector('input[data-type="evening"]').checked;
+
+        if (m) score += 10;
+        if (e) score += 10;
+        if (score > 100) score = 100;
+
+        document.getElementById('adherence-badge').innerText = score + "%";
+    }
+</script>
+{% endblock %}

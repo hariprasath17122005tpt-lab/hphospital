@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Medical Diet Protocol - Smart Diet Plan{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background-color: #f8f9fa;">
+
+    <!-- ===== HEADER: Professional Presentation ===== -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-4 rounded shadow-sm border-start border-5 border-primary">
+        <div>
+            <h1 class="mb-1 fw-bold text-dark"><i class="fas fa-file-medical-alt text-primary me-2"></i>{{ plan['protocol_name'] }}</h1>
+            <p class="text-muted mb-0">
+                Patient: <strong>{{ patient.first_name }} {{ patient.last_name }}</strong> | 
+                <span class="badge bg-success">Confidence Score: {{ plan['14_confidence_score'] }}%</span> | 
+                <span class="badge bg-info">BMI: {{ plan['patient_bmi'] }}</span>
+            </p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <small class="text-uppercase text-muted fw-bold d-block mb-2">Approved By Departments:</small>
+            {% for dept in plan['14_departments'] %}
+            <span class="badge bg-light text-dark border me-1"><i class="fas fa-check-circle text-success me-1"></i>{{ dept }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ===== 7️⃣ DIET CHANGE RISK WARNING ===== -->
+    <div class="alert alert-warning border-start border-warning border-4 shadow-sm mb-4" role="alert">
+        <div class="d-flex">
+            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+            <div>
+                <h5 class="alert-heading fw-bold">⚠️ Clinical Warning: Sudden Diet Changes</h5>
+                <p class="mb-0"><strong>{{ plan['7_risk_warning'] }}</strong></p>
+                <small class="text-muted">Transition gradually over 5-7 days for optimal safety.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 1️⃣1️⃣ MEDICAL CONDITION STACKING LOGIC ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted fw-bold mb-3"><i class="fas fa-layer-group me-2"></i>🧬 Medical Condition Priority Stack</h6>
+                    <p class="small text-muted mb-3">Diet priorities ordered by organ protection & reversal potential:</p>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        {% for cond in plan['11_stacking_order'] %}
+                        <div class="d-flex align-items-center bg-gradient-primary px-3 py-2 rounded-pill border border-primary">
+                            <span class="badge bg-danger rounded-circle me-2">{{ loop.index }}</span>
+                            <span class="fw-bold text-dark">{{ cond }}</span>
+                        </div>
+                        {% if not loop.last %}
+                        <i class="fas fa-chevron-right text-primary mx-1"></i>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ROW ===== -->
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Scientific Visuals -->
+        <div class="col-lg-4">
+
+            <!-- 1️⃣ DIET–BODY ORGAN MAP ===== -->
+            <div class="card shadow-sm border-0 mb-4 h-100">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-heart me-2"></i> 1️⃣ Diet-Body Organ Benefits Map</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">Which organs benefit from this diet plan:</p>
+                    <div class="list-group list-group-flush">
+                        {% for organ in plan['1_organ_benefits'] %}
+                        <div class="list-group-item d-flex align-items-start px-0 py-2">
+                            <div class="fs-4 me-3" style="min-width: 30px;">{{ organ.organ.split('→')[0].strip() }}</div>
+                            <div>
+                                <strong class="d-block text-dark">{{ organ.organ.split('→')[1].strip() }}</strong>
+                                <small class="text-muted">{{ organ.benefit }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2️⃣ LAB-REPORT LINKED DIET JUSTIFICATION ===== -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="fas fa-flask-vial me-2"></i> 2️⃣ Lab-Report Linked Diet Rules</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0 small">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Lab Value</th>
+                                    <th>Status</th>
+                                    <th>Diet Rule</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lab in plan['2_lab_insights'] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ lab.test }}</strong><br>
+                                        <small class="text-muted">{{ lab.value }}</small>
+                                    </td>
+                                    <td><span class="badge bg-warning">{{ lab.status }}</span></td>
+                                    <td>
+                                        <span class="text-success fw-bold">{{ lab.diet_rule }}</span><br>
+                                        <small class="text-muted fst-italic">{{ lab.reason }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4️⃣ EATING SPEED ANALYZER ===== -->
+            <div class="card shadow-sm border-0 mb-4 bg-info bg-opacity-10">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-utensils me-2"></i> 4️⃣ Eating Speed Analyzer</h6>
+                </div>
+                <div class="card-body text-center">
+                    <p class="small mb-2">How fast do you usually finish a meal?</p>
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <input type="radio" class="btn-check" name="eatSpeed" id="speedSlow" value="Slow" autocomplete="off">
+                        <label class="btn btn-outline-info btn-sm" for="speedSlow">🐌 Slow</label>
+
+                        <input type="radio" class="btn-check" name="eatSpeed" id="speedMod" value="Moderate" autocomplete="off" checked>
+                        <label class="btn btn-outline-info btn-sm" for="speedMod">⚡ Moderate</label>
+
+                        <input type="radio" class="btn-check" name="eatSpeed" id="speedFast" value="Fast" autocomplete="off">
+                        <label class="btn btn-outline-info btn-sm" for="speedFast">🔥 Fast</label>
+                    </div>
+                    <div id="speedAdvice" class="alert alert-light border border-info small mb-0 text-start">
+                        <i class="fas fa-info-circle me-1 text-info"></i> {{ plan['4_eating_speed_advice'] }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9️⃣ DIET + SLEEP CORRELATION PANEL ===== -->
+            <div class="card shadow-sm border-0 mb-4 bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-moon fa-2x text-warning me-3"></i>
+                        <h6 class="mb-0 fw-bold">9️⃣ Sleep-Diet Link</h6>
+                    </div>
+                    <p class="small opacity-75 mb-2">{{ plan['9_sleep_advice'].correlation }}</p>
+                    <div class="bg-white bg-opacity-10 p-2 rounded small mb-2">
+                        <strong><i class="fas fa-clock me-1"></i> Rule:</strong> {{ plan['9_sleep_advice'].rule }}
+                    </div>
+                    <div class="bg-white bg-opacity-10 p-2 rounded small">
+                        <strong><i class="fas fa-heart me-1"></i> Sleep Benefit:</strong> {{ plan['9_sleep_advice'].sleep_benefit }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: The Diet Plan & Features ===== -->
+        <div class="col-lg-8">
+
+            <!-- 6️⃣ COGNITIVE LOAD TOGGLE ===== -->
+            <div class="d-flex justify-content-end mb-3 gap-2">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-primary active" id="btnDetailed" onclick="toggleView('detailed')">
+                        <i class="fas fa-microscope me-1"></i>Detailed Medical Mode
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnSimple" onclick="toggleView('simple')">
+                        <i class="fas fa-lightbulb me-1"></i>Simple Mode (3 Rules)
+                    </button>
+                </div>
+            </div>
+
+            <!-- SIMPLE VIEW (6️⃣ COGNITIVE LOAD) ===== -->
+            <div id="simpleView" class="d-none">
+                <div class="card border-0 shadow-lg text-center p-5 mb-4">
+                    <h3 class="text-primary mb-4"><i class="fas fa-star me-2"></i>3 Golden Rules for Success</h3>
+                    <div class="d-grid gap-3">
+                        {% for rule in plan['6_simple_rules'] %}
+                        <div class="p-4 bg-light rounded-3 border-2 border-primary fw-bold fs-6 text-start">
+                            <i class="fas fa-check-circle text-success me-2"></i>{{ rule }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted mt-4 mb-0">Follow these 3 simple steps for 90% of the results!</p>
+                </div>
+            </div>
+
+            <!-- DETAILED VIEW ===== -->
+            <div id="detailedView">
+                
+                <!-- 5️⃣ DIET FATIGUE PREVENTION MODE (WEEKLY ROTATION) ===== -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> 5️⃣ 3-Week Meal Rotation (Prevent Diet Fatigue)</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="nav nav-tabs card-header-tabs mb-0" id="weekTabs" role="tablist">
+                            {% for week in plan['5_weekly_plan'].keys() %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {% if loop.first %}active{% endif %}" id="tab-week-{{ loop.index }}" data-bs-toggle="tab" data-bs-target="#week-{{ loop.index }}" type="button">{{ week }}</button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="tab-content p-3">
+                            {% for week, meals in plan['5_weekly_plan'].items() %}
+                            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="week-{{ loop.index }}" role="tabpanel">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <h6 class="text-warning fw-bold"><i class="fas fa-sun"></i> Breakfast</h6>
+                                        <p class="small">{{ meals.breakfast }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-primary fw-bold"><i class="fas fa-cloud"></i> Lunch</h6>
+                                        <p class="small">{{ meals.lunch }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-secondary fw-bold"><i class="fas fa-moon"></i> Dinner</h6>
+                                        <p class="small">{{ meals.dinner }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3️⃣ FOOD EFFECT CLASSIFICATION ===== -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-leaf me-2"></i> 3️⃣ Food Effect Classification (Immediate vs Long-Term)</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 small">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Superfood</th>
+                                        <th><i class="fas fa-bolt text-warning"></i> Immediate Effect</th>
+                                        <th><i class="fas fa-shield-alt text-success"></i> Long-Term Effect</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for effect in plan['3_food_effects'] %}
+                                    <tr>
+                                        <td class="fw-bold">{{ effect.food }}</td>
+                                        <td class="text-warning"><i class="fas fa-bolt me-1"></i> {{ effect.immediate }}</td>
+                                        <td class="text-success"><i class="fas fa-shield-alt me-1"></i> {{ effect.long_term }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔟 DIET WARNING FLAGS (Color-Based Safety) ===== -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="fas fa-traffic-light me-2"></i> 🔟 Food Safety Flags (Color-Based Guide)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong class="d-block text-success mb-2"><i class="fas fa-circle text-success"></i> 🟢 Safe (Eat Daily)</strong>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% for food in plan['10_classified_foods'] %}
+                                {% if food.color == 'success' %}
+                                <span class="badge bg-success bg-opacity-20 text-success border border-success">
+                                    <i class="fas fa-check-circle me-1"></i>{{ food.name }}
+                                </span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="d-block text-warning mb-2"><i class="fas fa-circle text-warning"></i> 🟡 Occasional (1-2x Weekly)</strong>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% for food in plan['10_classified_foods'] %}
+                                {% if food.color == 'warning' %}
+                                <span class="badge bg-warning bg-opacity-20 text-warning border border-warning">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ food.name }}
+                                </span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <strong class="d-block text-danger mb-2"><i class="fas fa-circle text-danger"></i> 🔴 Avoid (Never)</strong>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for food in plan['10_classified_foods'] %}
+                                {% if food.color == 'danger' %}
+                                <span class="badge bg-danger bg-opacity-20 text-danger border border-danger">
+                                    <i class="fas fa-times-circle me-1"></i>{{ food.name }}
+                                </span>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8️⃣ FESTIVAL / TRAVEL SAFE MODE ===== -->
+                <div class="d-grid gap-2 mb-4">
+                    <button class="btn btn-outline-primary border-2 p-3" type="button" data-bs-toggle="collapse" data-bs-target="#festivalMode">
+                        <i class="fas fa-plane-departure me-2"></i>8️⃣ Festival / Travel Safe Mode (Damage Control)
+                    </button>
+                    <div class="collapse" id="festivalMode">
+                        <div class="card card-body bg-warning bg-opacity-10 border-2 border-warning">
+                            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-shield-alt me-2"></i>Festival Strategy</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="mb-2">
+                                        <strong class="d-block text-warning"><i class="fas fa-chart-pie me-1"></i>80/20 Rule:</strong> 
+                                        {{ plan['8_festival_guide'].strategy }}
+                                    </div>
+                                    <div>
+                                        <strong class="d-block text-warning"><i class="fas fa-box me-1"></i>Portion Control:</strong>
+                                        {{ plan['8_festival_guide'].portion_limit }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <strong class="d-block text-warning"><i class="fas fa-apple-alt me-1"></i>Safe Foods:</strong>
+                                        <small>{{ plan['8_festival_guide'].safe_foods|join(', ') }}</small>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block text-warning"><i class="fas fa-redo me-1"></i>Recovery:</strong>
+                                        {{ plan['8_festival_guide'].recovery }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- End Detailed View -->
+
+        </div>
+    </div>
+
+    <!-- ===== 1️⃣5️⃣ WHAT HAPPENS IF YOU IGNORE THIS? ===== -->
+    <div class="card bg-danger text-white border-0 shadow-lg mt-4 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3"><i class="fas fa-exclamation-circle me-2"></i> 1️⃣5️⃣ What Happens If You Ignore This Diet?</h5>
+            <p class="small mb-3 opacity-90">Clinical Timeline of Consequences:</p>
+            <div class="row">
+                {% for seq in plan['15_consequences'] %}
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-times-circle me-2 opacity-50" style="min-width: 20px;"></i>
+                        <span class="small">{{ seq }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 1️⃣2️⃣ PATIENT UNDERSTANDING CHECK ===== -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center">
+            <h6 class="text-muted mb-3"><i class="fas fa-question-circle me-2"></i>1️⃣2️⃣ Did You Understand This Clinically Prepared Diet?</h6>
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="understand" id="yes" autocomplete="off" value="yes">
+                <label class="btn btn-outline-success fw-bold" for="yes"><i class="fas fa-check me-1"></i>Yes, Crystal Clear</label>
+
+                <input type="radio" class="btn-check" name="understand" id="somewhat" autocomplete="off" value="somewhat">
+                <label class="btn btn-outline-warning fw-bold" for="somewhat"><i class="fas fa-question me-1"></i>Somewhat Clear</label>
+
+                <input type="radio" class="btn-check" name="understand" id="no" autocomplete="off" value="no">
+                <label class="btn btn-outline-danger fw-bold" for="no"><i class="fas fa-times me-1"></i>Explain Simpler</label>
+            </div>
+            <div id="simpleExplain" class="d-none mt-3 p-3 bg-success bg-opacity-10 border border-success rounded">
+                <i class="fas fa-lightbulb text-success me-2"></i>
+                <span class="text-success fw-bold">Great! Switching you to Simple Mode for better clarity.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 1️⃣3️⃣ DIET MEDICO-LEGAL SAFETY PANEL ===== -->
+    <footer class="mt-5 p-4 text-center text-muted small border-top bg-light rounded">
+        <div class="container" style="max-width: 900px;">
+            <h6 class="fw-bold text-dark mb-2"><i class="fas fa-shield-alt me-2"></i>1️⃣3️⃣ Medical-Legal Safety Disclaimer</h6>
+            <p class="mb-1 fw-bold text-success">{{ plan['13_medico_legal'].statement }}</p>
+            <p class="mb-1"><i class="fas fa-microscope me-1"></i>{{ plan['13_medico_legal'].monitoring }}</p>
+            <p class="mb-3 fst-italic">{{ plan['13_medico_legal'].disclaimer }}</p>
+            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                <span><i class="fas fa-hospital text-primary me-1"></i> Hospital Approved</span>
+                <span><i class="fas fa-user-md text-success me-1"></i> Doctor Verified</span>
+                <span><i class="fas fa-lock text-warning me-1"></i> Secure Data</span>
+                <span><i class="fas fa-star text-danger me-1"></i> Clinically Evidence-Based</span>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+<!-- ===== INTERACTIVE SCRIPTS ===== -->
+<script>
+    function toggleView(mode) {
+        document.getElementById('btnDetailed').classList.remove('active');
+        document.getElementById('btnSimple').classList.remove('active');
+
+        if (mode === 'simple') {
+            document.getElementById('detailedView').classList.add('d-none');
+            document.getElementById('simpleView').classList.remove('d-none');
+            document.getElementById('btnSimple').classList.add('active');
+        } else {
+            document.getElementById('simpleView').classList.add('d-none');
+            document.getElementById('detailedView').classList.remove('d-none');
+            document.getElementById('btnDetailed').classList.add('active');
+        }
+    }
+
+    // 1️⃣2️⃣ Interactive Understanding Check
+    document.getElementById('no').addEventListener('change', function () {
+        if (this.checked) {
+            document.getElementById('simpleExplain').classList.remove('d-none');
+            setTimeout(() => toggleView('simple'), 1500);
+        }
+    });
+
+    // 4️⃣ Eating Speed Feedback
+    document.getElementById('speedFast').addEventListener('change', function () {
+        if (this.checked) {
+            document.getElementById('speedAdvice').innerHTML = '<i class="fas fa-exclamation-triangle text-danger me-1"></i> <strong>WARNING:</strong> Fast eating spikes insulin & BP! Recommendation: Chew 25-30 times per bite. Use smaller utensils. Put fork down between bites.';
+            document.getElementById('speedAdvice').classList.add('text-danger', 'fw-bold', 'border-danger');
+        }
+    });
+
+    document.getElementById('speedSlow').addEventListener('change', function () {
+        if (this.checked) {
+            document.getElementById('speedAdvice').innerHTML = '<i class="fas fa-thumbs-up text-success me-1"></i> <strong>Excellent!</strong> Slow eating aids digestion & nutrient absorption. Your BP will remain stable.';
+            document.getElementById('speedAdvice').classList.remove('text-danger', 'fw-bold', 'border-danger');
+            document.getElementById('speedAdvice').classList.add('text-success');
+        }
+    });
+
+    document.getElementById('speedMod').addEventListener('change', function () {
+        if (this.checked) {
+            document.getElementById('speedAdvice').innerHTML = '<i class="fas fa-check-circle text-info me-1"></i> <strong>Good pace!</strong> Continue eating mindfully. Aim to finish meals in 20-25 minutes.';
+            document.getElementById('speedAdvice').classList.remove('text-danger', 'fw-bold', 'border-danger', 'text-success');
+            document.getElementById('speedAdvice').classList.add('text-info');
+        }
+    });
+
+    // Print functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const printBtn = document.getElementById('printBtn');
+        if (printBtn) {
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+        }
+    });
+</script>
+
+<style>
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+    
+    @media print {
+        .btn-group, .collapse-button {
+            display: none;
+        }
+        .card {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+
+{% endblock %}

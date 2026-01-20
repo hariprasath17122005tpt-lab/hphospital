@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Find Hospitals{% endblock %}
+
+{% block content %}
+{% macro hospital_card(hospital) %}
+<div class="col-md-6 col-lg-4">
+    <div class="card h-100 border-0 shadow-sm hover-elevate transition-all">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="badge bg-soft-primary text-primary rounded-pill px-3 py-2">
+                    {{ hospital.type }}
+                </div>
+                {% if hospital.district %}
+                <span class="badge bg-light text-dark rounded-pill border">{{ hospital.district }}</span>
+                {% endif %}
+            </div>
+
+            <h5 class="card-title fw-bold text-dark mb-2">{{ hospital.hospital_name }}</h5>
+
+            <div class="mb-3">
+                <i class="fas fa-map-pin text-danger me-2"></i>
+                <span class="text-muted">{{ hospital.location }}</span>
+            </div>
+
+            <hr class="border-light my-3">
+
+            <div class="d-flex flex-column gap-2">
+                {% if hospital.contact_numbers %}
+                {% for phone in hospital.contact_numbers %}
+                <div class="d-flex align-items-center text-muted small">
+                    <i class="fas fa-phone-alt me-2 text-success opacity-75"></i>
+                    <span class="font-monospace">{{ phone }}</span>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-muted small fst-italic">
+                    <i class="fas fa-phone-slash me-2 opacity-50"></i> No contact info
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-footer bg-white border-0 py-3">
+            <a href="https://www.google.com/maps/search/?api=1&query={{ hospital.hospital_name|urlencode }} {{ hospital.location|urlencode }}"
+                target="_blank" class="btn btn-light w-100 text-primary fw-bold">
+                <i class="fas fa-directions me-2"></i>Get Directions
+            </a>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<div class="container-fluid py-5" style="background-color: #f8fafc; min-height: 100vh;">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-3">
+            <i class="fas fa-hospital-alt me-2"></i>Find Nearby Hospitals
+        </h1>
+        <p class="lead text-muted">Locate government hospitals and PHCs across districts instantly.</p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8 col-lg-6">
+            <form action="{{ url_for('features.emergency_sos') }}" method="GET" class="position-relative">
+                <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden bg-white">
+                    <span class="input-group-text border-0 bg-transparent ps-4 text-primary">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-0 px-3 shadow-none"
+                        placeholder="Search by district, hospital name..." value="{{ search_query }}">
+                    <button class="btn btn-primary px-4 fw-bold" type="submit">Search</button>
+                    {% if is_search %}
+                    <a href="{{ url_for('features.emergency_sos') }}" class="btn btn-light border-start px-3 text-muted"
+                        title="Clear Search">
+                        <i class="fas fa-times"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="container">
+        {% if is_search %}
+        <!-- Search Results Mode -->
+        {% if results %}
+        <h4 class="mb-4 text-muted">
+            Found {{ results|length }} result(s) for "{{ search_query }}"
+        </h4>
+        <div class="row g-4">
+            {% for hospital in results %}
+            {{ hospital_card(hospital) }}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-3 text-muted opacity-50">
+                <i class="fas fa-hospital-user fa-4x"></i>
+            </div>
+            <h3>No hospitals found</h3>
+            <p class="text-muted">Try a different keyword or location.</p>
+            <a href="{{ url_for('features.emergency_sos') }}" class="btn btn-outline-primary mt-2">View All
+                Hospitals</a>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Browse by District Mode -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div class="flex-grow-1">
+                <select class="form-select shadow-sm border-0 bg-white" id="districtSelect"
+                    onchange="scrollToDistrict(this.value)">
+                    <option value="" selected disabled>Jump to District...</option>
+                    {% for district_group in results %}
+                    <option value="heading{{ loop.index }}">{{ district_group.district }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="expandAll()">Expand All</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="collapseAll()">Collapse All</button>
+            </div>
+        </div>
+
+        <div class="accordion" id="districtsAccordion">
+            {% for district_group in results %}
+            <div class="accordion-item border-0 mb-3 shadow-sm rounded overflow-hidden">
+                <h2 class="accordion-header" id="heading{{ loop.index }}">
+                    <button class="accordion-button collapsed bg-white py-3 shadow-none" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false"
+                        aria-controls="collapse{{ loop.index }}">
+                        <div class="d-flex align-items-center w-100">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="fas fa-map-marker-alt fa-sm"></i>
+                            </div>
+                            <span class="h5 fw-bold text-dark mb-0">{{ district_group.district }} District</span>
+                            <span class="badge bg-light text-muted ms-3 rounded-pill">{{ district_group.hospitals|length
+                                }} Hospitals</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ loop.index }}" class="accordion-collapse collapse"
+                    aria-labelledby="heading{{ loop.index }}">
+                    <div class="accordion-body bg-light p-4">
+                        <div class="row g-4">
+                            {% for hospital in district_group.hospitals %}
+                            {{ hospital_card(hospital) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <script>
+            function expandAll() {
+                var collapseElementList = [].slice.call(document.querySelectorAll('.collapse'));
+                var collapseList = collapseElementList.map(function (collapseEl) {
+                    return new bootstrap.Collapse(collapseEl, { toggle: false }).show();
+                });
+            }
+            function collapseAll() {
+                var collapseElementList = [].slice.call(document.querySelectorAll('.collapse.show'));
+                var collapseList = collapseElementList.map(function (collapseEl) {
+                    return new bootstrap.Collapse(collapseEl, { toggle: false }).hide();
+                });
+            }
+
+            function scrollToDistrict(headingId) {
+                if (!headingId) return;
+                const element = document.getElementById(headingId);
+                if (element) {
+                    // Expand it first
+                    const button = element.querySelector('button');
+                    if (button.classList.contains('collapsed')) {
+                        button.click();
+                    }
+                    // Scroll to it
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        </script>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .bg-soft-primary {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    .hover-elevate {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .hover-elevate:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .text-primary {
+        color: #4f46e5 !important;
+    }
+
+    .bg-primary {
+        background-color: #4f46e5 !important;
+    }
+
+    .btn-primary {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+    }
+
+    .btn-outline-primary {
+        color: #4f46e5;
+        border-color: #4f46e5;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #4f46e5;
+        color: white;
+    }
+</style>
+{% endblock %}

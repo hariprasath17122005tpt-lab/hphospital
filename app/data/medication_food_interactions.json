@@ -1,0 +1,92 @@
+{
+  "statins": {
+    "food": "Grapefruit and grapefruit juice",
+    "reason": "Grapefruit inhibits CYP3A4 enzyme metabolism, significantly increasing statin blood levels and risk of myopathy and hepatotoxicity.",
+    "severity": "HIGH",
+    "recommendation": "Avoid grapefruit completely. Consult pharmacist about other citrus if concerned."
+  },
+  "ace_inhibitors": {
+    "food": "High-potassium foods in excess",
+    "reason": "ACE inhibitors reduce potassium excretion; excessive intake increases hyperkalemia risk.",
+    "severity": "MODERATE",
+    "recommendation": "Monitor potassium intake. Avoid excessive amounts of bananas, oranges, potatoes, spinach. Have potassium levels checked regularly."
+  },
+  "thiazide_diuretics": {
+    "food": "Potassium-depleting foods combined with supplement use",
+    "reason": "Thiazide diuretics increase potassium excretion, raising hypokalemia risk.",
+    "severity": "MODERATE",
+    "recommendation": "May need to increase potassium-rich foods or supplement. Potassium levels should be monitored regularly."
+  },
+  "warfarin": {
+    "food": "High-dose vitamin K foods",
+    "reason": "Vitamin K is a cofactor for warfarin metabolism; excessive intake reduces anticoagulation effect.",
+    "severity": "HIGH",
+    "recommendation": "Maintain CONSISTENT (not excessive) vitamin K intake. Avoid sudden changes. Kale, spinach, broccoli are fine in normal portions."
+  },
+  "metformin": {
+    "food": "Vitamin B12 absorption reduction with long-term use",
+    "reason": "Metformin may reduce B12 absorption over time, necessitating monitoring.",
+    "severity": "LOW",
+    "recommendation": "Maintain adequate B12 intake. B12 levels should be checked periodically. Include fortified cereals, fish, dairy."
+  },
+  "nsaids": {
+    "food": "Sodium-rich foods and alcohol",
+    "reason": "NSAIDs increase GI bleeding risk, especially with high sodium intake and alcohol consumption.",
+    "severity": "MODERATE",
+    "recommendation": "Keep sodium intake moderate. Limit alcohol. Take with food to reduce GI irritation."
+  },
+  "lithium": {
+    "food": "Sodium restriction affects lithium levels",
+    "reason": "Low sodium intake increases lithium retention and toxicity risk.",
+    "severity": "HIGH",
+    "recommendation": "Maintain consistent sodium intake. Avoid sudden changes. Lithium levels must be monitored closely."
+  },
+  "bisphosphonates": {
+    "food": "Calcium and iron supplements timing",
+    "reason": "Calcium, iron, and magnesium chelate bisphosphonates, reducing absorption.",
+    "severity": "MODERATE",
+    "recommendation": "Take bisphosphonates with water only, on empty stomach, 30-60 minutes before food or supplements."
+  },
+  "tetracyclines": {
+    "food": "Calcium-rich foods, iron, magnesium supplements",
+    "reason": "Calcium, iron, and magnesium chelate tetracyclines, reducing antibiotic absorption.",
+    "severity": "MODERATE",
+    "recommendation": "Take 2+ hours before or 6+ hours after dairy, supplements. Adequate nutrition required for drug efficacy."
+  },
+  "fluoroquinolones": {
+    "food": "Dairy products and mineral supplements",
+    "reason": "Minerals chelate fluoroquinolones, reducing absorption and efficacy.",
+    "severity": "MODERATE",
+    "recommendation": "Take 2+ hours before or 4+ hours after dairy and mineral supplements."
+  },
+  "beta_blockers": {
+    "food": "High-sugar foods and rapid weight gain",
+    "reason": "Beta blockers may increase appetite and affect metabolism; weight gain worsens hypertension control.",
+    "severity": "LOW-MODERATE",
+    "recommendation": "Maintain healthy diet. Monitor weight regularly. Regular exercise is important."
+  },
+  "calcium_channel_blockers": {
+    "food": "Grapefruit and grapefruit juice",
+    "reason": "Similar to statins, grapefruit inhibits CYP3A4, increasing drug levels.",
+    "severity": "HIGH",
+    "recommendation": "Avoid grapefruit and grapefruit juice. Other citrus fruits are generally safe."
+  },
+  "ssri_antidepressants": {
+    "food": "Tyramine-rich foods (with MAOI caution only)",
+    "reason": "SSRIs have minimal tyramine interaction. No specific dietary restriction needed.",
+    "severity": "LOW",
+    "recommendation": "No specific dietary restrictions. Maintain balanced diet for optimal mental health support."
+  },
+  "diabetes_medications": {
+    "food": "Alcohol consumption",
+    "reason": "Alcohol may increase hypoglycemia risk, particularly with insulin or sulfonylureas.",
+    "severity": "MODERATE",
+    "recommendation": "Limit alcohol. If consumed, eat food with it. Monitor blood glucose more frequently."
+  },
+  "levothyroxine": {
+    "food": "Calcium and iron supplements, soy, high-fiber foods",
+    "reason": "These substances may reduce levothyroxine absorption.",
+    "severity": "MODERATE",
+    "recommendation": "Take 4+ hours apart from calcium, iron, soy. Wait 30-60 minutes after taking levothyroxine before eating."
+  }
+}

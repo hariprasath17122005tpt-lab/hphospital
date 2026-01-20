@@ -1,0 +1,43 @@
+query,response
+"doctor i have a fever","💊 Fever is an increase in body temperature, commonly caused by infections.
+💊 Take adequate rest and drink plenty of fluids to prevent dehydration.
+💊 Paracetamol can be used to reduce fever unless contraindicated.
+💊 Avoid unnecessary antibiotics without medical advice.
+💊 Monitor your temperature regularly.
+💊 Consult a doctor if fever exceeds 102°F or lasts more than two days."
+"fever","💊 Fever is an increase in body temperature, commonly caused by infections.
+💊 Take adequate rest and drink plenty of fluids to prevent dehydration.
+💊 Paracetamol can be used to reduce fever unless contraindicated.
+💊 Avoid unnecessary antibiotics without medical advice.
+💊 Monitor your temperature regularly.
+💊 Consult a doctor if fever exceeds 102°F or lasts more than two days."
+"i have fever with asthma","💊 Fever in patients with asthma may worsen breathing symptoms.
+💊 Continue prescribed asthma inhalers without stopping.
+💊 Avoid cold air, smoke, and known asthma triggers.
+💊 Paracetamol is generally safer than NSAIDs for fever in asthma.
+💊 Monitor breathing difficulty closely.
+💊 Seek immediate medical help if wheezing or breathlessness increases."
+"headache","💊 A headache is pain in any region of the head or upper neck.
+💊 Stay in a quiet, dark room to help alleviate tension or migraine pain.
+💊 Stay hydrated and ensure you are getting enough sleep each night.
+💊 Over-the-counter pain relievers can help with occasional headaches.
+💊 Avoid triggers like bright lights or strong odors if they affect you.
+💊 See a doctor if it is severe, sudden, or accompanied by a stiff neck."
+"high blood pressure","💊 High blood pressure, or hypertension, is a condition where the force of the blood against artery walls is too high.
+💊 Reduce salt intake and maintain a healthy weight to manage pressure.
+💊 Engage in regular physical activity like brisk walking for 30 minutes.
+💊 Limit alcohol consumption and avoid smoking completely.
+💊 Take prescribed medications consistently as directed by your doctor.
+💊 Monitor your blood pressure at home and keep a record."
+"diabetes symptoms","💊 Common symptoms of diabetes include increased thirst, frequent urination, and unexplained weight loss.
+💊 You may also experience fatigue, blurred vision, and slow-healing sores.
+💊 Extreme hunger and irritability can also be indicators of high blood sugar.
+💊 If you notice these symptoms, consult a doctor for a blood glucose test.
+💊 Early diagnosis helps in managing the condition effectively.
+💊 Maintaining a balanced diet is crucial for symptom control."
+"stomach pain","💊 Stomach pain can range from mild indigestion to severe conditions requiring urgent care.
+💊 If the pain is sharp and persistent, seek medical attention immediately.
+💊 Avoid heavy meals and spicy food if you have occasional bloating or gas.
+💊 Stay hydrated and try a bland diet like rice, bananas, and toast.
+💊 Over-the-counter antacids may help with acid reflux symptoms.
+💊 Consult a physician if pain is accompanied by fever or vomiting."

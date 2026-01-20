@@ -1,0 +1,127 @@
+{
+  "DASH_Hypertension": {
+    "diet_name": "DASH Diet",
+    "condition": "Hypertension",
+    "expected_outcomes": {
+      "systolic_bp_reduction": "8–14 mmHg",
+      "diastolic_bp_reduction": "4–6 mmHg",
+      "ldl_cholesterol_reduction": "5–10%",
+      "weight_loss": "2–4 kg over 8–12 weeks",
+      "timeline": "Benefits typically observed within 2–4 weeks of consistent adherence"
+    },
+    "clinical_source": "Based on landmark DASH trial results"
+  },
+  "DASH_Prehypertension": {
+    "diet_name": "DASH Diet",
+    "condition": "Prehypertension",
+    "expected_outcomes": {
+      "systolic_bp_reduction": "5–10 mmHg",
+      "diastolic_bp_reduction": "3–5 mmHg",
+      "weight_loss": "1–2 kg if calorie modification included",
+      "timeline": "Benefits observable within 2–3 weeks"
+    },
+    "clinical_source": "Preventive efficacy demonstrated in clinical literature"
+  },
+  "Mediterranean_CVD": {
+    "diet_name": "Mediterranean Diet",
+    "condition": "Cardiovascular Disease Prevention",
+    "expected_outcomes": {
+      "cardiac_event_reduction": "20–30% over 5 years",
+      "ldl_cholesterol_reduction": "5–15%",
+      "triglycerides_reduction": "10–20%",
+      "weight_loss": "2–3 kg over 8–12 weeks",
+      "mortality_reduction": "Cardiovascular mortality reduced by ~15–25%"
+    },
+    "clinical_source": "Based on PREDIMED trial and extensive cardiovascular literature"
+  },
+  "Mediterranean_Cholesterol": {
+    "diet_name": "Mediterranean Diet",
+    "condition": "Hyperlipidemia",
+    "expected_outcomes": {
+      "ldl_cholesterol_reduction": "8–15%",
+      "hdl_cholesterol_increase": "3–5%",
+      "triglyceride_reduction": "10–20%",
+      "weight_loss": "1–2 kg if calorie appropriate"
+    },
+    "clinical_source": "Lipid management demonstrated in clinical trials"
+  },
+  "Low_Glycemic_Diabetes": {
+    "diet_name": "Low Glycemic Index Diet",
+    "condition": "Type 2 Diabetes",
+    "expected_outcomes": {
+      "hemoglobin_a1c_reduction": "0.5–2.0%",
+      "fasting_glucose_reduction": "10–25 mg/dL",
+      "weight_loss": "2–5 kg over 12 weeks",
+      "postprandial_glucose_spikes": "30–50% reduction",
+      "insulin_requirement": "May decrease depending on current level"
+    },
+    "clinical_source": "Multiple randomized controlled trials demonstrate efficacy"
+  },
+  "Low_Glycemic_Prediabetes": {
+    "diet_name": "Low Glycemic Index Diet",
+    "condition": "Prediabetes",
+    "expected_outcomes": {
+      "fasting_glucose_reduction": "5–15 mg/dL",
+      "diabetes_progression_delay": "30–50% risk reduction over 3 years",
+      "weight_loss": "1–3 kg helpful for prevention"
+    },
+    "clinical_source": "Preventive benefits shown in Diabetes Prevention Program-type studies"
+  },
+  "Renal_CKD_Stage3": {
+    "diet_name": "Renal-Friendly Diet",
+    "condition": "Chronic Kidney Disease Stage 3",
+    "expected_outcomes": {
+      "gfr_decline_slowing": "Slows progression of kidney disease",
+      "proteinuria_reduction": "10–20% reduction with protein control",
+      "blood_pressure_control": "Supports BP targets",
+      "electrolyte_balance": "Prevents hyperkalemia and hyperphosphatemia"
+    },
+    "clinical_source": "Kidney Disease Outcomes Quality Initiative (KDIGO) guidelines"
+  },
+  "Renal_CKD_Stage4": {
+    "diet_name": "Renal-Friendly Diet",
+    "condition": "Chronic Kidney Disease Stage 4",
+    "expected_outcomes": {
+      "gfr_decline_slowing": "Critical to slow progression toward dialysis",
+      "potassium_control": "Prevents dangerous hyperkalemia",
+      "phosphorus_control": "Prevents secondary hyperparathyroidism",
+      "fluid_management": "Supports blood pressure and pulmonary health"
+    },
+    "clinical_source": "KDIGO guidelines for advanced CKD management"
+  },
+  "Celiac_Healing": {
+    "diet_name": "Gluten-Free Diet",
+    "condition": "Celiac Disease",
+    "expected_outcomes": {
+      "intestinal_healing": "Villous atrophy reversal within 3–6 months",
+      "symptom_resolution": "Most symptoms resolve within 2–4 weeks",
+      "nutrient_absorption": "Normalization within 3–6 months of strict adherence",
+      "serological_improvement": "Tissue transglutaminase antibodies decline within 6–12 months",
+      "quality_of_life": "Significant improvement in energy and GI symptoms"
+    },
+    "clinical_source": "Evidence-based gastroenterology and celiac disease management"
+  },
+  "Weight_Loss_Moderate_Activity": {
+    "diet_name": "Calorie-Restricted Mixed Approach",
+    "condition": "Obesity with Moderate Activity",
+    "expected_outcomes": {
+      "weight_loss": "0.5–1 kg per week with 500 calorie deficit",
+      "metabolic_improvement": "Insulin sensitivity improvement",
+      "cardiovascular_benefit": "Blood pressure and lipid improvements proportional to weight loss",
+      "fitness_gain": "Muscle preservation with adequate protein and strength training"
+    },
+    "clinical_source": "Weight management and obesity treatment guidelines"
+  },
+  "Metabolic_Syndrome_Reversal": {
+    "diet_name": "Combined Low-Glycemic + DASH + Exercise",
+    "condition": "Metabolic Syndrome",
+    "expected_outcomes": {
+      "metabolic_risk_factor_improvement": "50–70% of patients normalize metabolic parameters",
+      "blood_pressure_reduction": "5–8 mmHg systolic",
+      "triglyceride_reduction": "15–25%",
+      "weight_loss": "3–5 kg over 3 months",
+      "hdl_increase": "Modest increase with exercise and weight loss"
+    },
+    "clinical_source": "Metabolic syndrome reversal demonstrated in lifestyle intervention studies"
+  }
+}

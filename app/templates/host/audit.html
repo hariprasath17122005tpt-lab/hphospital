@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Audit Trail - Host{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Audit Trail</h2>
+            <p class="text-muted">Compliance & Action Logs</p>
+        </div>
+        <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">Back</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="bg-dark text-white">
+                        <tr>
+                            <th class="ps-4">Timestamp</th>
+                            <th>Action</th>
+                            <th>Actor</th>
+                            <th>Target ID</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs.items %}
+                        <tr>
+                            <td class="ps-4 text-nowrap font-monospace text-muted">{{ log.timestamp.strftime('%Y-%m-%d
+                                %H:%M:%S') }}</td>
+                            <td><span class="badge bg-secondary">{{ log.action }}</span></td>
+                            <td class="fw-bold">{{ log.actor_name }}</td>
+                            <td class="font-monospace small">{{ log.target_id or '-' }}</td>
+                            <td class="small">{{ log.ip_address }}</td>
+                            <td class="small text-muted">{{ log.details }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">No logs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if logs.pages > 1 %}
+        <div class="card-footer bg-white py-3">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if logs.has_prev %}
+                    <li class="page-item"><a class="page-link"
+                            href="{{ url_for('host.audit_logs', page=logs.prev_num) }}">Previous</a></li>
+                    {% endif %}
+
+                    <li class="page-item disabled"><a class="page-link">{{ logs.page }} of {{ logs.pages }}</a></li>
+
+                    {% if logs.has_next %}
+                    <li class="page-item"><a class="page-link"
+                            href="{{ url_for('host.audit_logs', page=logs.next_num) }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

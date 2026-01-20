@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Self Check-in{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <i class="fas fa-clipboard-check fa-4x text-primary mb-3"></i>
+                <h2 class="fw-bold">Express Self Check-in</h2>
+                <p class="text-muted">Submit your check-in request and your doctor will review it shortly</p>
+            </div>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-stethoscope me-2"></i>Patient Check-in Form</h5>
+                </div>
+                <div class="card-body p-5">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Doctor Selection -->
+                        <div class="mb-4">
+                            <h6 class="text-secondary mb-3">1. Select Your Doctor</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Doctor *</label>
+                                <select name="doctor_id" class="form-select form-select-lg" required>
+                                    <option value="">Choose a doctor...</option>
+                                    {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                                        ({{ doctor.specialization }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Check-in Reason -->
+                        <div class="mb-4">
+                            <h6 class="text-secondary mb-3">2. Why are you checking in?</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Check-in Reason *</label>
+                                <input type="text" name="reason" class="form-control form-control-lg"
+                                    placeholder="e.g., Follow-up for hypertension, New complaint, Lab test" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Type of Visit *</label>
+                                <select name="visit_type" class="form-select form-select-lg" required>
+                                    <option value="">Select visit type...</option>
+                                    <option value="follow-up">Follow-up Visit</option>
+                                    <option value="new-complaint">New Complaint</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="lab-test">Lab Test</option>
+                                    <option value="procedure">Procedure/Treatment</option>
+                                    <option value="vaccination">Vaccination</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Symptoms & Health Info -->
+                        <div class="mb-4">
+                            <h6 class="text-secondary mb-3">3. Your Current Symptoms (Optional)</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Describe your symptoms</label>
+                                <textarea name="symptoms" class="form-control" rows="3"
+                                    placeholder="e.g., Fever, cough, chest pain, headache..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Severity Level</label>
+                                <select name="severity" class="form-select form-select-lg">
+                                    <option value="mild" selected>Mild</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="severe">Severe</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Vital Signs (Optional) -->
+                        <div class="mb-4">
+                            <h6 class="text-secondary mb-3">4. Your Vital Signs (Optional - If Available)</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Temperature (°C)</label>
+                                        <input type="number" name="temperature" class="form-control" step="0.1"
+                                            placeholder="e.g., 37.5" min="35" max="42">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Blood Pressure</label>
+                                        <input type="text" name="blood_pressure" class="form-control"
+                                            placeholder="e.g., 120/80">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Heart Rate (bpm)</label>
+                                        <input type="number" name="heart_rate" class="form-control"
+                                            placeholder="e.g., 72" min="30" max="200">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Agreement -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="consent" required>
+                            <label class="form-check-label" for="consent">
+                                I confirm that the information provided is accurate and give consent for my doctor to
+                                review this check-in request.
+                            </label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i> Submit Check-in Request
+                            </button>
+                            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="alert alert-info mt-4">
+                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>How Express Check-in Works</h6>
+                <ul class="mb-0">
+                    <li>✅ Submit your check-in request online</li>
+                    <li>✅ Your assigned doctor will review your information</li>
+                    <li>✅ Doctor can accept, reject, or request more information</li>
+                    <li>✅ You will receive a notification once reviewed</li>
+                    <li>✅ Save time by pre-filling your visit details</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    hr {
+        opacity: 0.2;
+        margin: 2rem 0;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    h6.text-secondary {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

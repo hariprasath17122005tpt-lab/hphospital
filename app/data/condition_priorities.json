@@ -1,0 +1,95 @@
+{
+  "condition_priorities": {
+    "multiple_conditions_logic": "When patient has multiple conditions, priority is determined by organ damage risk & reversibility",
+    "priority_hierarchy": {
+      "1_highest": "Chronic Kidney Disease (CKD) - Kidney damage is irreversible, most restrictive diet",
+      "2_very_high": "Diabetes Type 2 - Risk of multiple organ complications if uncontrolled",
+      "3_high": "Cardiovascular Disease - Risk of sudden events (MI, stroke)",
+      "4_moderate": "Hypertension - Chronic damage but often reversible with diet",
+      "5_moderate": "Obesity - Risk factor for multiple diseases",
+      "6_lower": "Celiac Disease - Dietary management prevents complications but less immediately life-threatening"
+    },
+    "example_scenarios": {
+      "scenario_1": {
+        "conditions": "Diabetes + Hypertension + CKD",
+        "priority_order": [
+          "1. Kidney safety (protein < 0.8g/kg, potassium < 2000mg, phosphorus < 1000mg)",
+          "2. Sugar control (complex carbs only, HbA1c target < 7%)",
+          "3. BP management (sodium < 2300mg, DASH protocol)"
+        ],
+        "diet_type": "Modified Renal + Low Glycemic"
+      },
+      "scenario_2": {
+        "conditions": "Hypertension + High Cholesterol",
+        "priority_order": [
+          "1. BP control (sodium < 2300mg daily)",
+          "2. Lipid management (saturated fat < 7%, increase soluble fiber)"
+        ],
+        "diet_type": "DASH + Mediterranean hybrid"
+      },
+      "scenario_3": {
+        "conditions": "Diabetes + Obesity + Hypertension",
+        "priority_order": [
+          "1. Glycemic control (low GI foods, carb counting)",
+          "2. Weight reduction (500-750 kcal deficit daily)",
+          "3. BP management (sodium restriction)"
+        ],
+        "diet_type": "Low Glycemic + Calorie Restricted"
+      }
+    },
+    "conflict_resolution": {
+      "crd_vs_hypertension": "Kidney disease takes priority - Phosphorus & potassium restriction overrides other considerations",
+      "diabetes_vs_cholesterol": "Glycemic control is primary - Both benefit from complex carbs, whole grains",
+      "obesity_vs_protein": "If CKD present: lower protein (0.8g/kg) overrides obesity management protein",
+      "general_rule": "More severe/irreversible condition takes dietary priority"
+    }
+  },
+  "condition_reversal_timeline": {
+    "hypertension": {
+      "time_to_improvement": "2-4 weeks of DASH + exercise",
+      "reversal_potential": "50-60% can achieve normal BP without medication",
+      "key_factor": "Sodium reduction most critical"
+    },
+    "type2_diabetes": {
+      "time_to_improvement": "4-8 weeks with HbA1c changes",
+      "reversal_potential": "50% achieve remission with weight loss + low GI diet",
+      "key_factor": "Weight reduction + carb quality"
+    },
+    "high_cholesterol": {
+      "time_to_improvement": "4-6 weeks with diet change",
+      "reversal_potential": "30-40% achieve target without statins",
+      "key_factor": "Reduce saturated fats + increase fiber"
+    },
+    "obesity": {
+      "time_to_improvement": "Visible progress in 4-6 weeks",
+      "reversal_potential": "100% with sustained adherence",
+      "key_factor": "Calorie deficit + activity increase"
+    },
+    "crd": {
+      "time_to_improvement": "Slows progression, doesn't reverse",
+      "reversal_potential": "0% reversal, 70% can slow decline",
+      "key_factor": "Protein & sodium restriction critical"
+    }
+  },
+  "disease_progression_if_untreated": {
+    "hypertension": [
+      "0-6 months: Asymptomatic → BP 140-160 mmHg",
+      "6-12 months: Occasional headaches, fatigue",
+      "1-2 years: Organ damage begins (heart, kidneys, brain)",
+      "5+ years: Stroke, MI, or kidney failure risk increases 300-500%"
+    ],
+    "diabetes": [
+      "0-2 months: Minor glucose elevation → A1C 7-8%",
+      "2-6 months: Increased thirst, fatigue, infections",
+      "6-12 months: Early neuropathy, vision changes",
+      "3-5 years: Significant complications (dialysis, amputations) 40% risk",
+      "10+ years: Death risk increases 2-3x normal population"
+    ],
+    "ckd": [
+      "Stage 3a: Mild kidney damage, 70% eGFR, asymptomatic",
+      "Stage 3b: Moderate damage, 45-59% eGFR, slight fatigue",
+      "Stage 4: Severe damage, 15-29% eGFR, anemia, high BP",
+      "Stage 5: Kidney failure, eGFR < 15, requires dialysis/transplant"
+    ]
+  }
+}

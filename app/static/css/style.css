@@ -1,0 +1,395 @@
+/* ===================== Modern Health UI Design System ===================== */
+/* Inspired by Dribbble/Behance Health Apps */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    /* --- Core Brand Colors (Vibrant & Trustworthy) --- */
+    --primary-color: #4361EE;
+    /* Vibrant Royal Blue */
+    --primary-dark: #3046B5;
+    /* Deep Blue for contrast */
+    --primary-light: #E0E7FF;
+    /* Soft Blue for backgrounds */
+    --primary-gradient: linear-gradient(135deg, #4361EE 0%, #3046B5 100%);
+
+    --secondary-color: #4CC9F0;
+    /* Bright Cyan for Accents */
+
+    --success-color: #10B981;
+    /* Emerald Green */
+    --success-light: #D1FAE5;
+
+    --warning-color: #F59E0B;
+    /* Amber */
+    --warning-light: #FEF3C7;
+
+    --danger-color: #EF4444;
+    /* Soft Red */
+    --danger-light: #FEE2E2;
+
+    --info-color: #3B82F6;
+    --info-light: #DBEAFE;
+
+    /* --- Neutrals & Surfaces --- */
+    --bg-body: #F8FAFC;
+    /* Very light slate */
+    --bg-surface: #FFFFFF;
+    --text-primary: #1E293B;
+    /* Slate 800 */
+    --text-secondary: #64748B;
+    /* Slate 500 */
+    --text-light: #94A3B8;
+    /* Slate 400 */
+
+    --border-color: #E2E8F0;
+
+    /* --- Effects --- */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(67, 97, 238, 0.1), 0 4px 6px -2px rgba(67, 97, 238, 0.05);
+    --shadow-hover: 0 20px 25px -5px rgba(67, 97, 238, 0.15), 0 10px 10px -5px rgba(67, 97, 238, 0.08);
+
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===================== Global Reset ===================== */
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+}
+
+a {
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+/* ===================== Utility Classes ===================== */
+
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.bg-soft-primary {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.bg-soft-success {
+    background-color: var(--success-light);
+    color: var(--success-color);
+}
+
+.bg-soft-warning {
+    background-color: var(--warning-light);
+    color: var(--warning-color);
+}
+
+.bg-soft-danger {
+    background-color: var(--danger-light);
+    color: var(--danger-color);
+}
+
+.bg-soft-info {
+    background-color: var(--info-light);
+    color: var(--info-color);
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.ls-1 {
+    letter-spacing: 0.05em;
+}
+
+/* ===================== Components ===================== */
+
+/* --- Modern Card --- */
+.modern-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Override standard Bootstrap Card to look decent */
+.card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* --- Icon Box --- */
+.icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.icon-box.primary {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.icon-box.success {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.icon-box.warning {
+    background: var(--warning-light);
+    color: var(--warning-color);
+}
+
+.icon-box.danger {
+    background: var(--danger-light);
+    color: var(--danger-color);
+}
+
+.icon-box.info {
+    background: var(--info-light);
+    color: var(--info-color);
+}
+
+.modern-card:hover .icon-box {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* --- Buttons --- */
+.btn {
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+}
+
+.btn-outline-secondary {
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+    transform: translateY(-2px);
+}
+
+/* --- Form Controls --- */
+.form-control,
+.form-select {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: #F8FAFC;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+/* --- Navbar (Clean White) --- */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+    margin: 0 0.5rem;
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-color) !important;
+    background: var(--primary-light);
+}
+
+/* --- Dashboard Specifics Override --- */
+.stat-icon {
+    /* Map legacy stat-icon to new style if possible, or support both */
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Support legacy classes seen in dashboard.html */
+.icon-blue {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.icon-green {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.icon-red {
+    background: var(--danger-light);
+    color: var(--danger-color);
+}
+
+.icon-purple {
+    background: var(--info-light);
+    color: var(--info-color);
+}
+
+/* Map purple to info/blueish */
+
+.card.bg-primary {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+}
+
+.card.text-white .text-white-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Header/Footer enhancements */
+.footer {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-color);
+    padding: 4rem 0 2rem;
+}
+
+/* Blobs and Backgrounds */
+.hero-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.shape-blob {
+    position: absolute;
+    filter: blur(80px);
+    opacity: 0.6;
+    z-index: -1;
+    animation: blob-float 10s infinite alternate;
+}
+
+.blob-1 {
+    top: -10%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: var(--primary-light);
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+}
+
+.blob-2 {
+    bottom: -10%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: var(--secondary-color);
+    opacity: 0.1;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+@keyframes blob-float {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(30px, 50px) rotate(10deg);
+    }
+}

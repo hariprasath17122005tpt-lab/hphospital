@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - HealthCare AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background-color: #F0F4F8; min-height: 100vh;">
+
+    <!-- WELCOME SECTION -->
+    <div class="mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold text-dark mb-2">
+                    Welcome, {{ patient.first_name }}! 👋
+                </h1>
+                <p class="fs-6 text-secondary">
+                    {{ current_date.strftime('%A, %B %d, %Y') }} | Last updated: Just now
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end text-start">
+                <div class="d-flex align-items-center gap-3">
+                    {% if patient.profile_photo %}
+                    <img src="{{ patient.profile_photo }}" alt="Profile" class="rounded-circle border-3 border-primary"
+                        style="width: 60px; height: 60px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 60px; height: 60px; font-size: 24px;">
+                        {{ patient.first_name[0] }}{{ patient.last_name[0] }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="mb-0 fw-bold text-dark">{{ patient.first_name }} {{ patient.last_name }}</p>
+                        <p class="mb-0 text-secondary small">ID: {{ patient.id }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEALTH SUMMARY CARDS (3 Cards) -->
+    <div class="row g-4 mb-5">
+
+        <!-- HEALTH SCORE CARD -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, #003D5C 0%, #1B5E8A 100%); transition: all 0.3s ease;">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <p class="text-uppercase text-white-50 fw-bold small">AI Health Score</p>
+                            <h2 class="display-4 fw-bold mb-0">
+                                {% if latest_health %}
+                                {% set diabetes = latest_health.diabetes_risk or 0 %}
+                                {% set heart = latest_health.heart_disease_risk or 0 %}
+                                {% set hyper = latest_health.hypertension_risk or 0 %}
+                                {% set total_risk = diabetes + heart + hyper %}
+                                {% set health_score = 100 - (total_risk / 3) %}
+                                {{ "%.0f"|format(health_score) }}
+                                {% else %}
+                                --
+                                {% endif %}
+                            </h2>
+                            <p class="text-white-50 mb-0">/ 100</p>
+                        </div>
+                        <i class="fas fa-heartbeat fa-3x opacity-50"></i>
+                    </div>
+                    <hr class="border-white-50">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-white-50">Status</small>
+                            <p class="fw-bold">
+                                {% if latest_health and (100 - (latest_health.diabetes_risk or 0 +
+                                latest_health.heart_disease_risk or 0 + latest_health.hypertension_risk or 0) / 3) > 80
+                                %}
+                                🟢 Excellent
+                                {% elif latest_health and (100 - (latest_health.diabetes_risk or 0 +
+                                latest_health.heart_disease_risk or 0 + latest_health.hypertension_risk or 0) / 3) > 60
+                                %}
+                                🟡 Good
+                                {% else %}
+                                🔴 Monitor
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <small class="text-white-50">Last Updated</small>
+                            <p class="fw-bold small">Just now</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOOD PRESSURE CARD -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100" style="transition: all 0.3s ease;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold text-dark">Blood Pressure</h5>
+                        {% if latest_health %}
+                        {% if latest_health.systolic_bp >= 140 or latest_health.diastolic_bp >= 90 %}
+                        <span class="badge bg-danger">High</span>
+                        {% elif latest_health.systolic_bp >= 130 or latest_health.diastolic_bp >= 85 %}
+                        <span class="badge bg-warning">Elevated</span>
+                        {% else %}
+                        <span class="badge bg-success">Normal</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="badge bg-secondary">--</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center py-3">
+                        <h1 class="fw-bold display-6 text-primary mb-2">
+                            {% if latest_health %}
+                            {{ latest_health.systolic_bp }}/{{ latest_health.diastolic_bp }}
+                            {% else %}
+                            --/--
+                            {% endif %}
+                        </h1>
+                        <p class="text-secondary small mb-3">mmHg</p>
+                        <p class="text-muted small border-top pt-3">
+                            Normal: < 120/80 mmHg </p>
+                    </div>
+                    <a href="{{ url_for('patient.enter_health_data') }}"
+                        class="btn btn-sm btn-outline-primary w-100 mt-2">
+                        Update Reading
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOOD SUGAR CARD -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100" style="transition: all 0.3s ease;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold text-dark">Blood Sugar (Glucose)</h5>
+                        {% if latest_health %}
+                        {% if latest_health.blood_sugar >= 200 %}
+                        <span class="badge bg-danger">High</span>
+                        {% elif latest_health.blood_sugar >= 126 %}
+                        <span class="badge bg-warning">Elevated</span>
+                        {% else %}
+                        <span class="badge bg-success">Normal</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="badge bg-secondary">--</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center py-3">
+                        <h1 class="fw-bold display-6 text-primary mb-2">
+                            {% if latest_health %}
+                            {{ latest_health.blood_sugar }}
+                            {% else %}
+                            --
+                            {% endif %}
+                        </h1>
+                        <p class="text-secondary small mb-3">mg/dL</p>
+                        <p class="text-muted small border-top pt-3">
+                            Fasting: 70-100 mg/dL
+                        </p>
+                    </div>
+                    <a href="{{ url_for('patient.enter_health_data') }}"
+                        class="btn btn-sm btn-outline-primary w-100 mt-2">
+                        Update Reading
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- QUICK ACTIONS SECTION (3 Primary Actions) -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 quick-action-card"
+                style="cursor: pointer; transition: all 0.3s ease;">
+                <a href="{{ url_for('patient.appointments') }}" class="text-decoration-none text-reset">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Book Appointment</h5>
+                        <p class="text-secondary small">Schedule with a doctor</p>
+                        <p class="text-primary fw-bold small mt-3">
+                            View & Book <i class="fas fa-arrow-right ms-2"></i>
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 quick-action-card"
+                style="cursor: pointer; transition: all 0.3s ease;">
+                <a href="{{ url_for('patient.messages') }}" class="text-decoration-none text-reset">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-comments fa-3x text-secondary"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Chat with AI</h5>
+                        <p class="text-secondary small">Get instant health advice</p>
+                        <p class="text-secondary fw-bold small mt-3">
+                            Ask Questions <i class="fas fa-arrow-right ms-2"></i>
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 quick-action-card"
+                style="cursor: pointer; transition: all 0.3s ease;">
+                <a href="{{ url_for('patient.diet_plan') }}" class="text-decoration-none text-reset">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-apple-alt fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Smart Diet Plan</h5>
+                        <p class="text-secondary small">Personalized nutrition</p>
+                        <p class="text-warning fw-bold small mt-3">
+                            View Plan <i class="fas fa-arrow-right ms-2"></i>
+                        </p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPCOMING APPOINTMENTS -->
+    {% if upcoming_appointments %}
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h5 class="fw-bold text-dark mb-4">📅 Upcoming Appointments</h5>
+            {% for appt in upcoming_appointments[:3] %}
+            <div class="card border-0 shadow-sm mb-3" style="border-left: 4px solid #0EA5E9;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-1">
+                                Dr. {{ appt.doctor.user.first_name }} {{ appt.doctor.user.last_name }}
+                            </h6>
+                            <p class="text-secondary small mb-2">
+                                <i class="fas fa-calendar"></i>
+                                {{ appt.appointment_date.strftime('%A, %B %d') }}
+                            </p>
+                            <p class="text-secondary small">
+                                <i class="fas fa-clock"></i>
+                                {{ appt.appointment_date.strftime('%I:%M %p') }}
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="badge bg-success">Confirmed</span>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <a href="{{ url_for('patient.appointments') }}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- HEALTH FEATURES SECTION -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h5 class="fw-bold text-dark mb-4">🏥 Your Health Features</h5>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ url_for('patient.health_results', patient_id=patient.id) if patient.latest_health_result else '#' }}"
+                class="card border-0 shadow-sm text-decoration-none text-reset h-100"
+                style="transition: all 0.3s ease;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="fas fa-chart-line text-info fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark">Health Results</h6>
+                            <p class="text-secondary small mb-0">& Analysis</p>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">View your AI-powered risk analysis and health trends.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ url_for('patient.diet_plan') }}"
+                class="card border-0 shadow-sm text-decoration-none text-reset h-100"
+                style="transition: all 0.3s ease;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="fas fa-utensils text-warning fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark">Personalized Diet</h6>
+                            <p class="text-secondary small mb-0">Smart Recommendations</p>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">Get AI-generated meal plans tailored to your health needs.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ url_for('patient.lab_reports') }}"
+                class="card border-0 shadow-sm text-decoration-none text-reset h-100"
+                style="transition: all 0.3s ease;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="fas fa-file-medical text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark">Lab Reports</h6>
+                            <p class="text-secondary small mb-0">Medical Records</p>
+                        </div>
+                    </div>
+                    <p class="text-secondary small">Access your complete medical history and test results.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- QUICK STATS ROW -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <a href="{{ url_for('patient.prescriptions') }}"
+                class="card border-0 shadow-sm text-decoration-none text-reset">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-secondary small fw-bold mb-1">PRESCRIPTIONS</p>
+                            <h3 class="fw-bold text-dark mb-0">
+                                {% if latest_prescription %}1{% else %}0{% endif %}
+                            </h3>
+                        </div>
+                        <i class="fas fa-pills fa-2x text-info opacity-50"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('patient.messages') }}" class="card border-0 shadow-sm text-decoration-none text-reset">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-secondary small fw-bold mb-1">MESSAGES</p>
+                            <h3 class="fw-bold text-dark mb-0">{{ unread_messages }}</h3>
+                        </div>
+                        <i class="fas fa-envelope fa-2x text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('patient.appointments') }}"
+                class="card border-0 shadow-sm text-decoration-none text-reset">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-secondary small fw-bold mb-1">APPOINTMENTS</p>
+                            <h3 class="fw-bold text-dark mb-0">{{ upcoming_appointments|length }}</h3>
+                        </div>
+                        <i class="fas fa-calendar-alt fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- EMERGENCY CONTACT SECTION (Important) -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="card border-3 border-danger shadow-sm"
+                style="background: linear-gradient(to right, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02));">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-4">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold text-danger mb-2">🚨 EMERGENCY CONTACT</h5>
+                            <p class="text-dark mb-2">
+                                If you are experiencing a medical emergency, please:
+                            </p>
+                            <p class="fw-bold text-dark mb-0">
+                                📞 Call <strong>108</strong> or your local ambulance services immediately
+                            </p>
+                        </div>
+                        <div class="ms-4 d-none d-md-block">
+                            <button class="btn btn-danger btn-lg fw-bold">
+                                <i class="fas fa-phone me-2"></i>Emergency
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .quick-action-card {
+        border: 1px solid #E2E8F0;
+    }
+
+    .quick-action-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 61, 92, 0.1) !important;
+        transform: translateY(-4px);
+        border-color: #0EA5E9;
+    }
+
+    .card {
+        border: 1px solid #E2E8F0;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 16px rgba(0, 61, 92, 0.08) !important;
+    }
+</style>
+
+{% endblock %}

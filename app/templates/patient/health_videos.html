@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Health Education{% endblock %}
+
+{% block content %}
+<style>
+    .video-card {
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    .video-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .thumbnail-wrapper {
+        position: relative;
+        padding-top: 56.25%;
+        background: #000;
+    }
+
+    .thumbnail-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.8;
+    }
+
+    .play-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0284c7;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        transition: 0.2s;
+        z-index: 10;
+    }
+
+    .video-card:hover .play-btn {
+        transform: translate(-50%, -50%) scale(1.1);
+        background: #fff;
+    }
+
+    .doc-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 5;
+    }
+
+    .progress-micro {
+        height: 4px;
+        background: #e2e8f0;
+        margin-top: 8px;
+        border-radius: 2px;
+    }
+
+    .progress-micro-bar {
+        height: 100%;
+        background: #10b981;
+        border-radius: 2px;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Health Hub</h2>
+            <p class="text-muted">Verified medical education from our specialists</p>
+        </div>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" style="width: 150px;" id="categoryFilter">
+                <option value="all">All Conditions</option>
+                <option value="diabetes">Diabetes</option>
+                <option value="heart">Heart Health</option>
+                <option value="nutrition">Nutrition</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Video Grid -->
+    <div class="row g-4 mb-5" id="videoGrid">
+        {% for video in videos %}
+        <div class="col-md-4 video-item" data-category="{{ video.category|lower }}">
+            <div class="video-card bg-white position-relative"
+                onclick="playVideo('{{ video.id }}', '{{ video.title }}')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://img.youtube.com/vi/{{ video.id }}/hqdefault.jpg" class="thumbnail-img">
+                    <span class="doc-badge"><i class="fas fa-user-md me-1"></i> Dr. Verified</span>
+                    <div class="play-btn"><i class="fas fa-play"></i></div>
+                    <span class="position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 small m-2 rounded">{{
+                        video.duration }}</span>
+                </div>
+                <div class="p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill extra-small">{{
+                            video.category }}</span>
+                    </div>
+                    <h6 class="fw-bold text-dark mb-1">{{ video.title }}</h6>
+                    <div class="progress-micro">
+                        <div class="progress-micro-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-black">
+            <div class="modal-header border-0 p-2">
+                <h6 class="modal-title text-white" id="videoTitle"></h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    onclick="stopVideo()"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-16x9">
+                    <iframe id="videoFrame" src="" allowfullscreen allow="autoplay"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function playVideo(videoId, title) {
+        const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+        document.getElementById('videoTitle').textContent = title;
+        document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        modal.show();
+    }
+
+    function stopVideo() {
+        document.getElementById('videoFrame').src = "";
+    }
+
+    // Stop video on modal close
+    document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+        stopVideo();
+    });
+
+    // Filter Logic
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        const filter = this.value.toLowerCase();
+        const items = document.querySelectorAll('.video-item');
+
+        items.forEach(item => {
+            const category = item.getAttribute('data-category');
+            if (filter === 'all' || category.includes(filter)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

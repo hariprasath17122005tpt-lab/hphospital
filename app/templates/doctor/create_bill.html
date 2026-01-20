@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Create Bill{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i> Create Invoice</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="avatar bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                            style="width: 50px; height: 50px;">
+                            <i class="fas fa-user fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h5>
+                            <small class="text-muted">Patient ID: #{{ "%04d"|format(patient.id) }}</small>
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <div class="mb-3">
+                            <label class="form-label">Related Appointment (Optional)</label>
+                            <select name="appointment_id" class="form-select">
+                                <option value="">-- Select Appointment --</option>
+                                {% for appt in appointments %}
+                                <option value="{{ appt.id }}">
+                                    {{ appt.appointment_date.strftime('%b %d, %Y - %H:%M') }} ({{ appt.status }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description / Service Rendered <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="description" class="form-control" required
+                                placeholder="e.g. General Consultation, Blood Test, X-Ray">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Amount (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" name="amount" class="form-control" step="0.01" min="0" required
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}"
+                                class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-paper-plane me-2"></i> Issue Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

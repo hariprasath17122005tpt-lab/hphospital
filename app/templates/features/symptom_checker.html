@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Verified Knowledge Base{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Chat Interface -->
+        <div class="col-md-8 mx-auto">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-3"
+                    style="width: 80px; height: 80px;">
+                    <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+                <h2 class="fw-bold">Verified Knowledge Base</h2>
+                <p class="text-muted">Retrieve verified medical information directly from our local health database.</p>
+                <div class="badge bg-success mb-3">● Dataset-Only Verification (No Hallucinations)</div>
+            </div>
+
+            <div class="card shadow border-0">
+                <div class="card-body p-4" style="height: 500px; overflow-y: auto;" id="chatContainer">
+                    <!-- Messages -->
+                    <div class="d-flex mb-3">
+                        <div class="bg-light rounded p-3 text-dark" style="max-width: 80%;">
+                            Hello! I am your Verified Medical Assistant. I strictly provide information stored in our
+                            pre-approved local database. How can I help you?
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 p-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-lg"
+                            placeholder="Search symptoms (e.g. fever, asthma, headache)..." id="userInput">
+                        <button class="btn btn-success btn-lg" id="sendBtn" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <small class="text-muted fw-bold"><i class="fas fa-info-circle"></i> This tool retrieves ONLY
+                    pre-validated medical data. It does NOT generate or imagine prescriptions. In emergencies, call
+                    108.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const container = document.getElementById('chatContainer');
+        const text = input.value;
+
+        if (!text.trim()) return;
+
+        // User Message
+        const userDiv = document.createElement('div');
+        userDiv.className = 'd-flex mb-3 justify-content-end';
+        userDiv.innerHTML = `<div class="bg-primary text-white rounded p-3" style="max-width: 80%;">${text}</div>`;
+        container.appendChild(userDiv);
+
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+
+        // Loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'd-flex mb-3';
+        loadingDiv.id = 'loadingIndicator';
+        loadingDiv.innerHTML = `<div class="bg-light rounded p-3 text-dark" style="max-width: 80%;">
+            <i class="fas fa-spinner fa-spin me-2"></i> Analyzing...
+        </div>`;
+        container.appendChild(loadingDiv);
+        container.scrollTop = container.scrollHeight;
+
+        try {
+            const response = await fetch("{{ url_for('features.symptom_chat') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': "{{ csrf_token() if csrf_token else '' }}"
+                },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await response.json();
+
+            // Remove loading indicator
+            loadingDiv.remove();
+
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'd-flex mb-3';
+
+            let responseHtml = data.response ? data.response.replace(/\n/g, '<br>') : "I'm sorry, I couldn't process that.";
+
+            // Always add appointment link
+            responseHtml += `<br><br><a href="{{ url_for('patient.book_appointment') }}" class="btn btn-sm btn-primary mt-2">Book Appointment</a>`;
+
+            aiDiv.innerHTML = `<div class="bg-light rounded p-3 text-dark" style="max-width: 80%;">${responseHtml}</div>`;
+            container.appendChild(aiDiv);
+
+        } catch (error) {
+            console.error("Chat Error:", error);
+            loadingDiv.remove();
+
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'd-flex mb-3';
+            errorDiv.innerHTML = `<div class="bg-light rounded p-3 text-danger" style="max-width: 80%;">
+                <strong>Connection Error:</strong> Could not reach the AI service.<br>
+                This might be because the model is still loading (it can take a few minutes for the first request).<br>
+                Please wait a moment and try again.
+            </div>`;
+            container.appendChild(errorDiv);
+        }
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Allow Enter key to send
+    document.getElementById('userInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Handle button click
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+</script>
+{% endblock %}

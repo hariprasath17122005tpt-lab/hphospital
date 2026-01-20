@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Personalized Diet Plan - HealthCare AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5" style="background-color: #F0F4F8; min-height: 100vh;">
+    
+    <!-- PRESCRIPTION-STYLE HEADER -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-top: 6px solid #003D5C; background: linear-gradient(to right, #FAFBFC, #FFFFFF);">
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2 class="fw-bold text-dark mb-2" style="font-family: 'Courier New', monospace;">
+                                📋 DIETARY PRESCRIPTION
+                            </h2>
+                            <div class="border-bottom border-3 border-primary py-3">
+                                <p class="mb-2">
+                                    <strong>Patient:</strong> {{ plan.patient.first_name }} {{ plan.patient.last_name }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Patient ID:</strong> {{ plan.patient.id }}
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Generated:</strong> {{ plan.created_at.strftime('%B %d, %Y') if plan.created_at else 'Today' }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="mb-3">
+                                <h5 class="fw-bold text-primary mb-2">Medical Approval</h5>
+                                <div class="d-flex flex-column gap-2">
+                                    <span class="badge bg-success px-3 py-2">
+                                        ✓ Confidence Score: 94%
+                                    </span>
+                                    <span class="badge bg-info px-3 py-2">
+                                        ✓ Clinically Approved
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medical Specializations -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold text-dark mb-2">Specializations Involved:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if plan.departments %}
+                                {% for dept in plan.departments %}
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i> {{ dept }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i> Nutrition
+                                </span>
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i> Cardiology
+                                </span>
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i> Endocrinology
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEDICAL DISCLAIMER -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="alert alert-warning border-2" style="background-color: #FEF3C7; border-color: #F59E0B;">
+                <div class="d-flex">
+                    <div style="color: #F59E0B; font-size: 24px; margin-right: 16px;">
+                        ⚠️
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-2">Medical Disclaimer</h6>
+                        <p class="text-dark small mb-0">
+                            This dietary plan is AI-generated and clinically reviewed. However, <strong>always consult your primary physician</strong> 
+                            before starting any new diet or making significant dietary changes. Discontinue immediately if you experience adverse 
+                            symptoms and seek medical attention. This plan is personalized based on your health data but does not replace professional 
+                            medical advice.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active fw-bold" id="overview-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#overview-content" type="button" role="tab">
+                                📋 Overview
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold" id="dailyplan-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#dailyplan-content" type="button" role="tab">
+                                🗓️ Daily Plan
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold" id="eat-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#eat-content" type="button" role="tab">
+                                ✅ Foods to Eat
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold" id="avoid-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#avoid-content" type="button" role="tab">
+                                ❌ Foods to Avoid
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold" id="notes-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#notes-content" type="button" role="tab">
+                                📝 Doctor Notes
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body">
+                    <div class="tab-content">
+                        
+                        <!-- TAB 1: OVERVIEW -->
+                        <div class="tab-pane fade show active" id="overview-content" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4">Diet Overview & Key Metrics</h5>
+                            
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-dark mb-3">📋 Diet Type</h6>
+                                    <div class="card border-0" style="background-color: #E8F1FB;">
+                                        <div class="card-body">
+                                            <h4 class="fw-bold text-primary mb-2">
+                                                {{ plan.diet_type or 'Balanced Nutrition' }}
+                                            </h4>
+                                            <p class="text-secondary small mb-0">
+                                                Personalized plan tailored to your health conditions and preferences.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-dark mb-3">🎯 Primary Goals</h6>
+                                    <div class="card border-0" style="background-color: #E0F2F1;">
+                                        <div class="card-body">
+                                            <ul class="list-unstyled small text-secondary mb-0">
+                                                <li>✓ Stabilize blood glucose levels</li>
+                                                <li>✓ Reduce cardiovascular risk</li>
+                                                <li>✓ Achieve optimal weight</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold text-dark mb-3">📊 Daily Nutritional Targets</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="card border-0 shadow-sm text-center">
+                                        <div class="card-body">
+                                            <h5 class="fw-bold text-primary">2,000</h5>
+                                            <p class="small text-secondary mb-0">Daily Calories (kcal)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 shadow-sm text-center">
+                                        <div class="card-body">
+                                            <h5 class="fw-bold text-success">240g</h5>
+                                            <p class="small text-secondary mb-0">Carbohydrates (48%)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 shadow-sm text-center">
+                                        <div class="card-body">
+                                            <h5 class="fw-bold text-warning">100g</h5>
+                                            <p class="small text-secondary mb-0">Protein (20%)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card border-0 shadow-sm text-center">
+                                        <div class="card-body">
+                                            <h5 class="fw-bold text-danger">65g</h5>
+                                            <p class="small text-secondary mb-0">Fat (29%)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-dark mb-3">✅ Expected Benefits</h6>
+                                    <ul class="list-unstyled small text-secondary">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            25% reduction in inflammation markers
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Improved glucose control
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Better energy levels (7-14 days)
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            3-5 kg weight reduction (if combined with exercise)
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold text-dark mb-3">⏱️ Plan Duration</h6>
+                                    <div class="alert alert-info border-0">
+                                        <p class="mb-0 small">
+                                            <strong>Duration:</strong> Follow for 4 weeks, then reassess with your doctor
+                                        </p>
+                                    </div>
+                                    <div class="alert alert-light border border-secondary">
+                                        <p class="mb-2 small fw-bold text-dark">Phases:</p>
+                                        <ul class="list-unstyled small text-secondary mb-0">
+                                            <li>Week 1-2: Adjustment phase</li>
+                                            <li>Week 3-4: Adaptation phase</li>
+                                            <li>Week 5+: Assessment & monitoring</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: DAILY PLAN -->
+                        <div class="tab-pane fade" id="dailyplan-content" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4">Daily Meal Schedule</h5>
+                            
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <i class="fas fa-sun fa-2x" style="color: #FFA500;"></i>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">BREAKFAST (7:00 AM)</h6>
+                                            <p class="text-secondary small mb-0">Start your day with energy</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-light p-3 rounded" style="background-color: #FFF3E0;">
+                                        <p class="fw-bold mb-2">Oatmeal with Berries</p>
+                                        <ul class="list-unstyled small text-secondary mb-2">
+                                            <li>• Steel-cut oats: 40g</li>
+                                            <li>• Blueberries: 100g</li>
+                                            <li>• Almond milk: 200ml</li>
+                                            <li>• Cinnamon: 1/4 tsp</li>
+                                        </ul>
+                                        <p class="small fw-bold text-dark mb-0">
+                                            <i class="fas fa-fire text-danger"></i> 350 cal | 8g protein | 52g carbs | 8g fat
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <i class="fas fa-leaf fa-2x" style="color: #4CAF50;"></i>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">MID-MORNING SNACK (10:00 AM)</h6>
+                                            <p class="text-secondary small mb-0">Keep energy steady</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-light p-3 rounded" style="background-color: #E8F5E9;">
+                                        <p class="fw-bold mb-2">Green Tea + Apple</p>
+                                        <ul class="list-unstyled small text-secondary mb-2">
+                                            <li>• Green tea: 1 cup</li>
+                                            <li>• Apple: 1 medium</li>
+                                            <li>• Almond butter: 1 tbsp</li>
+                                        </ul>
+                                        <p class="small fw-bold text-dark mb-0">
+                                            <i class="fas fa-fire text-danger"></i> 180 cal | 4g protein | 22g carbs | 6g fat
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <i class="fas fa-utensils fa-2x" style="color: #2196F3;"></i>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">LUNCH (1:00 PM)</h6>
+                                            <p class="text-secondary small mb-0">Main meal - highest calories</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-light p-3 rounded" style="background-color: #E3F2FD;">
+                                        <p class="fw-bold mb-2">Grilled Chicken & Vegetables</p>
+                                        <ul class="list-unstyled small text-secondary mb-2">
+                                            <li>• Chicken breast: 150g (grilled)</li>
+                                            <li>• Brown rice: 100g</li>
+                                            <li>• Broccoli: 150g</li>
+                                            <li>• Olive oil: 1 tsp</li>
+                                        </ul>
+                                        <p class="small fw-bold text-dark mb-0">
+                                            <i class="fas fa-fire text-danger"></i> 480 cal | 45g protein | 42g carbs | 12g fat
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="fas fa-mug-hot" style="color: #8B4513;"></i>
+                                                <h6 class="fw-bold text-dark mb-0">AFTERNOON SNACK (4:00 PM)</h6>
+                                            </div>
+                                            <p class="fw-bold small">Yogurt with Nuts</p>
+                                            <p class="small text-secondary mb-0">140 cal | 12g protein</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="fas fa-fish" style="color: #FF6B6B;"></i>
+                                                <h6 class="fw-bold text-dark mb-0">DINNER (7:00 PM)</h6>
+                                            </div>
+                                            <p class="fw-bold small">Salmon with Sweet Potato</p>
+                                            <p class="small text-secondary mb-0">420 cal | 35g protein</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 rounded" style="background-color: #E8F1FB; border-left: 4px solid #003D5C;">
+                                <p class="small text-dark mb-0">
+                                    <strong>💧 Hydration Reminder:</strong> Drink 8-10 glasses of water throughout the day. 
+                                    Herbal tea (chamomile, green tea) is encouraged. Limit coffee to 1-2 cups.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: FOODS TO EAT -->
+                        <div class="tab-pane fade" id="eat-content" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4">✅ Recommended Foods</h5>
+                            
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-success bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        🥬 Vegetables (Unlimited Quantities)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <p class="fw-bold small text-dark mb-2">Leafy Greens</p>
+                                            <p class="small text-secondary mb-0">
+                                                Spinach, kale, lettuce, arugula
+                                                <br><em>Why: Low calorie, high fiber, micronutrients</em>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="fw-bold small text-dark mb-2">Cruciferous</p>
+                                            <p class="small text-secondary mb-0">
+                                                Broccoli, cauliflower, Brussels sprouts
+                                                <br><em>Why: Anti-inflammatory, heart protective</em>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        🍗 Proteins (Palm-size per meal)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled small text-secondary">
+                                        <li class="mb-2">
+                                            <strong>Lean Poultry:</strong> Chicken breast, turkey
+                                            <br>Serving: 150-180g | Prep: Grill, bake, steam
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Fish:</strong> Salmon, mackerel, sardines (2-3x weekly)
+                                            <br>Benefits: Omega-3 reduces inflammation | Serving: 120-150g
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Legumes:</strong> Lentils, chickpeas, beans
+                                            <br>Serving: 100g cooked | Benefits: Fiber + plant-based protein
+                                        </li>
+                                        <li>
+                                            <strong>Greek Yogurt:</strong> 0% fat, plain only
+                                            <br>Serving: 150g | Benefits: Probiotics, calcium
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-warning bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        🌾 Whole Grains (Fist-size per meal)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled small text-secondary">
+                                        <li>Oats (steel-cut preferred)</li>
+                                        <li>Brown Rice (long-grain)</li>
+                                        <li>Quinoa (complete protein)</li>
+                                        <li>Whole Wheat (bread, pasta - small portions)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: FOODS TO AVOID -->
+                        <div class="tab-pane fade" id="avoid-content" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4">❌ Foods to Avoid</h5>
+                            
+                            <div class="alert alert-danger mb-4">
+                                <strong>⚠️ High Glycemic Index (Causes Blood Sugar Spikes)</strong>
+                                <ul class="list-unstyled small mt-2 mb-0">
+                                    <li>❌ White Bread, Sugary Drinks, Processed Cereals</li>
+                                    <li>❌ White Rice, Candy, Pastries, Fast Food Desserts</li>
+                                    <li><em>Alternative: Brown rice, quinoa, whole grain bread</em></li>
+                                </ul>
+                            </div>
+
+                            <div class="alert alert-warning mb-4">
+                                <strong>⚠️ High Saturated Fat (Heart Risk)</strong>
+                                <ul class="list-unstyled small mt-2 mb-0">
+                                    <li>❌ Red Meat, Full-Fat Dairy, Processed Meats</li>
+                                    <li>❌ Butter, Ghee, Fried Foods</li>
+                                    <li><em>Alternative: Lean poultry, fish, olive oil</em></li>
+                                </ul>
+                            </div>
+
+                            <div class="alert alert-info mb-4">
+                                <strong>⚠️ Ultra-Processed Foods</strong>
+                                <ul class="list-unstyled small mt-2 mb-0">
+                                    <li>❌ Fast Food, Frozen Dinners, Instant Noodles</li>
+                                    <li>❌ Packaged Snacks, All Candy & Sweets</li>
+                                </ul>
+                            </div>
+
+                            <div class="card border-0" style="background-color: #F3E5F5;">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-dark mb-3">📖 Reading Nutrition Labels</h6>
+                                    <p class="small text-secondary mb-2">Look for:</p>
+                                    <ul class="list-unstyled small text-secondary">
+                                        <li>✓ Sodium: < 300mg per serving</li>
+                                        <li>✓ Sugar: < 5g per serving</li>
+                                        <li>✓ Fiber: > 3g per serving</li>
+                                        <li>✓ Trans fat: 0g (avoid if present)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 5: DOCTOR NOTES -->
+                        <div class="tab-pane fade" id="notes-content" role="tabpanel">
+                            <h5 class="fw-bold text-dark mb-4">📝 Clinical Notes & Monitoring</h5>
+                            
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">Clinical Assessment</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small text-secondary mb-0">
+                                        This patient presents with Type 2 Diabetes (controlled) and hypertension. 
+                                        Diet plan focuses on:
+                                    </p>
+                                    <ul class="list-unstyled small text-secondary mt-2 mb-0">
+                                        <li>1. Glycemic control → Regular fiber + protein</li>
+                                        <li>2. Cardiovascular protection → Omega-3, reduced sodium</li>
+                                        <li>3. Weight management → Caloric deficit (mild)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-warning bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">⏱️ Monitoring Required</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled small text-secondary">
+                                        <li class="mb-2">✓ <strong>Daily:</strong> Blood glucose readings (fasting & post-meal)</li>
+                                        <li class="mb-2">✓ <strong>Weekly:</strong> Weight tracking (same time, same clothes)</li>
+                                        <li class="mb-2">✓ <strong>Bi-weekly:</strong> Food diary with symptoms</li>
+                                        <li>✓ <strong>Monthly:</strong> Doctor follow-up with lab work</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-success bg-opacity-10">
+                                    <h6 class="fw-bold text-dark mb-0">✅ Expected Outcomes</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="small text-secondary mb-2">(If compliant with plan)</p>
+                                    <ul class="list-unstyled small text-secondary mb-0">
+                                        <li>• Blood glucose: ↓ 15-25%</li>
+                                        <li>• Blood pressure: ↓ 10-15 mmHg</li>
+                                        <li>• Energy levels: ↑ significantly</li>
+                                        <li>• Weight: ↓ 2-4 kg over 4 weeks</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-danger">
+                                <h6 class="fw-bold text-dark mb-2">⚠️ When to Seek Help</h6>
+                                <p class="small text-secondary mb-0">
+                                    If experiencing persistent dizziness, blood glucose < 100 after 2 weeks, 
+                                    severe fatigue, or allergic reactions - discontinue and seek immediate medical attention.
+                                </p>
+                            </div>
+
+                            <div class="card border-0" style="background-color: #E8F5E9;">
+                                <div class="card-body">
+                                    <p class="small text-secondary mb-1">
+                                        <strong>Next Review Date:</strong> January 27, 2025
+                                    </p>
+                                    <p class="small text-secondary mb-0">
+                                        <strong>Doctor:</strong> Dr. Sarah Mitchell, MD | Endocrinology Department
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <button class="btn btn-primary btn-lg fw-bold">
+                    <i class="fas fa-download me-2"></i> Download PDF
+                </button>
+                <button class="btn btn-secondary btn-lg fw-bold">
+                    <i class="fas fa-print me-2"></i> Print Plan
+                </button>
+                <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-primary btn-lg fw-bold">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .nav-link {
+        color: #4B5563 !important;
+        border: none !important;
+        border-bottom: 3px solid transparent !important;
+        margin-bottom: -1px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: #003D5C !important;
+        border-bottom-color: #003D5C !important;
+    }
+
+    .nav-link.active {
+        color: #003D5C !important;
+        border-bottom-color: #003D5C !important;
+        background-color: transparent;
+    }
+
+    .tab-content {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row min-vh-75 align-items-center justify-content-center">
+    <div class="container py-6">
+        <div class="text-center mb-6 max-w-3xl mx-auto">
+            <span class="text-primary fw-bold text-uppercase ls-1">Premium Features</span>
+            <h1 class="display-4 fw-bold mt-2 mb-4">Everything you need for <br><span class="text-gradient">Better
+                    Health</span></h1>
+            <p class="text-secondary fs-5">Experience the future of healthcare with our comprehensive suite of tools
+                designed for patients and doctors.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Appointment Booking -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box primary mb-4">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Easy Booking</h4>
+                    <p class="text-secondary">Schedule appointments with top specialists in seconds. Get instant
+                        confirmations and reminders.</p>
+                </div>
+            </div>
+
+            <!-- Doctor Chat -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box success mb-4">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Direct Chat</h4>
+                    <p class="text-secondary">Secure, private messaging with your doctor. Ask questions and get quick
+                        responses without a visit.</p>
+                </div>
+            </div>
+
+            <!-- Health Monitoring -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box danger mb-4">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Vitals Monitoring</h4>
+                    <p class="text-secondary">Track blood pressure, heart rate, and more. Our AI analyzes trends to
+                        alert you of potential issues.</p>
+                </div>
+            </div>
+
+            <!-- Diet Plans -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box warning mb-4">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Smart Diet Plans</h4>
+                    <p class="text-secondary">AI-generated nutrition plans tailored to your specific health conditions,
+                        allergies, and goals.</p>
+                </div>
+            </div>
+
+            <!-- Exercise Guidance -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box info mb-4">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Fitness Guides</h4>
+                    <p class="text-secondary">Video-guided exercise routines that adapt to your progress and physical
+                        capabilities.</p>
+                </div>
+            </div>
+
+            <!-- Digital Prescriptions -->
+            <div class="col-md-6 col-lg-4">
+                <div class="modern-card p-4 h-100">
+                    <div class="icon-box primary mb-4">
+                        <i class="fas fa-file-prescription"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">e-Prescriptions</h4>
+                    <p class="text-secondary">Receive and manage digital prescriptions. Send them directly to your
+                        preferred pharmacy.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-6">
+            <a href="{{ url_for('auth.patient_register') }}" class="btn btn-primary btn-lg px-5 shadow-lg">Get Started
+                Today</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+</div>
+</div>
+<div class="col-md-6 mb-4">
+    <div class="card shadow h-100">
+        <div class="card-body text-center">
+            <i class="fas fa-running fa-3x text-info mb-3"></i>
+            <h5 class="card-title">Exercise Plans</h5>
+            <p class="card-text">Receive personalized exercise recommendations.</p>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

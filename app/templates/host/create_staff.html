@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Create Staff - Host{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-user-plus me-2"></i> Create Staff Account</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select name="role" class="form-select" required>
+                                <option value="" selected disabled>Select Role...</option>
+                                <option value="NURSE">Nurse</option>
+                                <option value="LAB_STAFF">Lab Staff</option>
+                                <option value="DOCTOR">Associate Doctor</option>
+                                <option value="ADMIN">Administrative Staff</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" required
+                                placeholder="e.g. nurse_sarah">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Account</button>
+                            <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

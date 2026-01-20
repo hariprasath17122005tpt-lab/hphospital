@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+
+{% block title %}Operations Center - Real-time Tracking{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold text-dark mb-1">Operations Center</h1>
+            <p class="text-muted"><i class="fas fa-satellite-dish me-2"></i> Real-time Bed & Ambulance Fleet Tracking
+            </p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+                <i class="fas fa-circle me-1 small"></i> System Live
+            </span>
+        </div>
+    </div>
+
+    <!-- Live Counters -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
+                            <i class="fas fa-bed fa-lg"></i>
+                        </div>
+                        <h6 class="text-muted mb-0">Total Beds</h6>
+                    </div>
+                    <h3 class="fw-bold mb-0">{{ beds|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-shape bg-success bg-opacity-10 text-success rounded-3 p-2 me-3">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                        <h6 class="text-muted mb-0">Available Beds</h6>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-success">{{ beds|selectattr('status', 'equalto', 'Vacant')|list|length
+                        }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-shape bg-warning bg-opacity-10 text-warning rounded-3 p-2 me-3">
+                            <i class="fas fa-ambulance fa-lg"></i>
+                        </div>
+                        <h6 class="text-muted mb-0">Active Ambulances</h6>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-warning">{{ ambulances|selectattr('status', 'equalto', 'On
+                        Mission')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-shape bg-danger bg-opacity-10 text-danger rounded-3 p-2 me-3">
+                            <i class="fas fa-exclamation-triangle fa-lg"></i>
+                        </div>
+                        <h6 class="text-muted mb-0">ICU Capacity</h6>
+                    </div>
+                    {% set icu_total = beds|selectattr('ward', 'equalto', 'ICU')|list|length %}
+                    {% set icu_vacant = beds|selectattr('ward', 'equalto', 'ICU')|selectattr('status', 'equalto',
+                    'Vacant')|list|length %}
+                    <h3 class="fw-bold mb-0">{{ icu_vacant }}/{{ icu_total }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Bed Management Section -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-bed me-2 text-primary"></i> Bed Inventory</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light border dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false" id="wardFilterBtn">
+                            All Wards
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="wardFilterBtn">
+                            <li><a class="dropdown-item active" href="#" onclick="filterWards('All', this)">All
+                                    Wards</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterWards('ICU', this)">ICU</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterWards('General Ward', this)">General
+                                    Ward</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterWards('Emergency', this)">Emergency</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="filterWards('Pediatrics', this)">Pediatrics</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border-top-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="border-0">Bed #</th>
+                                    <th class="border-0">Ward Type</th>
+                                    <th class="border-0">Status</th>
+                                    <th class="border-0">assigned Patient</th>
+                                    <th class="border-0 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bed in beds %}
+                                <tr>
+                                    <td class="fw-bold">{{ bed.number }}</td>
+                                    <td>
+                                        <span class="text-muted small uppercase fw-semibold">
+                                            {{ bed.ward }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if bed.status == 'Occupied' %}
+                                        <span
+                                            class="badge bg-danger bg-opacity-10 text-danger px-3 rounded-pill">Occupied</span>
+                                        {% else %}
+                                        <span
+                                            class="badge bg-success bg-opacity-10 text-success px-3 rounded-pill">Vacant</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm rounded-circle me-2 bg-light d-flex align-items-center justify-content-center"
+                                                style="width: 24px; height: 24px;">
+                                                <i class="fas fa-user text-muted" style="font-size: 0.7rem;"></i>
+                                            </div>
+                                            <span
+                                                class="{{ 'text-dark fw-medium' if bed.patient != 'Vacant' else 'text-muted fst-italic' }}">
+                                                {{ bed.patient }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-link text-primary p-0"
+                                            onclick="openBedModal('{{ bed.id }}', '{{ bed.number }}', '{{ bed.ward }}', '{{ bed.status }}', '{{ bed.patient }}')">
+                                            Manage
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ambulance Fleet Section -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-ambulance me-2 text-warning"></i> Ambulance Fleet</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="list-group list-group-flush">
+                        {% for amb in ambulances %}
+                        <div class="list-group-item border-0 bg-light rounded-3 mb-3 p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-0">{{ amb.vehicle_number }}</h6>
+                                    <small class="text-muted">{{ amb.vehicle_type }}</small>
+                                </div>
+                                {% if amb.status == 'Available' %}
+                                <span class="badge bg-success rounded-pill px-2">Ready</span>
+                                {% elif amb.status == 'On Mission' %}
+                                <span class="badge bg-warning text-dark rounded-pill px-2">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill px-2">Service</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt text-danger me-2 small"></i>
+                                <small class="text-dark">{{ amb.current_location }}</small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-id-badge text-muted me-2"></i>
+                                    <small class="fw-medium">{{ amb.driver_name }}</small>
+                                </div>
+                                <a href="tel:{{ amb.driver_phone }}"
+                                    class="btn btn-sm btn-outline-primary rounded-circle">
+                                    <i class="fas fa-phone-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary w-100 rounded-pill" onclick="openDispatchModal()">
+                            <i class="fas fa-plus me-2"></i> Dispatch Ambulance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Manage Bed Modal -->
+<div class="modal fade" id="manageBedModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Manage Bed <span id="modalBedNumber" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="manageBedForm">
+                    <input type="hidden" id="bedId">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">CURRENT STATUS</label>
+                        <select class="form-select" id="bedStatus" onchange="togglePatientInput()">
+                            <option value="Vacant">Vacant</option>
+                            <option value="Occupied">Occupied</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="patientInputGroup" style="display:none;">
+                        <label class="form-label text-muted small fw-bold">PATIENT NAME</label>
+                        <input type="text" class="form-control" id="patientName"
+                            placeholder="Search or enter patient name">
+                        <div class="form-text">Enter "First Last" to auto-link if patient exists.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveBedStatus()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dispatch Ambulance Modal -->
+<div class="modal fade" id="dispatchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Dispatch Ambulance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dispatchForm">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">SELECT AMBULANCE</label>
+                        <select class="form-select" id="dispatchAmbId">
+                            {% for amb in ambulances %}
+                            {% if amb.status == 'Available' %}
+                            <option value="{{ amb.id }}">{{ amb.vehicle_number }} ({{ amb.vehicle_type }})</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if ambulances|selectattr('status', 'equalto', 'Available')|list|length == 0 %}
+                        <div class="text-danger small mt-1">No ambulances available!</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">DESTINATION / MISSION</label>
+                        <input type="text" class="form-control" id="flightLocation"
+                            placeholder="e.g. 123 Main St, Emergency">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger px-4" onclick="dispatchAmbulance()">Dispatch Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Helper to get CSRF Token
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+
+    // Bed Management
+    function openBedModal(id, number, ward, status, patient) {
+        document.getElementById('bedId').value = id;
+        document.getElementById('modalBedNumber').innerText = '#' + number;
+        document.getElementById('bedStatus').value = status;
+
+        const patientInput = document.getElementById('patientName');
+        patientInput.value = (patient && patient !== 'Vacant') ? patient : '';
+
+        togglePatientInput();
+
+        new bootstrap.Modal(document.getElementById('manageBedModal')).show();
+    }
+
+    function togglePatientInput() {
+        const status = document.getElementById('bedStatus').value;
+        const group = document.getElementById('patientInputGroup');
+        group.style.display = (status === 'Occupied') ? 'block' : 'none';
+    }
+
+    function saveBedStatus() {
+        const bedId = document.getElementById('bedId').value;
+        const status = document.getElementById('bedStatus').value;
+        const patientName = document.getElementById('patientName').value;
+
+        fetch('/features/api/operations/bed/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                bed_id: bedId,
+                status: status,
+                patient_name: patientName
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => alert('An error occurred. Please try again.'));
+    }
+
+    // Ambulance Dispatch
+    function openDispatchModal() {
+        new bootstrap.Modal(document.getElementById('dispatchModal')).show();
+    }
+
+    function dispatchAmbulance() {
+        const ambId = document.getElementById('dispatchAmbId').value;
+        const locationVal = document.getElementById('flightLocation').value;
+
+        if (!ambId) {
+            alert("No available ambulance selected.");
+            return;
+        }
+
+        fetch('/features/api/operations/ambulance/dispatch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                ambulance_id: ambId,
+                location: locationVal
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => alert('An error occurred. Please try again.'));
+    }
+
+    // Filter Wards
+    function filterWards(wardType, element) {
+        // Update active state
+        document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+
+        // Update button text
+        document.getElementById('wardFilterBtn').innerText = wardType === 'All' ? 'All Wards' : wardType;
+
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const rowWard = row.querySelector('td:nth-child(2) span').innerText.trim();
+            if (wardType === 'All' || rowWard === wardType) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<style>
+    .icon-shape {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .table thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+    }
+
+    .badge {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

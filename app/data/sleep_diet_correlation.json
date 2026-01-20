@@ -1,0 +1,56 @@
+{
+  "sleep_diet_correlation": {
+    "general_principle": "Late heavy meals disrupt circadian rhythm → Poor sleep → Next-day metabolic dysregulation",
+    "physiological_mechanism": "Digestive processes compete with sleep neurotransmitter production",
+    "timing_rules": {
+      "breakfast": "Within 1 hour of waking - Resets circadian clock",
+      "lunch": "12:00 PM - 1:30 PM - Peak metabolic activity",
+      "dinner": "Before 8:00 PM - Allows 2-3 hour digestion before sleep",
+      "late_snack": "Only if needed: light, low-glycemic options before 7:00 PM"
+    },
+    "foods_that_impair_sleep": {
+      "caffeine": "Blocks adenosine receptors - Avoid after 2:00 PM",
+      "alcohol": "Disrupts REM sleep - Avoid 3+ hours before bed",
+      "spicy_foods": "Increases body temperature - Avoid 3+ hours before bed",
+      "high_fat": "Slows digestion - Avoid 3+ hours before bed",
+      "high_sugar": "Spikes glucose then crashes - Disrupts sleep architecture"
+    },
+    "foods_that_promote_sleep": {
+      "tryptophan_rich": "Turkey, nuts, seeds - Support serotonin production",
+      "magnesium_rich": "Spinach, pumpkin seeds, almonds - Relax muscles & calm mind",
+      "complex_carbs": "Whole grains - Facilitate tryptophan transport to brain",
+      "chamomile_tea": "Mild GABA agonist - Promotes relaxation",
+      "calcium_rich": "Low-fat yogurt, fortified plant milk - Supports melatonin synthesis"
+    },
+    "sleep_quality_impact": {
+      "poor_sleep_effect": "Reduces diet adherence by 40%, increases hunger hormones",
+      "good_sleep_effect": "Supports weight loss by 55%, improves metabolic control",
+      "bidirectional_relationship": "Good diet → Better sleep → Better diet adherence → Better outcomes"
+    },
+    "recommended_dinner_composition": {
+      "protein": "4-6 oz lean protein (fish, chicken, legumes)",
+      "vegetables": "2+ cups non-starchy vegetables",
+      "whole_grain": "½ cup brown rice or sweet potato",
+      "fat": "1 teaspoon olive oil or nut butter",
+      "avoid": "Added sodium, processed ingredients, high sugar"
+    },
+    "circadian_nutrition": {
+      "concept": "Align eating with biological clock for optimal metabolism",
+      "breakfast": "Largest meal when insulin sensitivity highest",
+      "lunch": "Moderate meal during peak energy",
+      "dinner": "Smallest meal as metabolism slows",
+      "fasting_window": "12-14 hours overnight supports metabolic health"
+    }
+  },
+  "sleep_improvement_tracking": {
+    "baseline_measurement": "Record sleep quality for 1 week before diet change",
+    "weekly_assessment": "Track sleep hours & quality every 7 days",
+    "expected_improvement": "40% report better sleep within 2-3 weeks of diet adherence",
+    "metrics": [
+      "Time to fall asleep (target: < 10 minutes)",
+      "Sleep duration (target: 7-8 hours)",
+      "Sleep quality (target: No nighttime awakenings)",
+      "Morning freshness (target: Feel refreshed without stimulants)"
+    ]
+  }
+}

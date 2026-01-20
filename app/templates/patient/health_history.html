@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-history"></i> Health History</h4>
+                </div>
+                <div class="card-body">
+                    {% if health_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in health_records %}
+                                        <tr>
+                                            <td>{{ record.created_at.strftime('%B %d, %Y') }}</td>
+                                            <td>Health Data</td>
+                                            <td>
+                                                <span class="badge bg-info">BP: {{ record.blood_pressure }}</span>
+                                                <span class="badge bg-info">HR: {{ record.heart_rate }}</span>
+                                            </td>
+                                            <td>{{ record.notes or 'N/A' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No health records found. <a href="{{ url_for('patient.enter_health_data') }}">Enter health data</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

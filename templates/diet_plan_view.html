@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Diet Plan | Hospital Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #1e40af;      /* Professional hospital blue */
+            --secondary-color: #059669;    /* Medical green */
+            --accent-color: #dc2626;       /* Alert red */
+            --light-bg: #f3f4f6;
+            --border-color: #e5e7eb;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafbfc;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        
+        /* ========== HEADER ========== */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+        
+        /* ========== CONTAINER ========== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* ========== PATIENT PROFILE SECTION ========== */
+        .patient-profile {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.75rem;
+        }
+        
+        .section-title::before {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-item {
+            padding: 1rem;
+            background: var(--light-bg);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+        
+        .profile-item label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-item .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        
+        .bmi-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .bmi-overweight {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .bmi-obese {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+        
+        .bmi-normal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* ========== CONDITIONS & MEDICATIONS ========== */
+        .conditions-medications {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .conditions-medications {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .conditions-box, .medications-box {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .list-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--light-bg);
+            border-left: 3px solid var(--secondary-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        /* ========== DIET STRATEGY SECTION ========== */
+        .diet-strategy {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .strategy-card {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .strategy-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        .strategy-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .strategy-card .description {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+        
+        /* ========== MACRONUTRIENT DISTRIBUTION ========== */
+        .macronutrient-section {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .macro-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid;
+            text-align: center;
+        }
+        
+        .macro-card.carbs {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .macro-card.protein {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .macro-card.fat {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .macro-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .macro-card .percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .macro-card .grams {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            margin-bottom: 1rem;
+        }
+        
+        .macro-card .rationale {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+            font-style: italic;
+        }
+        
+        /* ========== MEAL PLAN SECTION ========== */
+        .meal-plan-section {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .meal {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--light-bg);
+            border-left: 5px solid var(--primary-color);
+            border-radius: 8px;
+        }
+        
+        .meal h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        .meal-time {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .meal-foods {
+            margin-bottom: 1rem;
+        }
+        
+        .meal-food-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-left: 3px solid var(--secondary-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .meal-nutrition {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+        
+        .nutrition-stat {
+            text-align: center;
+        }
+        
+        .nutrition-stat .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nutrition-stat .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .meal-reasoning {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            padding: 1rem;
+            background: #e0f2fe;
+            border-radius: 6px;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+        
+        /* ========== RESTRICTED FOODS ========== */
+        .restricted-foods-section {
+            background: #fee2e2;
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .restricted-category {
+            margin-bottom: 1.5rem;
+        }
+        
+        .restricted-category h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--danger);
+            margin-bottom: 0.75rem;
+        }
+        
+        .restricted-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-left: 3px solid var(--danger);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .restricted-item::before {
+            content: "✗ ";
+            font-weight: 700;
+            color: var(--danger);
+        }
+        
+        /* ========== RECOMMENDED FOODS ========== */
+        .recommended-foods-section {
+            background: #d1fae5;
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .recommended-category {
+            margin-bottom: 1.5rem;
+        }
+        
+        .recommended-category h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 0.75rem;
+        }
+        
+        .recommended-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border-left: 3px solid var(--success);
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .recommended-item::before {
+            content: "✓ ";
+            font-weight: 700;
+            color: var(--success);
+        }
+        
+        .recommended-benefit {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+        
+        /* ========== DRUG INTERACTIONS ========== */
+        .drug-interactions-section {
+            background: white;
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .drug-interaction {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+        }
+        
+        .drug-interaction h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .interaction-detail {
+            margin-bottom: 1rem;
+        }
+        
+        .interaction-detail .label {
+            font-weight: 600;
+            color: var(--text-gray);
+            font-size: 0.875rem;
+        }
+        
+        .interaction-detail .text {
+            margin-top: 0.25rem;
+            color: var(--text-dark);
+        }
+        
+        /* ========== EXPECTED OUTCOMES ========== */
+        .expected-outcomes-section {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .timeline {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .timeline-item {
+            padding: 1.5rem;
+            background: var(--light-bg);
+            border-left: 5px solid var(--secondary-color);
+            border-radius: 8px;
+        }
+        
+        .timeline-item h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        .timeline-benefits {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .timeline-benefits li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-gray);
+        }
+        
+        .timeline-benefits li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        /* ========== DISCLAIMER ========== */
+        .disclaimer-section {
+            background: #fee2e2;
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .disclaimer-section h3 {
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        
+        .disclaimer-section p {
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+        
+        /* ========== FOOTER ========== */
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-top: 3px solid var(--secondary-color);
+            margin-top: 3rem;
+        }
+        
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ========== BUTTONS ========== */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d36a3;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #047857;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+        
+        /* ========== PRINT STYLES ========== */
+        @media print {
+            .btn-group, .header {
+                display: none;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .patient-profile, .diet-strategy, .meal-plan-section {
+                page-break-inside: avoid;
+                box-shadow: none;
+            }
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .macro-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .conditions-medications {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <h1>🧾 Personalized Diet Plan</h1>
+            <p>Hospital Management System - Clinical Nutrition Department</p>
+        </div>
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        
+        <!-- PATIENT PROFILE -->
+        <div class="patient-profile">
+            <h2 class="section-title">Patient Clinical Profile</h2>
+            
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <label>Patient Name</label>
+                    <div class="value">{{ diet_plan.patient_name }}</div>
+                </div>
+                <div class="profile-item">
+                    <label>Patient ID</label>
+                    <div class="value">{{ diet_plan.patient_id }}</div>
+                </div>
+                <div class="profile-item">
+                    <label>Age</label>
+                    <div class="value">52 years</div>
+                </div>
+                <div class="profile-item">
+                    <label>Gender</label>
+                    <div class="value">Male</div>
+                </div>
+                <div class="profile-item">
+                    <label>Height</label>
+                    <div class="value">170 cm</div>
+                </div>
+                <div class="profile-item">
+                    <label>Weight</label>
+                    <div class="value">82 kg</div>
+                </div>
+                <div class="profile-item">
+                    <label>BMI</label>
+                    <div class="value">
+                        28.4
+                        <span class="bmi-badge bmi-overweight">OVERWEIGHT</span>
+                    </div>
+                </div>
+                <div class="profile-item">
+                    <label>Activity Level</label>
+                    <div class="value">Sedentary</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CONDITIONS & MEDICATIONS -->
+        <div class="conditions-medications">
+            <div class="conditions-box">
+                <h3 class="section-title" style="margin-bottom: 1rem; font-size: 1.25rem;">Primary Conditions</h3>
+                <div class="list-item">• Type 2 Diabetes Mellitus (3 years)</div>
+                <div class="list-item">• Hypertension (Stage 1)</div>
+                <div class="list-item">• Dyslipidemia</div>
+            </div>
+            <div class="medications-box">
+                <h3 class="section-title" style="margin-bottom: 1rem; font-size: 1.25rem;">Current Medications</h3>
+                <div class="list-item">• Metformin 1000mg BD</div>
+                <div class="list-item">• Amlodipine 5mg OD</div>
+                <div class="list-item">• Atorvastatin 20mg OD</div>
+            </div>
+        </div>
+        
+        <!-- DIET STRATEGY -->
+        <div class="diet-strategy">
+            <h2 class="section-title">Prescribed Diet Strategy</h2>
+            
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <h4>Diet Type</h4>
+                    <div class="value">Low Glycemic Index + DASH</div>
+                    <div class="description">Combined approach for metabolic syndrome management</div>
+                </div>
+                <div class="strategy-card">
+                    <h4>Caloric Target (Weight Loss)</h4>
+                    <div class="value">1700–1800 kcal/day</div>
+                    <div class="description">500 kcal deficit for 0.5 kg/week loss</div>
+                </div>
+                <div class="strategy-card">
+                    <h4>Expected Duration</h4>
+                    <div class="value">6–12 Weeks</div>
+                    <div class="description">Minimum for HbA1c improvement and metabolic changes</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MACRONUTRIENT DISTRIBUTION -->
+        <div class="macronutrient-section">
+            <h2 class="section-title">Macronutrient Distribution</h2>
+            
+            <div class="macro-grid">
+                <div class="macro-card carbs">
+                    <h3>Carbohydrates</h3>
+                    <div class="percentage">45–50%</div>
+                    <div class="grams">190–225g/day</div>
+                    <div class="rationale">Low GI sources minimize insulin spikes; High fiber (25–30g/day) for satiety & glycemic control</div>
+                </div>
+                <div class="macro-card protein">
+                    <h3>Protein</h3>
+                    <div class="percentage">25–30%</div>
+                    <div class="grams">112–135g/day</div>
+                    <div class="rationale">Higher protein supports lean mass retention during weight loss; Enhances satiety</div>
+                </div>
+                <div class="macro-card fat">
+                    <h3>Fat</h3>
+                    <div class="percentage">20–25%</div>
+                    <div class="grams">38–50g/day</div>
+                    <div class="rationale">Emphasis on MUFA (olive oil, avocado) & PUFA (omega-3); <7% saturated fats</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MEAL PLAN -->
+        <div class="meal-plan-section">
+            <h2 class="section-title">Structured Daily Meal Plan</h2>
+            
+            <!-- BREAKFAST -->
+            <div class="meal">
+                <h3>🌅 Breakfast (7:00 AM)</h3>
+                <div class="meal-time">Steel-cut oatmeal with berries, flaxseeds, unsweetened almond milk</div>
+                
+                <div class="meal-foods">
+                    <div class="meal-food-item">Steel-cut oatmeal (½ cup dry) - 150 kcal</div>
+                    <div class="meal-food-item">Mixed berries (½ cup) - 40 kcal</div>
+                    <div class="meal-food-item">Ground flaxseeds (1 tbsp) - 55 kcal</div>
+                    <div class="meal-food-item">Unsweetened almond milk (1 cup) - 30 kcal</div>
+                </div>
+                
+                <div class="meal-nutrition">
+                    <div class="nutrition-stat">
+                        <div class="label">Calories</div>
+                        <div class="value">275</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Carbs</div>
+                        <div class="value">40g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Protein</div>
+                        <div class="value">8g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Fat</div>
+                        <div class="value">8g</div>
+                    </div>
+                </div>
+                
+                <div class="meal-reasoning">
+                    <strong>Medical Reasoning:</strong> Beta-glucans in steel-cut oats reduce postprandial glucose spike by 25-30%. Anthocyanins in berries enhance pancreatic β-cell function. Flaxseeds provide soluble fiber and ALA omega-3 (reduces triglycerides by 15-20%).
+                </div>
+            </div>
+            
+            <!-- LUNCH -->
+            <div class="meal">
+                <h3>🍽️ Lunch (1:00 PM)</h3>
+                <div class="meal-time">Grilled tilapia + Basmati rice + Steamed broccoli</div>
+                
+                <div class="meal-foods">
+                    <div class="meal-food-item">Grilled tilapia (120g, skinless) - 180 kcal</div>
+                    <div class="meal-food-item">Basmati rice (¾ cup cooked) - 150 kcal</div>
+                    <div class="meal-food-item">Steamed broccoli (1.5 cups) - 55 kcal</div>
+                    <div class="meal-food-item">EVOO dressing (1 tsp) - 40 kcal</div>
+                </div>
+                
+                <div class="meal-nutrition">
+                    <div class="nutrition-stat">
+                        <div class="label">Calories</div>
+                        <div class="value">425</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Carbs</div>
+                        <div class="value">44g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Protein</div>
+                        <div class="value">38g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Fat</div>
+                        <div class="value">9g</div>
+                    </div>
+                </div>
+                
+                <div class="meal-reasoning">
+                    <strong>Medical Reasoning:</strong> Tilapia provides high-quality protein (38g) without excess saturated fat; EPA/DHA reduces triglycerides by 20-30%. Basmati rice (GI: 58) has lower glycemic impact than jasmine. Sulforaphane in broccoli activates Nrf2 pathway → improved glucose metabolism.
+                </div>
+            </div>
+            
+            <!-- DINNER -->
+            <div class="meal">
+                <h3>🍗 Dinner (7:00 PM)</h3>
+                <div class="meal-time">Grilled chicken breast + Sweet potato + Mixed leafy greens</div>
+                
+                <div class="meal-foods">
+                    <div class="meal-food-item">Grilled chicken breast (130g, skinless) - 220 kcal</div>
+                    <div class="meal-food-item">Sweet potato (100g, boiled) - 86 kcal</div>
+                    <div class="meal-food-item">Mixed leafy greens (2 cups) - 66 kcal</div>
+                    <div class="meal-food-item">EVOO + Balsamic vinegar - 50 kcal</div>
+                </div>
+                
+                <div class="meal-nutrition">
+                    <div class="nutrition-stat">
+                        <div class="label">Calories</div>
+                        <div class="value">422</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Carbs</div>
+                        <div class="value">31g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Protein</div>
+                        <div class="value">45g</div>
+                    </div>
+                    <div class="nutrition-stat">
+                        <div class="label">Fat</div>
+                        <div class="value">8g</div>
+                    </div>
+                </div>
+                
+                <div class="meal-reasoning">
+                    <strong>Medical Reasoning:</strong> Chicken breast provides tryptophan (serotonin precursor) for sleep quality. Sweet potato's resistant starch feeds beneficial colon bacteria (↑ SCFA production). Carotenoids reduce oxidative stress in β-cells. High magnesium in leafy greens improves GLUT4 translocation (glucose uptake).
+                </div>
+            </div>
+        </div>
+        
+        <!-- RESTRICTED FOODS -->
+        <div class="restricted-foods-section">
+            <h2 class="section-title" style="color: var(--danger); border-color: var(--danger);">🚫 Foods Strictly Restricted</h2>
+            
+            <div class="restricted-category">
+                <h4>Refined Carbohydrates</h4>
+                <div class="restricted-item">White bread, pasta (refined), pastries, doughnuts</div>
+                <div class="restricted-item">Sugary cereals, sweetened condiments</div>
+            </div>
+            
+            <div class="restricted-category">
+                <h4>Sugary Beverages</h4>
+                <div class="restricted-item">Regular soft drinks, sweetened juices (causes 2-hour hyperglycemia)</div>
+                <div class="restricted-item">Energy drinks, flavored yogurts, sweetened iced tea</div>
+            </div>
+            
+            <div class="restricted-category">
+                <h4>Trans Fats & Saturated Fats</h4>
+                <div class="restricted-item">Fried foods, processed snacks with trans fats</div>
+                <div class="restricted-item">Full-fat dairy, fatty meats (>3x/week), coconut oil</div>
+            </div>
+            
+            <div class="restricted-category">
+                <h4>High Sodium Processed Foods</h4>
+                <div class="restricted-item">Packaged snacks (>500mg Na/serving), canned soups</div>
+                <div class="restricted-item">Processed meats, salted nuts (increases BP by 5-7 mmHg)</div>
+            </div>
+            
+            <div class="restricted-category">
+                <h4>Alcohol</h4>
+                <div class="restricted-item">Beer, wine, spirits (impairs hepatic gluconeogenesis → hypoglycemia risk)</div>
+            </div>
+        </div>
+        
+        <!-- RECOMMENDED FOODS -->
+        <div class="recommended-foods-section">
+            <h2 class="section-title" style="color: var(--success); border-color: var(--success);">✅ Foods Strongly Recommended</h2>
+            
+            <div class="recommended-category">
+                <h4>Low GI Whole Grains</h4>
+                <div class="recommended-item">
+                    <strong>Steel-cut oats, barley, bulgur</strong>
+                    <div class="recommended-benefit">β-glucans reduce postprandial glucose by 25-30%</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Fatty Cold-Water Fish</h4>
+                <div class="recommended-item">
+                    <strong>Salmon, mackerel, sardines (2-3x/week)</strong>
+                    <div class="recommended-benefit">EPA 250-500mg/100g; Reduces TG by 20-30%; Improves vascular function</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Cruciferous Vegetables</h4>
+                <div class="recommended-item">
+                    <strong>Broccoli, cauliflower, Brussels sprouts</strong>
+                    <div class="recommended-benefit">Sulforaphane induces Nrf2 → phase 2 detox enzymes; Improves HbA1c by 0.5-1%</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Leafy Greens</h4>
+                <div class="recommended-item">
+                    <strong>Spinach, kale, collard greens</strong>
+                    <div class="recommended-benefit">High Mg/K; Nitrate (3-5 mmol/100g) improves vascular NO → BP ↓5-8 mmHg</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Berries</h4>
+                <div class="recommended-item">
+                    <strong>Blueberries, strawberries, raspberries (frozen acceptable)</strong>
+                    <div class="recommended-benefit">Anthocyanins improve endothelial function; Enhance β-cell secretion</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Nuts & Seeds</h4>
+                <div class="recommended-item">
+                    <strong>Almonds, walnuts, flaxseeds</strong>
+                    <div class="recommended-benefit">Walnuts: 2.5g ALA/oz → 20% TG reduction; Magnesium & zinc support glucose metabolism</div>
+                </div>
+            </div>
+            
+            <div class="recommended-category">
+                <h4>Extra Virgin Olive Oil</h4>
+                <div class="recommended-item">
+                    <strong>Polyphenol-rich, cold-pressed</strong>
+                    <div class="recommended-benefit">Oleocanthal inhibits NF-κB → reduced systemic inflammation; Use for salads</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DRUG INTERACTIONS -->
+        <div class="drug-interactions-section">
+            <h2 class="section-title" style="border-color: var(--warning);">💊 Drug-Nutrient Interactions & Safety Notes</h2>
+            
+            <div class="drug-interaction">
+                <h4>📌 Metformin 1000mg BD</h4>
+                <div class="interaction-detail">
+                    <div class="label">⚠️ INTERACTION:</div>
+                    <div class="text">Vitamin B12 malabsorption (10-30% of long-term users)</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">→ MANAGEMENT:</div>
+                    <div class="text">Supplement B12: 1000 mcg/week IM or 2000 mcg oral daily</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">⏰ TIMING:</div>
+                    <div class="text">Take with breakfast & dinner (largest meals); Enhances absorption & reduces GI upset</div>
+                </div>
+            </div>
+            
+            <div class="drug-interaction">
+                <h4>📌 Amlodipine 5mg OD</h4>
+                <div class="interaction-detail">
+                    <div class="label">⚠️ INTERACTION:</div>
+                    <div class="text">Grapefruit/pomegranate (CYP3A4 inhibition) → increased amlodipine levels</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">→ MANAGEMENT:</div>
+                    <div class="text"><strong>AVOID grapefruit juice entirely</strong>; Pomegranate acceptable in small quantities</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">⏰ TIMING:</div>
+                    <div class="text">Take at evening for steady-state plasma concentration</div>
+                </div>
+            </div>
+            
+            <div class="drug-interaction">
+                <h4>📌 Atorvastatin 20mg OD</h4>
+                <div class="interaction-detail">
+                    <div class="label">⚠️ INTERACTION:</div>
+                    <div class="text">Cranberry juice (CYP3A4 competition)</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">→ MANAGEMENT:</div>
+                    <div class="text">Minimize cranberry intake; High-dose fish oil (>3g/day) may potentiate bleeding</div>
+                </div>
+                <div class="interaction-detail">
+                    <div class="label">⏰ TIMING:</div>
+                    <div class="text">Take at evening (peak HMG-CoA reductase activity); Separate from Ca-rich foods by 2+ hours</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- EXPECTED OUTCOMES -->
+        <div class="expected-outcomes-section">
+            <h2 class="section-title">🎯 Expected Clinical Benefits (4–6 Weeks)</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Week 1–2: Acute Adaptation Phase</h4>
+                    <ul class="timeline-benefits">
+                        <li><strong>Weight loss:</strong> 1–2 kg (glycogen depletion + water loss)</li>
+                        <li><strong>Fasting glucose:</strong> 140 → 120 mg/dL (reduced hepatic glucose output)</li>
+                        <li><strong>Hunger hormones:</strong> Ghrelin peaks initially; stabilizes by day 10–12</li>
+                        <li><strong>Subjective energy:</strong> Initial dip (adaptation phase); encourage 1500 IU Vitamin D</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Week 3–4: Metabolic Adaptation</h4>
+                    <ul class="timeline-benefits">
+                        <li><strong>Weight loss:</strong> 0.5–1 kg/week (consistent caloric deficit)</li>
+                        <li><strong>Postprandial glucose:</strong> Reduction of 20–25 mg/dL at 2-hour mark</li>
+                        <li><strong>Blood pressure:</strong> Systolic ↓ 3–5 mmHg (sodium restriction + weight loss)</li>
+                        <li><strong>Lipids:</strong> TG ↓ 5–10%; HDL ↑ 2–3 mg/dL</li>
+                        <li><strong>Glycemic variability:</strong> ↓ 15–20%</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>Week 5–6+: Sustained Metabolic Benefits</h4>
+                    <ul class="timeline-benefits">
+                        <li><strong>Total weight loss:</strong> 2.5–4 kg (cumulative)</li>
+                        <li><strong>Fasting glucose:</strong> 100–110 mg/dL (significant improvement)</li>
+                        <li><strong>Blood pressure:</strong> Systolic ↓ 5–8 mmHg</li>
+                        <li><strong>Lipid profile:</strong> LDL ↓ 10–15 mg/dL; TG ↓ 15–25%; HDL ↑ 3–5</li>
+                        <li><strong>Inflammation:</strong> CRP ↓ 20–30% (↓ cardiovascular event risk 10–15%)</li>
+                        <li><strong>Quality of life:</strong> Improved energy, sleep, mental clarity, reduced joint pain</li>
+                    </ul>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>By Week 12 (3 Months): Gold Standard Marker</h4>
+                    <ul class="timeline-benefits">
+                        <li><strong>HbA1c reduction:</strong> Target 0.5–1.5% drop (e.g., 8.2% → 6.8–7.7%)</li>
+                        <li><strong>Weight loss:</strong> 4–7% of body weight (3.3–5.7 kg for this patient)</li>
+                        <li><strong>Metabolic syndrome:</strong> 2–3 criteria normalization</li>
+                        <li><strong>Medication optimization:</strong> Discuss dose adjustment with physician</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DISCLAIMER -->
+        <div class="disclaimer-section">
+            <h3>⚠️ Medical Disclaimer & Mandatory Follow-up Protocol</h3>
+            <p>
+                <strong>This dietary plan is INDIVIDUALIZED and should NOT be applied to other patients without clinical assessment.</strong>
+            </p>
+            
+            <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--text-dark);">Mandatory Follow-up Schedule:</h4>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+                <li><strong>4-Week Review:</strong> Fasting glucose, weight, BP, adherence barriers; Adjust macros if needed</li>
+                <li><strong>8-Week Review:</strong> Lipid panel (TC, LDL, HDL, TG), HbA1c, medication side effects</li>
+                <li><strong>12-Week Review:</strong> Comprehensive metabolic panel, HbA1c (gold standard), K+, creatinine, AST/ALT</li>
+            </ul>
+            
+            <h4 style="margin-bottom: 1rem; color: var(--text-dark);">⚠️ When to Escalate Care:</h4>
+            <ul style="margin-left: 1.5rem;">
+                <li><strong>Fasting glucose >180 mg/dL</strong> despite adherence → Evaluate insulin resistance progression</li>
+                <li><strong>Weight loss plateau after 6 weeks</strong> → Assess caloric adherence & circadian disruption</li>
+                <li><strong>Hypoglycemic symptoms</strong> (tremor, sweating) → Reduce carbs by 15g, increase protein by 10g</li>
+                <li><strong>New-onset edema, dyspnea, syncope</strong> → Contact cardiologist immediately</li>
+            </ul>
+            
+            <p style="margin-top: 1.5rem; color: var(--danger); font-weight: 600;">
+                This plan requires physician supervision and regular follow-up. Patient counseling on food preparation, portion control, and behavioral support is essential for success.
+            </p>
+        </div>
+        
+        <!-- ACTION BUTTONS -->
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ Print Diet Plan</button>
+            <button class="btn btn-secondary" onclick="downloadPDF()">📄 Download PDF</button>
+            <button class="btn btn-primary" onclick="shareWithPhysician()">👨‍⚕️ Share with Physician</button>
+        </div>
+        
+    </div>
+    
+    <!-- FOOTER -->
+    <div class="footer">
+        <p><strong>Hospital Management System - Clinical Nutrition Department</strong></p>
+        <p>Generated: {{ diet_plan.generated_date }} | Patient ID: {{ diet_plan.patient_id }}</p>
+        <p style="font-size: 0.85rem; margin-top: 1rem;">
+            This is a confidential medical document. For authorized healthcare providers only.
+        </p>
+    </div>
+    
+    <!-- JAVASCRIPT -->
+    <script>
+        function downloadPDF() {
+            alert('PDF download feature - integrate with your backend PDF library (e.g., ReportLab, WeasyPrint)');
+            // In production, call API endpoint: /api/diet-plan/patient/{{ diet_plan.patient_id }}/pdf
+        }
+        
+        function shareWithPhysician() {
+            alert('Share via secure email/messaging system');
+            // In production, implement physician notification system
+        }
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Doctor Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Header Section -->
+    <div class="mb-4">
+        <h1>Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h1>
+        <p class="text-muted mb-0">Specialization: {{ doctor.specialization }} | License: {{ doctor.license_number }}</p>
+    </div>
+
+    <!-- Quick Statistics -->
+    <div class="row g-3 mb-4">
+        <!-- Total Patients -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon info mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h5>Total Patients</h5>
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ patients|length }}</p>
+                    <p class="text-muted" style="font-size: 12px;">Under your care</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Appointments -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon warning mb-3">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h5>Pending Appointments</h5>
+                    {% set pending = appointments|selectattr('status', 'equalto', 'pending')|list %}
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ pending|length }}</p>
+                    <p class="text-muted" style="font-size: 12px;">Awaiting your response</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments This Week -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon success mb-3">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5>Appointments This Week</h5>
+                    {% set this_week = appointments|selectattr('status', 'equalto', 'confirmed')|list %}
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ this_week|length }}</p>
+                    <p class="text-muted" style="font-size: 12px;">Scheduled consultations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Alerts -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon danger mb-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h5>Patient Alerts</h5>
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">3</p>
+                    <p class="text-muted" style="font-size: 12px;">Require attention</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Express Check-ins (NEW) -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0">
+                <div class="card-body">
+                    <div class="status-icon primary mb-3">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h5>Express Check-ins</h5>
+                    <p style="font-size: 32px; font-weight: 600; margin: 12px 0; color: #007bff;">{{ pending_checkins_count }}</p>
+                    <p class="text-muted" style="font-size: 12px;">Waiting your response</p>
+                    <a href="{{ url_for('features.doctor_pending_checkins') }}" class="btn btn-sm btn-primary mt-2">View All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Patient List -->
+        <div class="col-lg-8">
+            <div class="card border-0">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>Your Patients</h4>
+                        <a href="{{ url_for('doctor.patient_list') }}" class="btn btn-sm btn-secondary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Age</th>
+                                    <th>Status</th>
+                                    <th>Last Visit</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients[:5] %}
+                                <tr>
+                                    <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                                    <td>{{ patient.age }}</td>
+                                    <td>
+                                        <span class="badge badge-success">Active</span>
+                                    </td>
+                                    <td>2 days ago</td>
+                                    <td>
+                                        <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="btn btn-sm btn-outline">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card border-0 mb-3">
+                <div class="card-header">
+                    <h4>Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('doctor.appointments') }}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-calendar-check me-2"></i> Manage Appointments
+                    </a>
+                    <a href="{{ url_for('features.doctor_pending_checkins') }}" class="btn btn-info w-100 mb-2">
+                        <i class="fas fa-clipboard-check me-2"></i> View Express Check-ins
+                    </a>
+                    <a href="{{ url_for('doctor.patient_list') }}" class="btn btn-secondary w-100 mb-2">
+                        <i class="fas fa-users me-2"></i> View All Patients
+                    </a>
+                    <a href="{{ url_for('doctor.write_prescription') }}" class="btn btn-secondary w-100 mb-2">
+                        <i class="fas fa-prescription-bottle me-2"></i> Write Prescription
+                    </a>
+                    <a href="{{ url_for('doctor.analytics') }}" class="btn btn-secondary w-100">
+                        <i class="fas fa-chart-line me-2"></i> View Analytics
+                    </a>
+                </div>
+            </div>
+
+            <!-- Upcoming Appointments -->
+            <div class="card border-0">
+                <div class="card-header">
+                    <h4>Today's Schedule</h4>
+                </div>
+                <div class="card-body">
+                    {% if appointments|length > 0 %}
+                        {% for appt in appointments[:3] %}
+                        <div class="mb-3 pb-3" style="border-bottom: 1px solid #E2E8F0;">
+                            <h5 class="mb-1">{{ appt.patient.first_name }} {{ appt.patient.last_name }}</h5>
+                            <p class="text-muted mb-1" style="font-size: 12px;">
+                                <i class="fas fa-clock me-1"></i> {{ appt.appointment_time }}
+                            </p>
+                            <span class="badge badge-{% if appt.status == 'pending' %}warning{% elif appt.status == 'confirmed' %}success{% else %}secondary{% endif %}">
+                                {{ appt.status|upper }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No appointments scheduled for today</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pending Express Check-ins (NEW) -->
+            {% if pending_checkins_count > 0 %}
+            <div class="card border-0 mt-3">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4><i class="fas fa-clipboard-check me-2"></i> Pending Express Check-ins</h4>
+                        <span class="badge bg-warning text-dark">{{ pending_checkins_count }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for checkin in pending_checkins[:3] %}
+                    <div class="mb-3 pb-3" style="border-bottom: 1px solid #E2E8F0;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="mb-1">{{ checkin.patient.user.full_name }}</h5>
+                                <p class="text-muted mb-1" style="font-size: 12px;">
+                                    <i class="fas fa-stethoscope me-1"></i> {{ checkin.check_in_reason }}
+                                </p>
+                                <p class="mb-1" style="font-size: 12px;">
+                                    <span class="badge bg-light text-dark">{{ checkin.visit_type|title }}</span>
+                                    {% if checkin.severity == 'severe' %}
+                                    <span class="badge bg-danger">Severe</span>
+                                    {% elif checkin.severity == 'moderate' %}
+                                    <span class="badge bg-warning text-dark">Moderate</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Mild</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <small class="text-muted">{{ checkin.created_at.strftime('%H:%M') }}</small>
+                        </div>
+                        <a href="{{ url_for('features.doctor_pending_checkins') }}" class="btn btn-sm btn-primary mt-2">
+                            <i class="fas fa-check-circle me-1"></i> Review & Accept
+                        </a>
+                    </div>
+                    {% endfor %}
+                    {% if pending_checkins_count > 3 %}
+                    <a href="{{ url_for('features.doctor_pending_checkins') }}" class="btn btn-sm btn-outline-primary w-100">
+                        View All {{ pending_checkins_count }} Check-ins
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}

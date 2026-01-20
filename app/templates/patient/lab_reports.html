@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Lab Reports{% endblock %}
+
+{% block content %}
+<style>
+    .report-card {
+        border-radius: 16px;
+        border: 1px solid #eef2f6;
+        transition: 0.3s;
+    }
+
+    .report-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .badge-critical {
+        background: #fee2e2;
+        color: #ef4444;
+        border: 1px solid #fecaca;
+    }
+
+    .badge-normal {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .progress-track {
+        height: 6px;
+        border-radius: 3px;
+        background: #f1f5f9;
+        margin-top: 10px;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        position: absolute;
+    }
+
+    .doc-note {
+        border-left: 3px solid #6366f1;
+        background: #eef2ff;
+        padding: 10px;
+        font-size: 0.9rem;
+        border-radius: 0 8px 8px 0;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Lab Reports</h2>
+            <p class="text-muted">Access your medical test results</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-dark me-2"><i class="fas fa-chart-line me-2"></i> View Trends</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for report in reports %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm report-card position-relative overflow-hidden">
+                <!-- Critical Alert Banner -->
+                {% if report.critical_alert %}
+                <div class="bg-danger text-white text-center py-1 small fw-bold">
+                    <i class="fas fa-exclamation-triangle me-1"></i> CRITICAL ALERT
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-light text-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
+                                style="width: 48px; height: 48px;">
+                                <i class="fas fa-flask fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title fw-bold mb-0">{{ report.test_name }}</h5>
+                                <small class="text-muted">{{ report.conducted_at.strftime('%b %d, %Y') }}</small>
+                            </div>
+                        </div>
+                        {% if report.status == 'Completed' %}
+                        {% if report.critical_alert %}
+                        <span class="badge badge-critical">Critical</span>
+                        {% else %}
+                        <span class="badge badge-normal">Normal</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="badge bg-warning text-dark rounded-pill">Pending</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-end mb-1">
+                            <label class="small text-muted text-uppercase fw-bold">Current Value</label>
+                            {% if report.status == 'Completed' %}
+                            <span
+                                class="fw-bold fs-5 {% if report.critical_alert %}text-danger{% else %}text-success{% endif %}">
+                                {{ report.result_value }} <small class="fs-6 text-muted">{{ report.unit }}</small>
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Visual Range Indicator (Mocked for UI) -->
+                        {% if report.status == 'Completed' %}
+                        <div class="progress-track">
+                            <div class="progress-fill {% if report.critical_alert %}bg-danger{% else %}bg-success{% endif %}"
+                                style="width: 70%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-xs text-muted">Low</small>
+                            <small class="text-xs text-muted fw-bold">Ref: {{ report.reference_range }}</small>
+                            <small class="text-xs text-muted">High</small>
+                        </div>
+                        {% else %}
+                        <div class="p-3 bg-light rounded text-center text-muted small">
+                            Analysis in progress...
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if report.notes %}
+                    <div class="doc-note mb-3">
+                        <div class="fw-bold text-dark small mb-1"><i class="fas fa-user-md me-1"></i> Doctor's Note
+                        </div>
+                        "{{ report.notes }}"
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-top-0 pb-3 pt-0">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('patient.download_report', report_id=report.id) }}"
+                            class="btn btn-outline-primary w-100" {% if report.status !='Completed' %}disabled
+                            style="pointer-events: none;" {% endif %}>
+                            <i class="fas fa-file-pdf me-2"></i> PDF
+                        </a>
+                        <button class="btn btn-primary w-100" {% if report.status !='Completed' %}disabled{% endif %}>
+                            <i class="fas fa-chart-area me-2"></i> History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 py-5 text-center text-muted">
+            <i class="fas fa-vial fa-4x mb-3 text-light"></i>
+            <h3>No lab reports found</h3>
+            <p>Your test results will appear here once they are ready.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CarePoint - AI Healthcare Platform{% endblock %}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% if current_user.is_authenticated and (current_user.role.value == 'PATIENT' or current_user.role.value == 'DOCTOR'
+    or current_user.role.value == 'HOST') %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    {% endif %}
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body
+    class="{% if current_user.is_authenticated and (current_user.role.value == 'PATIENT' or current_user.role.value == 'DOCTOR' or current_user.role.value == 'HOST') %}patient-layout{% endif %}">
+
+    {% if system_settings and system_settings.emergency_mode %}
+    <div class="alert alert-danger text-center fw-bold border-0 rounded-0 mb-0 shadow-sm" role="alert"
+        style="z-index: 9999; position: relative;">
+        <i class="fas fa-exclamation-triangle me-2"></i> EMERGENCY PROTOCOL ACTIVE: Non-essential services may be
+        suspended.
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.role.value == 'PATIENT' %}
+    <!-- Persistent Patient Sidebar -->
+    <div class="global-sidebar">
+        <!-- Logo -->
+        <a href="{{ url_for('patient.dashboard') }}" class="nav-icon mb-4"
+            style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);">
+            <i class="fas fa-heartbeat"></i>
+        </a>
+
+        <a href="{{ url_for('patient.dashboard') }}"
+            class="nav-icon {% if request.endpoint == 'patient.dashboard' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Dashboard">
+            <i class="fas fa-home"></i>
+        </a>
+        <a href="{{ url_for('patient.enter_health_data') }}"
+            class="nav-icon {% if request.endpoint == 'patient.enter_health_data' %}active{% endif %}"
+            data-bs-toggle="tooltip" title="Vitals">
+            <i class="fas fa-wave-square"></i>
+        </a>
+        <a href="{{ url_for('patient.lab_reports') }}"
+            class="nav-icon {% if request.endpoint == 'patient.lab_reports' %}active{% endif %}"
+            data-bs-toggle="tooltip" title="Lab Reports">
+            <i class="fas fa-dna"></i>
+        </a>
+        <a href="{{ url_for('patient.diet_plan') }}"
+            class="nav-icon {% if request.endpoint == 'patient.diet_plan' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Diet">
+            <i class="fas fa-apple-alt"></i>
+        </a>
+        <a href="{{ url_for('patient.messages') }}"
+            class="nav-icon {% if request.endpoint == 'patient.messages' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Messages">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+
+        <div class="mt-auto mb-4">
+            <a href="{{ url_for('auth.logout') }}" class="nav-icon text-danger" data-bs-toggle="tooltip" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.role.value == 'DOCTOR' %}
+    <!-- Persistent Doctor Sidebar -->
+    <div class="global-sidebar">
+        <!-- Logo -->
+        <a href="{{ url_for('doctor.dashboard') }}" class="nav-icon mb-4"
+            style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);">
+            <i class="fas fa-user-md"></i>
+        </a>
+
+        <a href="{{ url_for('doctor.dashboard') }}"
+            class="nav-icon {% if request.endpoint == 'doctor.dashboard' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Dashboard">
+            <i class="fas fa-home"></i>
+        </a>
+        <a href="{{ url_for('doctor.patient_list') }}"
+            class="nav-icon {% if request.endpoint == 'doctor.patient_list' %}active{% endif %}"
+            data-bs-toggle="tooltip" title="Patients">
+            <i class="fas fa-users"></i>
+        </a>
+        <a href="{{ url_for('doctor.appointments') }}"
+            class="nav-icon {% if request.endpoint == 'doctor.appointments' %}active{% endif %}"
+            data-bs-toggle="tooltip" title="Schedule">
+            <i class="fas fa-calendar-alt"></i>
+        </a>
+        <a href="{{ url_for('doctor.messages') }}"
+            class="nav-icon {% if request.endpoint == 'doctor.messages' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Messages">
+            <i class="fas fa-comment-medical"></i>
+        </a>
+        <a href="{{ url_for('doctor.analytics') }}"
+            class="nav-icon {% if request.endpoint == 'doctor.analytics' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Analytics">
+            <i class="fas fa-chart-line"></i>
+        </a>
+
+        <div class="mt-auto mb-4">
+            <a href="{{ url_for('auth.logout') }}" class="nav-icon text-danger" data-bs-toggle="tooltip" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.role.value == 'HOST' %}
+    <!-- Persistent Host Sidebar -->
+    <div class="global-sidebar" style="background-color: #1a1a1a !important; border-right: 1px solid #333;">
+        <!-- Logo -->
+        <a href="{{ url_for('host.dashboard') }}" class="nav-icon mb-4"
+            style="background: #ef4444; color: white; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);">
+            <i class="fas fa-shield-alt"></i>
+        </a>
+
+        <a href="{{ url_for('host.dashboard') }}"
+            class="nav-icon {% if request.endpoint == 'host.dashboard' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+        </a>
+        <a href="{{ url_for('host.doctor_management') }}"
+            class="nav-icon {% if request.endpoint == 'host.doctor_management' %}active{% endif %}"
+            data-bs-toggle="tooltip" title="Doctors">
+            <i class="fas fa-user-md"></i>
+        </a>
+        <a href="{{ url_for('host.audit_logs') }}"
+            class="nav-icon {% if request.endpoint == 'host.audit_logs' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Audit Logs">
+            <i class="fas fa-clipboard-list"></i>
+        </a>
+        <a href="{{ url_for('host.audit_logs') }}"
+            class="nav-icon {% if request.endpoint == 'host.audit_logs' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Audit Logs">
+            <i class="fas fa-clipboard-list"></i>
+        </a>
+        <a href="{{ url_for('host.settings') }}"
+            class="nav-icon {% if request.endpoint == 'host.settings' %}active{% endif %}" data-bs-toggle="tooltip"
+            title="Settings">
+            <i class="fas fa-cogs"></i>
+        </a>
+
+        <div class="mt-auto mb-4">
+            <a href="{{ url_for('auth.logout') }}" class="nav-icon text-danger" data-bs-toggle="tooltip" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not hide_navbar %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container ps-4 pe-4">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <div class="icon-box primary d-inline-flex mx-0 mb-0"
+                    style="width: 36px; height: 36px; font-size: 1rem; border-radius: 8px;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <span>CarePoint</span>
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.role.value == 'PATIENT' %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link"
+                            href="{{ url_for('patient.appointments') }}">Appointments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.messages') }}">Messages</a></li>
+                    {% elif current_user.role.value == 'DOCTOR' %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('doctor.dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('doctor.patient_list') }}">Patients</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link"
+                            href="{{ url_for('doctor.appointments') }}">Appointments</a></li>
+                    {% elif current_user.role.value == 'HOST' %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('host.dashboard') }}">Dashboard</a></li>
+                    {% endif %}
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-primary px-4 py-2 text-white shadow-sm"
+                            href="{{ url_for('auth.logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.features') }}">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.about') }}">About</a></li>
+                    <li class="nav-item dropdown ms-lg-3">
+                        <a class="btn btn-outline-secondary px-4 py-2 me-2 dropdown-toggle" href="#" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg p-2 rounded-4">
+                            <li>
+                                <h6 class="dropdown-header text-uppercase text-muted mx-1 small ls-1">Select Portal</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 mb-1 d-flex align-items-center"
+                                    href="{{ url_for('auth.patient_login') }}">
+                                    <div class="icon-box primary d-flex align-items-center justify-content-center me-2 mb-0"
+                                        style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                        <i class="fas fa-user-injured"></i>
+                                    </div>
+                                    <span class="fw-bold">Patient Login</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 d-flex align-items-center"
+                                    href="{{ url_for('auth.doctor_login') }}">
+                                    <div class="icon-box success d-flex align-items-center justify-content-center me-2 mb-0"
+                                        style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <span class="fw-bold">Doctor Login</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 d-flex align-items-center"
+                                    href="{{ url_for('auth.host_login') }}">
+                                    <div class="icon-box danger d-flex align-items-center justify-content-center me-2 mb-0"
+                                        style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                        <i class="fas fa-biohazard"></i>
+                                    </div>
+                                    <span class="fw-bold">Host Access</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <a class="btn btn-primary px-4 py-2 text-white shadow-md"
+                            href="{{ url_for('auth.patient_register') }}">Get Started</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% endif %}
+
+    <!-- Hide Top Navbar if Sidebar is active (Patient or Doctor or Host) -->
+    {% if current_user.is_authenticated and (current_user.role.value == 'PATIENT' or current_user.role.value ==
+    'DOCTOR' or current_user.role.value == 'HOST') %}
+    <style>
+        .navbar {
+            display: none !important;
+        }
+
+        .footer {
+            display: none !important;
+        }
+    </style>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="container mt-5 pt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-8">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show shadow-sm border-0"
+                    role="alert">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main
+        class="min-vh-100 pt-4 {% if current_user.is_authenticated and (current_user.role.value == 'PATIENT' or current_user.role.value == 'DOCTOR' or current_user.role.value == 'HOST') %}main-pane-global{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-5 bg-white border-top">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <a class="navbar-brand mb-3 d-block" href="#">
+                        <div class="icon-box primary d-inline-flex mx-0 mb-0"
+                            style="width: 32px; height: 32px; font-size: 0.9rem;">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <span class="fs-4 text-primary fw-bold">CarePoint</span>
+                    </a>
+                    <p class="text-secondary small">Empowering healthcare through artificial intelligence. We provide
+                        cutting-edge solutions for patients and providers.</p>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="fw-bold mb-3">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('main.features') }}"
+                                class="text-secondary text-decoration-none small">Features</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.about') }}"
+                                class="text-secondary text-decoration-none small">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none small">Doctors</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="fw-bold mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none small">Help Center</a>
+                        </li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none small">Privacy
+                                Policy</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none small">Terms</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-bold mb-3">Subscribe to our newsletter</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control border-end-0" placeholder="Email address"
+                            aria-label="Email address">
+                        <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center pt-4 border-top">
+                <p class="mb-0 text-secondary small">&copy; 2025 CarePoint AI Healthcare. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

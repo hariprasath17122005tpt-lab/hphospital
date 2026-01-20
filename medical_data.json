@@ -1,0 +1,20 @@
+{
+  "fever": {
+    "output": "💊 Fever is an increase in body temperature, commonly caused by infections.\n💊 Take adequate rest and drink plenty of fluids to prevent dehydration.\n💊 Paracetamol can be used to reduce fever unless contraindicated.\n💊 Avoid unnecessary antibiotics without medical advice.\n💊 Monitor your temperature regularly.\n💊 Consult a doctor if fever exceeds 102°F or lasts more than two days."
+  },
+  "fever asthma": {
+    "output": "💊 Fever in patients with asthma may worsen breathing symptoms.\n💊 Continue prescribed asthma inhalers without stopping.\n💊 Avoid cold air, smoke, and known asthma triggers.\n💊 Paracetamol is generally safer than NSAIDs for fever in asthma.\n💊 Monitor breathing difficulty closely.\n💊 Seek immediate medical help if wheezing or breathlessness increases."
+  },
+  "headache": {
+    "output": "💊 A headache is pain in any region of the head or upper neck.\n💊 Stay in a quiet, dark room to help alleviate tension or migraine pain.\n💊 Stay hydrated and ensure you are getting enough sleep each night.\n💊 Over-the-counter pain relievers can help with occasional headaches.\n💊 Avoid triggers like bright lights or strong odors if they affect you.\n💊 See a doctor if it is severe, sudden, or accompanied by a stiff neck."
+  },
+  "high blood pressure": {
+    "output": "💊 High blood pressure, or hypertension, is a condition where the force of the blood against artery walls is too high.\n💊 Reduce salt intake and maintain a healthy weight to manage pressure.\n💊 Engage in regular physical activity like brisk walking for 30 minutes.\n💊 Limit alcohol consumption and avoid smoking completely.\n💊 Take prescribed medications consistently as directed by your doctor.\n💊 Monitor your blood pressure at home and keep a record."
+  },
+  "diabetes symptoms": {
+    "output": "💊 Common symptoms of diabetes include increased thirst, frequent urination, and unexplained weight loss.\n💊 You may also experience fatigue, blurred vision, and slow-healing sores.\n💊 Extreme hunger and irritability can also be indicators of high blood sugar.\n💊 If you notice these symptoms, consult a doctor for a blood glucose test.\n💊 Early diagnosis helps in managing the condition effectively.\n💊 Maintaining a balanced diet is crucial for symptom control."
+  },
+  "stomach pain": {
+    "output": "💊 Stomach pain can range from mild indigestion to severe conditions requiring urgent care.\n💊 If the pain is sharp and persistent, seek medical attention immediately.\n💊 Avoid heavy meals and spicy food if you have occasional bloating or gas.\n💊 Stay hydrated and try a bland diet like rice, bananas, and toast.\n💊 Over-the-counter antacids may help with acid reflux symptoms.\n💊 Consult a physician if pain is accompanied by fever or vomiting."
+  }
+}

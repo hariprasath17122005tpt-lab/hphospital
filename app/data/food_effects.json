@@ -1,0 +1,49 @@
+{
+  "food_effects": {
+    "Spinach": {
+      "immediate": "Reduced bloating & improved digestion, increased energy",
+      "long_term": "BP control through nitrate absorption, improved cognitive function"
+    },
+    "Salmon": {
+      "immediate": "Satiety & mood elevation from omega-3s, improved focus",
+      "long_term": "Reduced arterial inflammation, decreased cardiovascular event risk"
+    },
+    "Oats": {
+      "immediate": "Stable energy & reduced hunger spikes for 3-4 hours",
+      "long_term": "Reduced LDL cholesterol by 3-5% within 4 weeks of daily consumption"
+    },
+    "Broccoli": {
+      "immediate": "Improved digestion & natural detoxification",
+      "long_term": "Cancer prevention potential & antioxidant compound buildup in tissues"
+    },
+    "Berries": {
+      "immediate": "Antioxidant burst & improved cognition within 30 minutes",
+      "long_term": "Neurodegeneration prevention & reversal of some age-related brain decline"
+    },
+    "Almonds": {
+      "immediate": "Stable blood glucose & sustained energy for 4+ hours",
+      "long_term": "Cardiovascular risk reduction by 10-15%, improved weight management"
+    },
+    "Whole Wheat": {
+      "immediate": "Better satiety & improved digestion, sustained fullness",
+      "long_term": "Reduced diabetes risk by 21%, improved gut microbiome diversity"
+    },
+    "Low Fat Yogurt": {
+      "immediate": "Probiotics improve digestion & mood, calcium absorption",
+      "long_term": "Enhanced immune function, reduced inflammation markers"
+    },
+    "Garlic": {
+      "immediate": "Enhanced flavor without sodium, mild digestive support",
+      "long_term": "Blood pressure reduction 5-10%, improved cholesterol profile"
+    },
+    "Olive Oil": {
+      "immediate": "Enhanced satiety & improved nutrient absorption",
+      "long_term": "Anti-inflammatory effects, reduced arterial stiffness"
+    }
+  },
+  "immediate_vs_long_term": {
+    "definition_immediate": "Effects observed within hours to days of consumption",
+    "definition_long_term": "Effects observed after weeks to months of consistent dietary adherence",
+    "synergy": "Best results achieved when both immediate benefits maintain motivation AND long-term benefits protect health"
+  }
+}
