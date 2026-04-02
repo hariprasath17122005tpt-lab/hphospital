@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 import enum
+import json
 
 db = SQLAlchemy()
 
@@ -12,6 +13,8 @@ class UserRole(enum.Enum):
     HOST = "HOST"    # Super Admin / Host
     NURSE = "NURSE"
     LAB_STAFF = "LAB_STAFF"
+    PHARMACIST = "PHARMACIST"
+    RECEPTIONIST = "RECEPTIONIST"
 
 class Hospital(db.Model):
     """Hospital Tenant Model"""
@@ -29,6 +32,7 @@ class Hospital(db.Model):
     users = db.relationship('User', back_populates='hospital')
     patients = db.relationship('Patient', back_populates='hospital')
     doctors = db.relationship('Doctor', back_populates='hospital')
+    nurses = db.relationship('Nurse', back_populates='hospital')
 
     def __repr__(self):
         return f'<Hospital {self.name}>'
@@ -50,21 +54,27 @@ class User(UserMixin, db.Model):
     hospital = db.relationship('Hospital', back_populates='users')
     patient = db.relationship('Patient', back_populates='user', uselist=False)
     doctor = db.relationship('Doctor', back_populates='user', uselist=False)
+    nurse = db.relationship('Nurse', back_populates='user', foreign_keys='Nurse.user_id', uselist=False)
     
     def __repr__(self):
         return f'<User {self.username}>'
 
 
 class Patient(db.Model):
-    """Patient profile model"""
+    """Patient profile model - supports both login and walk-in patients"""
     __tablename__ = 'patients'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=True)  # Optional - walk-in patients don't need login
+    uhid = db.Column(db.String(20), unique=True, nullable=False, index=True)  # Unique Hospital ID: PAT-YYYY-XXXX
     hospital_id = db.Column(db.Integer, db.ForeignKey('hospitals.id'), nullable=True)
-    first_name = db.Column(db.String(80), nullable=False)
-    last_name = db.Column(db.String(80), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
+    # Canonical patient identity fields (independent of login accounts)
+    name = db.Column(db.String(120), nullable=False, index=True)
+    date_of_birth = db.Column(db.Date, nullable=True)
+    # Backward-compatible split name fields used by older templates/routes.
+    first_name = db.Column(db.String(80), nullable=False, default='')
+    last_name = db.Column(db.String(80), nullable=False, default='')
+    age = db.Column(db.Integer, nullable=True)
     gender = db.Column(db.String(20), nullable=False)
     weight = db.Column(db.Float)  # in kg
     height = db.Column(db.Float)  # in cm
@@ -73,8 +83,9 @@ class Patient(db.Model):
     allergies = db.Column(db.Text)
     current_medications = db.Column(db.Text)
     emergency_contact = db.Column(db.String(100))
-    phone = db.Column(db.String(20))
+    phone = db.Column(db.String(20), index=True)  # Index for search
     address = db.Column(db.Text)
+    is_walk_in = db.Column(db.Boolean, default=False)  # True if patient registered manually without user account
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -87,7 +98,59 @@ class Patient(db.Model):
     messages = db.relationship('Message', back_populates='patient', cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Patient {self.first_name} {self.last_name}>'
+        return f'<Patient {self.uhid}: {self.full_name}>'
+    
+    @property
+    def full_name(self):
+        """Get patient's full name"""
+        if self.name and self.name.strip():
+            return self.name.strip()
+        return f"{self.first_name} {self.last_name}".strip()
+    
+    @property
+    def display_name(self):
+        """Get patient display name with UHID"""
+        return f"{self.full_name} ({self.uhid})"
+
+    def sync_legacy_name_fields(self):
+        """
+        Keep first_name/last_name and canonical name synchronized.
+        Safe to call before save from API/service layers.
+        """
+        if self.name and self.name.strip():
+            parts = [p for p in self.name.strip().split(' ') if p]
+            self.first_name = parts[0] if parts else (self.first_name or '')
+            self.last_name = ' '.join(parts[1:]) if len(parts) > 1 else (self.last_name or '')
+        else:
+            merged = f"{self.first_name or ''} {self.last_name or ''}".strip()
+            self.name = merged
+    
+    def is_registered_user(self):
+        """Check if patient has a user account (login capability)"""
+        return self.user_id is not None
+
+
+class Visit(db.Model):
+    """Centralized patient visit ledger for OP, LAB, and PHARMACY touchpoints."""
+    __tablename__ = 'visits'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    visit_type = db.Column(db.String(20), nullable=False)  # OP / LAB / PHARMACY
+    visit_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref=db.backref('visits', lazy='dynamic'))
+    doctor = db.relationship('Doctor', backref=db.backref('visits', lazy='dynamic'))
+
+    __table_args__ = (
+        db.Index('idx_visits_patient_date', 'patient_id', 'visit_date'),
+    )
+
+    def __repr__(self):
+        return f'<Visit {self.visit_type} P:{self.patient_id}>'
 
 
 class Doctor(db.Model):
@@ -126,6 +189,39 @@ class Doctor(db.Model):
     
     def __repr__(self):
         return f'<Doctor {self.first_name} {self.last_name}>'
+
+
+class Nurse(db.Model):
+    """Nurse profile model"""
+    __tablename__ = 'nurses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    first_name = db.Column(db.String(80), nullable=False)
+    last_name = db.Column(db.String(80), nullable=False)
+    registration_number = db.Column(db.String(50), unique=True, nullable=False)
+    specialization = db.Column(db.String(100))  # General, Surgical, ICU, Pediatric, etc.
+    qualification = db.Column(db.String(200))
+    experience_years = db.Column(db.Integer, default=0)
+    hospital_id = db.Column(db.Integer, db.ForeignKey('hospitals.id'), nullable=True)
+    phone = db.Column(db.String(20))
+    
+    # Approval & Status
+    verified = db.Column(db.Boolean, default=False)  # Host approval required
+    is_active = db.Column(db.Boolean, default=True)
+    is_deleted = db.Column(db.Boolean, default=False)  # Soft delete
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    verified_at = db.Column(db.DateTime)  # When host approved
+    verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Which host approved
+    
+    # Relationships
+    hospital = db.relationship('Hospital', back_populates='nurses')
+    user = db.relationship('User', back_populates='nurse', foreign_keys=[user_id])
+    
+    def __repr__(self):
+        return f'<Nurse {self.first_name} {self.last_name}>'
 
 
 class AuditLog(db.Model):
@@ -241,7 +337,9 @@ class Prescription(db.Model):
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'))
     
     # Prescription details
-    medicines = db.Column(db.Text, nullable=False)  # JSON format or text
+    diagnosis = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    medicines = db.Column(db.Text, nullable=False, default="[]")  # Legacy or quick notes
     dosage = db.Column(db.Text)
     frequency = db.Column(db.String(200))
     duration = db.Column(db.String(100))
@@ -264,6 +362,21 @@ class Prescription(db.Model):
     
     def __repr__(self):
         return f'<Prescription P:{self.patient_id} D:{self.doctor_id}>'
+
+class PrescriptionMedicine(db.Model):
+    """Individual medicines mapped to a specific prescription"""
+    __tablename__ = 'prescription_medicines'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    prescription_id = db.Column(db.Integer, db.ForeignKey('prescriptions.id'), nullable=False)
+    medicine_name = db.Column(db.String(255), nullable=False)
+    dosage = db.Column(db.String(100))
+    frequency = db.Column(db.String(100))
+    duration = db.Column(db.String(100))
+    instruction = db.Column(db.Text)
+    food_relation = db.Column(db.String(100)) # Before Food, After Food, etc.
+
+    prescription = db.relationship('Prescription', backref=db.backref('medicine_items', lazy='dynamic'))
 
 
 class Message(db.Model):
@@ -367,7 +480,8 @@ class Billing(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
+    # Nullable for walk-in laboratory-only visits (no referring doctor on the bill)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
     
     amount = db.Column(db.Float, nullable=False)
@@ -393,39 +507,151 @@ class LabReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
+    lab_order_id = db.Column(db.Integer, db.ForeignKey('lab_orders.id'), nullable=True)
     
     test_name = db.Column(db.String(100), nullable=False)
+    file_path = db.Column(db.String(500), nullable=True)
+    report_data = db.Column(db.JSON, nullable=True) # Structured dynamic fields
+    
     result_value = db.Column(db.String(255))
     reference_range = db.Column(db.String(100))
     unit = db.Column(db.String(50))
-    status = db.Column(db.String(50), default='Pending')  # Pending, Completed
+    status = db.Column(db.String(50), default='Pending')  # Pending, In Progress, Completed
     notes = db.Column(db.Text)
+    remarks = db.Column(db.Text)  # Lab staff remarks
     
-    report_file = db.Column(db.String(255))  # Path to PDF/Image
     critical_alert = db.Column(db.Boolean, default=False)
     conducted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    patient = db.relationship('Patient', backref='lab_reports')
-    doctor = db.relationship('Doctor', backref='lab_reports')
+    patient = db.relationship('Patient', backref='lab_reports', foreign_keys=[patient_id])
+    doctor = db.relationship('Doctor', backref='lab_reports', foreign_keys=[doctor_id])
+    lab_order = db.relationship('LabOrder', backref='generated_reports')
 
     def __repr__(self):
         return f'<LabReport {self.test_name}>'
 
 
+class LabTestTemplate(db.Model):
+    __tablename__ = 'lab_test_templates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    test_name = db.Column(db.String(100), unique=True, nullable=False)
+    fields = db.Column(db.JSON, nullable=False)
+    normal_ranges = db.Column(db.JSON, nullable=True)
+
+
+
+class LabOrder(db.Model):
+    """
+    Unified laboratory workflow order (doctor-referred or walk-in).
+    source_type: DOCTOR | WALK_IN — doctor_id must be set iff DOCTOR.
+    status: PENDING → SAMPLE_COLLECTED → PROCESSING → COMPLETED
+    """
+    __tablename__ = 'lab_orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
+
+    source_type = db.Column(db.String(20), nullable=False)  # DOCTOR, WALK_IN
+    test_name = db.Column(db.String(200), nullable=False)
+    test_category = db.Column(db.String(100), nullable=False, default='General')
+
+    status = db.Column(db.String(32), nullable=False, default='PENDING')
+    result_data = db.Column(db.Text)  # JSON: narrative, structured values, optional file path
+
+    billing_id = db.Column(db.Integer, db.ForeignKey('billings.id'), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref=db.backref('lab_orders', lazy='dynamic'))
+    doctor = db.relationship('Doctor', backref=db.backref('lab_orders', lazy='dynamic'))
+    billing = db.relationship('Billing', foreign_keys=[billing_id], backref=db.backref('lab_order_row', uselist=False))
+
+    def result_preview(self):
+        """Short text for EMR / doctor lists."""
+        if not self.result_data:
+            return ''
+        try:
+            d = json.loads(self.result_data)
+            if isinstance(d, dict):
+                # Primary narrative field support
+                for key in ('narrative', 'summary', 'text'):
+                    value = d.get(key)
+                    if value and str(value).strip():
+                        return str(value).strip()[:400]
+
+                # Fallback structured field preview (top 3 entries)
+                parts = []
+                for key, value in d.items():
+                    if key in ('narrative', 'summary', 'text'):
+                        continue
+                    if value is None:
+                        continue
+                    text = str(value).strip()
+                    if not text:
+                        continue
+                    parts.append(f"{key}: {text}")
+                    if len(parts) >= 3:
+                        break
+                return (', '.join(parts)[:400]) if parts else ''
+
+            return str(d)[:400]
+        except (json.JSONDecodeError, TypeError):
+            return (self.result_data or '')[:400]
+
+    def result_attachment_rel_path(self):
+        """Return file path from result_data JSON if present, else check generated reports."""
+        if self.result_data:
+            try:
+                d = json.loads(self.result_data) if isinstance(self.result_data, str) else self.result_data
+                if isinstance(d, dict):
+                    for key in ('file_path', 'attachment', 'pdf_path', 'report_path'):
+                        if d.get(key):
+                            return d[key]
+            except (json.JSONDecodeError, TypeError):
+                pass
+        # Check if any generated LabReport has a file_path
+        for report in (self.generated_reports or []):
+            if report.file_path:
+                return report.file_path
+        return None
+
+
 class Medicine(db.Model):
-    """Pharmacy Inventory Model"""
+    """Pharmacy medicine master for bulk import + fast search."""
     __tablename__ = 'medicines'
 
     id = db.Column(db.Integer, primary_key=True)
-    hospital_id = db.Column(db.Integer, db.ForeignKey('hospitals.id'), nullable=True)
-    
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(255), nullable=False, index=True)
+    brand = db.Column(db.String(255), nullable=True)
+    category = db.Column(db.String(100), nullable=True)
+    price = db.Column(db.Float, nullable=True)
     stock = db.Column(db.Integer, default=0)
-    unit_price = db.Column(db.Float)
-    expiry_date = db.Column(db.String(20)) # Storing as YYYY-MM for simplicity or Date
+    supplier = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Legacy optional fields retained for backward compatibility with old inventory pages.
+    hospital_id = db.Column(db.Integer, db.ForeignKey('hospitals.id'), nullable=True)
+    expiry_date = db.Column(db.String(20))
     batch_number = db.Column(db.String(50))
     manufacturer = db.Column(db.String(100))
+
+    __table_args__ = (
+        db.UniqueConstraint('name', 'brand', name='unique_medicine'),
+    )
+
+    # Backward-compatible alias used by older code.
+    @property
+    def unit_price(self):
+        return self.price
+
+    @unit_price.setter
+    def unit_price(self, value):
+        self.price = value
     
     # helper property to determine status
     @property
@@ -521,21 +747,83 @@ class DoctorEvent(db.Model):
 
 
 class NurseTask(db.Model):
-    """Nurse Task Management"""
+    """Nurse Task Management - Tasks assigned to nurses by doctors"""
     __tablename__ = 'nurse_tasks'
 
     id = db.Column(db.Integer, primary_key=True)
-    assigned_nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    assigned_nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Specific nurse (optional)
+    created_by_doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)  # Doctor who created
     
-    patient_name = db.Column(db.String(100)) # Can link to Patient model ideally, keeping simple for now
-    bed_number = db.Column(db.String(20))
-    task_description = db.Column(db.String(255), nullable=False)
-    due_time = db.Column(db.String(50)) # Keeping as string for "10:00 AM" simplicity or DateTime
-    status = db.Column(db.String(20), default='Pending') # Pending, Completed
-    priority = db.Column(db.String(20)) # High, Medium, Low
+    # Task details
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    task_type = db.Column(db.String(50))  # medication, dressing, observation, measurement, check_vitals, etc.
+    
+    # Priority and scheduling
+    priority = db.Column(db.String(20), default='normal')  # low, normal, high, urgent
+    due_date = db.Column(db.DateTime)
+    frequency = db.Column(db.String(100))  # once, daily, twice_daily, 4_hourly, as_needed
+    
+    # Status tracking
+    status = db.Column(db.String(50), default='Pending')  # Pending, In Progress, Completed, Cancelled
+    is_completed = db.Column(db.Boolean, default=False)
+    completed_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Nurse who completed
+    completion_notes = db.Column(db.Text)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='nurse_tasks')
+    assigned_nurse = db.relationship('User', foreign_keys=[assigned_nurse_id], backref='assigned_nurse_tasks')
+    created_by_doctor = db.relationship('Doctor', foreign_keys=[created_by_doctor_id], backref='created_nurse_tasks')
+    completed_by = db.relationship('User', foreign_keys=[completed_by_id], backref='completed_nurse_tasks')
+
+    __table_args__ = (
+        db.Index('idx_nurse_tasks_patient', 'patient_id'),
+        db.Index('idx_nurse_tasks_status', 'status'),
+        db.Index('idx_nurse_tasks_due_date', 'due_date'),
+    )
 
     def __repr__(self):
-        return f'<Task {self.task_description}>'
+        return f'<NurseTask {self.title} - {self.status}>'
+
+
+class NurseNote(db.Model):
+    """Nursing notes about patient care"""
+    __tablename__ = 'nurse_notes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Nurse who wrote the note
+    
+    # Note content
+    note_type = db.Column(db.String(50), default='general')  # general, observation, care_plan, handover, etc.
+    content = db.Column(db.Text, nullable=False)
+    
+    # Categories
+    is_critical = db.Column(db.Boolean, default=False)  # Flag critical observations
+    related_vitals_id = db.Column(db.Integer, db.ForeignKey('patient_vitals.id'), nullable=True)  # Link to vitals observation
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='nurse_notes')
+    nurse = db.relationship('User', backref='nurse_notes', foreign_keys=[nurse_id])
+    related_vitals = db.relationship('PatientVitals', backref='associated_notes', foreign_keys=[related_vitals_id])
+    
+    __table_args__ = (
+        db.Index('idx_nurse_notes_patient', 'patient_id'),
+        db.Index('idx_nurse_notes_date', 'created_at'),
+    )
+    
+    def __repr__(self):
+        return f'<NurseNote Patient:{self.patient_id} Nurse:{self.nurse_id}>'
 
 
 class Staff(db.Model):
@@ -725,4 +1013,181 @@ class VideoProgress(db.Model):
     video = db.relationship('HealthVideo', backref='progress_records')
 
     def __repr__(self):
-        return f'<Progress P:{self.patient_id} V:{self.video_id}>'
+        return f'<VideoProgress Patient:{self.patient_id} Video:{self.video_id}>'
+
+
+# ===================== MEDICAL STAFF MODULES =====================
+
+class PatientVitals(db.Model):
+    """Patient vital signs recorded by nurses"""
+    __tablename__ = 'patient_vitals'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # User who recorded (nurse)
+    
+    # Vital signs
+    temperature = db.Column(db.Float, nullable=False)  # in Celsius or Fahrenheit
+    systolic_bp = db.Column(db.Integer, nullable=False)  # Blood Pressure systolic
+    diastolic_bp = db.Column(db.Integer, nullable=False)  # Blood Pressure diastolic
+    heart_rate = db.Column(db.Integer, nullable=False)  # Beats per minute
+    oxygen_level = db.Column(db.Float, nullable=False)  # SpO2 percentage
+    
+    # Optional fields
+    respiratory_rate = db.Column(db.Integer)  # Breaths per minute
+    weight = db.Column(db.Float)  # in kg
+    notes = db.Column(db.Text)  # Additional observations
+    
+    # Timestamps
+    recorded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='vitals')
+    nurse = db.relationship('User', backref='recorded_vitals', foreign_keys=[nurse_id])
+    
+    __table_args__ = (
+        db.Index('idx_vitals_patient_date', 'patient_id', 'recorded_at'),
+    )
+    
+    def __repr__(self):
+        return f'<PatientVitals Patient:{self.patient_id} Temp:{self.temperature}°C HR:{self.heart_rate}bpm>'
+
+
+class SymptomLog(db.Model):
+    """Log of patient-reported symptoms for tracking and analysis"""
+    __tablename__ = 'symptom_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    
+    symptom_name = db.Column(db.String(100), nullable=False)  # headache, fever, etc.
+    severity = db.Column(db.Integer)  # 1-10 scale
+    notes = db.Column(db.Text)  # Additional patient notes
+    
+    # Extracted from chatbot conversations automatically
+    from_chatbot = db.Column(db.Boolean, default=False)
+    
+    logged_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='symptom_logs')
+    
+    def __repr__(self):
+        return f'<SymptomLog P:{self.patient_id} {self.symptom_name}>'
+
+
+class PharmacyOrder(db.Model):
+    """Pharmacy dispensing orders linked to prescriptions"""
+    __tablename__ = 'pharmacy_orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
+    prescription_id = db.Column(db.Integer, db.ForeignKey('prescriptions.id'), nullable=True)
+
+    medicine_name = db.Column(db.String(200), nullable=False)
+    quantity = db.Column(db.Integer, default=1)
+    dosage = db.Column(db.String(200))
+    status = db.Column(db.String(50), default='Pending')  # Pending, Dispensed
+    notes = db.Column(db.Text)
+
+    dispensed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='pharmacy_orders')
+    doctor = db.relationship('Doctor', backref='pharmacy_orders')
+    prescription = db.relationship('Prescription', backref='pharmacy_orders')
+
+    def __repr__(self):
+        return f'<PharmacyOrder {self.medicine_name} P:{self.patient_id}>'
+
+
+class PharmacySale(db.Model):
+    """Actual medicine sale ledger created when pharmacy dispenses medicines."""
+    __tablename__ = 'pharmacy_sales'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    pharmacy_order_id = db.Column(db.Integer, db.ForeignKey('pharmacy_orders.id'), nullable=True)
+    medicine_name = db.Column(db.String(200), nullable=False)
+    quantity = db.Column(db.Integer, default=1)
+    price = db.Column(db.Float, default=0.0)
+    sold_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    notes = db.Column(db.Text)
+
+    patient = db.relationship('Patient', backref=db.backref('pharmacy_sales', lazy='dynamic'))
+    pharmacy_order = db.relationship('PharmacyOrder', backref=db.backref('sale_records', lazy='dynamic'))
+
+    __table_args__ = (
+        db.Index('idx_pharmacy_sales_patient_date', 'patient_id', 'sold_at'),
+    )
+
+    def __repr__(self):
+        return f'<PharmacySale {self.medicine_name} P:{self.patient_id}>'
+
+
+class ReceptionQueue(db.Model):
+    """Reception queue / token management for walk-in and appointment patients"""
+    __tablename__ = 'reception_queue'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=True)
+
+    token_number = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), default='Waiting')  # Waiting, Accepted by Reception, Sent to Doctor, Accepted by Doctor, Rejected by Doctor, In Consultation, Completed, Cancelled
+    visit_reason = db.Column(db.String(255))
+    patient_type = db.Column(db.String(50), default='Walk-in')  # Walk-in, Appointment, Check-in
+
+    # Link to original appointment or check-in
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
+    checkin_id = db.Column(db.Integer, db.ForeignKey('patient_checkins.id'), nullable=True)
+
+    # Reception handling
+    reception_status = db.Column(db.String(50), default='Pending')  # Pending, Accepted, Rejected
+    reception_notes = db.Column(db.Text, nullable=True)
+    accepted_by_reception_at = db.Column(db.DateTime, nullable=True)
+
+    # Doctor handling
+    doctor_status = db.Column(db.String(50), default='Pending')  # Pending, Accepted, Cancelled
+    doctor_notes = db.Column(db.Text, nullable=True)
+    sent_to_doctor_at = db.Column(db.DateTime, nullable=True)
+    doctor_responded_at = db.Column(db.DateTime, nullable=True)
+
+    arrival_time = db.Column(db.DateTime, default=datetime.utcnow)
+    consultation_time = db.Column(db.DateTime, nullable=True)
+    completed_time = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    patient = db.relationship('Patient', backref='queue_entries')
+    doctor = db.relationship('Doctor', backref='queue_entries')
+    appointment = db.relationship('Appointment', backref='queue_entry', uselist=False)
+    checkin = db.relationship('PatientCheckIn', backref='queue_entry', uselist=False)
+
+    def __repr__(self):
+        return f'<ReceptionQueue Token:{self.token_number} P:{self.patient_id}>'
+
+
+class PatientConsent(db.Model):
+    """Patient Legal Consent & Digital Signatures (HIPAA/GDPR)"""
+    __tablename__ = 'patient_consents'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    form_type = db.Column(db.String(100), nullable=False) # e.g., "HIPAA Privacy Notice", "General Treatment Consent"
+    consent_text = db.Column(db.Text, nullable=False) # Snapshot of what they agreed to
+    signature_base64 = db.Column(db.Text, nullable=False) # Base64 encoded PNG of the canvas signature
+    ip_address = db.Column(db.String(50))
+    signed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='consents')
+    
+    def __repr__(self):
+        return f'<Consent {self.form_type} P:{self.patient_id}>'
+

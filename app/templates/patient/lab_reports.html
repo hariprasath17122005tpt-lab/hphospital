@@ -1,158 +1,908 @@
 {% extends "base.html" %}
 
-{% block title %}Lab Reports{% endblock %}
+{% block title %}Lab Reports - CarePoint AI{% endblock %}
 
-{% block content %}
+{% set topbar_title = 'Lab Reports' %}
+{% set breadcrumb_current = 'My Lab Reports' %}
+
+{% block extra_css %}
 <style>
-    .report-card {
-        border-radius: 16px;
-        border: 1px solid #eef2f6;
-        transition: 0.3s;
-    }
+    /* ═══════════════════════════════════════════════════════
+       LAB REPORTS — LEGEND PRO DARK THEME
+       Holographic borders + Animated Progress + Stagger Reveals
+       ═══════════════════════════════════════════════════════ */
 
-    .report-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    }
-
-    .badge-critical {
-        background: #fee2e2;
-        color: #ef4444;
-        border: 1px solid #fecaca;
-    }
-
-    .badge-normal {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-
-    .progress-track {
-        height: 6px;
-        border-radius: 3px;
-        background: #f1f5f9;
-        margin-top: 10px;
+    .lab-page {
         position: relative;
+        min-height: 80vh;
     }
 
-    .progress-fill {
-        height: 100%;
-        border-radius: 3px;
+    /* Header */
+    .lab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 36px;
+    }
+
+    .lab-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .lab-header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #a78bfa;
+        box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+        animation: labIconFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes labIconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+
+    .lab-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .lab-subtitle {
+        color: rgba(241, 245, 249, 0.45);
+        font-size: 0.88rem;
+        margin-top: 2px;
+    }
+
+    /* Summary Strip */
+    .lab-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .lab-summary-card {
+        background: rgba(15, 15, 30, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .lab-summary-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-summary-num {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .lab-summary-label {
+        font-size: 0.72rem;
+        color: rgba(241, 245, 249, 0.4);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Reports Grid */
+    .lab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 24px;
+    }
+
+    /* Report Card */
+    .lab-card {
+        background: rgba(15, 15, 30, 0.65);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        isolation: isolate;
+    }
+
+    .lab-card::before {
+        content: '';
         position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), rgba(99, 102, 241, 0.2), transparent);
     }
 
-    .doc-note {
-        border-left: 3px solid #6366f1;
-        background: #eef2ff;
-        padding: 10px;
+    .lab-card::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 25px;
+        z-index: -1;
+        opacity: 0;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.15));
+        filter: blur(12px);
+        transition: opacity 0.4s ease;
+    }
+
+    .lab-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        border-color: rgba(139, 92, 246, 0.2);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.08);
+    }
+
+    .lab-card:hover::after {
+        opacity: 0.7;
+    }
+
+    /* Critical Alert Banner */
+    .lab-critical-alert {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #f87171;
+        animation: alertFlash 2s ease-in-out infinite;
+    }
+
+    @keyframes alertFlash {
+
+        0%,
+        100% {
+            border-color: rgba(239, 68, 68, 0.15);
+            box-shadow: none;
+        }
+
+        50% {
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+        }
+    }
+
+    .lab-critical-alert i {
+        font-size: 1rem;
+    }
+
+    /* Card Header */
+    .lab-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+    .lab-test-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .lab-test-icon.violet {
+        background: rgba(139, 92, 246, 0.12);
+        color: #a78bfa;
+    }
+
+    .lab-test-icon.rose {
+        background: rgba(244, 63, 94, 0.12);
+        color: #fb7185;
+    }
+
+    .lab-test-icon.cyan {
+        background: rgba(6, 182, 212, 0.12);
+        color: #22d3ee;
+    }
+
+    .lab-test-icon.blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .lab-test-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #f1f5f9;
+    }
+
+    .lab-test-date {
+        font-size: 0.8rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    .lab-test-date i {
+        color: #818cf8;
+        margin-right: 4px;
+    }
+
+    /* Results */
+    .lab-results-panel {
+        background: rgba(255, 255, 255, 0.025);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    .lab-result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+    }
+
+    .lab-result-row:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .lab-result-name {
+        font-size: 0.85rem;
+        color: rgba(241, 245, 249, 0.7);
+        font-weight: 500;
+    }
+
+    .lab-result-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
         font-size: 0.9rem;
-        border-radius: 0 8px 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .lab-result-value.normal {
+        color: #34d399;
+    }
+
+    .lab-result-value.warning {
+        color: #fbbf24;
+    }
+
+    .lab-result-value.critical {
+        color: #f87171;
+    }
+
+    .lab-result-range {
+        font-size: 0.65rem;
+        color: rgba(241, 245, 249, 0.3);
+        font-weight: 500;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Progress Indicator */
+    .lab-progress-wrap {
+        margin-bottom: 16px;
+    }
+
+    .lab-progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+
+    .lab-progress-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    .lab-progress-pct {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    /* Doctor's Note */
+    .lab-doctor-note {
+        background: rgba(99, 102, 241, 0.06);
+        border-left: 3px solid #6366f1;
+        border-radius: 0 12px 12px 0;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+    }
+
+    .lab-note-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(241, 245, 249, 0.4);
+        margin-bottom: 4px;
+    }
+
+    .lab-note-text {
+        color: rgba(241, 245, 249, 0.7);
+        font-size: 0.85rem;
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    /* Card Footer */
+    .lab-card-footer {
+        display: flex;
+        gap: 8px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .lab-action-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(241, 245, 249, 0.6);
+        text-decoration: none;
+    }
+
+    .lab-action-btn:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #818cf8;
+        transform: translateY(-2px);
+    }
+
+    .lab-action-btn:hover i {
+        color: #818cf8;
+    }
+
+    /* WhatsApp Button Enhanced Styling */
+    .lab-action-btn[style*="rgba(34, 197, 94"] {
+        background: rgba(34, 197, 94, 0.08) !important;
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        color: #22c55e !important;
+    }
+
+    .lab-action-btn[style*="rgba(34, 197, 94"]:hover {
+        background: rgba(34, 197, 94, 0.15) !important;
+        border-color: rgba(34, 197, 94, 0.5) !important;
+        color: #10b981 !important;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+
+    .lab-action-btn[style*="rgba(34, 197, 94"] i {
+        color: #22c55e !important;
+    }
+
+    .lab-action-btn[style*="rgba(34, 197, 94"]:hover i {
+        color: #10b981 !important;
+    }
+
+    /* Empty State */
+    .lab-empty {
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .lab-empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(139, 92, 246, 0.05));
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #a78bfa;
+        margin: 0 auto 24px;
+        animation: labIconFloat 4s ease-in-out infinite;
+    }
+
+    .lab-empty h3 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+    }
+
+    .lab-empty p {
+        color: rgba(241, 245, 249, 0.4);
+        font-size: 0.95rem;
+    }
+
+    /* Quick Access */
+    .lab-quick-access {
+        margin-top: 40px;
+    }
+
+    .lab-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .lab-quick-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 20px;
+        background: rgba(15, 15, 30, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .lab-quick-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+        color: inherit;
+    }
+
+    .lab-quick-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #f1f5f9;
+    }
+
+    .lab-quick-desc {
+        font-size: 0.75rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .lab-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .lab-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .lab-quick-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">Lab Reports</h2>
-            <p class="text-muted">Access your medical test results</p>
-        </div>
-        <div>
-            <button class="btn btn-outline-dark me-2"><i class="fas fa-chart-line me-2"></i> View Trends</button>
+{% block content %}
+<!-- Background -->
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-2"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="lab-page">
+    <!-- Header -->
+    <div class="lab-header pro-reveal">
+        <div class="lab-header-left">
+            <div class="lab-header-icon">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div>
+                <h1 class="lab-title pro-gradient-text">Lab Reports</h1>
+                <p class="lab-subtitle">Track your diagnostic results and health indicators</p>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        {% for report in reports %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm report-card position-relative overflow-hidden">
-                <!-- Critical Alert Banner -->
-                {% if report.critical_alert %}
-                <div class="bg-danger text-white text-center py-1 small fw-bold">
-                    <i class="fas fa-exclamation-triangle me-1"></i> CRITICAL ALERT
-                </div>
-                {% endif %}
-
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-light text-primary me-3 rounded-circle d-flex align-items-center justify-content-center"
-                                style="width: 48px; height: 48px;">
-                                <i class="fas fa-flask fa-lg"></i>
-                            </div>
-                            <div>
-                                <h5 class="card-title fw-bold mb-0">{{ report.test_name }}</h5>
-                                <small class="text-muted">{{ report.conducted_at.strftime('%b %d, %Y') }}</small>
-                            </div>
-                        </div>
-                        {% if report.status == 'Completed' %}
-                        {% if report.critical_alert %}
-                        <span class="badge badge-critical">Critical</span>
-                        {% else %}
-                        <span class="badge badge-normal">Normal</span>
-                        {% endif %}
-                        {% else %}
-                        <span class="badge bg-warning text-dark rounded-pill">Pending</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-end mb-1">
-                            <label class="small text-muted text-uppercase fw-bold">Current Value</label>
-                            {% if report.status == 'Completed' %}
-                            <span
-                                class="fw-bold fs-5 {% if report.critical_alert %}text-danger{% else %}text-success{% endif %}">
-                                {{ report.result_value }} <small class="fs-6 text-muted">{{ report.unit }}</small>
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <!-- Visual Range Indicator (Mocked for UI) -->
-                        {% if report.status == 'Completed' %}
-                        <div class="progress-track">
-                            <div class="progress-fill {% if report.critical_alert %}bg-danger{% else %}bg-success{% endif %}"
-                                style="width: 70%;"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <small class="text-xs text-muted">Low</small>
-                            <small class="text-xs text-muted fw-bold">Ref: {{ report.reference_range }}</small>
-                            <small class="text-xs text-muted">High</small>
-                        </div>
-                        {% else %}
-                        <div class="p-3 bg-light rounded text-center text-muted small">
-                            Analysis in progress...
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    {% if report.notes %}
-                    <div class="doc-note mb-3">
-                        <div class="fw-bold text-dark small mb-1"><i class="fas fa-user-md me-1"></i> Doctor's Note
-                        </div>
-                        "{{ report.notes }}"
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer bg-transparent border-top-0 pb-3 pt-0">
-                    <div class="d-flex gap-2">
-                        <a href="{{ url_for('patient.download_report', report_id=report.id) }}"
-                            class="btn btn-outline-primary w-100" {% if report.status !='Completed' %}disabled
-                            style="pointer-events: none;" {% endif %}>
-                            <i class="fas fa-file-pdf me-2"></i> PDF
-                        </a>
-                        <button class="btn btn-primary w-100" {% if report.status !='Completed' %}disabled{% endif %}>
-                            <i class="fas fa-chart-area me-2"></i> History
-                        </button>
-                    </div>
-                </div>
+    <!-- Summary Strip -->
+    <div class="lab-summary-strip pro-stagger-grid">
+        <div class="lab-summary-card">
+            <div class="pro-icon-box violet" style="width:44px;height:44px;">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div>
+                <div class="lab-summary-num" style="color:#a78bfa;"
+                    data-count-to="{{ (reports|length) + (lab_orders|length) if reports or lab_orders else 0 }}"
+                    data-count-duration="1200">0</div>
+                <div class="lab-summary-label">Total Reports</div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12 py-5 text-center text-muted">
-            <i class="fas fa-vial fa-4x mb-3 text-light"></i>
-            <h3>No lab reports found</h3>
-            <p>Your test results will appear here once they are ready.</p>
+        <div class="lab-summary-card">
+            <div class="pro-icon-box emerald" style="width:44px;height:44px;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <div class="lab-summary-num" style="color:#34d399;"
+                    data-count-to="{{ (reports|selectattr('status', 'equalto', 'Completed')|list|length) + (lab_orders|selectattr('status', 'equalto', 'COMPLETED')|list|length) if reports or lab_orders else 0 }}"
+                    data-count-duration="1200">0</div>
+                <div class="lab-summary-label">Completed</div>
+            </div>
+        </div>
+        <div class="lab-summary-card">
+            <div class="pro-icon-box amber" style="width:44px;height:44px;">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div>
+                <div class="lab-summary-num" style="color:#fbbf24;"
+                    data-count-to="{{ (reports|rejectattr('status', 'equalto', 'Completed')|list|length) + (lab_orders|rejectattr('status', 'equalto', 'COMPLETED')|list|length) if reports or lab_orders else 0 }}"
+                    data-count-duration="1200">0</div>
+                <div class="lab-summary-label">Pending</div>
+            </div>
+        </div>
+        <div class="lab-summary-card">
+            <div class="pro-icon-box rose" style="width:44px;height:44px;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <div class="lab-summary-num" style="color:#fb7185;" data-count-to="0" data-count-duration="800">0</div>
+                <div class="lab-summary-label">Critical Alerts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Laboratory workflow orders (doctor + walk-in) -->
+    {% if lab_orders %}
+    <div class="lab-grid" style="margin-bottom: 2rem;">
+        {% for o in lab_orders %}
+        <div class="lab-card pro-tilt-card pro-reveal" style="transition-delay:{{ loop.index * 0.08 }}s;">
+            <div class="lab-card-header">
+                <div>
+                    <div class="lab-test-icon violet"><i class="fas fa-flask"></i></div>
+                    <div class="lab-test-name">{{ o.test_name }}</div>
+                    <div class="lab-test-date"><i class="far fa-calendar"></i> {{ o.created_at.strftime('%B %d, %Y') if o.created_at else '' }}</div>
+                </div>
+                <span class="pro-badge {{ 'pro-badge-success' if o.status == 'COMPLETED' else 'pro-badge-warning' }}">{{ o.status.replace('_',' ') }}</span>
+            </div>
+            <div class="px-3 pb-2 small" style="color:rgba(241,245,249,0.55);">
+                {% if o.source_type == 'DOCTOR' and o.doctor %}🩺 Referred by Dr. {{ o.doctor.first_name }} {{ o.doctor.last_name }}{% elif o.source_type == 'WALK_IN' %}🧪 Walk-in laboratory visit{% endif %}
+                · {{ o.test_category }}
+            </div>
+            {% if o.result_preview() %}
+            <div class="lab-doctor-note">
+                <div class="lab-note-label"><i class="fas fa-file-alt me-1"></i> Result summary</div>
+                <div class="lab-note-text">{{ o.result_preview()[:500] }}{% if o.result_preview()|length > 500 %}…{% endif %}</div>
+            </div>
+            {% endif %}
+            
+            <!-- Hidden fields for WhatsApp integration -->
+            <input type="hidden" class="patient-phone" value="{{ patient.phone or '' }}">
+            <input type="hidden" class="report-id" value="{{ o.id }}">
+            <input type="hidden" class="report-type" value="lab-order">
+            
+            {% if o.result_attachment_rel_path() %}
+            <div class="lab-card-footer">
+                <a href="{{ url_for('patient.download_lab_order_attachment', order_id=o.id) }}" class="lab-action-btn pro-magnetic"><i class="fas fa-download me-1"></i> Download</a>
+                {% if o.generated_reports and o.generated_reports[0] %}
+                <a href="{{ url_for('lab.view_report', report_id=o.generated_reports[0].id) }}" class="lab-action-btn pro-magnetic"><i class="fas fa-eye me-1"></i> View Report</a>
+                {% endif %}
+                <button type="button" onclick="sendWhatsApp(this)" class="lab-action-btn pro-magnetic" style="background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3); color: #22c55e; cursor: pointer;" title="Send via WhatsApp"><i class="fab fa-whatsapp me-1"></i> WhatsApp</button>
+            </div>
+            {% elif o.status == 'COMPLETED' %}
+            <div class="lab-card-footer">
+                {% if o.generated_reports and o.generated_reports[0] %}
+                <a href="{{ url_for('lab.view_report', report_id=o.generated_reports[0].id) }}" class="lab-action-btn pro-magnetic"><i class="fas fa-eye me-1"></i> View Report</a>
+                {% endif %}
+                <button type="button" onclick="sendWhatsApp(this)" class="lab-action-btn pro-magnetic" style="background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3); color: #22c55e; cursor: pointer; flex: 1;" title="Send report via WhatsApp"><i class="fab fa-whatsapp me-1"></i> Send via WhatsApp</button>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- Report Cards (legacy / direct uploads) -->
+    <div class="lab-grid">
+        {% if reports %}
+        {% for report in reports %}
+        <div class="lab-card pro-tilt-card pro-reveal" style="transition-delay:{{ loop.index * 0.1 }}s;">
+            <div class="tilt-shine"></div>
+
+            {% if report.status == 'Critical' %}
+            <div class="lab-critical-alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Critical values detected — immediate review recommended</span>
+            </div>
+            {% endif %}
+
+            <div class="lab-card-header">
+                <div>
+                    <div class="lab-test-icon {{ ['violet','rose','cyan','blue'][loop.index0 % 4] }}">
+                        <i class="fas {{ ['fa-flask','fa-vial','fa-microscope','fa-heartbeat'][loop.index0 % 4] }}"></i>
+                    </div>
+                    <div class="lab-test-name">{{ report.test_name }}</div>
+                    <div class="lab-test-date">
+                        <i class="far fa-calendar"></i>
+                        {{ report.conducted_at.strftime('%B %d, %Y') }}
+                    </div>
+                </div>
+                <span
+                    class="pro-badge {{ 'pro-badge-success' if report.status == 'Completed' else ('pro-badge-danger' if report.status == 'Critical' else 'pro-badge-warning') }}">
+                    {{ report.status }}
+                </span>
+            </div>
+
+            <!-- Test Results (Mocked for visual) -->
+            <div class="lab-results-panel">
+                <div class="lab-result-row">
+                    <span class="lab-result-name">Primary Value</span>
+                    <div>
+                        <span class="lab-result-value normal">Normal <i class="fas fa-check-circle"
+                                style="font-size:0.7rem;"></i></span>
+                        <div class="lab-result-range">Ref: 4.5 - 11.0</div>
+                    </div>
+                </div>
+                <div class="lab-result-row">
+                    <span class="lab-result-name">Secondary Marker</span>
+                    <div>
+                        <span class="lab-result-value normal">In Range</span>
+                        <div class="lab-result-range">Ref: 120 - 180</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="lab-progress-wrap">
+                <div class="lab-progress-header">
+                    <span class="lab-progress-label">Analysis Status</span>
+                    <span class="lab-progress-pct" style="color:#818cf8;">{{ '100%' if report.status == 'Completed' else
+                        '65%' }}</span>
+                </div>
+                <div class="pro-progress">
+                    <div class="pro-progress-fill fill-indigo"
+                        style="width:{{ '100%' if report.status == 'Completed' else '65%' }};"></div>
+                </div>
+            </div>
+
+            {% if report.doctor_notes %}
+            <div class="lab-doctor-note">
+                <div class="lab-note-label"><i class="fas fa-stethoscope me-1"></i> Doctor's Note</div>
+                <div class="lab-note-text">"{{ report.doctor_notes }}"</div>
+            </div>
+            {% endif %}
+
+            <!-- Hidden fields for WhatsApp integration -->
+            <input type="hidden" class="patient-phone" value="{{ patient.phone or '' }}">
+            <input type="hidden" class="report-id" value="{{ report.id }}">
+            <input type="hidden" class="report-type" value="lab-report">
+
+            <!-- Card Actions -->
+            <div class="lab-card-footer">
+                <a href="{{ url_for('lab.view_report', report_id=report.id) }}" class="lab-action-btn pro-magnetic">
+                    <i class="fas fa-eye"></i> View Report
+                </a>
+                <a href="#" class="lab-action-btn pro-magnetic">
+                    <i class="fas fa-chart-line"></i> Trends
+                </a>
+                <a href="#" class="lab-action-btn pro-magnetic">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+                <button type="button" onclick="sendWhatsApp(this)" class="lab-action-btn pro-magnetic" style="background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3); color: #22c55e; cursor: pointer;" title="Send via WhatsApp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="lab-empty pro-reveal-zoom" style="grid-column:1/-1;">
+            <div class="lab-empty-icon">
+                <i class="fas fa-flask"></i>
+            </div>
+            <h3>No Reports Available</h3>
+            <p>Your lab report history will appear here once available.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Access Section -->
+    <div class="lab-quick-access pro-reveal pro-delay-4">
+        <div class="pro-section-header" style="margin-bottom:20px;">
+            <div class="pro-icon-box cyan" style="width:32px;height:32px;border-radius:8px;font-size:0.75rem;">
+                <i class="fas fa-compass"></i>
+            </div>
+            <span class="pro-section-title">Quick Access</span>
+            <div class="pro-section-line"></div>
+        </div>
+        <div class="lab-quick-grid pro-stagger-grid">
+            <a href="{{ url_for('patient.dashboard') }}" class="lab-quick-card">
+                <div class="pro-icon-box indigo" style="width:40px;height:40px;font-size:0.9rem;">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div>
+                    <div class="lab-quick-title">Dashboard</div>
+                    <div class="lab-quick-desc">Return to health overview</div>
+                </div>
+            </a>
+            <a href="{{ url_for('patient.appointments') }}" class="lab-quick-card">
+                <div class="pro-icon-box cyan" style="width:40px;height:40px;font-size:0.9rem;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div>
+                    <div class="lab-quick-title">Appointments</div>
+                    <div class="lab-quick-desc">View upcoming visits</div>
+                </div>
+            </a>
+            <a href="{{ url_for('patient.prescriptions') }}" class="lab-quick-card">
+                <div class="pro-icon-box emerald" style="width:40px;height:40px;font-size:0.9rem;">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div>
+                    <div class="lab-quick-title">Prescriptions</div>
+                    <div class="lab-quick-desc">Manage your medications</div>
+                </div>
+            </a>
+            <a href="{{ url_for('features.ai_assistant') }}" class="lab-quick-card">
+                <div class="pro-icon-box rose" style="width:40px;height:40px;font-size:0.9rem;">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <div class="lab-quick-title">AI Assistant</div>
+                    <div class="lab-quick-desc">Ask about your results</div>
+                </div>
+            </a>
+        </div>
+    </div>
 </div>
+
+<!-- WhatsApp Integration Script - PRODUCTION READY -->
+<script>
+/**
+ * WhatsApp Integration - MOBILE & DESKTOP OPTIMIZED
+ * Opens direct chat with patient number (works on mobile app + web)
+ */
+function sendWhatsApp(button) {
+    try {
+        const card = button.closest('.lab-card');
+        if (!card) {
+            alert('⚠️ Unable to locate report');
+            return;
+        }
+        
+        let patientPhone = card.querySelector('.patient-phone')?.value?.trim() || '';
+        const reportId = card.querySelector('.report-id')?.value?.trim() || '';
+        
+        if (!reportId) {
+            alert('⚠️ Report ID not found');
+            return;
+        }
+        
+        // Format phone number
+        const formattedPhone = cleanPhoneNumber(patientPhone);
+        let targetPhone = formattedPhone;
+        
+        // If no valid phone, ask user
+        if (!targetPhone) {
+            const userInput = prompt(
+                '📱 Enter WhatsApp number (10 digits):\n\nExample: 9597244055',
+                ''
+            );
+            if (!userInput) return;
+            targetPhone = cleanPhoneNumber(userInput);
+        }
+        
+        // Validate
+        if (!targetPhone || targetPhone.length !== 10) {
+            alert('❌ Please enter exactly 10 digits.\nExample: 9597244055');
+            return;
+        }
+        
+        // Create message
+        const message = `Hello, your lab report ${reportId} is ready. Please check your CarePoint account.`;
+        
+        // Detect device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        let whatsappURL;
+        
+        if (isMobile) {
+            // Mobile: Use intent:// scheme for Android and iOS
+            whatsappURL = `https://wa.me/91${targetPhone}?text=${encodeURIComponent(message)}`;
+        } else {
+            // Desktop: Use standard wa.me link
+            whatsappURL = `https://wa.me/91${targetPhone}?text=${encodeURIComponent(message)}`;
+        }
+        
+        console.log('📱 Opening WhatsApp:', {
+            phone: `91${targetPhone}`,
+            message: message.substring(0, 40) + '...',
+            isMobile: isMobile,
+            url: whatsappURL.substring(0, 60) + '...'
+        });
+        
+        // Open WhatsApp
+        window.open(whatsappURL, '_blank');
+        
+        // Button feedback
+        button.style.opacity = '0.6';
+        setTimeout(() => { button.style.opacity = '1'; }, 300);
+        
+    } catch (error) {
+        console.error('❌ WhatsApp Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+/**
+ * Clean phone number - extract only 10 digits
+ */
+function cleanPhoneNumber(phone) {
+    if (!phone) return '';
+    
+    // Extract only digits
+    let digits = phone.replace(/\D/g, '');
+    
+    // If starts with 91, remove it
+    if (digits.startsWith('91')) {
+        digits = digits.substring(2);
+    }
+    
+    // If starts with 0, remove it
+    if (digits.startsWith('0')) {
+        digits = digits.substring(1);
+    }
+    
+    // Return only if exactly 10 digits
+    return digits.length === 10 ? digits : '';
+}
+
+/**
+ * Create formatted lab report message - SIMPLE VERSION
+ */
+function createReportMessage(reportId, reportType) {
+    const currentDate = new Date().toLocaleDateString('en-IN');
+    
+    return `Hello,\n\n` +
+           `Your lab report is ready!\n\n` +
+           `Report ID: ${reportId}\n` +
+           `Date: ${currentDate}\n\n` +
+           `Please check your CarePoint patient portal to view your report.`;
+}
+</script>
+
 {% endblock %}

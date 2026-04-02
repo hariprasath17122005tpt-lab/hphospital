@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+
+{% block title %}Nurse Portal - Secure Access{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth-nextgen.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-background-grid"></div>
+
+<div class="auth-page">
+    <div class="auth-shell">
+        <div class="auth-grid">
+            <!-- LEFT HERO SECTION -->
+            <section class="auth-hero">
+                <div class="auth-brand-badge">
+                    <div class="auth-brand-icon"
+                        style="background: linear-gradient(135deg, #34d399, #059669);">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <div class="auth-brand-text"
+                        style="background: linear-gradient(135deg, #34d399, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Nurse Portal</div>
+                </div>
+
+                <h1 class="auth-title">
+                    Compassionate Care,<br>
+                    Powered by<br>
+                    Technology.
+                </h1>
+
+                <p class="auth-subtitle">
+                    Manage patient tasks, track vitals, coordinate with doctors, and deliver
+                    excellent bedside care with smart workflow tools.
+                </p>
+
+                <div class="auth-features">
+                    <div class="auth-feature-card">
+                        <div class="auth-feature-icon"
+                            style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.1)); color: #34d399;">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="auth-feature-title">Task Management</div>
+                        <div class="auth-feature-desc">
+                            Prioritized task lists assigned by doctors
+                        </div>
+                    </div>
+
+                    <div class="auth-feature-card">
+                        <div class="auth-feature-icon"
+                            style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.1)); color: #34d399;">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="auth-feature-title">Vitals Monitoring</div>
+                        <div class="auth-feature-desc">
+                            Record and track patient vital signs
+                        </div>
+                    </div>
+
+                    <div class="auth-feature-card">
+                        <div class="auth-feature-icon"
+                            style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.1)); color: #34d399;">
+                            <i class="fas fa-notes-medical"></i>
+                        </div>
+                        <div class="auth-feature-title">Nursing Notes</div>
+                        <div class="auth-feature-desc">
+                            Document observations and care activities
+                        </div>
+                    </div>
+
+                    <div class="auth-feature-card">
+                        <div class="auth-feature-icon"
+                            style="background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(52, 211, 153, 0.1)); color: #34d399;">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="auth-feature-title">Medication Rounds</div>
+                        <div class="auth-feature-desc">
+                            Track medication administration schedules
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-trust-badges"
+                    style="background: rgba(52, 211, 153, 0.05); border-color: rgba(52, 211, 153, 0.1);">
+                    <div class="trust-badge">
+                        <i class="fas fa-certificate"></i>
+                        <span>Verified Nurses</span>
+                    </div>
+                    <div class="trust-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>HIPAA Secure</span>
+                    </div>
+                    <div class="trust-badge">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Audit Compliant</span>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('auth.choose_login') }}" class="auth-back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Choose Different Portal</span>
+                </a>
+            </section>
+
+            <!-- RIGHT PANEL -->
+            <aside class="auth-panel">
+                <div class="panel-header">
+                    <div class="panel-icon-wrapper"
+                        style="background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 10px 40px rgba(52, 211, 153, 0.3);">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <h2 class="panel-title">Nurse Portal Access</h2>
+                    <p class="panel-subtitle">Secure authentication for authorized nursing staff</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' }}"
+                    role="alert">
+                    <i class="fas fa-{{ 'exclamation-circle' if category == 'danger' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()">x</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <!-- Login Form -->
+                <form class="auth-form" method="POST" action="{{ url_for('auth.nurse_login') }}" accept-charset="UTF-8"
+                    id="loginForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">Nurse ID</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="Enter your nurse username" required autofocus autocomplete="username">
+                            <i class="fas fa-id-badge form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="form-control-wrapper">
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Enter your password" required autocomplete="current-password">
+                            <i class="fas fa-lock form-icon"></i>
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                <i class="fas fa-eye" id="password-toggle-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="loginBtn"
+                        style="background: linear-gradient(135deg, #34d399, #059669);">
+                        <span class="btn-text">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Access Nurse Portal
+                        </span>
+                    </button>
+                </form>
+
+                <div class="panel-divider">
+                    <span>New nurse?</span>
+                </div>
+
+                <div class="panel-alt-actions">
+                    <a href="{{ url_for('auth.nurse_register') }}" class="btn-alt"
+                        style="border-color: rgba(52, 211, 153, 0.3); color: #34d399;">
+                        <i class="fas fa-user-plus"></i>
+                        Register as Nurse
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-toggle-icon');
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+</script>
+{% endblock %}

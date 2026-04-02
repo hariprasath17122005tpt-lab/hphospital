@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Patient History - Pharmacy{% endblock %}
+
+{% block content %}
+<style>
+    .ph-history-shell { max-width: 1360px; margin: 0 auto; padding: 28px; }
+    .ph-history-grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; }
+    .ph-card {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 22px;
+        box-shadow: 0 16px 40px rgba(2, 6, 23, 0.18);
+        padding: 22px;
+    }
+    .ph-title { font-size: 1.2rem; font-weight: 800; color: #f8fafc; margin-bottom: 8px; }
+    .ph-subtitle { color: #94a3b8; font-size: .92rem; margin-bottom: 18px; }
+    .ph-search {
+        width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(148,163,184,.14);
+        background: rgba(30,41,59,.94); color: #f8fafc; outline: none;
+    }
+    .ph-results { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; max-height: 420px; overflow: auto; }
+    .ph-item {
+        padding: 14px; border-radius: 16px; background: rgba(30,41,59,.8);
+        border: 1px solid rgba(249,115,22,.12); cursor: pointer; transition: .18s ease;
+    }
+    .ph-item:hover, .ph-item.active { transform: translateY(-1px); border-color: rgba(249,115,22,.4); }
+    .ph-name { color: #f8fafc; font-weight: 700; }
+    .ph-meta { color: #94a3b8; font-size: .84rem; margin-top: 4px; }
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .tag {
+        padding: 8px 12px; border-radius: 999px; background: rgba(249,115,22,.12);
+        color: #fdba74; border: 1px solid rgba(249,115,22,.2); font-size: .8rem; font-weight: 800;
+    }
+    .info-box { padding: 18px; border-radius: 18px; background: rgba(30,41,59,.75); border: 1px solid rgba(148,163,184,.1); margin-bottom: 16px; }
+    .info-row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #cbd5e1; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-row strong { color: #94a3b8; }
+    .section-grid { display: grid; grid-template-columns: 1.2fr .9fr; gap: 18px; margin-bottom: 18px; }
+    .mini-title { color: #f8fafc; font-size: 1rem; font-weight: 800; margin-bottom: 12px; }
+    .med-list, .rx-list { display: grid; gap: 10px; }
+    .med-chip {
+        padding: 10px 12px; border-radius: 14px; background: rgba(249,115,22,.1);
+        border: 1px solid rgba(249,115,22,.18); color: #fdba74; font-weight: 700;
+    }
+    .rx-card {
+        padding: 14px; border-radius: 16px; background: rgba(34,197,94,.08);
+        border: 1px solid rgba(34,197,94,.14);
+    }
+    .rx-title { color: #dcfce7; font-weight: 800; margin-bottom: 6px; }
+    .rx-meta { color: #bbf7d0; font-size: .84rem; }
+    .timeline { display: grid; gap: 12px; }
+    .timeline-item { border-radius: 18px; padding: 16px; background: rgba(30,41,59,.78); border: 1px solid rgba(148,163,184,.1); }
+    .timeline-item.blue { border-left: 4px solid #3b82f6; }
+    .timeline-item.green { border-left: 4px solid #22c55e; }
+    .timeline-item.orange { border-left: 4px solid #f97316; }
+    .timeline-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .timeline-type { text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; font-weight: 800; color: #cbd5e1; }
+    .timeline-title { color: #f8fafc; font-size: .98rem; font-weight: 800; }
+    .timeline-desc { color: #cbd5e1; font-size: .9rem; }
+    .timeline-date { color: #94a3b8; font-size: .82rem; white-space: nowrap; }
+    .muted-box { padding: 24px; border-radius: 18px; background: rgba(15,23,42,.55); text-align: center; color: #94a3b8; }
+    @media (max-width: 1040px) { .ph-history-grid, .section-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="ph-history-shell">
+    <div class="ph-card" style="margin-bottom:22px;">
+        <div class="ph-title">Patient History</div>
+        <div class="ph-subtitle">Review prescriptions, previous medicine purchases, allergies, and the full timeline before dispensing.</div>
+    </div>
+
+    <div class="ph-history-grid">
+        <div class="ph-card">
+            <div class="ph-title">Find Patient</div>
+            <input id="patientSearch" class="ph-search" placeholder="UHID / Name / Phone" autocomplete="off">
+            <div id="patientResults" class="ph-results"></div>
+        </div>
+
+        <div class="ph-card">
+            <div id="patientSummary" class="muted-box">Select a patient to review medicine history.</div>
+            <div class="section-grid">
+                <div class="info-box">
+                    <div class="mini-title">Previously Used Medicines</div>
+                    <div id="medicineSuggestions" class="med-list"><div class="muted-box">No patient selected.</div></div>
+                </div>
+                <div class="info-box">
+                    <div class="mini-title">Clinical Notes</div>
+                    <div id="clinicalNotes" class="muted-box">Allergies and notes will appear here.</div>
+                </div>
+            </div>
+            <div class="info-box" style="margin-bottom:18px;">
+                <div class="mini-title">Recent Prescriptions</div>
+                <div id="prescriptionList" class="rx-list"><div class="muted-box">No patient selected.</div></div>
+            </div>
+            <div class="mini-title">Timeline</div>
+            <div id="timeline" class="timeline"><div class="muted-box">No patient selected.</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const patientSearch = document.getElementById('patientSearch');
+    const patientResults = document.getElementById('patientResults');
+    const patientSummary = document.getElementById('patientSummary');
+    const medicineSuggestions = document.getElementById('medicineSuggestions');
+    const clinicalNotes = document.getElementById('clinicalNotes');
+    const prescriptionList = document.getElementById('prescriptionList');
+    const timeline = document.getElementById('timeline');
+    let pharmacyHistory = null;
+    let debounce = null;
+
+    patientSearch.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const q = patientSearch.value.trim();
+        if (q.length < 2) {
+            patientResults.innerHTML = '';
+            return;
+        }
+        debounce = setTimeout(() => {
+            fetch(`/pharmacy-ops/api/search-patients?q=${encodeURIComponent(q)}`, { credentials: 'include' })
+                .then(r => r.json())
+                .then(rows => renderResults(rows || []))
+                .catch(() => { patientResults.innerHTML = '<div class="muted-box">Search unavailable.</div>'; });
+        }, 250);
+    });
+
+    function renderResults(rows) {
+        if (!rows.length) {
+            patientResults.innerHTML = '<div class="muted-box">No matching patients found.</div>';
+            return;
+        }
+        patientResults.innerHTML = rows.map(row => `
+            <div class="ph-item" onclick="loadPatientHistory(${row.id}, this)">
+                <div class="ph-name">${escapeHtml(row.name || 'Unknown')}</div>
+                <div class="ph-meta">${escapeHtml(row.uhid || 'No UHID')} | ${escapeHtml(row.phone || 'No phone')}</div>
+                <div class="ph-meta">Age ${escapeHtml(String(row.age || 'NA'))} | ${escapeHtml(row.gender || 'NA')}</div>
+            </div>
+        `).join('');
+    }
+
+    function loadPatientHistory(patientId, el) {
+        document.querySelectorAll('.ph-item').forEach(node => node.classList.remove('active'));
+        if (el) el.classList.add('active');
+        fetch(`/pharmacy-ops/api/patient-history/${patientId}?limit=100`, { credentials: 'include' })
+            .then(async r => ({ ok: r.ok, data: await r.json() }))
+            .then(({ ok, data }) => {
+                if (!ok) throw new Error(data.error || 'Unable to load history');
+                pharmacyHistory = data;
+                renderSummary();
+                renderSuggestions();
+                renderPrescriptions();
+                renderTimeline();
+            })
+            .catch(err => {
+                patientSummary.innerHTML = `<div class="muted-box">${escapeHtml(err.message)}</div>`;
+            });
+    }
+
+    function renderSummary() {
+        const patient = pharmacyHistory?.patient;
+        if (!patient) return;
+        patientSummary.innerHTML = `
+            <div class="ph-title" style="margin-bottom:4px;">${escapeHtml(patient.name || 'Unknown')}</div>
+            <div class="ph-subtitle" style="margin-bottom:14px;">${escapeHtml(patient.uhid || 'No UHID')}</div>
+            <div class="tag-grid">
+                <div class="tag">${patient.is_walk_in ? 'Walk-in' : 'Registered'}</div>
+                <div class="tag">${escapeHtml(patient.gender || 'NA')}</div>
+                <div class="tag">Age ${escapeHtml(String(patient.age || 'NA'))}</div>
+            </div>
+            <div class="info-row"><strong>Phone</strong><span>${escapeHtml(patient.phone || 'NA')}</span></div>
+        `;
+        clinicalNotes.innerHTML = `
+            <div class="info-row"><strong>Allergies</strong><span>${escapeHtml(patient.allergies || 'None recorded')}</span></div>
+            <div class="info-row"><strong>Medical History</strong><span>${escapeHtml(patient.medical_history || 'None recorded')}</span></div>
+            <div class="info-row"><strong>Current Medications</strong><span>${escapeHtml(patient.current_medications || 'None recorded')}</span></div>
+        `;
+    }
+
+    function renderSuggestions() {
+        const suggestions = pharmacyHistory?.suggestions?.previously_used_medicines || [];
+        if (!suggestions.length) {
+            medicineSuggestions.innerHTML = '<div class="muted-box">No previously used medicines found.</div>';
+            return;
+        }
+        medicineSuggestions.innerHTML = suggestions.map(name => `<div class="med-chip">${escapeHtml(name)}</div>`).join('');
+    }
+
+    function renderPrescriptions() {
+        const prescriptions = pharmacyHistory?.prescriptions || [];
+        if (!prescriptions.length) {
+            prescriptionList.innerHTML = '<div class="muted-box">No prescriptions found.</div>';
+            return;
+        }
+        prescriptionList.innerHTML = prescriptions.slice(0, 8).map(rx => {
+            const meds = (rx.medicines || []).map(item => item.name).filter(Boolean).join(', ');
+            return `
+                <div class="rx-card">
+                    <div class="rx-title">${escapeHtml(rx.diagnosis || 'Prescription')}</div>
+                    <div class="rx-meta">${escapeHtml(rx.doctor_name || 'Doctor')} | ${formatDate(rx.prescribed_at)}</div>
+                    <div class="rx-meta" style="margin-top:6px;">${escapeHtml(meds || 'Medicines not listed')}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderTimeline() {
+        const items = pharmacyHistory?.timeline || [];
+        if (!items.length) {
+            timeline.innerHTML = '<div class="muted-box">No timeline entries available.</div>';
+            return;
+        }
+        timeline.innerHTML = items.map(item => `
+            <div class="timeline-item ${escapeHtml(item.color || 'slate')}">
+                <div class="timeline-top">
+                    <div>
+                        <div class="timeline-type">${escapeHtml(item.type || 'History')}</div>
+                        <div class="timeline-title">${escapeHtml(item.title || 'Entry')}</div>
+                    </div>
+                    <div class="timeline-date">${formatDate(item.date)}</div>
+                </div>
+                <div class="timeline-desc">${escapeHtml(item.description || 'No details')}</div>
+            </div>
+        `).join('');
+    }
+
+    function formatDate(value) {
+        if (!value) return 'No date';
+        const dt = new Date(value);
+        if (Number.isNaN(dt.getTime())) return escapeHtml(value);
+        return dt.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+</script>
+{% endblock %}

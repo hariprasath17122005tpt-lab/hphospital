@@ -1,221 +1,326 @@
 {% extends "base.html" %}
 
-{% block title %}Enter Health Data{% endblock %}
+{% block title %}Enter Health Data - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Health Entry' %}
+{% set breadcrumb_current = 'Update Vitals' %}
+
+{% block extra_css %}
+<style>
+    /* ═══════════════════════════════════════════════════════
+       HEALTH ENTRY — LEGEND PRO DARK THEME
+       Clean Form + Focus Glow + Animated Stats
+       ═══════════════════════════════════════════════════════ */
+
+    .health-entry-page {
+        position: relative;
+        min-height: 80vh;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Layout Grid */
+    .he-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+    }
+
+    /* Cards */
+    .he-card {
+        background: rgba(15, 15, 30, 0.65);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 32px;
+        position: relative;
+        height: 100%;
+    }
+
+    /* Section Title */
+    .he-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .he-title i {
+        color: #818cf8;
+    }
+
+    /* Input Groups */
+    .he-input-group {
+        margin-bottom: 24px;
+    }
+
+    .he-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: rgba(241, 245, 249, 0.5);
+        margin-bottom: 8px;
+    }
+
+    .he-control-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .he-control {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px 18px;
+        color: #f1f5f9;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .he-control:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .he-unit {
+        position: absolute;
+        right: 18px;
+        color: rgba(241, 245, 249, 0.3);
+        font-size: 0.8rem;
+        font-weight: 600;
+        pointer-events: none;
+    }
+
+    /* Range Indicators (Mock Visual) */
+    .he-range-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        margin-top: 8px;
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .he-range-fill {
+        height: 100%;
+        background: #34d399;
+        /* Changes with JS based on value */
+        width: 0%;
+        transition: width 0.5s ease, background 0.3s ease;
+    }
+
+    /* Switches */
+    .he-switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .he-switch-label {
+        font-size: 0.9rem;
+        color: #f1f5f9;
+        font-weight: 500;
+    }
+
+    /* Submit Button */
+    .he-submit-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 16px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .he-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .he-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10 animate-fade-in">
-            <div class="text-center mb-5">
-                <div class="icon-circle bg-success text-white mx-auto mb-3 shadow"
-                    style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    <i class="fas fa-heartbeat"></i>
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-2"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="health-entry-page pro-reveal-zoom">
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="he-grid">
+            <!-- Left: Measurements -->
+            <div class="he-card pro-tilt-card">
+                <div class="he-title">
+                    <i class="fas fa-microchip"></i> Physiological Metrics
                 </div>
-                <h2 class="fw-bold mb-2">Update Health Vitals</h2>
-                <p class="text-muted">Enter your latest measurements for real-time AI risk assessment.</p>
+
+                <div class="row">
+                    <!-- Blood Pressure -->
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Systolic BP (Top)</label>
+                        <div class="he-control-wrap">
+                            <input type="number" class="he-control" name="systolic_bp" placeholder="120" min="40"
+                                max="250" oninput="updateRange(this, 120, 140)">
+                            <span class="he-unit">mmHg</span>
+                        </div>
+                        <div class="he-range-bar">
+                            <div class="he-range-fill"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Diastolic BP (Bottom)</label>
+                        <div class="he-control-wrap">
+                            <input type="number" class="he-control" name="diastolic_bp" placeholder="80" min="30"
+                                max="150" oninput="updateRange(this, 80, 90)">
+                            <span class="he-unit">mmHg</span>
+                        </div>
+                        <div class="he-range-bar">
+                            <div class="he-range-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Glucose -->
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Fasting Glucose</label>
+                        <div class="he-control-wrap">
+                            <input type="number" step="0.1" class="he-control" name="fasting_sugar" placeholder="90"
+                                oninput="updateRange(this, 100, 125)">
+                            <span class="he-unit">mg/dL</span>
+                        </div>
+                        <div class="he-range-bar">
+                            <div class="he-range-fill"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Heart Rate</label>
+                        <div class="he-control-wrap">
+                            <input type="number" class="he-control" name="heart_rate" placeholder="72" min="30"
+                                max="220" oninput="updateRange(this, 100, 120)">
+                            <span class="he-unit">bpm</span>
+                        </div>
+                        <div class="he-range-bar">
+                            <div class="he-range-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Temp & Random Sugar -->
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Body Temp</label>
+                        <div class="he-control-wrap">
+                            <input type="number" step="0.1" class="he-control" name="temperature" placeholder="98.6"
+                                min="90" max="110">
+                            <span class="he-unit">°F</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 he-input-group">
+                        <label class="he-label">Random Sugar</label>
+                        <div class="he-control-wrap">
+                            <input type="number" step="0.1" class="he-control" name="random_sugar" placeholder="140">
+                            <span class="he-unit">mg/dL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="he-input-group mt-3">
+                    <label class="he-label">Current Symptoms</label>
+                    <textarea class="he-control" name="symptoms" rows="3" placeholder="Describe how you feel..."
+                        style="font-size:1rem;font-weight:400;min-height:100px;"></textarea>
+                </div>
             </div>
 
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <div class="row g-4">
-                    <!-- Left Column: Vitals -->
-                    <div class="col-md-8">
-                        <div class="card shadow-lg border-0 mb-4 h-100">
-                            <div class="card-header bg-transparent border-0 p-4 pb-0">
-                                <h5 class="fw-bold text-primary"><i class="fas fa-microchip me-2"></i> Physiological
-                                    Metrics</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <!-- BP Section -->
-                                <div class="bg-light p-4 rounded-3 mb-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="icon-circle bg-white text-primary shadow-sm me-3"
-                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-tachometer-alt"></i>
-                                        </div>
-                                        <h6 class="fw-bold mb-0">Blood Pressure</h6>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted text-uppercase fw-bold">Systolic
-                                                (Top)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" name="systolic_bp"
-                                                    placeholder="120" min="40" max="250" required>
-                                                <span class="input-group-text bg-white">mmHg</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted text-uppercase fw-bold">Diastolic
-                                                (Bottom)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" name="diastolic_bp"
-                                                    placeholder="80" min="30" max="150" required>
-                                                <span class="input-group-text bg-white">mmHg</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            <!-- Right: Lifestyle -->
+            <div class="he-card pro-tilt-card" style="display:flex;flex-direction:column;">
+                <div class="he-title">
+                    <i class="fas fa-leaf"></i> Lifestyle Check
+                </div>
 
-                                <!-- Sugar Section -->
-                                <div class="bg-light p-4 rounded-3 mb-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="icon-circle bg-white text-warning shadow-sm me-3"
-                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-tint"></i>
-                                        </div>
-                                        <h6 class="fw-bold mb-0">Blood Glucose</h6>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label
-                                                class="form-label small text-muted text-uppercase fw-bold">Fasting</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.1" class="form-control"
-                                                    name="fasting_sugar" placeholder="90" required>
-                                                <span class="input-group-text bg-white">mg/dL</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted text-uppercase fw-bold">Post-Meal
-                                                (Random)</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.1" class="form-control" name="random_sugar"
-                                                    placeholder="140" required>
-                                                <span class="input-group-text bg-white">mg/dL</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Heart Rate -->
-                                <div class="bg-light p-4 rounded-3 mb-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="icon-circle bg-white text-danger shadow-sm me-3"
-                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-heartbeat"></i>
-                                        </div>
-                                        <h6 class="fw-bold mb-0">Heart Rate</h6>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <label class="form-label small text-muted text-uppercase fw-bold">Beats Per
-                                                Minute</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" name="heart_rate"
-                                                    placeholder="72" min="30" max="220" required>
-                                                <span class="input-group-text bg-white">bpm</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Body Temperature (New) -->
-                                <div class="bg-light p-4 rounded-3 mb-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="icon-circle bg-white text-info shadow-sm me-3"
-                                            style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-thermometer-half"></i>
-                                        </div>
-                                        <h6 class="fw-bold mb-0">Body Temperature</h6>
-                                    </div>
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <label class="form-label small text-muted text-uppercase fw-bold">Fahrenheit
-                                                (°F)</label>
-                                            <div class="input-group">
-                                                <input type="number" step="0.1" class="form-control" name="temperature"
-                                                    placeholder="98.6" min="90" max="110" required>
-                                                <span class="input-group-text bg-white">°F</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Symptoms -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Current Symptoms</label>
-                                    <textarea class="form-control" name="symptoms" rows="3"
-                                        placeholder="Describe how you are feeling (e.g., headache, dizziness, fatigue)..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Lifestyle & Submit -->
-                    <div class="col-md-4">
-                        <div class="card shadow-lg border-0 mb-4">
-                            <div class="card-header bg-transparent border-0 p-4 pb-0">
-                                <h5 class="fw-bold text-success"><i class="fas fa-apple-alt me-2"></i> Lifestyle</h5>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted text-uppercase fw-bold">Exercise
-                                        Today</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" name="exercise_minutes" value="0">
-                                        <span class="input-group-text bg-white">mins</span>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted text-uppercase fw-bold">Sleep
-                                        Duration</label>
-                                    <div class="input-group">
-                                        <input type="number" step="0.5" class="form-control" name="sleep_hours"
-                                            placeholder="7.5">
-                                        <span class="input-group-text bg-white">hours</span>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label small text-muted text-uppercase fw-bold">Stress
-                                        Level</label>
-                                    <select class="form-select" name="stress_level">
-                                        <option value="Low">Low</option>
-                                        <option value="Medium" selected>Medium</option>
-                                        <option value="High">High</option>
-                                    </select>
-                                </div>
-
-                                <div class="d-flex justify-content-between mb-2 border rounded p-3">
-                                    <label class="form-check-label mb-0" for="smoking">Smoker?</label>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="smoking" name="smoking">
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-between mb-4 border rounded p-3">
-                                    <label class="form-check-label mb-0" for="alcohol">Alcohol Consumption?</label>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="alcohol" name="alcohol">
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 shadow fw-bold">
-                                    <i class="fas fa-save me-2"></i> Save & Analyze
-                                </button>
-                                <a href="{{ url_for('patient.dashboard') }}"
-                                    class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
-                            </div>
-                        </div>
-
-                        <!-- Reference Ranges -->
-                        <div class="card border-0 bg-info bg-opacity-10">
-                            <div class="card-body p-4">
-                                <h6 class="fw-bold text-info mb-3"><i class="fas fa-info-circle me-2"></i>Quick
-                                    Reference</h6>
-                                <ul class="list-unstyled small text-muted mb-0">
-                                    <li class="mb-2"><strong>Normal BP:</strong> &lt; 120/80</li>
-                                    <li class="mb-2"><strong>Normal Sugar:</strong> 70-100 (Fasting)</li>
-                                    <li><strong>Normal Heart Rate:</strong> 60-100 bpm</li>
-                                </ul>
-                            </div>
-                        </div>
+                <div class="he-input-group">
+                    <label class="he-label">Sleep Duration</label>
+                    <div class="he-control-wrap">
+                        <input type="number" step="0.5" class="he-control" name="sleep_hours" placeholder="7.5">
+                        <span class="he-unit">hrs</span>
                     </div>
                 </div>
-            </form>
+
+                <div class="he-input-group">
+                    <label class="he-label">Stress Level</label>
+                    <select class="he-control" name="stress_level" style="appearance:none;">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+
+                <div class="he-switch-row">
+                    <span class="he-switch-label">Smoker?</span>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="smoking" name="smoking"
+                            style="width:50px;height:26px;">
+                    </div>
+                </div>
+
+                <div class="he-switch-row">
+                    <span class="he-switch-label">Alcohol?</span>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="alcohol" name="alcohol"
+                            style="width:50px;height:26px;">
+                    </div>
+                </div>
+
+                <div style="flex:1;"></div>
+
+                <button type="submit" class="he-submit-btn pro-magnetic">
+                    <span class="magnetic-inner"><i class="fas fa-save me-2"></i> Save & Analyze</span>
+                </button>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
+
+<script>
+    function updateRange(input, warn, crit) {
+        const val = parseFloat(input.value);
+        const bar = input.parentElement.nextElementSibling.querySelector('.he-range-fill');
+
+        let pct = Math.min((val / (crit * 1.5)) * 100, 100);
+        bar.style.width = pct + '%';
+
+        if (val > crit) bar.style.background = '#f87171'; // Red
+        else if (val > warn) bar.style.background = '#fbbf24'; // Yellow
+        else bar.style.background = '#34d399'; // Green
+    }
+</script>
 {% endblock %}

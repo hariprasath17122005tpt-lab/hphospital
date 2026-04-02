@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Status - Patient Portal{% endblock %}
+{% set topbar_title = 'Medicine Status' %}
+{% set breadcrumb_current = 'Medicine Status' %}
+
+{% block content %}
+<style>
+    .med-card {
+        background: rgba(20, 20, 30, 0.9);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .med-card table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .med-card th {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.9rem 1.2rem;
+        text-align: left;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .med-card td {
+        padding: 0.85rem 1.2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .med-card tr:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .badge-status {
+        padding: 0.3rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .badge-pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-dispensed {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .section-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .empty-state {
+        color: rgba(255, 255, 255, 0.4);
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-mini {
+        background: rgba(20, 20, 30, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .stat-mini .val {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .stat-mini .lbl {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .medicine-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .icon-pill {
+        background: rgba(168, 85, 247, 0.2);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+</style>
+
+<div style="margin-bottom: 1.5rem">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title"><i class="fas fa-pills me-2" style="color:#c084fc;"></i>Medicine Dispensing Status
+        </div>
+        <a href="{{ url_for('patient.prescriptions') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View
+            Prescriptions</a>
+    </div>
+
+    {% set pending_orders = orders|selectattr('status','equalto','Pending')|list|length %}
+    {% set dispensed_orders = orders|selectattr('status','equalto','Dispensed')|list|length %}
+
+    <div class="stats-row">
+        <div class="stat-mini">
+            <div class="val">{{ orders|length }}</div>
+            <div class="lbl">Total Medicines</div>
+        </div>
+        <div class="stat-mini">
+            <div class="val" style="color:#fbbf24;">{{ pending_orders }}</div>
+            <div class="lbl">Awaiting Dispensing</div>
+        </div>
+        <div class="stat-mini">
+            <div class="val" style="color:#34d399;">{{ dispensed_orders }}</div>
+            <div class="lbl">Dispensed</div>
+        </div>
+    </div>
+</div>
+
+<div class="med-card">
+    {% if orders|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Medicine</th>
+                <th>Prescribed By</th>
+                <th>Dosage Info</th>
+                <th>Status</th>
+                <th>Dispensed At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>
+                    <div class="medicine-icon icon-pill"><i class="fas fa-capsules"></i></div>
+                </td>
+                <td><strong>{{ o.medicine_name }}</strong></td>
+                <td>
+                    {% if o.doctor %}
+                    Dr. {{ o.doctor.first_name }} {{ o.doctor.last_name }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+                <td>{{ o.dosage or '—' }}</td>
+                <td>
+                    <span
+                        class="badge-status {% if o.status == 'Pending' %}badge-pending{% else %}badge-dispensed{% endif %}">
+                        {% if o.status == 'Dispensed' %}✓ {% endif %}{{ o.status }}
+                    </span>
+                </td>
+                <td>{{ o.dispensed_at.strftime('%d %b %Y %I:%M %p') if o.dispensed_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-pills fa-2x mb-3 opacity-50"></i>
+        <p class="mb-1">No medicines prescribed yet</p>
+        <small style="color: rgba(255,255,255,0.3);">When your doctor prescribes medicines, they will appear here with
+            their dispensing status</small>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

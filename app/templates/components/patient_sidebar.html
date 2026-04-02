@@ -1,0 +1,254 @@
+<!-- Bio Track Sidebar -->
+<style>
+    :root {
+        --sidebar-width: 80px;
+        /* Slim icon-focused sidebar */
+        --sidebar-bg: #ffffff;
+        --sidebar-border: #e2e8f0;
+        --nav-color: #64748b;
+        --nav-hover: #0ea5e9;
+        --nav-bg-hover: #f1f5f9;
+    }
+
+    /* Dark Mode Override if active */
+    body.dark-mode {
+        --sidebar-bg: #1e293b;
+        --sidebar-border: #334155;
+        --nav-color: #94a3b8;
+        --nav-hover: #38bdf8;
+        --nav-bg-hover: #0f172a;
+    }
+
+    .bio-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: var(--sidebar-width);
+        height: 100vh;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--sidebar-border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Center items horizontally */
+        padding: 24px 0;
+        z-index: 1000;
+        font-family: 'Outfit', sans-serif;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+        transition: width 0.3s ease;
+    }
+
+    /* Logo Section */
+    .bio-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        /* Circular pill shape from image reference */
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+        text-decoration: none;
+    }
+
+    .bio-logo img {
+        width: 100%;
+        height: auto;
+    }
+
+    .bio-logo-text {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #0ea5e9;
+        /* Blue accent */
+        line-height: 1;
+        text-align: center;
+    }
+
+    .bio-logo-sub {
+        font-size: 0.6rem;
+        font-weight: 600;
+        color: #64748b;
+    }
+
+    /* Navigation Container */
+    .bio-nav {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        /* Spacing between icons */
+        width: 100%;
+        align-items: center;
+    }
+
+    /* Nav Item */
+    .bio-link {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--nav-color);
+        font-size: 1.25rem;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .bio-link:hover {
+        background: var(--nav-bg-hover);
+        color: var(--nav-hover);
+        transform: scale(1.05);
+    }
+
+    .bio-link.active {
+        color: #0ea5e9;
+        /* Active color */
+        background: rgba(14, 165, 233, 0.1);
+    }
+
+    .bio-link.active::after {
+        content: '';
+        position: absolute;
+        left: -18px;
+        /* Position indicator on far left edge */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: #0ea5e9;
+        border-radius: 0 4px 4px 0;
+    }
+
+    /* Bottom Section */
+    .bio-bottom {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+        padding-top: 20px;
+        border-top: 1px solid transparent;
+        /* Separator if needed */
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+        width: 40px;
+        height: 24px;
+        background: #e2e8f0;
+        border-radius: 20px;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        padding: 2px;
+        transition: background 0.3s;
+    }
+
+    body.dark-mode .theme-toggle {
+        background: #3b82f6;
+    }
+
+    .theme-toggle::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        left: 2px;
+        transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .theme-toggle::after {
+        transform: translateX(16px);
+    }
+
+    /* Adjust main content margin */
+    .patient-layout .main-pane-global {
+        margin-left: var(--sidebar-width) !important;
+        transition: margin-left 0.3s ease;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .bio-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .bio-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .patient-layout .main-pane-global {
+            margin-left: 0 !important;
+        }
+    }
+</style>
+
+<aside class="bio-sidebar" id="bioSidebar">
+    <!-- Logo: Bio Track -->
+    <a href="{{ url_for('patient.dashboard') }}" class="bio-logo">
+        <div class="bio-logo-text">bio<br>track</div>
+    </a>
+
+    <!-- Nav Icons -->
+    <nav class="bio-nav">
+        <!-- Home -->
+        <a href="{{ url_for('patient.dashboard') }}"
+            class="bio-link {% if request.endpoint == 'patient.dashboard' %}active{% endif %}" title="Dashboard">
+            <i class="fas fa-home"></i>
+        </a>
+
+        <!-- Heart (Vitals) -->
+        <a href="{{ url_for('patient.enter_health_data') }}"
+            class="bio-link {% if request.endpoint == 'patient.enter_health_data' %}active{% endif %}" title="Vitals">
+            <i class="fas fa-heartbeat"></i>
+        </a>
+
+        <!-- DNA (Lab Reports / Genetics) -->
+        <a href="{{ url_for('patient.lab_reports') }}"
+            class="bio-link {% if request.endpoint == 'patient.lab_reports' %}active{% endif %}" title="Lab Reports">
+            <i class="fas fa-dna"></i>
+        </a>
+
+        <!-- Tooth (Appointments / Dental) -->
+        <a href="{{ url_for('patient.appointments') }}"
+            class="bio-link {% if request.endpoint == 'patient.appointments' %}active{% endif %}" title="Appointments">
+            <i class="fas fa-tooth"></i>
+        </a>
+
+        <!-- Chart (Analytics / Features) -->
+        <a href="{{ url_for('main.features') }}"
+            class="bio-link {% if request.endpoint == 'main.features' %}active{% endif %}" title="Features">
+            <i class="fas fa-chart-bar"></i>
+        </a>
+
+        <!-- Settings (Profile) -->
+        <a href="{{ url_for('patient.profile') }}"
+            class="bio-link {% if request.endpoint == 'patient.profile' %}active{% endif %}" title="Settings">
+            <i class="fas fa-cog"></i>
+        </a>
+    </nav>
+
+    <!-- Bottom Controls -->
+    <div class="bio-bottom">
+        <!-- Back / Logout -->
+        <a href="{{ url_for('auth.logout') }}" class="bio-link" title="Logout">
+            <i class="fas fa-sign-out-alt"></i> <!-- Or arrow-left if 'Back' preferred -->
+        </a>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle" id="themeToggle" onclick="document.body.classList.toggle('dark-mode')">
+            <!-- Toggle Switch Visual -->
+        </div>
+    </div>
+</aside>

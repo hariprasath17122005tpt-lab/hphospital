@@ -1,0 +1,65 @@
+<!-- Lab Staff Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{{ url_for('lab.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+            <i class="fas fa-flask"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Laboratory</span>
+
+        <a href="{{ url_for('lab.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'lab.dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('lab.dashboard', status='PENDING') }}" class="sidebar-link">
+            <i class="fas fa-clock"></i>
+            Pending
+        </a>
+
+        <a href="{{ url_for('lab.dashboard', status='PROCESSING') }}" class="sidebar-link">
+            <i class="fas fa-spinner"></i>
+            Processing
+        </a>
+
+        <a href="{{ url_for('lab.dashboard', status='COMPLETED') }}" class="sidebar-link">
+            <i class="fas fa-check-circle"></i>
+            Completed
+        </a>
+
+        <span class="sidebar-section-label mt-3">Source</span>
+        <a href="{{ url_for('lab.dashboard', filter='doctor') }}" class="sidebar-link">
+            <i class="fas fa-user-md"></i>
+            Doctor referrals
+        </a>
+        <a href="{{ url_for('lab.dashboard', filter='walkin') }}" class="sidebar-link">
+            <i class="fas fa-vial"></i>
+            Walk-in only
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ current_user.username }}</div>
+            <div class="sidebar-user-role">Lab Staff</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>

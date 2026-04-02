@@ -1,18 +1,63 @@
-/* ===================== Persistent Sidebar (Patient) ===================== */
+/* ===================== CarePoint Portal Dashboard Styles ===================== */
+/* Premium Dark Theme for Patient, Doctor, and Host Portals */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 :root {
     --sidebar-w: 100px;
+
+    /* Portal Dark Theme Colors */
+    --portal-bg: #0a0a0f;
+    --portal-surface: rgba(20, 20, 30, 0.9);
+    --portal-surface-elevated: rgba(30, 30, 45, 0.95);
+    --portal-glass: rgba(255, 255, 255, 0.03);
+    --portal-glass-hover: rgba(255, 255, 255, 0.08);
+    --portal-border: rgba(255, 255, 255, 0.08);
+    --portal-border-glow: rgba(99, 102, 241, 0.4);
+    --portal-text: #ffffff;
+    --portal-text-secondary: rgba(255, 255, 255, 0.7);
+    --portal-text-muted: rgba(255, 255, 255, 0.5);
+    --portal-text-dim: rgba(255, 255, 255, 0.35);
+
+    /* Theme Colors */
+    --portal-primary: #6366f1;
+    --portal-primary-glow: rgba(99, 102, 241, 0.4);
+    --portal-success: #10b981;
+    --portal-success-glow: rgba(16, 185, 129, 0.4);
+    --portal-danger: #ef4444;
+    --portal-danger-glow: rgba(239, 68, 68, 0.4);
+    --portal-warning: #f59e0b;
+    --portal-info: #3b82f6;
 }
 
+/* Body Background Override for Patient Layout */
 body.patient-layout {
-    background: #f1f5f9;
-    /* Override body bg for patient dash */
+    background: var(--portal-bg);
+    color: var(--portal-text);
 }
 
-/* Floating Sidebar */
+/* Animated background glow */
+body.patient-layout::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse 80% 50% at 10% 20%, rgba(99, 102, 241, 0.12), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 80%, rgba(124, 58, 237, 0.08), transparent),
+        radial-gradient(ellipse 50% 60% at 50% 50%, rgba(6, 182, 212, 0.05), transparent);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ===================== Floating Sidebar ===================== */
 .global-sidebar {
     width: 80px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
+    background: var(--portal-surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     height: 96vh;
     position: fixed;
     left: 2vh;
@@ -21,14 +66,35 @@ body.patient-layout {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 0;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem 0;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     z-index: 1000;
-    /* High z-index */
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--portal-border);
 }
 
+/* Gradient border effect */
+.global-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg,
+            rgba(99, 102, 241, 0.3) 0%,
+            transparent 30%,
+            transparent 70%,
+            rgba(124, 58, 237, 0.2) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* Navigation Icons */
 .nav-icon {
     width: 48px;
     height: 48px;
@@ -36,36 +102,617 @@ body.patient-layout {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #94a3b8;
+    color: var(--portal-text-muted);
     font-size: 1.2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     text-decoration: none;
+    background: transparent;
 }
 
-.nav-icon:hover,
-.nav-icon.active {
-    background: rgba(99, 102, 241, 0.1);
-    color: #6366f1;
+.nav-icon:hover {
+    color: var(--portal-text);
+    background: var(--portal-glass-hover);
     transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+}
+
+.nav-icon.active {
+    color: var(--portal-primary);
+    background: rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 20px var(--portal-primary-glow);
 }
 
 .nav-icon.active::after {
     content: '';
     position: absolute;
-    right: -10px;
+    right: -12px;
     width: 4px;
-    height: 20px;
-    background: #6366f1;
+    height: 24px;
+    background: linear-gradient(180deg, #6366f1, #a855f7);
     border-radius: 4px;
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 15px var(--portal-primary-glow);
 }
 
-/* Main Content Adjustment for Patient Layout */
+/* Hover tooltip effect */
+.nav-icon::before {
+    content: attr(title);
+    position: absolute;
+    left: 70px;
+    padding: 8px 14px;
+    background: var(--portal-surface-elevated);
+    border: 1px solid var(--portal-border);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-10px);
+    transition: all 0.2s ease;
+    color: var(--portal-text);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.nav-icon:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* ===================== Main Content Area ===================== */
 .main-pane-global {
-    margin-left: 120px;
-    width: calc(100% - 140px);
-    padding: 2rem 0;
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    padding: 2rem;
     position: relative;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #121220 100%);
+}
+
+/* Ambient background glow for main content */
+.main-pane-global::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 280px;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(139, 92, 246, 0.08), transparent),
+        radial-gradient(ellipse 50% 50% at 20% 80%, rgba(168, 85, 247, 0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.main-pane-global>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* Dashboard Container Override */
+.dashboard-layout {
+    background: transparent !important;
+}
+
+.main-content-dashboard {
+    color: var(--portal-text);
+}
+
+/* ===================== Typography ===================== */
+.main-content-dashboard h1,
+.main-content-dashboard h2,
+.main-content-dashboard h3,
+.main-content-dashboard h4,
+.main-content-dashboard h5,
+.main-content-dashboard h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    color: var(--portal-text);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.main-content-dashboard p,
+.main-content-dashboard span,
+.main-content-dashboard small {
+    color: var(--portal-text-secondary);
+}
+
+.main-content-dashboard .text-muted,
+.main-content-dashboard .text-secondary {
+    color: var(--portal-text-muted) !important;
+}
+
+/* ===================== Glass Header ===================== */
+.glass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding: 0 0.5rem;
+    position: relative;
+    z-index: 50;
+}
+
+.search-pill {
+    background: var(--portal-surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--portal-border);
+    border-radius: 16px;
+    padding: 0.9rem 1.5rem;
+    width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.search-pill:focus-within {
+    transform: scale(1.02);
+    border-color: var(--portal-primary);
+    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+}
+
+.search-pill input {
+    border: none;
+    outline: none;
+    width: 100%;
+    margin-left: 12px;
+    color: var(--portal-text);
+    font-size: 0.95rem;
+    background: transparent;
+}
+
+.search-pill input::placeholder {
+    color: var(--portal-text-dim);
+}
+
+/* Header Profile */
+.glass-header .d-flex img {
+    border: 2px solid var(--portal-border);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.glass-header .btn-white,
+.glass-header a.btn {
+    background: var(--portal-surface) !important;
+    border: 1px solid var(--portal-border) !important;
+    color: var(--portal-text-muted) !important;
+    transition: all 0.3s ease;
+}
+
+.glass-header .btn-white:hover,
+.glass-header a.btn:hover {
+    background: var(--portal-glass-hover) !important;
+    color: var(--portal-text) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ===================== Hero Section ===================== */
+.hero-container {
+    position: relative;
+    min-height: 450px;
+    margin-bottom: 2rem;
+}
+
+.hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 2.5rem;
+    color: var(--portal-text);
+    position: relative;
+    z-index: 5;
+}
+
+.hero-title span {
+    display: block;
+    font-weight: 400;
+    font-size: 0.75em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ===================== Vitals Cards ===================== */
+.vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+    position: relative;
+    z-index: 5;
+}
+
+.vital-card {
+    background: var(--portal-surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--portal-border);
+    padding: 1.25rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.vital-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+}
+
+.vital-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--portal-border-glow);
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.2);
+}
+
+.card-value-lg {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--portal-text);
+    line-height: 1;
+}
+
+.card-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--portal-text-muted);
+    font-weight: 700;
+}
+
+/* Circle graphs */
+.vital-card svg circle:first-child {
+    stroke: var(--portal-glass-hover);
+}
+
+/* ===================== Body Stats HUD ===================== */
+.body-stats-card {
+    background: var(--portal-surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--portal-border);
+    border-radius: 20px;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.stat-item {
+    text-align: center;
+    position: relative;
+}
+
+.stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -50%;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--portal-border);
+}
+
+.stat-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--portal-text);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.stat-lbl {
+    font-size: 0.65rem;
+    color: var(--portal-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+/* ===================== Premium Action Cards ===================== */
+.dashboard-grid-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    position: relative;
+    z-index: 2;
+    margin-bottom: 2rem;
+}
+
+.premium-card {
+    border-radius: 20px;
+    padding: 1.5rem;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none !important;
+    border: 1px solid var(--portal-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: var(--portal-surface) !important;
+}
+
+/* Shimmer effect on hover */
+.premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.premium-card:hover::before {
+    left: 100%;
+}
+
+.premium-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 60px rgba(99, 102, 241, 0.25);
+    border-color: var(--portal-border-glow);
+    z-index: 10;
+}
+
+.card-icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: var(--portal-primary) !important;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.card-title-lg {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    color: var(--portal-text) !important;
+}
+
+.card-sub {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--portal-text-muted) !important;
+    margin: 0;
+}
+
+/* Specific card themes */
+.premium-card[style*="linear-gradient"] {
+    border: none !important;
+}
+
+.premium-card[style*="linear-gradient"] .card-icon-circle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.premium-card[style*="linear-gradient"] .card-title-lg {
+    color: white !important;
+}
+
+.premium-card[style*="linear-gradient"] .card-sub {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Card theme overrides for dark mode */
+.card-dark {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+.card-glass,
+.card-light {
+    background: var(--portal-surface) !important;
+}
+
+/* ===================== Floating Card ===================== */
+.float-card {
+    background: var(--portal-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--portal-border);
+    overflow: hidden;
+}
+
+/* ===================== Visual Section ===================== */
+.visual-wrapper {
+    position: relative;
+    height: 500px;
+    margin-top: -40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.visual-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 30px 60px rgba(99, 102, 241, 0.3));
+    transform: scale(1.1);
+}
+
+.visual-bg-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+    z-index: -1;
+    filter: blur(60px);
+}
+
+/* ===================== Badge Overrides ===================== */
+.badge.bg-soft-success {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+}
+
+.badge.bg-soft-primary {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #818cf8 !important;
+}
+
+.badge.bg-soft-warning {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #fbbf24 !important;
+}
+
+.badge.bg-soft-danger {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+}
+
+/* ===================== Animations ===================== */
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+.delay-400 {
+    animation-delay: 0.4s;
+}
+
+.delay-500 {
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse glow animation */
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px var(--portal-primary-glow);
+    }
+
+    50% {
+        box-shadow: 0 0 40px var(--portal-primary-glow);
+    }
+}
+
+/* ===================== Scrollbar ===================== */
+.main-content-dashboard::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-content-dashboard::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.main-content-dashboard::-webkit-scrollbar-thumb {
+    background: var(--portal-border);
+    border-radius: 3px;
+}
+
+.main-content-dashboard::-webkit-scrollbar-thumb:hover {
+    background: var(--portal-text-muted);
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 991.98px) {
+    .premium-sidebar {
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .premium-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main-pane-global {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .main-pane-global::before {
+        left: 0;
+    }
+
+    .search-pill {
+        width: 280px;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .premium-sidebar {
+        width: 100%;
+    }
+
+    .main-pane-global {
+        margin-left: 0;
+        width: 100%;
+        padding-bottom: 20px;
+    }
+
+    .glass-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-pill {
+        width: 100%;
+    }
+}
+
+/* Hide old global-sidebar when premium sidebar is active */
+body.patient-layout .global-sidebar:not(.premium-sidebar) {
+    display: none !important;
 }

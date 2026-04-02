@@ -1,96 +1,222 @@
 {% extends "base.html" %}
 
-{% block title %}My Messages{% endblock %}
+{% block title %}Messages - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Message Center' %}
+{% set breadcrumb_current = 'Inbox' %}
+
+{% block extra_css %}
+<style>
+    /* ═══════════════════════════════════════════════════════
+       MESSAGES — LEGEND PRO DARK THEME
+       Glass Lists + Neon Badges + Avatar Glow
+       ═══════════════════════════════════════════════════════ */
+
+    .msg-page {
+        position: relative;
+        min-height: 80vh;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* List Container */
+    .msg-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* Message Item */
+    .msg-card {
+        background: rgba(15, 15, 30, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .msg-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(99, 102, 241, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .msg-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #f1f5f9;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .msg-avatar::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        background: #34d399;
+        border: 3px solid #0f172a;
+        border-radius: 50%;
+    }
+
+    .msg-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .msg-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+    }
+
+    .msg-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #f1f5f9;
+    }
+
+    .msg-time {
+        font-size: 0.75rem;
+        color: rgba(241, 245, 249, 0.4);
+        font-weight: 600;
+    }
+
+    .msg-preview {
+        font-size: 0.9rem;
+        color: rgba(241, 245, 249, 0.6);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .msg-unread-badge {
+        background: #818cf8;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 999px;
+        box-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+    }
+
+    .msg-empty {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(15, 15, 30, 0.6);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    @media (max-width: 768px) {
+        .msg-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .msg-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 1rem;
+        }
+
+        .msg-header {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="fw-bold mb-0">Messages</h2>
-            <p class="text-muted">Chat with your doctors and specialists.</p>
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-2"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="msg-page pro-reveal-zoom">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="pro-gradient-text"
+                style="font-family:'Space Grotesk'; font-size:2rem; font-weight:800; margin:0;">Inbox</h1>
+            <p style="color:rgba(241,245,249,0.5); margin-top:4px;">Secure conversations with your care team</p>
         </div>
+        <a href="{{ url_for('patient.book_appointment') }}" class="pro-btn pro-btn-primary pro-magnetic"
+            style="font-size:0.85rem;">
+            <i class="fas fa-plus me-2"></i> New Chat
+        </a>
     </div>
 
-    <div class="row g-4">
+    <div class="msg-list">
         {% if doctors_list %}
         {% for item in doctors_list %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm hover-elevate transition-all">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 flex-shrink-0"
-                            style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-user-md fa-lg"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Dr. {{ item.info.first_name }} {{ item.info.last_name }}</h5>
-                            <small class="text-muted">{{ item.info.specialization }}</small>
-                        </div>
-                    </div>
+        <a href="{{ url_for('patient.chat', doctor_id=item.info.id) }}" class="msg-card pro-reveal"
+            style="transition-delay:{{ loop.index * 0.05 }}s;">
+            <div class="msg-avatar">
+                {{ item.info.first_name[0] }}{{ item.info.last_name[0] }}
+            </div>
 
-                    <div class="mb-4" style="min-height: 50px;">
+            <div class="msg-content">
+                <div class="msg-header">
+                    <div class="msg-name">Dr. {{ item.info.first_name }} {{ item.info.last_name }}</div>
+                    {% if item.last_message %}
+                    <div class="msg-time">{{ item.last_message.created_at.strftime('%I:%M %p') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="msg-preview">
                         {% if item.last_message %}
-                        <div class="d-flex align-items-start">
-                            <i class="fas fa-reply text-muted small me-2 mt-1"></i>
-                            <div>
-                                <p class="small text-muted mb-0 text-truncate-2"
-                                    style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                    {% if item.last_message.sender_type == 'patient' %}You: {% endif %}{{
-                                    item.last_message.message_text }}
-                                </p>
-                                <small class="text-xs text-muted">{{ item.last_message.created_at.strftime('%b %d, %I:%M
-                                    %p') }}</small>
-                            </div>
-                        </div>
-                        {% else %}
-                        <p class="small text-muted mb-0 fst-italic">No messages yet. Start a conversation!</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        {% if item.unread > 0 %}
-                        <span class="badge bg-danger rounded-pill px-3">
-                            {{ item.unread }} new
+                        <span
+                            style="color:{{ 'rgba(129,140,248,0.8)' if item.last_message.sender_type == 'patient' else 'inherit' }}">
+                            {{ 'You: ' if item.last_message.sender_type == 'patient' else '' }}
                         </span>
+                        {{ item.last_message.message_text }}
                         {% else %}
-                        <span class="text-muted small">Up to date</span>
+                        <span style="font-style:italic; opacity:0.5;">Start a new conversation...</span>
                         {% endif %}
-
-                        <a href="{{ url_for('patient.chat', doctor_id=item.info.id) }}"
-                            class="btn btn-primary btn-sm rounded-pill px-4">
-                            Chat <i class="fas fa-paper-plane ms-1"></i>
-                        </a>
                     </div>
+
+                    {% if item.unread > 0 %}
+                    <div class="msg-unread-badge">{{ item.unread }}</div>
+                    {% endif %}
                 </div>
             </div>
-        </div>
+        </a>
         {% endfor %}
         {% else %}
-        <div class="col-12 py-5 text-center">
-            <div class="mb-4">
-                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
-                    style="width: 80px; height: 80px;">
-                    <i class="far fa-comments fa-3x text-muted"></i>
-                </div>
+        <div class="msg-empty">
+            <div class="pro-icon-box indigo mx-auto mb-3" style="width:60px; height:60px; font-size:1.5rem;">
+                <i class="far fa-comments"></i>
             </div>
-            <h4>No conversations yet</h4>
-            <p class="text-muted mb-4">Book an appointment to start connecting with doctors.</p>
-            <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary rounded-pill">
-                Book Appointment
-            </a>
+            <h4 style="color:#f1f5f9; font-family:'Space Grotesk'; font-weight:700;">No Messages Yet</h4>
+            <p style="color:rgba(241,245,249,0.5);">Connect with your doctor to start a conversation.</p>
+            <a href="{{ url_for('patient.book_appointment') }}" class="pro-btn pro-btn-ghost mt-3">Find a Doctor</a>
         </div>
         {% endif %}
     </div>
 </div>
-
-<style>
-    .hover-elevate:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
-    }
-
-    .transition-all {
-        transition: all 0.3s ease;
-    }
-</style>
 {% endblock %}

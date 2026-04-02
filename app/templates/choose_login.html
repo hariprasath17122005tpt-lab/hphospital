@@ -1,112 +1,601 @@
 {% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
 
-{% block title %}Choose Login - HealthCare AI{% endblock %}
+{% block title %}Choose Your Portal — CarePoint AI{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+<style>
+    :root {
+        --cp-bg: #020818;
+        --cp-gold: #d4a853;
+        --cp-gold-l: #f0d48a;
+        --cp-violet: #7c3aed;
+        --cp-cyan: #06b6d4;
+        --cp-glass: rgba(10, 18, 40, .65);
+        --cp-border: rgba(255, 255, 255, .06);
+        --cp-text: #f1f5f9;
+        --cp-muted: #64748b
+    }
+
+    body {
+        background: var(--cp-bg) !important;
+        color: var(--cp-text);
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden
+    }
+
+    .cp-cosmos {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden
+    }
+
+    .cp-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px)
+    }
+
+    .cp-orb.a {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(124, 58, 237, .18), transparent 70%);
+        top: -10%;
+        right: -5%;
+        animation: cf1 20s ease-in-out infinite alternate
+    }
+
+    .cp-orb.b {
+        width: 450px;
+        height: 450px;
+        background: radial-gradient(circle, rgba(212, 168, 83, .14), transparent 70%);
+        bottom: -8%;
+        left: -5%;
+        animation: cf2 18s ease-in-out infinite alternate
+    }
+
+    @keyframes cf1 {
+        to {
+            transform: translate(-40px, 50px) scale(1.1)
+        }
+    }
+
+    @keyframes cf2 {
+        to {
+            transform: translate(40px, -30px) scale(1.15)
+        }
+    }
+
+    .cp-grid {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: linear-gradient(rgba(255, 255, 255, .01) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .01) 1px, transparent 1px);
+        background-size: 50px 50px
+    }
+
+    .cp-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 5;
+        padding: 40px 20px
+    }
+
+    .cp-shell {
+        width: 100%;
+        max-width: 1050px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border-radius: 32px;
+        overflow: hidden;
+        background: var(--cp-glass);
+        border: 1px solid rgba(212, 168, 83, .1);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, .5), 0 0 60px rgba(212, 168, 83, .06);
+        backdrop-filter: blur(24px);
+        animation: cardIn .8s ease both
+    }
+
+    @keyframes cardIn {
+        from {
+            opacity: 0;
+            transform: translateY(28px) scale(.97)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1)
+        }
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    /* Hero */
+    .cp-hero {
+        padding: 52px 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(124, 58, 237, .06), rgba(212, 168, 83, .04));
+        border-right: 1px solid rgba(255, 255, 255, .04);
+        position: relative;
+        overflow: hidden
+    }
+
+    .cp-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(212, 168, 83, .05), transparent 70%);
+        pointer-events: none
+    }
+
+    .cp-hbrand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 36px;
+        animation: fadeUp .6s ease both
+    }
+
+    .cp-hb-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--cp-gold), #b8860b);
+        color: #0a0e1a;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 18px rgba(212, 168, 83, .3)
+    }
+
+    .cp-hbrand span {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--cp-gold-l)
+    }
+
+    .cp-htitle {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 14px;
+        animation: fadeUp .6s ease .1s both
+    }
+
+    .cp-htitle .gl {
+        background: linear-gradient(135deg, #f0d48a, #d4a853);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent
+    }
+
+    .cp-hsub {
+        color: var(--cp-muted);
+        font-size: .92rem;
+        line-height: 1.7;
+        margin-bottom: 32px;
+        animation: fadeUp .6s ease .2s both
+    }
+
+    .cp-hfeats {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        animation: fadeUp .6s ease .3s both
+    }
+
+    .cp-hf {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .025);
+        border: 1px solid var(--cp-border);
+        transition: all .3s
+    }
+
+    .cp-hf:hover {
+        background: rgba(255, 255, 255, .05);
+        border-color: rgba(212, 168, 83, .15);
+        transform: translateX(4px)
+    }
+
+    .cp-hf i {
+        color: var(--cp-gold);
+        width: 18px;
+        text-align: center;
+        font-size: .9rem
+    }
+
+    .cp-hf-t {
+        font-size: .82rem;
+        font-weight: 600;
+        color: #e2e8f0
+    }
+
+    .cp-hf-d {
+        font-size: .72rem;
+        color: var(--cp-muted)
+    }
+
+    .cp-trust {
+        display: flex;
+        gap: 18px;
+        margin-top: 28px;
+        animation: fadeUp .6s ease .4s both
+    }
+
+    .cp-trust span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: .72rem;
+        color: var(--cp-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px
+    }
+
+    .cp-trust i {
+        color: var(--cp-gold);
+        font-size: .7rem
+    }
+
+    .cp-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+        color: var(--cp-muted);
+        font-size: .82rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color .2s;
+        animation: fadeUp .6s ease .5s both
+    }
+
+    .cp-back:hover {
+        color: var(--cp-gold)
+    }
+
+    /* Portal Panel */
+    .cp-panel {
+        padding: 48px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center
+    }
+
+    .cp-ph {
+        text-align: center;
+        margin-bottom: 32px
+    }
+
+    .cp-ph-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(212, 168, 83, .12), rgba(124, 58, 237, .06));
+        border: 1px solid rgba(212, 168, 83, .15);
+        font-size: 1.4rem;
+        color: var(--cp-gold);
+        animation: iconF 3s ease-in-out infinite
+    }
+
+    @keyframes iconF {
+
+        0%,
+        100% {
+            transform: translateY(0)
+        }
+
+        50% {
+            transform: translateY(-5px)
+        }
+    }
+
+    .cp-ph h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 4px
+    }
+
+    .cp-ph p {
+        color: var(--cp-muted);
+        font-size: .82rem
+    }
+
+    /* Portal Cards */
+    .cp-portals {
+        display: flex;
+        flex-direction: column;
+        gap: 14px
+    }
+
+    .portal-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, .025);
+        border: 1px solid var(--cp-border);
+        text-decoration: none;
+        color: var(--cp-text);
+        transition: all .35s cubic-bezier(.16, 1, .3, 1);
+        position: relative;
+        overflow: hidden
+    }
+
+    .portal-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--pc-accent, rgba(212, 168, 83, .3)), transparent);
+        opacity: 0;
+        transition: opacity .3s
+    }
+
+    .portal-card:hover {
+        background: rgba(255, 255, 255, .06);
+        border-color: rgba(212, 168, 83, .15);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .25), 0 0 30px var(--pc-glow, rgba(212, 168, 83, .04));
+        color: #fff
+    }
+
+    .portal-card:hover::before {
+        opacity: 1
+    }
+
+    .pc-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        transition: transform .3s
+    }
+
+    .portal-card:hover .pc-icon {
+        transform: scale(1.1) rotate(-5deg)
+    }
+
+    .pc-icon.patient {
+        background: rgba(6, 182, 212, .12);
+        color: #22d3ee
+    }
+
+    .pc-icon.doctor {
+        background: rgba(34, 197, 94, .12);
+        color: #4ade80
+    }
+
+    .pc-icon.host {
+        background: rgba(212, 168, 83, .12);
+        color: var(--cp-gold)
+    }
+
+    .pc-icon.staff {
+        background: rgba(139, 92, 246, .12);
+        color: #a78bfa
+    }
+
+    .pc-content {
+        flex: 1
+    }
+
+    .pc-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 2px
+    }
+
+    .pc-desc {
+        font-size: .78rem;
+        color: var(--cp-muted);
+        line-height: 1.5
+    }
+
+    .pc-arrow {
+        color: var(--cp-muted);
+        font-size: .9rem;
+        transition: all .3s
+    }
+
+    .portal-card:hover .pc-arrow {
+        color: var(--cp-gold);
+        transform: translateX(4px)
+    }
+
+    .cp-foot {
+        text-align: center;
+        margin-top: 28px
+    }
+
+    .cp-foot p {
+        color: var(--cp-muted);
+        font-size: .82rem;
+        margin: 0
+    }
+
+    .cp-foot a {
+        color: var(--cp-gold);
+        text-decoration: none;
+        font-weight: 600
+    }
+
+    .cp-foot a:hover {
+        color: var(--cp-gold-l)
+    }
+
+    @media(max-width:900px) {
+        .cp-shell {
+            grid-template-columns: 1fr;
+            max-width: 500px
+        }
+
+        .cp-hero {
+            display: none
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center mt-5">
-        <div class="col-lg-10">
-            <div class="text-center mb-5">
-                <h1 class="fw-bold mb-3" style="font-size: 3rem; color: var(--primary-dark);">
-                    <i class="fas fa-heart-pulse text-danger me-3"></i>Welcome Back
-                </h1>
-                <p class="lead text-muted" style="font-size: 1.2rem;">Choose your account type to access HealthCare AI</p>
-            </div>
+<div class="cp-cosmos">
+    <div class="cp-orb a"></div>
+    <div class="cp-orb b"></div>
+</div>
+<div class="cp-grid"></div>
 
-            <div class="row g-4">
-                <!-- Patient Login Card -->
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-lg h-100 transform-hover">
-                        <div class="card-body p-5 text-center">
-                            <div class="icon-circle bg-primary text-white mb-4 mx-auto"
-                                style="width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                                <i class="fas fa-user-injured"></i>
-                            </div>
-                            <h3 class="fw-bold mb-3">Patient Portal</h3>
-                            <p class="text-muted mb-4">Access your health records, appointments, and receive AI-powered health recommendations tailored just for you.</p>
-                            <a href="{{ url_for('auth.patient_login') }}" class="btn btn-primary btn-lg w-100 mb-3">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login as Patient
-                            </a>
-                            <div class="mt-3">
-                                <small class="text-muted">Don't have an account? 
-                                    <a href="{{ url_for('auth.patient_register') }}" class="text-primary fw-bold">Register here</a>
-                                </small>
-                            </div>
-                        </div>
+<div class="cp-page">
+    <div class="cp-shell">
+        <!-- Left Hero -->
+        <div class="cp-hero">
+            <div class="cp-hbrand">
+                <div class="cp-hb-icon"><i class="fas fa-heartbeat"></i></div><span>CarePoint AI</span>
+            </div>
+            <h1 class="cp-htitle">One Platform.<br><span class="gl">Four Portals.</span></h1>
+            <p class="cp-hsub">Experience next-generation healthcare management with role-based access, AI-powered
+                insights, and seamless collaboration.</p>
+            <div class="cp-hfeats">
+                <div class="cp-hf"><i class="fas fa-shield-alt"></i>
+                    <div>
+                        <div class="cp-hf-t">Enterprise Security</div>
+                        <div class="cp-hf-d">Military-grade encryption & audit logging</div>
                     </div>
                 </div>
-
-                <!-- Doctor Login Card -->
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-lg h-100 transform-hover">
-                        <div class="card-body p-5 text-center">
-                            <div class="icon-circle bg-success text-white mb-4 mx-auto"
-                                style="width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                                <i class="fas fa-user-md"></i>
-                            </div>
-                            <h3 class="fw-bold mb-3">Doctor Portal</h3>
-                            <p class="text-muted mb-4">Manage your patients, access medical records, analyze reports, and provide clinical guidance with AI assistance.</p>
-                            <a href="{{ url_for('auth.doctor_login') }}" class="btn btn-success btn-lg w-100 mb-3">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login as Doctor
-                            </a>
-                            <div class="mt-3">
-                                <small class="text-muted">Don't have an account? 
-                                    <a href="{{ url_for('auth.doctor_register') }}" class="text-success fw-bold">Register here</a>
-                                </small>
-                            </div>
-                        </div>
+                <div class="cp-hf"><i class="fas fa-brain"></i>
+                    <div>
+                        <div class="cp-hf-t">AI-Powered</div>
+                        <div class="cp-hf-d">Intelligent health analysis & care plans</div>
+                    </div>
+                </div>
+                <div class="cp-hf"><i class="fas fa-chart-line"></i>
+                    <div>
+                        <div class="cp-hf-t">Real-Time Analytics</div>
+                        <div class="cp-hf-d">Live dashboards & performance tracking</div>
+                    </div>
+                </div>
+                <div class="cp-hf"><i class="fas fa-clock"></i>
+                    <div>
+                        <div class="cp-hf-t">24/7 Availability</div>
+                        <div class="cp-hf-d">Access records anytime, anywhere</div>
                     </div>
                 </div>
             </div>
+            <div class="cp-trust">
+                <span><i class="fas fa-check-circle"></i>HIPAA</span>
+                <span><i class="fas fa-lock"></i>SSL</span>
+                <span><i class="fas fa-database"></i>Encrypted</span>
+            </div>
+            <a href="{{ url_for('main.index') }}" class="cp-back"><i class="fas fa-arrow-left"></i>Back to Homepage</a>
+        </div>
 
-            <div class="text-center mt-5">
-                <a href="{{ url_for('main.index') }}" class="text-secondary"><i class="fas fa-arrow-left me-2"></i>Back to Home</a>
+        <!-- Right Panel -->
+        <div class="cp-panel">
+            <div class="cp-ph">
+                <div class="cp-ph-icon"><i class="fas fa-door-open"></i></div>
+                <h2>Choose Your Portal</h2>
+                <p>Select your role to access the system</p>
+            </div>
+
+            <div class="cp-portals">
+                <a href="{{ url_for('auth.patient_login') }}" class="portal-card"
+                    style="--pc-accent:rgba(6,182,212,.3);--pc-glow:rgba(6,182,212,.04);">
+                    <div class="pc-icon patient"><i class="fas fa-user-injured"></i></div>
+                    <div class="pc-content">
+                        <div class="pc-name">Patient Portal</div>
+                        <div class="pc-desc">Health records, appointments, prescriptions, and care plans</div>
+                    </div>
+                    <div class="pc-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="{{ url_for('auth.doctor_login') }}" class="portal-card"
+                    style="--pc-accent:rgba(34,197,94,.3);--pc-glow:rgba(34,197,94,.04);">
+                    <div class="pc-icon doctor"><i class="fas fa-user-md"></i></div>
+                    <div class="pc-content">
+                        <div class="pc-name">Doctor Portal</div>
+                        <div class="pc-desc">Manage patients, schedules, prescriptions, and analytics</div>
+                    </div>
+                    <div class="pc-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="{{ url_for('auth.host_login') }}" class="portal-card"
+                    style="--pc-accent:rgba(212,168,83,.3);--pc-glow:rgba(212,168,83,.04);">
+                    <div class="pc-icon host"><i class="fas fa-shield-alt"></i></div>
+                    <div class="pc-content">
+                        <div class="pc-name">Host Portal</div>
+                        <div class="pc-desc">System settings, user approvals, audit logs, and governance</div>
+                    </div>
+                    <div class="pc-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="{{ url_for('auth.staff_login') }}" class="portal-card"
+                    style="--pc-accent:rgba(139,92,246,.3);--pc-glow:rgba(139,92,246,.04);">
+                    <div class="pc-icon staff"><i class="fas fa-user-shield"></i></div>
+                    <div class="pc-content">
+                        <div class="pc-name">Staff Portal</div>
+                        <div class="pc-desc">Lab, Pharmacy, and Reception operations</div>
+                    </div>
+                    <div class="pc-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+            </div>
+
+            <div class="cp-foot">
+                <p>New patient? <a href="{{ url_for('auth.patient_register') }}">Create account</a>
+                    <span style="margin:0 6px;color:var(--cp-muted);">·</span>
+                    New doctor? <a href="{{ url_for('auth.doctor_register') }}">Register now</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-                            </a>
-                            <div class="mt-3">
-                                <small class="text-muted">Don't have an account? 
-                                    <a href="{{ url_for('auth.doctor_register') }}" class="text-primary fw-bold">Register here</a>
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Back to Home Link -->
-            <div class="text-center mt-5">
-                <a href="{{ url_for('main.index') }}" class="text-decoration-none text-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Home
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .transform-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .transform-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    .icon-circle {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .card:nth-child(1) .icon-circle {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .card:nth-child(2) .icon-circle {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-</style>
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.portal-card').forEach(c => {
+        c.addEventListener('mouseenter', function () { this.style.setProperty('--glow-intensity', '1') });
+        c.addEventListener('mouseleave', function () { this.style.setProperty('--glow-intensity', '0') });
+    });
+</script>
 {% endblock %}

@@ -1,4 +1,4 @@
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,31 +6,52 @@ __pycache__/
 env/
 venv/
 ENV/
+*.egg-info/
 
-# Databases
+# ── Databases (NEVER commit SQLite files) ─────────────────────────────────────
 instance/
 *.sqlite3
 *.db
 
-# Environment variables
+# ── Environment / Secrets (CRITICAL — never commit these) ─────────────────────
 .env
+.env.production
+.env.staging
+.env.local
+.env.*.local
+*.pem
+*.key
 
-# Logs
+# ── AWS Credentials ────────────────────────────────────────────────────────────
+.aws/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
+logs/
 server.log
 notifications.log
 training_log.txt
+error_log.txt
+waitress_output.log
+global_500_error.txt
 
-# OS details
+# ── OS details ────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Large CSV/JSON if they are just samples
-# medical_sample.csv
-# medical_data.json
+# ── Docker local state ────────────────────────────────────────────────────────
+docker_build_log.txt
 
-# Build and IDE
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
 *.bak
+
+# ── Trained ML models (large binary — use S3 or DVC instead) ─────────────────
+trained_models/
+*.bin
+*.pt
+# ── Uploads (stored in S3 in production) ─────────────────────────────────────
+app/uploads/
+STAFF_CREDENTIALS.txt

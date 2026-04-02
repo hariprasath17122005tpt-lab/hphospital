@@ -1,0 +1,12 @@
+# migrations/versions/
+# This directory holds the generated migration files.
+# Each file represents one schema change (e.g., add table, add column).
+#
+# Files here are generated automatically by Flask-Migrate:
+#   flask db migrate -m "describe your change"
+#
+# Apply to the live RDS database with:
+#   flask db upgrade
+#
+# Roll back with:
+#   flask db downgrade

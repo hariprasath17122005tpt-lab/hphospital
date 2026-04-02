@@ -1,501 +1,568 @@
 {% extends "base.html" %}
 
-{% block title %}Medical Rehabilitation Hub{% endblock %}
+{% block title %}Exercise Rehabilitation - CarePoint AI{% endblock %}
 
-{% block content %}
-<!-- Google Fonts: Inter for that clean, premium tech look -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% set topbar_title = 'Rehabilitation' %}
+{% set breadcrumb_current = 'Exercise Plan' %}
 
+{% block extra_css %}
 <style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        --glass-bg: rgba(255, 255, 255, 0.95);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.6);
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
-        --shadow-md: 0 12px 24px -6px rgba(0, 0, 0, 0.05);
-        --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-        --radius-lg: 24px;
-        --radius-md: 16px;
-        --radius-sm: 12px;
-        --danger-soft: #fef2f2;
-        --danger-solid: #ef4444;
-        --success-soft: #ecfdf5;
-        --success-solid: #10b981;
-    }
+    /* ═══════════════════════════════════════════════════════
+       EXERCISE PLAN — LEGEND PRO DARK THEME
+       Pain Slider + Interactive Rings + Glass Workout Cards
+       ═══════════════════════════════════════════════════════ */
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f8fafc;
-        color: #1e293b;
-    }
-
-    /* --- PREMIUM COMPONENTS --- */
-
-    /* 1. Glassmorphism Card */
-    .premium-card {
-        background: #ffffff;
-        border-radius: var(--radius-lg);
-        border: 1px solid #e2e8f0;
-        box-shadow: var(--shadow-md);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .rehab-page {
         position: relative;
+        min-height: 80vh;
+        max-width: 1600px;
+        margin: 0 auto;
     }
 
-    .premium-card:hover {
-        box-shadow: var(--shadow-lg);
+    /* Header */
+    .rehab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+        gap: 20px;
     }
 
-    /* 2. Urgent Safety Banner */
+    .rehab-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: #818cf8;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 12px;
+    }
+
+    .rehab-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(2rem, 3vw, 3rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .rehab-sub {
+        color: rgba(241, 245, 249, 0.5);
+        margin-top: 8px;
+    }
+
+    /* Safety Banner */
     .safety-banner {
-        background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
-        border-radius: var(--radius-md);
-        color: white;
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 40px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.3);
     }
 
-    .safety-banner::after {
+    .safety-banner::before {
         content: '';
         position: absolute;
         top: 0;
-        right: 0;
-        bottom: 0;
         left: 0;
-        background: repeating-linear-gradient(45deg,
-                transparent,
-                transparent 10px,
-                rgba(255, 255, 255, 0.05) 10px,
-                rgba(255, 255, 255, 0.05) 20px);
+        width: 4px;
+        height: 100%;
+        background: #f87171;
     }
 
-    /* 3. Modern Pain Slider */
-    .pain-container {
-        padding: 1.5rem;
-        background: #fafafa;
-        border-radius: var(--radius-md);
-        border: 1px solid #f1f5f9;
+    .safety-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* Pain Slider Card */
+    .pain-card {
+        background: rgba(15, 15, 30, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .pain-slider-wrap {
+        position: relative;
+        height: 60px;
+        display: flex;
+        align-items: center;
     }
 
     input[type=range] {
         -webkit-appearance: none;
         width: 100%;
         background: transparent;
-        margin: 10px 0;
-    }
-
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 24px;
-        width: 24px;
-        border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid #64748b;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        margin-top: -10px;
-        transition: transform 0.1s;
-    }
-
-    input[type=range]::-webkit-slider-thumb:hover {
-        transform: scale(1.1);
     }
 
     input[type=range]::-webkit-slider-runnable-track {
         width: 100%;
-        height: 4px;
+        height: 8px;
         cursor: pointer;
-        background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
-        border-radius: 2px;
+        background: linear-gradient(to right, #34d399 0%, #fbbf24 50%, #f87171 100%);
+        border-radius: 4px;
     }
 
-    /* 4. Timeline Navigation */
-    .phase-nav {
-        background: white;
-        padding: 0.5rem;
-        border-radius: var(--radius-md);
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        box-shadow: var(--shadow-sm);
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 28px;
+        width: 28px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        margin-top: -10px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        border: 4px solid #1e293b;
     }
 
-    .phase-btn {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border-radius: var(--radius-sm);
-        border: 1px solid transparent;
-        background: transparent;
-        color: #64748b;
-        text-align: left;
-        transition: all 0.2s ease;
+    /* Adherence Ring */
+    .adherence-card {
+        background: rgba(15, 15, 30, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 24px;
+        text-align: center;
         position: relative;
     }
 
-    .phase-btn:hover {
-        background: #f8fafc;
-    }
-
-    .phase-btn.active {
-        background: #eff6ff;
-        border-color: #bfdbfe;
-        color: #1e40af;
-        box-shadow: 0 4px 6px -2px rgba(37, 99, 235, 0.1);
-    }
-
-    .phase-btn.active::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 10%;
-        bottom: 10%;
-        width: 4px;
-        background: #2563eb;
-        border-radius: 0 4px 4px 0;
-    }
-
-    /* 5. Apple-style Exercise Cards */
-    .exercise-card-modern {
-        background: white;
-        border-radius: var(--radius-md);
-        border: 1px solid #f1f5f9;
-        overflow: hidden;
-        display: flex;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 1.5rem;
+    .adh-ring {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 16px;
         position: relative;
     }
 
-    .exercise-card-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: #e2e8f0;
-    }
-
-    .ex-image-container {
-        width: 200px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .ex-image {
+    .adh-ring svg {
+        transform: rotate(-90deg);
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
     }
 
-    .exercise-card-modern:hover .ex-image {
-        transform: scale(1.05);
+    .adh-ring circle {
+        fill: none;
+        stroke-width: 8;
     }
 
-    .ex-content {
-        flex: 1;
-        padding: 1.5rem;
+    .adh-ring .bg {
+        stroke: rgba(255, 255, 255, 0.05);
     }
 
-    /* 6. Medical Tags */
-    .med-tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        text-transform: uppercase;
+    .adh-ring .progress {
+        stroke: #818cf8;
+        stroke-linecap: round;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 80;
+        transition: stroke-dashoffset 1s ease;
     }
 
-    .tag-reason {
-        background: #f0f9ff;
-        color: #0284c7;
-        border: 1px solid #e0f2fe;
-    }
-
-    /* 7. Floating Day Tabs */
-    .day-tabs {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-        scrollbar-width: none;
-    }
-
-    .day-tab {
-        padding: 0.5rem 1.25rem;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #64748b;
-        white-space: nowrap;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-
-    .day-tab:hover {
-        border-color: #cbd5e1;
-        color: #334155;
-    }
-
-    .day-tab.active {
-        background: #0f172a;
-        color: white;
-        border-color: #0f172a;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-    }
-
-    /* Utilities */
-    .text-gradient {
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .blur-overlay {
+    .adh-val {
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(4px);
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: 'Space Grotesk';
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: #fff;
+    }
+
+    /* Checkboxes */
+    .pro-check-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .pro-check-wrap:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pro-check {
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .pro-check.checked {
+        background: #34d399;
+        border-color: #34d399;
+        color: #064e3b;
+        box-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
+    }
+
+    /* Nav Pills */
+    .phase-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .phase-link {
+        padding: 16px 20px;
+        border-radius: 16px;
+        background: transparent;
+        border: 1px solid transparent;
+        color: rgba(241, 245, 249, 0.5);
+        text-align: left;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .phase-link:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .phase-link.active {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #f1f5f9;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Exercise Card */
+    .ex-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        display: flex;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .ex-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .ex-img {
+        width: 180px;
+        background: #000;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ex-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.8;
+        transition: transform 0.5s ease;
+    }
+
+    .ex-card:hover .ex-img img {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    .ex-body {
+        flex: 1;
+        padding: 24px;
+        position: relative;
+    }
+
+    /* Tags */
+    .ex-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        margin-bottom: 8px;
+        display: inline-block;
+    }
+
+    /* Pain Overlay */
+    .pain-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 15, 30, 0.85);
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         z-index: 10;
-        border-radius: var(--radius-md);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .pain-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* Day Tabs */
+    .day-tabs {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .day-tab {
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(241, 245, 249, 0.6);
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .day-tab.active {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #f1f5f9;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+
+    @media(max-width: 900px) {
+        .ex-card {
+            flex-direction: column;
+        }
+
+        .ex-img {
+            width: 100%;
+            height: 200px;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="container-fluid px-4 py-5">
+{% block content %}
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
 
-    <!-- HEADER: DOCTOR STATUS -->
-    <div class="row mb-5 align-items-end">
-        <div class="col-md-8">
-            <span class="med-tag mb-2" style="background:#e0e7ff; color:#4338ca;">
-                <i class="fas fa-hospital me-2"></i> CLINICAL REHABILITATION
-            </span>
-            <h1 class="fw-bold display-5 mb-0 ls-tight">
-                {{ full_plan.doctor_note.focus }} Protocol
-            </h1>
-            <p class="text-muted mt-2 mb-0" style="font-size: 1.1rem;">
-                Prescription ID: <strong>{{ full_plan.doctor_note.prescription_id }}</strong> • Assigned to {{
-                patient.first_name }} {{ patient.last_name }}
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end">
-            <div class="d-inline-flex align-items-center bg-white px-4 py-2 rounded-pill shadow-sm border">
-                <div class="bg-success rounded-circle me-3"
-                    style="width:10px; height:10px; animation: pulse 2s infinite;"></div>
-                <span class="fw-bold text-success small">ACTIVE • MONITORED</span>
-            </div>
-        </div>
-    </div>
+<div class="rehab-page pro-reveal-zoom">
 
-    <!-- SAFETY ALERT -->
-    <div class="safety-banner p-4 mb-5 d-flex align-items-center gap-4">
-        <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center"
-            style="width: 60px; height: 60px;">
-            <i class="fas fa-heart-pulse fa-2x"></i>
-        </div>
+    <!-- Header -->
+    <div class="rehab-header">
         <div>
-            <h5 class="fw-bold text-uppercase mb-1" style="letter-spacing: 1px;">Clinical Safety Warning</h5>
-            <p class="mb-0 opacity-90 small">Stop immediately if you experience:
-                <span class="fw-bold mx-1">Chest Pain</span> •
-                <span class="fw-bold mx-1">Dizziness</span> •
-                <span class="fw-bold mx-1">Shortness of Breath</span>
+            <div class="rehab-badge pro-reveal">
+                <i class="fas fa-heartbeat"></i> Clinical Rehabilitation
+            </div>
+            <h1 class="rehab-title pro-gradient-text">{{ full_plan.doctor_note.focus }} Protocol</h1>
+            <p class="rehab-sub">
+                Prescription ID: <strong>{{ full_plan.doctor_note.prescription_id }}</strong> • Assignee: {{
+                patient.first_name }}
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success p-2 px-3 rounded-pill">
+                <span class="spinner-grow spinner-grow-sm me-2"></span> ACTIVE MONITORING
+            </span>
+        </div>
+    </div>
+
+    <!-- Safety Banner -->
+    <div class="safety-banner pro-reveal pro-delay-2">
+        <div class="safety-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div>
+            <h5 style="color:#f87171; font-weight:700; margin-bottom:4px;">Safety Warning</h5>
+            <p style="color:rgba(255,255,255,0.7); font-size:0.9rem; margin:0;">
+                Stop immediately if you experience <strong>Chest Pain</strong>, <strong>Dizziness</strong>, or
+                <strong>Shortness of Breath</strong>.
             </p>
         </div>
     </div>
 
-    <div class="row g-5">
-
-        <!-- SIDEBAR: CONTROLS & INFO -->
+    <div class="row g-4">
+        <!-- Sidebar Controls -->
         <div class="col-lg-3">
-            <div class="d-flex flex-column gap-4 sticky-top" style="top: 2rem; z-index: 1;">
+            <div class="d-flex flex-column gap-4">
 
-                <!-- DOCTOR CARD REMOVED -->
-
-                <!-- 2. PAIN SLIDER -->
-                <div class="premium-card pain-container">
+                <!-- Pain Slider -->
+                <div class="pain-card pro-tilt-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <label class="fw-bold small text-uppercase text-muted">Pain Assessment</label>
-                        <span id="painVal"
-                            class="badge bg-success bg-opacity-10 text-success border border-success px-3 rounded-pill">0
-                            - No Pain</span>
+                        <label
+                            style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.5);">Pain
+                            Level</label>
+                        <span id="painValText" style="font-size:0.8rem; font-weight:700; color:#34d399;">0 - Safe</span>
                     </div>
-
-                    <input type="range" min="0" max="10" step="1" value="0" oninput="updatePainLevel(this.value)">
-
-                    <div class="d-flex justify-content-between small fw-bold text-muted mt-2">
-                        <span>Safe</span>
+                    <div class="pain-slider-wrap">
+                        <input type="range" id="painRange" min="0" max="10" value="0"
+                            oninput="updatePainLevel(this.value)">
+                    </div>
+                    <div class="d-flex justify-content-between mt-2"
+                        style="font-size:0.7rem; color:rgba(255,255,255,0.4); font-weight:700; text-transform:uppercase;">
+                        <span>No Pain</span>
                         <span>Severe</span>
                     </div>
                 </div>
 
-                <!-- 3. COMPLIANCE -->
-                <div class="premium-card p-4">
-                    <div class="d-flex justify-content-between align-items-end mb-4">
-                        <div>
-                            <span class="d-block text-muted small fw-bold text-uppercase">Adherence</span>
-                            <span class="d-block display-6 fw-bold text-dark" id="adherence-badge">72%</span>
-                        </div>
-                        <div style="width: 40px; height: 40px;">
-                            <!-- Simple circular chart placeholder -->
-                            <svg viewBox="0 0 36 36" class="w-100 h-100">
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none" stroke="#e2e8f0" stroke-width="4" />
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="72, 100" />
-                            </svg>
-                        </div>
+                <!-- Adherence -->
+                <div class="adherence-card pro-tilt-card">
+                    <h6
+                        style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; font-weight:700; margin-bottom:20px;">
+                        Protocol Adherence</h6>
+                    <div class="adh-ring">
+                        <svg>
+                            <circle class="bg" cx="60" cy="60" r="54"></circle>
+                            <circle class="progress" cx="60" cy="60" r="54" id="adhCircle"></circle>
+                        </svg>
+                        <div class="adh-val" id="adhScore">72%</div>
                     </div>
 
-                    <div class="d-flex flex-column gap-3">
-                        <label class="d-flex align-items-center gap-3 p-2 rounded hover-bg-light cursor-pointer">
-                            <input type="checkbox" class="form-check-input flex-shrink-0"
-                                style="width: 20px; height: 20px;" data-type="morning" onclick="updateCompliance(this)">
+                    <div class="d-flex flex-column gap-2 text-start">
+                        <div class="pro-check-wrap" onclick="toggleTask(this, 'morning')">
+                            <div class="pro-check" id="check-morning"><i class="fas fa-check"
+                                    style="font-size:0.7rem;"></i></div>
                             <div>
-                                <span class="d-block fw-bold small text-dark">Morning Routine</span>
-                                <span class="d-block text-muted" style="font-size: 0.75rem;">Before 10:00 AM</span>
+                                <div style="font-weight:700; font-size:0.9rem; color:#f1f5f9;">Morning Routine</div>
+                                <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">Before 10:00 AM</div>
                             </div>
-                        </label>
-                        <label class="d-flex align-items-center gap-3 p-2 rounded hover-bg-light cursor-pointer">
-                            <input type="checkbox" class="form-check-input flex-shrink-0"
-                                style="width: 20px; height: 20px;" data-type="evening" onclick="updateCompliance(this)">
+                        </div>
+                        <div class="pro-check-wrap" onclick="toggleTask(this, 'evening')">
+                            <div class="pro-check" id="check-evening"><i class="fas fa-check"
+                                    style="font-size:0.7rem;"></i></div>
                             <div>
-                                <span class="d-block fw-bold small text-dark">Evening Mobility</span>
-                                <span class="d-block text-muted" style="font-size: 0.75rem;">After 6:00 PM</span>
+                                <div style="font-weight:700; font-size:0.9rem; color:#f1f5f9;">Evening Mobility</div>
+                                <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">After 6:00 PM</div>
                             </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- 4. RULES MINI -->
-                <div class="premium-card p-4 bg-light border-0">
-                    <h6 class="fw-bold small text-uppercase text-muted mb-3">Protocol Rules</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for s in full_plan.analysis.safe[:3] %}
-                        <span class="badge bg-white text-success border shadow-sm">{{ s }}</span>
-                        {% endfor %}
-                        {% for f in full_plan.analysis.forbidden[:2] %}
-                        <span class="badge bg-white text-danger border shadow-sm text-decoration-line-through">{{ f
-                            }}</span>
-                        {% endfor %}
+                        </div>
                     </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
+        <!-- Main Content -->
         <div class="col-lg-9">
-
-            <div class="d-flex align-items-start gap-4" id="main-interface">
-                <!-- Phases Sidebar (Timeline) -->
-                <div class="nav flex-column phase-nav w-25" id="v-pills-tab" role="tablist">
+            <div class="d-flex gap-4 align-items-start" id="main-interface">
+                <!-- Phase Nav -->
+                <div class="nav flex-column phase-nav w-25" role="tablist">
                     {% for week in full_plan.plan.keys()|sort %}
-                    <button class="phase-btn {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
-                        data-bs-target="#v-pills-{{ week|replace(' ', '') }}" type="button" role="tab"
-                        aria-controls="v-pills-{{ week|replace(' ', '') }}"
-                        aria-selected="{{ 'true' if loop.first else 'false' }}">
-                        <div>
-                            <div class="small fw-bold text-uppercase opacity-75 mb-1">{{ week }}</div>
-                            <div class="fw-bold text-dark mb-1">{{ full_plan.plan[week].meta.title }}</div>
-                            <span class="badge bg-gray-200 text-dark border fw-normal" style="font-size: 0.7rem;">{{
-                                full_plan.plan[week].meta.zone }}</span>
-                        </div>
+                    <button class="phase-link {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
+                        data-bs-target="#week-{{ loop.index }}" role="tab">
+                        <div style="font-size:0.7rem; text-transform:uppercase; opacity:0.6; margin-bottom:4px;">{{ week
+                            }}</div>
+                        <div style="font-weight:700; font-size:0.95rem;">{{ full_plan.plan[week].meta.title }}</div>
                     </button>
                     {% endfor %}
                 </div>
 
-                <!-- Phases Content -->
-                <div class="tab-content w-75" id="v-pills-tabContent">
+                <!-- Phase Content -->
+                <div class="tab-content w-75">
                     {% for week, data in full_plan.plan.items()|sort %}
-                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-                        id="v-pills-{{ week|replace(' ', '') }}" role="tabpanel">
+                    {% set week_idx = loop.index %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="week-{{ loop.index }}"
+                        role="tabpanel">
 
                         <!-- Day Tabs -->
-                        <div class="day-tabs nav nav-pills" role="tablist">
+                        <div class="day-tabs">
                             {% for day in data.days.keys()|sort %}
                             <button class="day-tab {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
-                                data-bs-target="#content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}"
-                                type="button" role="tab"
-                                aria-controls="content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}"
-                                aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                data-bs-target="#content-{{ loop.index }}-{{ week_idx }}">
                                 {{ day }}
                             </button>
                             {% endfor %}
                         </div>
 
-                        <!-- Day Content -->
                         <div class="tab-content">
                             {% for day, exercises in data.days.items()|sort %}
                             <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-                                id="content-{{ week|replace(' ', '') }}-{{ day|replace(' ', '') }}">
-
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 class="fw-bold mb-0">Scheduled Tasks</h5>
-                                    <span class="text-muted small">{{ exercises|length }} Exercises</span>
-                                </div>
+                                id="content-{{ loop.index }}-{{ week_idx }}">
+                                <h5 class="mb-4" style="color:#f1f5f9; font-family:'Space Grotesk';">{{ exercises|length
+                                    }} Scheduled Tasks</h5>
 
                                 {% for ex in exercises %}
-                                <div class="exercise-card-modern exercise-item"
+                                <div class="ex-card exercise-item"
                                     data-intensity="{% if ex.tag_color == 'warning' %}high{% elif ex.tag_color == 'primary' %}medium{% else %}low{% endif %}">
-                                    <div class="ex-image-container">
-                                        <img src="{{ ex.image }}" class="ex-image">
-                                        <div class="position-absolute top-0 start-0 m-2">
-                                            <span class="badge bg-white text-dark shadow-sm border">{{ ex.tag }}</span>
+                                    <div class="ex-img">
+                                        <img src="{{ ex.image }}" alt="{{ ex.name }}">
+                                        <div style="position:absolute; top:10px; left:10px;">
+                                            <span class="ex-tag">{{ ex.tag }}</span>
                                         </div>
                                     </div>
-                                    <div class="ex-content">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 class="fw-bold text-dark mb-0">{{ ex.name }}</h5>
+                                    <div class="ex-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h5 style="color:#f1f5f9; font-weight:700; margin:0;">{{ ex.name }}</h5>
                                             {% if ex.approved %}
-                                            <i class="fas fa-certificate text-primary" title="Doctor Approved"></i>
+                                            <i class="fas fa-certificate text-primary" title="Approved"></i>
                                             {% endif %}
                                         </div>
+                                        <p style="color:rgba(255,255,255,0.6); font-size:0.85rem; margin-bottom:16px;">
+                                            {{ ex.desc }}</p>
 
-                                        <p class="text-muted small mb-3">{{ ex.desc }}</p>
-
-                                        <div class="d-flex align-items-center justify-content-between mt-auto">
-                                            <div class="text-muted small fw-bold">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div style="color:#94a3b8; font-size:0.8rem; font-weight:700;">
                                                 <i class="far fa-clock me-1"></i> <span class="rep-text"
                                                     data-original="{{ ex.sets }}">{{ ex.sets }}</span>
                                             </div>
-
-                                            <div class="med-tag tag-reason">
-                                                <i class="fas fa-stethoscope me-1"></i> {{ ex.reason }}
-                                            </div>
+                                            <span
+                                                style="font-size:0.75rem; color:#38bdf8; background:rgba(56,189,248,0.1); padding:4px 10px; border-radius:10px;">
+                                                {{ ex.reason }}
+                                            </span>
                                         </div>
                                     </div>
 
                                     <!-- Pain Overlay -->
-                                    <div class="blur-overlay pain-overlay d-none">
-                                        <div class="text-center">
-                                            <div
-                                                class="bg-white rounded-circle p-3 shadow-lg mb-2 d-inline-block text-danger">
-                                                <i class="fas fa-ban fa-2x"></i>
-                                            </div>
-                                            <h6 class="fw-bold text-danger">Skipped due to Pain</h6>
-                                            <span class="small text-muted">Safety Protocol Active</span>
+                                    <div class="pain-overlay">
+                                        <div
+                                            style="background:rgba(239,68,68,0.2); width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#f87171; margin-bottom:16px;">
+                                            <i class="fas fa-ban fa-2x"></i>
                                         </div>
+                                        <h5 style="color:#f87171; font-weight:700;">Skipped due to Pain</h5>
+                                        <div style="font-size:0.8rem; color:rgba(255,255,255,0.5);">Safety Protocol
+                                            Active</div>
                                     </div>
                                 </div>
                                 {% endfor %}
 
-                                <div class="text-end mt-4">
-                                    <button class="btn btn-dark btn-lg rounded-pill px-5 shadow-lg complete-btn"
-                                        onclick="markDayComplete(this, '{{ day }}')">
-                                        Mark {{ day }} Complete <i class="fas fa-arrow-right ms-2"></i>
-                                    </button>
-                                </div>
-
+                                <button class="pro-btn pro-btn-primary w-100 mt-4"
+                                    onclick="this.innerHTML='<i class=\'fas fa-check\'></i> Completed'; this.classList.add('disabled');">
+                                    Mark {{ day }} Complete
+                                </button>
                             </div>
                             {% endfor %}
                         </div>
@@ -504,135 +571,61 @@
                     {% endfor %}
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 <script>
-    // --- 1. PAIN SLIDER LOGIC ---
+    // Pain Logic
     function updatePainLevel(val) {
-        const badge = document.getElementById('painVal');
+        const text = document.getElementById('painValText');
         const cards = document.querySelectorAll('.exercise-item');
 
-        // Update Badge UI
-        if (val < 4) {
-            badge.innerText = val + " - Safe";
-            badge.className = "badge bg-success bg-opacity-10 text-success border border-success px-3 rounded-pill";
-        } else if (val < 7) {
-            badge.innerText = val + " - Moderate";
-            badge.className = "badge bg-warning bg-opacity-10 text-warning border border-warning px-3 rounded-pill";
-        } else {
-            badge.innerText = val + " - Severe Alert";
-            badge.className = "badge bg-danger bg-opacity-10 text-danger border border-danger px-3 rounded-pill";
-        }
+        if (val < 4) { text.innerText = val + " - Safe"; text.style.color = "#34d399"; }
+        else if (val < 7) { text.innerText = val + " - Moderate"; text.style.color = "#fbbf24"; }
+        else { text.innerText = val + " - Severe Alert"; text.style.color = "#f87171"; }
 
-        // Apply Logic to Cards
         cards.forEach(card => {
             const intensity = card.dataset.intensity;
             const repText = card.querySelector('.rep-text');
             const overlay = card.querySelector('.pain-overlay');
-            const originalReps = repText.dataset.original;
+            const original = repText.dataset.original;
 
             // Reset
-            overlay.classList.add('d-none');
-            repText.innerText = originalReps;
+            overlay.classList.remove('active');
+            repText.innerText = original;
 
             if (val >= 7) {
-                // Severe: Disable Med/High
-                if (intensity === 'high' || intensity === 'medium') {
-                    overlay.classList.remove('d-none');
-                } else {
-                    repText.innerText = "Reduce by 50%";
-                }
+                if (intensity === 'high' || intensity === 'medium') overlay.classList.add('active');
+                else repText.innerText = "Reduce by 50%";
             } else if (val >= 4) {
-                // Moderate: Disable High, Reduce Med
-                if (intensity === 'high') {
-                    overlay.classList.remove('d-none');
-                } else if (intensity === 'medium') {
-                    repText.innerText = "Do 50% Reps";
-                }
+                if (intensity === 'high') overlay.classList.add('active');
+                else if (intensity === 'medium') repText.innerText = "Do 50% Reps";
             }
         });
     }
 
-    // --- 2. DOCTOR SUSPEND LOGIC ---
-    function togglePlanSuspend() {
-        const btn = event.currentTarget;
-        const msg = document.getElementById('suspend-msg');
-        const mainInterface = document.getElementById('main-interface');
-
-        if (msg.classList.contains('d-none')) {
-            msg.classList.remove('d-none');
-            btn.classList.remove('btn-outline-danger');
-            btn.classList.add('btn-danger', 'text-white');
-            btn.innerHTML = '<i class="fas fa-play me-2"></i> RESUME PLAN';
-            mainInterface.style.opacity = "0.3";
-            mainInterface.style.pointerEvents = "none";
-            mainInterface.style.filter = "grayscale(100%)";
-        } else {
-            msg.classList.add('d-none');
-            btn.classList.add('btn-outline-danger');
-            btn.classList.remove('btn-danger', 'text-white');
-            btn.innerHTML = '<i class="fas fa-pause-circle me-2"></i> SUSPEND PLAN';
-            mainInterface.style.opacity = "1";
-            mainInterface.style.pointerEvents = "all";
-            mainInterface.style.filter = "none";
-        }
+    // Adherence Logic
+    function toggleTask(el, type) {
+        const check = el.querySelector('.pro-check');
+        check.classList.toggle('checked');
+        updateScore();
     }
 
-    // --- 3. COMPLIANCE TRACKER LOGIC ---
-    document.addEventListener('DOMContentLoaded', function () {
-        loadCompliance();
-    });
-
-    function updateCompliance(checkbox) {
-        const type = checkbox.dataset.type;
-        const today = new Date().toISOString().split('T')[0];
-        const key = `compliance_${today}_${type}`;
-
-        if (checkbox.checked) {
-            localStorage.setItem(key, 'done');
-        } else {
-            localStorage.removeItem(key);
-        }
-
-        calculateAdherence();
-    }
-
-    function markDayComplete(btn, day) {
-        btn.innerHTML = '<i class="fas fa-check-circle me-2"></i> Completed';
-        btn.classList.remove('btn-dark');
-        btn.classList.add('btn-success');
-
-        const morningBox = document.querySelector('input[data-type="morning"]');
-        if (morningBox && !morningBox.checked) {
-            morningBox.checked = true;
-            updateCompliance(morningBox);
-        }
-    }
-
-    function loadCompliance() {
-        const today = new Date().toISOString().split('T')[0];
-        const morningBox = document.querySelector('input[data-type="morning"]');
-        const eveningBox = document.querySelector('input[data-type="evening"]');
-
-        if (localStorage.getItem(`compliance_${today}_morning`)) morningBox.checked = true;
-        if (localStorage.getItem(`compliance_${today}_evening`)) eveningBox.checked = true;
-
-        calculateAdherence();
-    }
-
-    function calculateAdherence() {
-        let score = 72;
-        const m = document.querySelector('input[data-type="morning"]').checked;
-        const e = document.querySelector('input[data-type="evening"]').checked;
-
-        if (m) score += 10;
-        if (e) score += 10;
+    function updateScore() {
+        let score = 72; // Base
+        if (document.getElementById('check-morning').classList.contains('checked')) score += 14;
+        if (document.getElementById('check-evening').classList.contains('checked')) score += 14;
         if (score > 100) score = 100;
 
-        document.getElementById('adherence-badge').innerText = score + "%";
+        document.getElementById('adhScore').innerText = score + "%";
+
+        // Update Ring
+        const circle = document.getElementById('adhCircle');
+        const radius = 54;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (score / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
     }
 </script>
 {% endblock %}

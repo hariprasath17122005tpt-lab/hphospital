@@ -1,0 +1,97 @@
+<!-- Top Navbar — Ultra-Premium Glassmorphism Layout -->
+<header class="app-topbar" data-user-role="{{ current_user.role.value if current_user.is_authenticated and current_user.role else '' }}">
+    <div class="topbar-left">
+        <button class="topbar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div>
+            <div class="topbar-page-title">{{ topbar_title | default('Dashboard') }}</div>
+            <div class="topbar-breadcrumb">
+                <a href="#">Home</a> / <span>{{ breadcrumb_current | default('Overview') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <!-- Search -->
+        <div class="topbar-search-wrapper" id="searchWrapper">
+            <input type="text" class="topbar-search-input" id="searchInput" placeholder="Search anything..." />
+        </div>
+        <button class="topbar-icon-btn" id="searchToggleBtn" title="Search" onclick="toggleSearch()">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="topbar-icon-btn" id="commandPaletteBtn" title="Quick Launcher (Ctrl+K)">
+            <i class="fas fa-bolt"></i>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="topbar-icon-btn theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i class="fas fa-sun"></i>
+        </button>
+
+        <!-- Notification Bell with Dropdown -->
+        <div class="notif-wrapper">
+            <button class="topbar-icon-btn" id="notifBellBtn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-dot"></span>
+            </button>
+
+            <!-- Notification Dropdown Panel -->
+            <div class="notif-dropdown" id="notifDropdown">
+                <div class="notif-dropdown-header">
+                    <span class="notif-dropdown-title">Notifications</span>
+                    <button class="notif-mark-read" id="markAllRead">Mark all read</button>
+                </div>
+                <div class="notif-list" id="topbarNotifList">
+                    <div class="notif-item">
+                        <div class="notif-item-info">
+                            <div class="notif-item-text">Loading notifications...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="topbar-avatar" title="{{ current_user.username }}">
+            {{ current_user.username[0]|upper }}
+        </div>
+    </div>
+</header>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    function toggleSearch() {
+        const wrapper = document.getElementById('searchWrapper');
+        const input = document.getElementById('searchInput');
+        wrapper.classList.toggle('active');
+        if (wrapper.classList.contains('active')) {
+            input.focus();
+        }
+    }
+
+    // Close search on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const wrapper = document.getElementById('searchWrapper');
+            if (wrapper) wrapper.classList.remove('active');
+        }
+    });
+
+    const commandBtn = document.getElementById('commandPaletteBtn');
+    if (commandBtn) {
+        commandBtn.addEventListener('click', function () {
+            const evt = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
+            document.dispatchEvent(evt);
+        });
+    }
+</script>

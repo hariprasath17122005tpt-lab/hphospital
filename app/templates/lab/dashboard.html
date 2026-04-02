@@ -1,0 +1,723 @@
+{% extends 'base.html' %}
+{% block title %}Laboratory Dashboard — CarePoint{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4" id="labDashboardRoot"
+    data-flow-filter="{{ flow_filter }}" data-status-filter="{{ status_filter }}"
+    data-search="{{ search_q|e }}" data-poll-url="{{ url_for('lab.orders_api') }}"
+    data-is-lab-staff="{{ '1' if current_user.role.value in ['LAB_STAFF','HOST','ADMIN'] else '0' }}">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #f1f5f9;">
+                <i class="fas fa-flask me-2" style="color: #8b5cf6;"></i>Laboratory Dashboard
+            </h2>
+            <p class="text-secondary mb-0 small">Unified queue — doctor referrals & walk-in diagnostics</p>
+            <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+                <span class="badge rounded-pill px-3 py-2"
+                    style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.4);font-weight:600;">
+                    LabOrder workflow · {{ LAB_UI_BUILD_ID }}</span>
+                <span class="small text-secondary d-none d-md-inline">If you do not see this green badge, the browser or
+                    server is serving an old build — hard-refresh (Ctrl+F5) and restart the web service.</span>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+        {% if current_user.role.value in ['LAB_STAFF', 'HOST', 'ADMIN'] %}
+        <button class="btn btn-success px-3 py-2 rounded-3 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#walkinLabModal" type="button">
+            <i class="fas fa-vial me-2"></i>New walk-in order
+        </button>
+        {% endif %}
+        {% if current_user.role.value in ['DOCTOR', 'HOST', 'ADMIN'] %}
+        <button class="btn btn-primary px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal"
+            data-bs-target="#requestTestModal" type="button">
+            <i class="fas fa-plus me-2"></i>Order lab test (doctor)
+        </button>
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4" id="labStatCards">
+        <div class="col-lg col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(109,40,217,0.08)); border-radius: 16px;">
+                <div class="card-body py-3">
+                    <div class="text-secondary small">Total</div>
+                    <div class="fw-bold fs-4 stat-total" style="color: #f1f5f9;">{{ total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.08)); border-radius: 16px;">
+                <div class="card-body py-3">
+                    <div class="text-secondary small">Pending</div>
+                    <div class="fw-bold fs-4 stat-pending" style="color: #fbbf24;">{{ pending }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(2,132,199,0.08)); border-radius: 16px;">
+                <div class="card-body py-3">
+                    <div class="text-secondary small">Sample collected</div>
+                    <div class="fw-bold fs-4 stat-sample" style="color: #38bdf8;">{{ sample_collected }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08)); border-radius: 16px;">
+                <div class="card-body py-3">
+                    <div class="text-secondary small">Processing</div>
+                    <div class="fw-bold fs-4 stat-proc" style="color: #60a5fa;">{{ processing }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100"
+                style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.08)); border-radius: 16px;">
+                <div class="card-body py-3">
+                    <div class="text-secondary small">Completed</div>
+                    <div class="fw-bold fs-4 stat-done" style="color: #34d399;">{{ completed }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3"
+        style="border-radius: 16px; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.1);">
+        <div class="card-body py-3">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center" id="labFilterForm">
+                <div class="flex-grow-1" style="min-width:200px;">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text border-0" style="background: rgba(30,41,59,0.8);"><i
+                                class="fas fa-search text-secondary"></i></span>
+                        <input type="text" name="search" class="form-control border-0" id="labSearchInput"
+                            placeholder="Patient or test…" value="{{ search_q }}"
+                            style="background: rgba(30,41,59,0.8); color: #f1f5f9;">
+                    </div>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('lab.dashboard', filter='all', status=status_filter, search=search_q) }}"
+                        class="btn {{ 'btn-primary' if flow_filter == 'all' else 'btn-outline-secondary' }} rounded-start-3">All</a>
+                    <a href="{{ url_for('lab.dashboard', filter='doctor', status=status_filter, search=search_q) }}"
+                        class="btn {{ 'btn-primary' if flow_filter == 'doctor' else 'btn-outline-secondary' }}"
+                        title="Doctor referred"><i class="fas fa-user-md me-1"></i>Doctor</a>
+                    <a href="{{ url_for('lab.dashboard', filter='walkin', status=status_filter, search=search_q) }}"
+                        class="btn {{ 'btn-primary' if flow_filter == 'walkin' else 'btn-outline-secondary' }} rounded-end-3"
+                        title="Walk-in lab"><i class="fas fa-vial me-1"></i>Walk-in</a>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('lab.dashboard', filter=flow_filter, status='all', search=search_q) }}"
+                        class="btn {{ 'btn-secondary' if status_filter == 'all' else 'btn-outline-secondary' }} rounded-start-3">All statuses</a>
+                    <a href="{{ url_for('lab.dashboard', filter=flow_filter, status='CREATED', search=search_q) }}"
+                        class="btn {{ 'btn-warning' if status_filter == 'CREATED' else 'btn-outline-secondary' }}">Created</a>
+                    <a href="{{ url_for('lab.dashboard', filter=flow_filter, status='SAMPLE_COLLECTED', search=search_q) }}"
+                        class="btn {{ 'btn-info' if status_filter == 'SAMPLE_COLLECTED' else 'btn-outline-secondary' }}">Sample</a>
+                    <a href="{{ url_for('lab.dashboard', filter=flow_filter, status='PROCESSING', search=search_q) }}"
+                        class="btn {{ 'btn-primary' if status_filter == 'PROCESSING' else 'btn-outline-secondary' }}">Processing</a>
+                    <a href="{{ url_for('lab.dashboard', filter=flow_filter, status='COMPLETED', search=search_q) }}"
+                        class="btn {{ 'btn-success' if status_filter == 'COMPLETED' else 'btn-outline-secondary' }} rounded-end-3">Done</a>
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-light rounded-3">Apply</button>
+            </form>
+            <p class="text-secondary small mb-0 mt-2"><i class="fas fa-sync-alt me-1"></i> Live refresh every 12s — no
+                reload required</p>
+        </div>
+    </div>
+
+    <div class="table-responsive card border-0 shadow-sm"
+        style="border-radius: 16px; background: rgba(15,23,42,0.75); border: 1px solid rgba(148,163,184,0.1);">
+        <table class="table table-dark table-hover align-middle mb-0" style="--bs-table-bg: transparent;">
+            <thead>
+                <tr style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8;">
+                    <th class="ps-4">Patient</th>
+                    <th>Test</th>
+                    <th>Category</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Ordered</th>
+                    <th class="pe-4 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="labOrdersTbody">
+                {% for o in orders %}
+                <tr data-order-id="{{ o.id }}">
+                    <td class="ps-4">
+                        <div class="fw-semibold" style="color:#e2e8f0;">{{ o.patient.first_name }} {{ o.patient.last_name }}</div>
+                        <div class="small text-secondary">#{{ o.patient_id }}</div>
+                    </td>
+                    <td><strong style="color:#cbd5e1;">{{ o.test_name }}</strong></td>
+                    <td class="small text-secondary">{{ o.test_category }}</td>
+                    <td>
+                        {% if o.source_type == SOURCE_DOCTOR %}
+                        <span class="badge rounded-pill px-2 py-1"
+                            style="background:rgba(59,130,246,0.2);color:#93c5fd;border:1px solid rgba(59,130,246,0.35);">🩺 Doctor referral</span>
+                        {% else %}
+                        <span class="badge rounded-pill px-2 py-1"
+                            style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.35);">🧪 Walk-in</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="lab-status-pill" data-status="{{ o.status }}">{{ o.status.replace('_',' ') }}</span></td>
+                    <td class="small text-secondary">{{ o.created_at.strftime('%d %b %Y %H:%M') if o.created_at else '—' }}</td>
+                    <td class="pe-4 text-end lab-actions-cell">
+                        {% if current_user.role.value in ['LAB_STAFF','HOST','ADMIN'] %}
+                        <div class="btn-group btn-group-sm">
+                            {% if o.status == 'CREATED' %}
+                            <button type="button" class="btn btn-outline-info btn-lab-status" data-order-id="{{ o.id }}" data-new-status="SAMPLE_COLLECTED">Collect sample</button>
+                            {% endif %}
+                            {% if o.status in ['CREATED', 'SAMPLE_COLLECTED'] %}
+                            <button type="button" class="btn btn-outline-primary btn-lab-status" data-order-id="{{ o.id }}" data-new-status="PROCESSING">Processing</button>
+                            {% endif %}
+                            {% if o.status in ['PROCESSING', 'COMPLETED'] %}
+                                {% set existing_report = o.generated_reports|list|sort(attribute='id', reverse=True) %}
+                                {% if existing_report|length > 0 %}
+                                <a href="{{ url_for('lab.view_report', report_id=existing_report[0].id) }}" class="btn btn-sm btn-outline-success" target="_blank"><i class="fas fa-file-medical"></i> View Report</a>
+                                {% else %}
+                                <button type="button" class="btn btn-outline-light text-nowrap btn-enter-report" data-order-id="{{ o.id }}" data-test-name="{{ o.test_name }}"><i class="fas fa-edit"></i> Enter Report</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="text-secondary small">View only</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr id="labEmptyRow">
+                    <td colspan="7" class="text-center py-5 text-secondary">No lab orders match the current filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Request test (doctor) -->
+<div class="modal fade" id="requestTestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background: #1e293b; border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #f1f5f9;"><i
+                        class="fas fa-plus-circle me-2 text-primary"></i>Order lab test</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Search patient</label>
+                    <input type="text" id="labPatientSearch" class="form-control" placeholder="Type patient name…"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                    <div id="labPatientResults" class="mt-2"></div>
+                    <input type="hidden" id="labPatientId">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Test name</label>
+                    <select id="labTestName" class="form-select"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                        <option value="">Select test…</option>
+                        <option>Complete Blood Count (CBC)</option>
+                        <option>Blood Test</option>
+                        <option>Blood Sugar (Fasting)</option>
+                        <option>HbA1c</option>
+                        <option>Lipid Profile</option>
+                        <option>Liver Function Test (LFT)</option>
+                        <option>Kidney Function Test (KFT)</option>
+                        <option>Thyroid Profile (T3, T4, TSH)</option>
+                        <option>Urine Analysis</option>
+                        <option value="custom">Other (custom)</option>
+                    </select>
+                    <input type="text" id="labTestNameCustom" class="form-control mt-2 d-none"
+                        placeholder="Custom test name"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Notes (optional)</label>
+                    <textarea id="labTestNotes" class="form-control" rows="2" placeholder="Clinical notes…"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-3 px-4" onclick="submitLabRequest()">Submit order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Walk-in lab order (lab staff / host / admin) -->
+<div class="modal fade" id="walkinLabModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background: #1e293b; border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #f1f5f9;"><i
+                        class="fas fa-vial me-2 text-success"></i>New walk-in lab order</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-secondary">Creates a <strong>WALK_IN</strong> order (no referring doctor). Billing is
+                    generated for the patient.</p>
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Find patient</label>
+                    <input type="text" id="wiPatientSearch" class="form-control" placeholder="Type name…"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                    <div id="wiPatientResults" class="mt-2"></div>
+                    <input type="hidden" id="wiPatientId">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Test</label>
+                    <select id="wiTestName" class="form-select"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                        <option value="">Select test…</option>
+                        <option>Complete Blood Count (CBC)</option>
+                        <option>Blood Test</option>
+                        <option>Blood Sugar (Fasting)</option>
+                        <option>HbA1c</option>
+                        <option>Lipid Profile</option>
+                        <option>Liver Function Test (LFT)</option>
+                        <option>Kidney Function Test (KFT)</option>
+                        <option>Thyroid Profile (T3, T4, TSH)</option>
+                        <option>Urine Analysis</option>
+                        <option value="custom">Other (custom)</option>
+                    </select>
+                    <input type="text" id="wiTestNameCustom" class="form-control mt-2 d-none"
+                        placeholder="Custom test name"
+                        style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-3 px-4" onclick="submitWalkinLabOrder()">Create order</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enter Report -->
+<div class="modal fade" id="enterReportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="background: #1e293b; border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #f1f5f9;"><i
+                        class="fas fa-edit me-2 text-success"></i>Enter Lab Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reportOrderId">
+                <p class="text-secondary small" id="reportOrderLabel"></p>
+                <div id="reportDynamicFields" class="row g-3">
+                    <div class="col-12 text-center text-secondary py-3">Loading template...</div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success rounded-3" onclick="saveEnterReport()">Save Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create generic patient modal -->
+<div class="modal fade" id="createPatientModal" tabindex="-1" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="background: #1e293b; border-radius: 20px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color: #f1f5f9;"><i class="fas fa-user-plus me-2 text-success"></i>Create New Patient</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Name *</label>
+                    <input type="text" id="cpName" class="form-control" placeholder="Full name" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;" required>
+                </div>
+                <div class="d-flex gap-2 mb-3">
+                    <div class="flex-fill">
+                        <label class="form-label text-secondary">Age *</label>
+                        <input type="number" id="cpAge" class="form-control" placeholder="Age" min="0" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;" required>
+                    </div>
+                    <div class="flex-fill">
+                        <label class="form-label text-secondary">Gender *</label>
+                        <select id="cpGender" class="form-select" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;" required>
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-secondary">Phone (optional)</label>
+                    <input type="tel" id="cpPhone" class="form-control" placeholder="10-digit number" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-3 px-4" onclick="submitCreatePatient()">Create Patient</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const jsonHeaders = { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken };
+
+    document.getElementById('labTestName')?.addEventListener('change', function () {
+        document.getElementById('labTestNameCustom').classList.toggle('d-none', this.value !== 'custom');
+    });
+    document.getElementById('wiTestName')?.addEventListener('change', function () {
+        document.getElementById('wiTestNameCustom').classList.toggle('d-none', this.value !== 'custom');
+    });
+
+    const wiSearch = document.getElementById('wiPatientSearch');
+    if (wiSearch) {
+        let wdeb;
+        wiSearch.addEventListener('input', function () {
+            clearTimeout(wdeb);
+            wdeb = setTimeout(() => {
+                const q = this.value.trim();
+                if (q.length < 2) { document.getElementById('wiPatientResults').innerHTML = ''; return; }
+                fetch(`{{ url_for('lab.search_patients') }}?q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(patients => {
+                        let html = '';
+                        if (patients.length === 0) {
+                            html = `<div class="p-3 text-center text-secondary small" style="background:rgba(30,41,59,0.8); border-radius:8px;">
+                                No patients found for "${q}".<br>
+                                <button type="button" class="btn btn-sm btn-outline-success mt-2" onclick="openCreatePatientModal('${q.replace(/'/g, "\\'")}')">+ Create New Patient</button>
+                            </div>`;
+                        } else {
+                            html = patients.map(p =>
+                                `<div class="p-2 rounded mb-1" style="background:rgba(30,41,59,0.8);cursor:pointer;color:#e2e8f0;" onclick="selectWiPatient(${p.id}, '${String(p.name).replace(/'/g, "\\'")}')">
+                                <i class="fas fa-user me-2 text-success"></i>${p.name} <span class="text-secondary small">(${p.uhid || 'N/A'} | ${p.age}y)</span></div>`
+                            ).join('');
+                            html += `<div class="text-center mt-2"><button type="button" class="btn btn-sm btn-link text-success text-decoration-none" onclick="openCreatePatientModal('${q.replace(/'/g, "\\'")}')"><i class="fas fa-plus me-1"></i>Create New Patient</button></div>`;
+                        }
+                        document.getElementById('wiPatientResults').innerHTML = html;
+                    });
+            }, 300);
+        });
+    }
+    function selectWiPatient(id, name) {
+        document.getElementById('wiPatientId').value = id;
+        document.getElementById('wiPatientSearch').value = name;
+        document.getElementById('wiPatientResults').innerHTML = '';
+    }
+    window.selectWiPatient = selectWiPatient;
+
+    function submitWalkinLabOrder() {
+        const patientId = document.getElementById('wiPatientId').value;
+        let testName = document.getElementById('wiTestName').value;
+        if (testName === 'custom') testName = document.getElementById('wiTestNameCustom').value.trim();
+        if (!patientId || !testName) { alert('Select a patient and test'); return; }
+        fetch('{{ url_for("lab.create_order") }}', {
+            method: 'POST', credentials: 'include', headers: jsonHeaders,
+            body: JSON.stringify({
+                patient_id: parseInt(patientId, 10),
+                test_name: testName,
+                source_type: 'WALK_IN'
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('walkinLabModal'))?.hide();
+                refreshLabTable();
+            } else alert(data.error || 'Failed');
+        }).catch(() => alert('Network error'));
+    }
+    window.submitWalkinLabOrder = submitWalkinLabOrder;
+
+    const searchInput = document.getElementById('labPatientSearch');
+    if (searchInput) {
+        let debounce;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                const q = this.value.trim();
+                if (q.length < 2) { document.getElementById('labPatientResults').innerHTML = ''; return; }
+                fetch(`{{ url_for('lab.search_patients') }}?q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(patients => {
+                        const container = document.getElementById('labPatientResults');
+                        if (patients.length === 0) {
+                            container.innerHTML = `<div class="p-3 text-center text-secondary small" style="background:rgba(30,41,59,0.8); border-radius:8px;">
+                                No patients found for "${q}".<br>
+                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="openCreatePatientModal('${q.replace(/'/g, "\\'")}')">+ Create New Patient</button>
+                            </div>`;
+                        } else {
+                            let html = patients.map(p =>
+                                `<div class="p-2 rounded mb-1" style="background:rgba(30,41,59,0.8);cursor:pointer;color:#e2e8f0;" onclick="selectLabPatient(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-user me-2 text-primary"></i>${p.name} <span class="text-secondary small">(${p.uhid || 'N/A'} | ${p.age}y, ${p.gender})</span>
+                            </div>`
+                            ).join('');
+                            html += `<div class="text-center mt-2"><button type="button" class="btn btn-sm btn-link text-primary text-decoration-none" onclick="openCreatePatientModal('${q.replace(/'/g, "\\'")}')"><i class="fas fa-plus me-1"></i>Create New Patient</button></div>`;
+                            container.innerHTML = html;
+                        }
+                    });
+            }, 300);
+        });
+    }
+
+    function selectLabPatient(id, name) {
+        document.getElementById('labPatientId').value = id;
+        document.getElementById('labPatientSearch').value = name;
+        document.getElementById('labPatientResults').innerHTML = '';
+    }
+
+    function submitLabRequest() {
+        const patientId = document.getElementById('labPatientId').value;
+        let testName = document.getElementById('labTestName').value;
+        if (testName === 'custom') testName = document.getElementById('labTestNameCustom').value;
+        const notes = document.getElementById('labTestNotes').value;
+        if (!patientId || !testName) { alert('Select a patient and test'); return; }
+
+        fetch('{{ url_for("lab.request_test") }}', {
+            method: 'POST', credentials: 'include', headers: jsonHeaders,
+            body: JSON.stringify({ patient_id: parseInt(patientId), test_name: testName, notes })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('requestTestModal'))?.hide();
+                refreshLabTable();
+            } else alert(data.error || 'Error');
+        }).catch(() => alert('Network error'));
+    }
+
+    function openCreatePatientModal(searchQuery) {
+        document.getElementById('cpName').value = searchQuery || '';
+        document.getElementById('cpAge').value = '';
+        document.getElementById('cpGender').value = '';
+        document.getElementById('cpPhone').value = '';
+        
+        new bootstrap.Modal(document.getElementById('createPatientModal')).show();
+    }
+
+    function submitCreatePatient() {
+        const name = document.getElementById('cpName').value.trim();
+        const age = document.getElementById('cpAge').value;
+        const gender = document.getElementById('cpGender').value;
+        const phone = document.getElementById('cpPhone').value.trim();
+        
+        if (!name || !age || !gender) {
+            alert('Please fill all required fields');
+            return;
+        }
+        
+        fetch('/api/patients/register', {
+            method: 'POST',
+            credentials: 'include',
+            headers: jsonHeaders,
+            body: JSON.stringify({ name, age, gender, phone, force_create: true })
+        }).then(r => {
+            if (!r.ok) {
+                return r.text().then(text => { throw new Error(text) })
+            }
+            return r.json();
+        }).then(data => {
+            if(data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('createPatientModal'))?.hide();
+                
+                // Automatically select the new patient
+                const p = data.patient;
+                const wlModal = document.getElementById('walkinLabModal');
+                const reqModal = document.getElementById('requestTestModal');
+                
+                if (wlModal && wlModal.classList.contains('show')) {
+                    selectWiPatient(p.id, p.name);
+                } else if (reqModal && reqModal.classList.contains('show')) {
+                    selectLabPatient(p.id, p.name);
+                } else {
+                    selectWiPatient(p.id, p.name);
+                }
+            } else {
+                alert(data.error || 'Failed to create patient');
+            }
+        }).catch(() => alert('Network error'));
+    }
+
+    const root = document.getElementById('labDashboardRoot');
+    const pollUrl = root?.dataset.pollUrl;
+    const isLabStaff = root?.dataset.isLabStaff === '1';
+
+    function qsParams() {
+        const u = new URL(window.location.href);
+        return u.search || '';
+    }
+
+    function statusPillHtml(st) {
+        const label = (st || '').replace(/_/g, ' ');
+        let cls = 'secondary';
+        if (st === 'PENDING') cls = 'warning';
+        else if (st === 'SAMPLE_COLLECTED') cls = 'info';
+        else if (st === 'PROCESSING') cls = 'primary';
+        else if (st === 'COMPLETED') cls = 'success';
+        return `<span class="badge bg-${cls} bg-opacity-25 text-${cls === 'primary' ? 'light' : cls} border border-${cls}">${label}</span>`;
+    }
+
+    function sourceBadge(src) {
+        if (src === 'DOCTOR') return '<span class="badge rounded-pill px-2 py-1" style="background:rgba(59,130,246,0.2);color:#93c5fd;">🩺 Doctor referral</span>';
+        return '<span class="badge rounded-pill px-2 py-1" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">🧪 Walk-in</span>';
+    }
+
+    function actionsHtml(o) {
+        if (!isLabStaff) return '<span class="text-secondary small">View only</span>';
+        let btns = '';
+        if (o.status === 'CREATED') btns += `<button type="button" class="btn btn-outline-info btn-sm btn-lab-status" data-order-id="${o.id}" data-new-status="SAMPLE_COLLECTED">Collect sample</button>`;
+        if (o.status === 'CREATED' || o.status === 'SAMPLE_COLLECTED') btns += `<button type="button" class="btn btn-outline-primary btn-sm btn-lab-status" data-order-id="${o.id}" data-new-status="PROCESSING">Processing</button>`;
+        if (o.status === 'PROCESSING' || o.status === 'COMPLETED') {
+            if (o.generated_reports && o.generated_reports.length > 0) {
+                const latestReport = [...o.generated_reports].sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+                btns += `<a href="/lab/report/view/${latestReport.id}" class="btn btn-outline-success btn-sm" target="_blank"><i class="fas fa-file-medical"></i> View Report</a>`;
+            } else {
+                btns += `<button type="button" class="btn btn-outline-light btn-sm text-nowrap btn-enter-report" data-order-id="${o.id}" data-test-name="${o.test_name.replace(/"/g,'&quot;')}"><i class="fas fa-edit"></i> Enter Report</button>`;
+            }
+        }
+        return `<div class="btn-group btn-group-sm flex-wrap justify-content-end">${btns}</div>`;
+    }
+
+    function rowHtml(o) {
+        const dt = o.created_at ? new Date(o.created_at).toLocaleString() : '—';
+        return `<tr data-order-id="${o.id}">
+            <td class="ps-4"><div class="fw-semibold" style="color:#e2e8f0;">${o.patient_name}</div><div class="small text-secondary">${o.patient_uhid || 'N/A'} | #${o.patient_id}</div></td>
+            <td><strong style="color:#cbd5e1;">${o.test_name}</strong></td>
+            <td class="small text-secondary">${o.test_category || ''}</td>
+            <td>${sourceBadge(o.source_type)}</td>
+            <td>${statusPillHtml(o.status)}</td>
+            <td class="small text-secondary">${dt}</td>
+            <td class="pe-4 text-end">${actionsHtml(o)}</td>
+        </tr>`;
+    }
+
+    function updateStats(rows) {
+        const el = (c, v) => { const n = document.querySelector(c); if (n) n.textContent = v; };
+        el('.stat-total', rows.length);
+        el('.stat-pending', rows.filter(r => r.status === 'PENDING').length);
+        el('.stat-sample', rows.filter(r => r.status === 'SAMPLE_COLLECTED').length);
+        el('.stat-proc', rows.filter(r => r.status === 'PROCESSING').length);
+        el('.stat-done', rows.filter(r => r.status === 'COMPLETED').length);
+    }
+
+    function refreshLabTable() {
+        if (!pollUrl) return;
+        fetch(pollUrl + qsParams(), { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.orders) return;
+                const tb = document.getElementById('labOrdersTbody');
+                if (!tb) return;
+                updateStats(data.orders);
+                if (!data.orders.length) {
+                    tb.innerHTML = '<tr id="labEmptyRow"><td colspan="7" class="text-center py-5 text-secondary">No lab orders match the current filters.</td></tr>';
+                    return;
+                }
+                tb.innerHTML = data.orders.map(rowHtml).join('');
+            }).catch(() => {});
+    }
+
+    function labSetStatus(orderId, status) {
+        fetch('{{ url_for("lab.update_status") }}', {
+            method: 'POST', credentials: 'include', headers: jsonHeaders,
+            body: JSON.stringify({ order_id: orderId, status })
+        }).then(r => r.json()).then(d => { if (d.success) refreshLabTable(); else alert(d.error || 'Failed'); });
+    }
+
+    function openEnterReportModal(orderId, testName) {
+        document.getElementById('reportOrderId').value = orderId;
+        document.getElementById('reportOrderLabel').textContent = 'Order #' + orderId + ' — ' + (typeof testName === 'string' ? testName : '');
+        
+        const container = document.getElementById('reportDynamicFields');
+        container.innerHTML = '<div class="col-12 text-center text-secondary py-3">Loading template...</div>';
+        
+        new bootstrap.Modal(document.getElementById('enterReportModal')).show();
+
+        fetch('/lab/api/template/' + encodeURIComponent(testName))
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                container.innerHTML = `<div class="col-12 text-warning">Could not find template for ${testName}. Creating custom interpretation block. <input type="hidden" class="dynamic-field-name" value="Result Detail"><textarea class="form-control dynamic-field-val bg-dark text-light" rows="4"></textarea></div>`;
+                return;
+            }
+            // Parse fields/ranges if they come as JSON strings
+            let fields = data.fields;
+            let ranges = data.ranges;
+            if (typeof fields === 'string') { try { fields = JSON.parse(fields); } catch(e) { fields = {}; } }
+            if (typeof ranges === 'string') { try { ranges = JSON.parse(ranges); } catch(e) { ranges = {}; } }
+
+            let html = '';
+            for (const [fName, unitStr] of Object.entries(fields)) {
+                let rangeText = ranges && ranges[fName] ? `Range: ${ranges[fName]}` : '';
+                html += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary mb-1" style="font-size:0.8rem">${fName} <small class="text-muted">(${unitStr})</small></label>
+                    <input type="hidden" class="dynamic-field-name" value="${fName}">
+                    <input type="text" class="form-control form-control-sm dynamic-field-val" placeholder="${rangeText}" style="background: rgba(30,41,59,0.8); border: 1px solid rgba(148,163,184,0.2); color: #f1f5f9;">
+                </div>`;
+            }
+            container.innerHTML = html;
+        }).catch(() => {
+            container.innerHTML = '<div class="col-12 text-danger">Failed to load template layout.</div>';
+        });
+    }
+
+    function saveEnterReport() {
+        const orderId = document.getElementById('reportOrderId').value;
+        const container = document.getElementById('reportDynamicFields');
+        const names = container.querySelectorAll('.dynamic-field-name');
+        const vals = container.querySelectorAll('.dynamic-field-val');
+        
+        let reportData = {};
+        for (let i = 0; i < names.length; i++) {
+            if (names[i].value) {
+                reportData[names[i].value] = vals[i].value;
+            }
+        }
+        
+        fetch('{{ url_for("lab.save_report") }}', {
+            method: 'POST',
+            credentials: 'include',
+            headers: jsonHeaders,
+            body: JSON.stringify({
+                order_id: orderId,
+                report_data: reportData
+            })
+        }).then(r => r.json()).then(d => {
+            if (d.success) {
+                bootstrap.Modal.getInstance(document.getElementById('enterReportModal'))?.hide();
+                refreshLabTable();
+                window.open('/lab/report/view/' + d.report_id, '_blank');
+            } else alert(d.error || 'Check backend format');
+        }).catch(() => alert('Network error'));
+    }
+
+    function labComplete(orderId) {
+        fetch('{{ url_for("lab.complete_order") }}', {
+            method: 'POST', credentials: 'include', headers: jsonHeaders,
+            body: JSON.stringify({ order_id: parseInt(orderId, 10) })
+        }).then(r => r.json()).then(d => { if (d.success) refreshLabTable(); else alert(d.error || 'Failed'); });
+    }
+
+    window.labSetStatus = labSetStatus;
+    window.labComplete = labComplete;
+    window.openEnterReportModal = openEnterReportModal;
+    window.saveEnterReport = saveEnterReport;
+
+    // Event delegation — handles clicks on both server-rendered and JS-refreshed rows
+    document.getElementById('labOrdersTbody')?.addEventListener('click', function(e) {
+        const enterBtn = e.target.closest('.btn-enter-report');
+        if (enterBtn) {
+            e.preventDefault();
+            const orderId = enterBtn.dataset.orderId;
+            const testName = enterBtn.dataset.testName;
+            openEnterReportModal(orderId, testName);
+            return;
+        }
+        const statusBtn = e.target.closest('.btn-lab-status');
+        if (statusBtn) {
+            e.preventDefault();
+            labSetStatus(statusBtn.dataset.orderId, statusBtn.dataset.newStatus);
+            return;
+        }
+    });
+
+    setInterval(refreshLabTable, 12000);
+</script>
+{% endblock %}

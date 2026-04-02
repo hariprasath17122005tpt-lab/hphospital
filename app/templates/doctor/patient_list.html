@@ -27,8 +27,8 @@
                                 <tbody>
                                     {% for patient in patients %}
                                         <tr>
-                                            <td><strong>{{ patient.user.username }}</strong></td>
-                                            <td>{{ patient.user.email }}</td>
+                                            <td><strong>{{ patient.full_name }}</strong></td>
+                                            <td>{{ patient.user.email if patient.user else '(No account)' }}</td>
                                             <td>{{ patient.age if patient.age else '-' }}</td>
                                             <td>{{ patient.gender if patient.gender else '-' }}</td>
                                             <td>{{ patient.phone if patient.phone else '-' }}</td>

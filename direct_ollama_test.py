@@ -7,6 +7,7 @@ Tests Ollama directly
 import requests
 import json
 import time
+import sys
 
 OLLAMA_URL = "http://localhost:11434"
 MODEL = "neural-chat"
@@ -28,8 +29,9 @@ try:
     else:
         print(f"   ❌ Ollama error: {response.status_code}")
 except Exception as e:
-    print(f"   ❌ Could not connect to Ollama: {str(e)}")
-    exit(1)
+    print(f"   ⚠️ Ollama is not available: {str(e)}")
+    print("   ⚠️ Skipping AI model tests; run Ollama server on localhost:11434 to test AI responses.")
+    # Continue without exiting so Pytest collection does not fail.
 
 # Test 2-4: Ask medical questions
 questions = [

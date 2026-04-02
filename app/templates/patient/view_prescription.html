@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+{% block title %}View Prescription — CarePoint{% endblock %}
+
+{% block content %}
+<style>
+    .prescription-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .rx-sheet {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        margin-bottom: 24px;
+        color: #1e293b;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rx-sheet::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #0ea5e9, #2dd4bf);
+    }
+
+    .rx-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .hospital-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0369a1;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .doctor-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .hospital-contact {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .patient-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-label {
+        width: 100px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        flex: 1;
+        border-bottom: 1px dotted #94a3b8;
+        padding-bottom: 2px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .rx-symbol {
+        font-size: 3rem;
+        font-family: serif;
+        font-weight: bold;
+        color: #334155;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    /* Medicine Table */
+    .med-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .med-table th {
+        text-align: left;
+        padding: 12px 10px;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .med-table td {
+        padding: 10px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+        font-weight: 500;
+    }
+
+    .diagnosis-notes {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .text-area-box label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .text-area-box .note-content {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        min-height: 50px;
+    }
+
+    .rx-footer {
+        margin-top: 50px;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 20px;
+    }
+
+    .signature-area {
+        text-align: center;
+        width: 200px;
+    }
+
+    .signature-line {
+        border-bottom: 1px solid #1e293b;
+        margin-bottom: 8px;
+        height: 30px;
+    }
+
+    .signature-label {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .btn-action {
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-print {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .btn-print:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+    }
+
+    .btn-download:hover {
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-whatsapp {
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+    }
+
+    .btn-whatsapp:hover {
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+    }
+</style>
+
+<div class="prescription-container">
+    <div class="action-bar">
+        <div>
+            <a href="{{ url_for('patient.prescriptions') }}" class="btn-action btn-print">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+        <div>
+            <button class="btn-action btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button class="btn-action btn-download" onclick="downloadImage()">
+                <i class="fas fa-download"></i> Download Image
+            </button>
+            <button class="btn-action btn-whatsapp" onclick="shareOnWhatsApp()">
+                <i class="fab fa-whatsapp"></i> Share on WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- PRESCRIPTION SHEET UI -->
+    <div class="rx-sheet" id="prescriptionSheet">
+        <div class="rx-header">
+            <div class="hospital-title">CarePoint Hospital</div>
+            <div class="doctor-title">Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }} <span
+                    style="font-size:0.9rem; color:#64748b; font-weight:normal;">{{ prescription.doctor.specialization
+                    }}</span></div>
+            <div class="hospital-contact">123 Health Avenue, Medical District • Ph: +1 (555) 0192</div>
+        </div>
+
+        <div class="patient-details-grid">
+            <div class="detail-row">
+                <div class="detail-label">Patient Name:</div>
+                <div class="detail-value">{{ prescription.patient.first_name }} {{ prescription.patient.last_name }}
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">ID / Date:</div>
+                <div class="detail-value">PT-{{ prescription.patient.id }} / {{
+                    prescription.prescribed_at.strftime('%m/%d/%Y') }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Age/Gender:</div>
+                <div class="detail-value">{{ prescription.patient.age }} Yrs / {{ prescription.patient.gender }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Prescription ID:</div>
+                <div class="detail-value">RX-{{ prescription.id }}</div>
+            </div>
+        </div>
+
+        <div class="rx-symbol">Rx</div>
+
+        <table class="med-table">
+            <thead>
+                <tr>
+                    <th width="30%">Medicine Name</th>
+                    <th width="15%">Dosage</th>
+                    <th width="15%">Frequency</th>
+                    <th width="15%">Duration</th>
+                    <th width="25%">Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if prescription.medicine_items and prescription.medicine_items.count() > 0 %}
+                {% for med in prescription.medicine_items %}
+                <tr>
+                    <td><strong>{{ med.medicine_name }}</strong></td>
+                    <td>{{ med.dosage }}</td>
+                    <td>{{ med.frequency }}</td>
+                    <td>{{ med.duration }}</td>
+                    <td>{{ med.instruction }} {{ med.food_relation }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <!-- Legacy display -->
+                <tr>
+                    <td><strong>{{ prescription.medicines }}</strong></td>
+                    <td>{{ prescription.dosage }}</td>
+                    <td>{{ prescription.frequency }}</td>
+                    <td>{{ prescription.duration }}</td>
+                    <td>{{ prescription.instructions }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="diagnosis-notes">
+            {% if prescription.diagnosis %}
+            <div class="text-area-box">
+                <label>Diagnosis / Problem Details</label>
+                <div class="note-content">{{ prescription.diagnosis }}</div>
+            </div>
+            {% endif %}
+            {% if prescription.notes or prescription.instructions %}
+            <div class="text-area-box">
+                <label>Additional Doctor Notes</label>
+                <div class="note-content">{{ prescription.notes or prescription.instructions }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="rx-footer">
+            <div class="signature-area">
+                <div class="signature-line"
+                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; border-bottom: none;">
+                    {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}
+                </div>
+                <div style="border-top: 1px solid #1e293b; width: 100%;"></div>
+                <div class="signature-label">Doctor's Signature</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include html2canvas for image generation -->
+<script src="/static/vendor/html2canvas.min.js"></script>
+
+<script>
+    async function capturePrescription() {
+        const element = document.getElementById('prescriptionSheet');
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            backgroundColor: "#ffffff",
+            useCORS: true
+        });
+        return canvas;
+    }
+
+    async function downloadImage() {
+        const canvas = await capturePrescription();
+        const link = document.createElement('a');
+        link.download = "Prescription_RX{{ prescription.id }}.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    }
+
+    async function shareOnWhatsApp() {
+        // Since WhatsApp blocks automated image attachments via URL scheme,
+        // we can prompt user to download the image, OR natively trigger Web Share API if supported
+
+        const canvas = await capturePrescription();
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+
+        if (navigator.share && navigator.canShare) {
+            const file = new File([blob], "Prescription_RX{{ prescription.id }}.png", { type: 'image/png' });
+
+            if (navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'My Medical Prescription',
+                        text: 'Here is my latest prescription from CarePoint Hospital.',
+                        files: [file]
+                    });
+                    return; // Success
+                } catch (err) {
+                    console.log("Share failed or was canceled:", err);
+                }
+            }
+        }
+
+        // Fallback for desktop / unsupported browsers: 
+        // Just send the text formatted beautifully
+        let textParams = "*CarePoint Hospital Prescription*\n";
+        textParams += "Rx #: {{ prescription.id }}\n";
+        textParams += "Doctor: Dr. {{ prescription.doctor.last_name }}\n";
+        textParams += "Date: {{ prescription.prescribed_at.strftime('%m/%d/%Y') }}\n\n";
+        textParams += "*Medicines:*\n";
+
+        {% if prescription.medicine_items and prescription.medicine_items.count() > 0 %}
+        {% for med in prescription.medicine_items %}
+        textParams += "- {{ med.medicine_name }} | {{ med.dosage }} | {{ med.frequency }}\n";
+        {% endfor %}
+        {% else %}
+        textParams += "- {{ prescription.medicines }} | {{ prescription.dosage }} | {{ prescription.frequency }}\n";
+        {% endif %}
+
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(textParams)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+
+<!-- Hide nav sidebars for print view -->
+<style>
+    @media print {
+        body {
+            background: white;
+        }
+
+        .action-bar,
+        .app-sidebar,
+        .top-navbar {
+            display: none !important;
+        }
+
+        .app-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+
+        .prescription-container {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .rx-sheet {
+            box-shadow: none;
+            padding: 0;
+        }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+<!-- Patient Sidebar — Ultra-Premium Glassmorphism Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Collapse Toggle -->
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()"
+        title="Collapse sidebar">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- Brand -->
+    <a href="{{ url_for('patient.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+            <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Main</span>
+
+        <a href="{{ url_for('patient.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{{ url_for('patient.appointments') }}"
+            class="sidebar-link {% if request.endpoint in ['patient.appointments', 'patient.book_appointment'] %}active{% endif %}">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Appointments</span>
+        </a>
+
+        <a href="{{ url_for('patient.prescriptions') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.prescriptions' %}active{% endif %}">
+            <i class="fas fa-pills"></i>
+            <span>Prescriptions</span>
+        </a>
+
+        <a href="{{ url_for('patient.lab_reports') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.lab_reports' %}active{% endif %}">
+            <i class="fas fa-flask"></i>
+            <span>Lab Reports</span>
+        </a>
+
+        <a href="{{ safe_url_for('patient.lab_requests', 'patient.lab_reports') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.lab_requests' %}active{% endif %}">
+            <i class="fas fa-vial"></i>
+            <span>Lab Requests</span>
+        </a>
+
+        <a href="{{ safe_url_for('patient.medicine_status', 'patient.diet_plan') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.medicine_status' %}active{% endif %}">
+            <i class="fas fa-prescription-bottle-alt"></i>
+            <span>Medicine Status</span>
+        </a>
+
+        <span class="sidebar-section-label">Health</span>
+
+        <a href="{{ url_for('patient.enter_health_data') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.enter_health_data' %}active{% endif %}">
+            <i class="fas fa-heartbeat"></i>
+            <span>Vitals</span>
+        </a>
+
+        <a href="{{ url_for('patient.diet_plan') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.diet_plan' %}active{% endif %}">
+            <i class="fas fa-apple-alt"></i>
+            <span>Diet Plan</span>
+        </a>
+
+        <a href="{{ url_for('patient.exercise_plan') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.exercise_plan' %}active{% endif %}">
+            <i class="fas fa-running"></i>
+            <span>Exercise Plan</span>
+        </a>
+
+        <span class="sidebar-section-label">Tools</span>
+
+        <a href="{{ url_for('patient.messages') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.messages' %}active{% endif %}">
+            <i class="fas fa-comment-dots"></i>
+            <span>Messages</span>
+        </a>
+
+        <a href="{{ url_for('patient.billing') }}"
+            class="sidebar-link {% if request.endpoint == 'patient.billing' %}active{% endif %}">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Billing</span>
+        </a>
+
+        <a href="{{ url_for('patient.profile') }}"
+            class="sidebar-link {% if request.endpoint in ['patient.profile', 'patient.edit_profile'] %}active{% endif %}">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ current_user.username[0]|upper }}</div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ current_user.username }}</div>
+            <div class="sidebar-user-role">Patient</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<script>
+    function toggleSidebarCollapse() {
+        const sidebar = document.getElementById('appSidebar');
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    // Restore sidebar state
+    (function () {
+        const sidebar = document.getElementById('appSidebar');
+        if (sidebar && localStorage.getItem('sidebar-collapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+    })();
+</script>

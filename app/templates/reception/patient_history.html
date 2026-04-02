@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Patient History - Reception{% endblock %}
+
+{% block content %}
+<style>
+    .history-shell { max-width: 1320px; margin: 0 auto; padding: 28px; }
+    .history-grid { display: grid; grid-template-columns: 320px 1fr; gap: 22px; }
+    .history-card {
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 22px;
+        box-shadow: 0 16px 40px rgba(2, 6, 23, 0.18);
+    }
+    .history-card.pad { padding: 22px; }
+    .history-title { font-size: 1.2rem; font-weight: 800; color: #e2e8f0; margin-bottom: 8px; }
+    .history-subtitle { color: #94a3b8; font-size: 0.92rem; margin-bottom: 18px; }
+    .search-input {
+        width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(148,163,184,.14);
+        background: rgba(30,41,59,.9); color: #f8fafc; outline: none;
+    }
+    .search-results { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow: auto; }
+    .search-item {
+        padding: 14px; border-radius: 16px; border: 1px solid rgba(59,130,246,.12);
+        background: rgba(30,41,59,.74); cursor: pointer; transition: .18s ease;
+    }
+    .search-item:hover, .search-item.active { transform: translateY(-1px); border-color: rgba(59,130,246,.4); background: rgba(30,41,59,.95); }
+    .search-name { color: #f8fafc; font-weight: 700; }
+    .search-meta { color: #94a3b8; font-size: .84rem; margin-top: 4px; }
+    .patient-hero {
+        display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; margin-bottom: 18px;
+        padding-bottom: 18px; border-bottom: 1px solid rgba(148,163,184,.1);
+    }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .pill {
+        border-radius: 999px; padding: 8px 14px; border: 1px solid rgba(148,163,184,.14);
+        background: rgba(30,41,59,.72); color: #cbd5e1; font-size: .82rem; font-weight: 700;
+    }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .filter-btn {
+        border: 1px solid rgba(148,163,184,.14); background: rgba(30,41,59,.76); color: #cbd5e1;
+        padding: 10px 14px; border-radius: 999px; font-weight: 700; cursor: pointer;
+    }
+    .filter-btn.active { background: rgba(37,99,235,.18); border-color: rgba(59,130,246,.35); color: #dbeafe; }
+    .timeline { position: relative; padding-left: 26px; }
+    .timeline:before { content: ""; position: absolute; left: 8px; top: 2px; bottom: 2px; width: 2px; background: rgba(148,163,184,.18); }
+    .timeline-item { position: relative; margin-bottom: 16px; padding: 18px; border-radius: 18px; background: rgba(30,41,59,.72); border: 1px solid rgba(148,163,184,.1); }
+    .timeline-item:before {
+        content: ""; position: absolute; left: -24px; top: 22px; width: 14px; height: 14px; border-radius: 50%;
+        background: #64748b; border: 3px solid rgba(15,23,42,.95);
+    }
+    .timeline-item.blue:before { background: #3b82f6; }
+    .timeline-item.green:before { background: #22c55e; }
+    .timeline-item.orange:before { background: #f97316; }
+    .timeline-top { display: flex; justify-content: space-between; gap: 16px; align-items: start; margin-bottom: 8px; }
+    .timeline-type { font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #93c5fd; }
+    .timeline-item.green .timeline-type { color: #86efac; }
+    .timeline-item.orange .timeline-type { color: #fdba74; }
+    .timeline-title { color: #f8fafc; font-weight: 800; font-size: 1rem; }
+    .timeline-desc { color: #cbd5e1; font-size: .9rem; }
+    .timeline-date { color: #94a3b8; font-size: .82rem; white-space: nowrap; }
+    .status-badge { display: inline-block; margin-top: 10px; padding: 6px 10px; border-radius: 999px; background: rgba(148,163,184,.12); color: #e2e8f0; font-size: .76rem; font-weight: 700; }
+    .action-row { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 16px; }
+    .action-btn {
+        border: none; border-radius: 12px; padding: 10px 14px; font-weight: 800; cursor: pointer;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
+    }
+    .muted-box { padding: 20px; border-radius: 18px; background: rgba(15,23,42,.54); color: #94a3b8; text-align: center; }
+    .detail-list { display: grid; gap: 10px; }
+    .detail-row { display: flex; justify-content: space-between; gap: 10px; color: #cbd5e1; font-size: .9rem; }
+    .detail-row strong { color: #94a3b8; font-weight: 700; }
+    @media (max-width: 980px) { .history-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="history-shell">
+    <div class="history-card pad" style="margin-bottom: 22px;">
+        <div class="history-title">Patient History</div>
+        <div class="history-subtitle">Search by UHID, name, or phone and review the patient's complete hospital journey.</div>
+        <div class="action-row">
+            <button class="action-btn" onclick="window.print()"><i class="fas fa-file-pdf me-2"></i>Export / Print</button>
+        </div>
+    </div>
+
+    <div class="history-grid">
+        <div class="history-card pad">
+            <div class="history-title">Search Patient</div>
+            <input id="historySearch" class="search-input" placeholder="UHID / Name / Phone" autocomplete="off">
+            <div id="searchResults" class="search-results"></div>
+
+            <div class="history-title" style="margin-top:24px;">Patient Info</div>
+            <div id="patientInfo" class="muted-box">Select a patient to view history.</div>
+        </div>
+
+        <div class="history-card pad">
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="lab">Lab only</button>
+                <button class="filter-btn" data-filter="medicines">Medicines only</button>
+            </div>
+            <div id="timelineWrap">
+                <div class="muted-box">The full timeline will appear here after patient selection.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('historySearch');
+    const searchResults = document.getElementById('searchResults');
+    const patientInfo = document.getElementById('patientInfo');
+    const timelineWrap = document.getElementById('timelineWrap');
+    let activeFilter = 'all';
+    let latestHistory = null;
+    let searchTimer = null;
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(node => node.classList.remove('active'));
+            btn.classList.add('active');
+            activeFilter = btn.dataset.filter;
+            renderTimeline();
+        });
+    });
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        const q = searchInput.value.trim();
+        if (q.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+        searchTimer = setTimeout(() => {
+            fetch(`/reception/api/search-patients?q=${encodeURIComponent(q)}`, { credentials: 'include' })
+                .then(r => r.json())
+                .then(rows => renderSearch(rows || []))
+                .catch(() => { searchResults.innerHTML = '<div class="muted-box">Search unavailable.</div>'; });
+        }, 250);
+    });
+
+    function renderSearch(rows) {
+        if (!rows.length) {
+            searchResults.innerHTML = '<div class="muted-box">No matching patients found.</div>';
+            return;
+        }
+        searchResults.innerHTML = rows.map(row => `
+            <div class="search-item" onclick="loadHistory(${row.id}, this)">
+                <div class="search-name">${escapeHtml(row.name || 'Unknown')}</div>
+                <div class="search-meta">${escapeHtml(row.uhid || 'No UHID')} | ${escapeHtml(row.phone || 'No phone')}</div>
+                <div class="search-meta">Age ${escapeHtml(String(row.age || 'NA'))} | ${escapeHtml(row.gender || 'NA')}</div>
+            </div>
+        `).join('');
+    }
+
+    function loadHistory(patientId, el) {
+        document.querySelectorAll('.search-item').forEach(node => node.classList.remove('active'));
+        if (el) el.classList.add('active');
+        fetch(`/patients/${patientId}/history?limit=100`, { credentials: 'include' })
+            .then(async r => ({ ok: r.ok, data: await r.json() }))
+            .then(({ ok, data }) => {
+                if (!ok) throw new Error(data.error || 'Unable to load history');
+                latestHistory = data;
+                renderPatientInfo();
+                renderTimeline();
+            })
+            .catch(err => {
+                patientInfo.innerHTML = `<div class="muted-box">${escapeHtml(err.message)}</div>`;
+                timelineWrap.innerHTML = '<div class="muted-box">Unable to load timeline.</div>';
+            });
+    }
+
+    function renderPatientInfo() {
+        const patient = latestHistory?.patient;
+        if (!patient) return;
+        patientInfo.innerHTML = `
+            <div class="patient-hero">
+                <div>
+                    <div class="history-title" style="margin-bottom:4px;">${escapeHtml(patient.name || 'Unknown')}</div>
+                    <div class="history-subtitle" style="margin-bottom:0;">${escapeHtml(patient.uhid || 'No UHID')}</div>
+                </div>
+                <div class="pill">${patient.is_walk_in ? 'Walk-in' : 'Registered'}</div>
+            </div>
+            <div class="detail-list">
+                <div class="detail-row"><strong>Age</strong><span>${escapeHtml(String(patient.age || 'NA'))}</span></div>
+                <div class="detail-row"><strong>Phone</strong><span>${escapeHtml(patient.phone || 'NA')}</span></div>
+                <div class="detail-row"><strong>Gender</strong><span>${escapeHtml(patient.gender || 'NA')}</span></div>
+                <div class="detail-row"><strong>Allergies</strong><span>${escapeHtml(patient.allergies || 'None recorded')}</span></div>
+            </div>
+        `;
+    }
+
+    function renderTimeline() {
+        const items = (latestHistory?.timeline || []).filter(item => activeFilter === 'all' || item.filter_key === activeFilter);
+        if (!latestHistory) {
+            timelineWrap.innerHTML = '<div class="muted-box">Select a patient to view history.</div>';
+            return;
+        }
+        if (!items.length) {
+            timelineWrap.innerHTML = '<div class="muted-box">No entries match the selected filter.</div>';
+            return;
+        }
+        timelineWrap.innerHTML = `
+            <div class="pill-row">
+                <div class="pill">Visits: ${latestHistory.visits.length}</div>
+                <div class="pill">Prescriptions: ${latestHistory.prescriptions.length}</div>
+                <div class="pill">Lab: ${latestHistory.lab_orders.length + latestHistory.lab_reports.length}</div>
+                <div class="pill">Pharmacy: ${latestHistory.pharmacy.length}</div>
+            </div>
+            <div class="timeline">
+                ${items.map(item => `
+                    <div class="timeline-item ${escapeHtml(item.color || 'slate')}">
+                        <div class="timeline-top">
+                            <div>
+                                <div class="timeline-type">${escapeHtml(item.type || 'History')}</div>
+                                <div class="timeline-title">${escapeHtml(item.title || 'Entry')}</div>
+                            </div>
+                            <div class="timeline-date">${formatDate(item.date)}</div>
+                        </div>
+                        <div class="timeline-desc">${escapeHtml(item.description || 'No details')}</div>
+                        ${item.status ? `<div class="status-badge">${escapeHtml(item.status)}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function formatDate(value) {
+        if (!value) return 'No date';
+        const dt = new Date(value);
+        if (Number.isNaN(dt.getTime())) return escapeHtml(value);
+        return dt.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+</script>
+{% endblock %}

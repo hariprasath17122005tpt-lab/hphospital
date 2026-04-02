@@ -1,10 +1,327 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from app.models.models import db, Medicine, BloodInventory, Bed, DoctorEvent, NurseTask, Staff, PatientCheckIn, Patient, Doctor
+from app.models.models import db, Medicine, BloodInventory, Bed, DoctorEvent, Staff, PatientCheckIn, Patient, Doctor
+from app.routes.auth import patient_required
+from sqlalchemy import or_, case, func
 import warnings
 warnings.filterwarnings('ignore')
 
 features_bp = Blueprint('features', __name__, url_prefix='/features')
+
+# ---------------------------------------------------------------------------
+# Built-in medicine catalog - autocomplete fallback when DB is empty.
+# Each entry mirrors the JSON shape returned by the search endpoint.
+# ---------------------------------------------------------------------------
+_BUILTIN_MEDICINE_CATALOG = [
+    # --- Analgesics / Antipyretics ---
+    {'id': 0, 'name': 'Paracetamol 500mg', 'brand': 'Calpol', 'category': 'Analgesic', 'price': 10, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Paracetamol 650mg', 'brand': 'Dolo 650', 'category': 'Analgesic', 'price': 12, 'stock': 0, 'manufacturer': 'Micro Labs'},
+    {'id': 0, 'name': 'Paracetamol Syrup', 'brand': 'Crocin Syrup', 'category': 'Analgesic', 'price': 45, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Ibuprofen 400mg', 'brand': 'Brufen', 'category': 'NSAID', 'price': 20, 'stock': 0, 'manufacturer': 'Abbott'},
+    {'id': 0, 'name': 'Diclofenac 50mg', 'brand': 'Voltaren', 'category': 'NSAID', 'price': 22, 'stock': 0, 'manufacturer': 'Novartis'},
+    {'id': 0, 'name': 'Aspirin 75mg', 'brand': 'Ecosprin', 'category': 'Antiplatelet', 'price': 5, 'stock': 0, 'manufacturer': 'USV Ltd'},
+    {'id': 0, 'name': 'Aspirin 150mg', 'brand': 'Ecosprin', 'category': 'Antiplatelet', 'price': 8, 'stock': 0, 'manufacturer': 'USV Ltd'},
+    {'id': 0, 'name': 'Naproxen 250mg', 'brand': 'Naprosyn', 'category': 'NSAID', 'price': 18, 'stock': 0, 'manufacturer': 'Roche'},
+    {'id': 0, 'name': 'Tramadol 50mg', 'brand': 'Ultram', 'category': 'Opioid Analgesic', 'price': 30, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    # --- Antibiotics ---
+    {'id': 0, 'name': 'Amoxicillin 500mg', 'brand': 'Amoxil', 'category': 'Antibiotic', 'price': 45, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Amoxicillin + Clavulanate', 'brand': 'Augmentin', 'category': 'Antibiotic', 'price': 95, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Azithromycin 500mg', 'brand': 'Zithromax', 'category': 'Antibiotic', 'price': 85, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Azithromycin 250mg', 'brand': 'Azee', 'category': 'Antibiotic', 'price': 65, 'stock': 0, 'manufacturer': 'Cipla'},
+    {'id': 0, 'name': 'Ciprofloxacin 500mg', 'brand': 'Cipro', 'category': 'Antibiotic', 'price': 35, 'stock': 0, 'manufacturer': 'Bayer'},
+    {'id': 0, 'name': 'Cephalexin 500mg', 'brand': 'Keflex', 'category': 'Antibiotic', 'price': 55, 'stock': 0, 'manufacturer': 'Eli Lilly'},
+    {'id': 0, 'name': 'Cefixime 200mg', 'brand': 'Suprax', 'category': 'Antibiotic', 'price': 70, 'stock': 0, 'manufacturer': 'Lupin'},
+    {'id': 0, 'name': 'Doxycycline 100mg', 'brand': 'Vibramycin', 'category': 'Antibiotic', 'price': 40, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Metronidazole 400mg', 'brand': 'Flagyl', 'category': 'Antibiotic', 'price': 15, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Levofloxacin 500mg', 'brand': 'Levaquin', 'category': 'Antibiotic', 'price': 65, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'Clindamycin 300mg', 'brand': 'Cleocin', 'category': 'Antibiotic', 'price': 50, 'stock': 0, 'manufacturer': 'Pfizer'},
+    # --- Antidiabetics ---
+    {'id': 0, 'name': 'Metformin 500mg', 'brand': 'Glucophage', 'category': 'Antidiabetic', 'price': 25, 'stock': 0, 'manufacturer': 'Bristol-Myers Squibb'},
+    {'id': 0, 'name': 'Metformin 1000mg', 'brand': 'Glucophage XR', 'category': 'Antidiabetic', 'price': 40, 'stock': 0, 'manufacturer': 'Bristol-Myers Squibb'},
+    {'id': 0, 'name': 'Glimepiride 2mg', 'brand': 'Amaryl', 'category': 'Antidiabetic', 'price': 35, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Glipizide 5mg', 'brand': 'Glucotrol', 'category': 'Antidiabetic', 'price': 28, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Insulin Aspart', 'brand': 'NovoRapid', 'category': 'Antidiabetic', 'price': 350, 'stock': 0, 'manufacturer': 'Novo Nordisk'},
+    {'id': 0, 'name': 'Insulin Glargine', 'brand': 'Lantus', 'category': 'Antidiabetic', 'price': 450, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Sitagliptin 100mg', 'brand': 'Januvia', 'category': 'Antidiabetic', 'price': 120, 'stock': 0, 'manufacturer': 'Merck'},
+    # --- Cardiovascular / Antihypertensives ---
+    {'id': 0, 'name': 'Amlodipine 5mg', 'brand': 'Norvasc', 'category': 'Antihypertensive', 'price': 20, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Amlodipine 10mg', 'brand': 'Norvasc', 'category': 'Antihypertensive', 'price': 30, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Atenolol 50mg', 'brand': 'Tenormin', 'category': 'Beta Blocker', 'price': 15, 'stock': 0, 'manufacturer': 'AstraZeneca'},
+    {'id': 0, 'name': 'Atorvastatin 10mg', 'brand': 'Lipitor', 'category': 'Statin', 'price': 35, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Atorvastatin 20mg', 'brand': 'Lipitor', 'category': 'Statin', 'price': 45, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Losartan 50mg', 'brand': 'Cozaar', 'category': 'ARB', 'price': 25, 'stock': 0, 'manufacturer': 'Merck'},
+    {'id': 0, 'name': 'Telmisartan 40mg', 'brand': 'Micardis', 'category': 'ARB', 'price': 30, 'stock': 0, 'manufacturer': 'Boehringer Ingelheim'},
+    {'id': 0, 'name': 'Lisinopril 10mg', 'brand': 'Prinivil', 'category': 'ACE Inhibitor', 'price': 30, 'stock': 0, 'manufacturer': 'Merck'},
+    {'id': 0, 'name': 'Enalapril 5mg', 'brand': 'Vasotec', 'category': 'ACE Inhibitor', 'price': 22, 'stock': 0, 'manufacturer': 'Merck'},
+    {'id': 0, 'name': 'Rosuvastatin 10mg', 'brand': 'Crestor', 'category': 'Statin', 'price': 55, 'stock': 0, 'manufacturer': 'AstraZeneca'},
+    {'id': 0, 'name': 'Clopidogrel 75mg', 'brand': 'Plavix', 'category': 'Antiplatelet', 'price': 40, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Warfarin 5mg', 'brand': 'Coumadin', 'category': 'Anticoagulant', 'price': 18, 'stock': 0, 'manufacturer': 'Bristol-Myers Squibb'},
+    {'id': 0, 'name': 'Furosemide 40mg', 'brand': 'Lasix', 'category': 'Diuretic', 'price': 12, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Hydrochlorothiazide 25mg', 'brand': 'HydroDiuril', 'category': 'Diuretic', 'price': 10, 'stock': 0, 'manufacturer': 'Merck'},
+    # --- Gastrointestinal ---
+    {'id': 0, 'name': 'Omeprazole 20mg', 'brand': 'Prilosec', 'category': 'PPI', 'price': 18, 'stock': 0, 'manufacturer': 'AstraZeneca'},
+    {'id': 0, 'name': 'Pantoprazole 40mg', 'brand': 'Pantop', 'category': 'PPI', 'price': 22, 'stock': 0, 'manufacturer': 'Sun Pharma'},
+    {'id': 0, 'name': 'Ranitidine 150mg', 'brand': 'Zantac', 'category': 'H2 Blocker', 'price': 12, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Domperidone 10mg', 'brand': 'Motilium', 'category': 'Antiemetic', 'price': 15, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'Ondansetron 4mg', 'brand': 'Zofran', 'category': 'Antiemetic', 'price': 25, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Loperamide 2mg', 'brand': 'Imodium', 'category': 'Antidiarrheal', 'price': 8, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'ORS Powder', 'brand': 'Electral', 'category': 'Rehydration', 'price': 12, 'stock': 0, 'manufacturer': 'FDC Ltd'},
+    # --- Respiratory ---
+    {'id': 0, 'name': 'Salbutamol Inhaler', 'brand': 'Asthalin', 'category': 'Bronchodilator', 'price': 120, 'stock': 0, 'manufacturer': 'Cipla'},
+    {'id': 0, 'name': 'Montelukast 10mg', 'brand': 'Singulair', 'category': 'Leukotriene Inhibitor', 'price': 35, 'stock': 0, 'manufacturer': 'Merck'},
+    {'id': 0, 'name': 'Cetirizine 10mg', 'brand': 'Zyrtec', 'category': 'Antihistamine', 'price': 8, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'Levocetirizine 5mg', 'brand': 'Xyzal', 'category': 'Antihistamine', 'price': 10, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Fexofenadine 120mg', 'brand': 'Allegra', 'category': 'Antihistamine', 'price': 15, 'stock': 0, 'manufacturer': 'Sanofi'},
+    {'id': 0, 'name': 'Loratadine 10mg', 'brand': 'Claritin', 'category': 'Antihistamine', 'price': 12, 'stock': 0, 'manufacturer': 'Bayer'},
+    {'id': 0, 'name': 'Dextromethorphan Syrup', 'brand': 'Benadryl-DR', 'category': 'Antitussive', 'price': 55, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'Ambroxol 30mg', 'brand': 'Mucolite', 'category': 'Mucolytic', 'price': 18, 'stock': 0, 'manufacturer': 'Sun Pharma'},
+    # --- Vitamins / Supplements ---
+    {'id': 0, 'name': 'Vitamin D3 60000 IU', 'brand': 'D3 Must', 'category': 'Supplement', 'price': 30, 'stock': 0, 'manufacturer': 'Mankind'},
+    {'id': 0, 'name': 'Vitamin B12', 'brand': 'Methylcobalamin', 'category': 'Supplement', 'price': 25, 'stock': 0, 'manufacturer': 'Abbott'},
+    {'id': 0, 'name': 'Vitamin C 500mg', 'brand': 'Limcee', 'category': 'Supplement', 'price': 15, 'stock': 0, 'manufacturer': 'Abbott'},
+    {'id': 0, 'name': 'Iron + Folic Acid', 'brand': 'Autrin', 'category': 'Supplement', 'price': 35, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Calcium + Vitamin D3', 'brand': 'Shelcal', 'category': 'Supplement', 'price': 40, 'stock': 0, 'manufacturer': 'Torrent'},
+    {'id': 0, 'name': 'Multivitamin Tablet', 'brand': 'Zincovit', 'category': 'Supplement', 'price': 50, 'stock': 0, 'manufacturer': 'Apex Labs'},
+    # --- Dermatology ---
+    {'id': 0, 'name': 'Fluconazole 150mg', 'brand': 'Diflucan', 'category': 'Antifungal', 'price': 25, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Clotrimazole Cream', 'brand': 'Candid', 'category': 'Antifungal', 'price': 35, 'stock': 0, 'manufacturer': 'Glenmark'},
+    {'id': 0, 'name': 'Betamethasone Cream', 'brand': 'Betnovate', 'category': 'Corticosteroid', 'price': 40, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Mupirocin Ointment', 'brand': 'T-Bact', 'category': 'Topical Antibiotic', 'price': 80, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    # --- CNS / Neurology ---
+    {'id': 0, 'name': 'Gabapentin 300mg', 'brand': 'Neurontin', 'category': 'Anticonvulsant', 'price': 45, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Pregabalin 75mg', 'brand': 'Lyrica', 'category': 'Neuropathic', 'price': 55, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Alprazolam 0.5mg', 'brand': 'Xanax', 'category': 'Anxiolytic', 'price': 15, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Sertraline 50mg', 'brand': 'Zoloft', 'category': 'SSRI', 'price': 35, 'stock': 0, 'manufacturer': 'Pfizer'},
+    {'id': 0, 'name': 'Escitalopram 10mg', 'brand': 'Lexapro', 'category': 'SSRI', 'price': 40, 'stock': 0, 'manufacturer': 'Lundbeck'},
+    # --- Endocrine ---
+    {'id': 0, 'name': 'Levothyroxine 50mcg', 'brand': 'Thyronorm', 'category': 'Thyroid', 'price': 20, 'stock': 0, 'manufacturer': 'Abbott'},
+    {'id': 0, 'name': 'Levothyroxine 100mcg', 'brand': 'Thyronorm', 'category': 'Thyroid', 'price': 25, 'stock': 0, 'manufacturer': 'Abbott'},
+    {'id': 0, 'name': 'Prednisolone 5mg', 'brand': 'Omnacortil', 'category': 'Corticosteroid', 'price': 12, 'stock': 0, 'manufacturer': 'Macleods'},
+    {'id': 0, 'name': 'Dexamethasone 0.5mg', 'brand': 'Decadron', 'category': 'Corticosteroid', 'price': 10, 'stock': 0, 'manufacturer': 'Merck'},
+    # --- Muscle Relaxants ---
+    {'id': 0, 'name': 'Cyclobenzaprine 10mg', 'brand': 'Flexeril', 'category': 'Muscle Relaxant', 'price': 25, 'stock': 0, 'manufacturer': 'Johnson and Johnson'},
+    {'id': 0, 'name': 'Thiocolchicoside 4mg', 'brand': 'Myoril', 'category': 'Muscle Relaxant', 'price': 30, 'stock': 0, 'manufacturer': 'Sanofi'},
+    # --- Ophthalmology ---
+    {'id': 0, 'name': 'Ciprofloxacin Eye Drops', 'brand': 'Ciplox Eye', 'category': 'Ophthalmic', 'price': 25, 'stock': 0, 'manufacturer': 'Cipla'},
+    {'id': 0, 'name': 'Artificial Tears', 'brand': 'Refresh Tears', 'category': 'Ophthalmic', 'price': 60, 'stock': 0, 'manufacturer': 'Allergan'},
+    # --- Other Common ---
+    {'id': 0, 'name': 'Acyclovir 400mg', 'brand': 'Zovirax', 'category': 'Antiviral', 'price': 35, 'stock': 0, 'manufacturer': 'GlaxoSmithKline'},
+    {'id': 0, 'name': 'Hydroxychloroquine 200mg', 'brand': 'HCQS', 'category': 'Antimalarial', 'price': 20, 'stock': 0, 'manufacturer': 'Ipca Labs'},
+    {'id': 0, 'name': 'Tamsulosin 0.4mg', 'brand': 'Flomax', 'category': 'Alpha Blocker', 'price': 30, 'stock': 0, 'manufacturer': 'Boehringer Ingelheim'},
+]
+
+def _append_bulk_pharmacy_items(catalog, item_count=5000):
+    """
+    Expand fallback pharmacy catalog with a massive variety of realistic medicines.
+    (Tablets, capsules, syrups, tonics, drops, ointments, injections, inhalers, etc.)
+    """
+    drug_profiles = [
+        # Format: (Category, Base Name, [Brands], [Forms], [Strengths])
+        ('Analgesic', 'Paracetamol', ['Dolo', 'Calpol', 'Crocin', 'Pacimol', 'Tylenol', 'P-500'], ['Tablet', 'Syrup', 'Drops', 'Injection', 'Infusion', 'Suspension'], ['500mg', '650mg', '125mg/5ml', '100mg/ml', '250mg/5ml']),
+        ('Analgesic', 'Ibuprofen', ['Brufen', 'Advil', 'Ibugesic', 'Combiflam', 'Motrin'], ['Tablet', 'Capsule', 'Syrup', 'Gel', 'Suspension'], ['200mg', '400mg', '600mg', '100mg/5ml', '5%']),
+        ('NSAID', 'Diclofenac', ['Voveran', 'Voltaren', 'Reactin', 'Fenak', 'Dynapar'], ['Tablet', 'Injection', 'Gel', 'Patch', 'Suppository'], ['50mg', '100mg', '75mg/ml', '1%', '100mg SR']),
+        ('NSAID', 'Aceclofenac', ['Zerodol', 'Hifenac', 'Acenac', 'Dolokind'], ['Tablet', 'Gel', 'Injection'], ['100mg', '200mg SR', '1.5%']),
+        ('NSAID', 'Naproxen', ['Naprosyn', 'Aleve', 'Xenobid', 'Naprox'], ['Tablet', 'Suspension', 'Gel'], ['250mg', '500mg', '10%']),
+
+        ('Antibiotic', 'Amoxicillin', ['Novamox', 'Mox', 'Amoxil', 'Almox', 'Wymox'], ['Capsule', 'Tablet', 'Syrup', 'Drops', 'Dry Syrup'], ['250mg', '500mg', '125mg', '125mg/5ml']),
+        ('Antibiotic', 'Amoxicillin + Clavulanate', ['Augmentin', 'Clavam', 'Moxikind-CV', 'Advent', 'Mega-CV'], ['Tablet', 'Syrup', 'Injection', 'Dry Syrup'], ['375mg', '625mg', '1.2g', '228.5mg']),
+        ('Antibiotic', 'Azithromycin', ['Azee', 'Azithral', 'Zithromax', 'Zady', 'Azax'], ['Tablet', 'Suspension', 'Injection', 'Syrup'], ['250mg', '500mg', '100mg/5ml', '200mg/5ml']),
+        ('Antibiotic', 'Cefpodoxime', ['Monocef-O', 'Cepodem', 'Gudcef', 'Macpod'], ['Tablet', 'Syrup', 'Drops', 'Dry Syrup'], ['50mg', '100mg', '200mg', '50mg/5ml']),
+        ('Antibiotic', 'Cefixime', ['Zifi', 'Taxim-O', 'Mahacef', 'Cefolac', 'Omnicef'], ['Tablet', 'Syrup', 'Drops', 'Dry Suspension'], ['100mg', '200mg', '50mg/5ml']),
+        ('Antibiotic', 'Doxycycline', ['Doxypal', 'Minocycline', 'Vibramycin', 'Dox', 'Doxy-1'], ['Tablet', 'Capsule', 'Injection'], ['100mg', '200mg']),
+
+        ('Gastrointestinal', 'Pantoprazole', ['Pan', 'Pantop', 'Pantocid', 'Pentab', 'P20'], ['Tablet', 'Injection', 'Capsule'], ['20mg', '40mg']),
+        ('Gastrointestinal', 'Omeprazole', ['Omez', 'Omecip', 'Omee', 'Nocid'], ['Capsule', 'Injection'], ['20mg', '40mg']),
+        ('Gastrointestinal', 'Rabeprazole', ['Rablet', 'Rabicip', 'Cyra', 'Happi', 'Razo'], ['Tablet', 'Capsule', 'Injection'], ['20mg']),
+        ('Gastrointestinal', 'Ondansetron', ['Emeset', 'Zofran', 'Vomistop', 'Periset'], ['Tablet', 'Syrup', 'Injection', 'Drops'], ['4mg', '8mg', '2mg/ml']),
+        ('Gastrointestinal', 'Domperidone', ['Domstal', 'Motilium', 'Vomitrol'], ['Tablet', 'Syrup', 'Drops'], ['10mg', '1mg/ml']),
+        ('Gastrointestinal', 'Lactulose', ['Duphalac', 'Looz', 'Lactifiber', 'Smuth'], ['Solution', 'Syrup', 'Granules'], ['10g/15ml', '150ml', '200ml']),
+        ('Gastrointestinal', 'Antacid Gel', ['Digene', 'Gelusil', 'Mucaine', 'Polycrol'], ['Gel', 'Syrup', 'Tablet'], ['200ml', '110ml', 'Standard']),
+
+        ('Antidiabetic', 'Metformin', ['Glycomet', 'Glucophage', 'Cetapin', 'Okamet'], ['Tablet'], ['500mg', '850mg', '1000mg', '500mg SR']),
+        ('Antidiabetic', 'Glimepiride', ['Amaryl', 'Glimer', 'Zoryl', 'Glimy'], ['Tablet'], ['1mg', '2mg', '3mg', '4mg']),
+        ('Antidiabetic', 'Teneligliptin', ['Zita', 'Tenefit', 'Teneza', 'Dynaglipt'], ['Tablet'], ['20mg']),
+        ('Antidiabetic', 'Sitagliptin', ['Januvia', 'Istavel', 'Zita-D'], ['Tablet'], ['50mg', '100mg']),
+        ('Antidiabetic', 'Insulin', ['Lantus', 'Novomix', 'Mixtard', 'Humalog'], ['Injection', 'Pen', 'Cartridge'], ['100 IU/ml', '300 IU/ml']),
+
+        ('Antihypertensive', 'Amlodipine', ['Amlokind', 'Stamlo', 'Norvasc', 'Amlodac'], ['Tablet'], ['2.5mg', '5mg', '10mg']),
+        ('Antihypertensive', 'Telmisartan', ['Telma', 'Tazloc', 'Micardis', 'Tsart', 'Telmikind'], ['Tablet'], ['20mg', '40mg', '80mg']),
+        ('Antihypertensive', 'Losartan', ['Losar', 'Cozaar', 'Repace', 'Covance'], ['Tablet'], ['25mg', '50mg']),
+        ('Antihypertensive', 'Metoprolol', ['Metolar', 'Seloken', 'Prolomet', 'Starpress'], ['Tablet', 'Injection'], ['25mg', '50mg', '12.5mg']),
+
+        ('Cardiovascular', 'Atorvastatin', ['Atorva', 'Lipikind', 'Lipitor', 'Tonact', 'Storvas'], ['Tablet'], ['10mg', '20mg', '40mg', '80mg']),
+        ('Cardiovascular', 'Rosuvastatin', ['Rosuvas', 'Rozavel', 'Crestor', 'Rozucor'], ['Tablet'], ['5mg', '10mg', '20mg', '40mg']),
+        ('Cardiovascular', 'Clopidogrel', ['Deplatt', 'Clavix', 'Plavix', 'Clopilet'], ['Tablet'], ['75mg']),
+        ('Cardiovascular', 'Aspirin', ['Ecosprin', 'Aspirin', 'Disprin', 'Loprin'], ['Tablet'], ['75mg', '150mg', '325mg']),
+
+        ('Respiratory', 'Levosalbutamol + Ipratropium', ['Duolin'], ['Inhaler', 'Respules', 'Rotacaps', 'Turbuhaler'], ['50mcg/20mcg', '1.25mg/500mcg']),
+        ('Respiratory', 'Budesonide', ['Budecort', 'Pulmicort'], ['Inhaler', 'Respules', 'Rotacaps', 'Nebulizer Suspension'], ['100mcg', '200mcg', '0.5mg', '1mg']),
+        ('Respiratory', 'Fluticasone', ['Flomist', 'Flohale', 'Fluticone'], ['Nasal Spray', 'Inhaler'], ['50mcg', '125mcg']),
+        ('Respiratory', 'Montelukast', ['Montair', 'Romilast', 'Telekast'], ['Tablet', 'Syrup', 'Chewable Tablet'], ['4mg', '5mg', '10mg']),
+        ('Respiratory', 'Cetirizine', ['Zyrtec', 'Cetzine', 'Allerid', 'Okacet'], ['Tablet', 'Syrup', 'Drops'], ['10mg', '5mg/5ml']),
+        ('Respiratory', 'Levocetirizine', ['Levocet', 'Teczine', '1-AL', 'Leczine'], ['Tablet', 'Syrup'], ['5mg', '2.5mg/5ml']),
+        ('Respiratory', 'Dextromethorphan + CPM', ['Corex DX', 'Ascoril D', 'Grilinctus', 'Benadryl DR'], ['Syrup', 'Tonic', 'Cough Drop'], ['100ml', '50ml', '60ml', 'Standard']),
+        ('Respiratory', 'Ambroxol', ['Mucolite', 'Ambrodil'], ['Syrup', 'Tablet', 'Drops'], ['30mg', '15mg/5ml']),
+
+        ('Vitamins & Supplements', 'Multivitamin', ['A to Z', 'Zincovit', 'Supradyn', 'Becosules', 'Revital', 'Cobadex'], ['Tablet', 'Capsule', 'Syrup', 'Drops', 'Tonic'], ['Standard']),
+        ('Vitamins & Supplements', 'Cholecalciferol (Vit D3)', ['Calcirol', 'Uprise D3', 'D3 Must', 'Arachitol'], ['Granules', 'Capsule', 'Drops', 'Syrup', 'Injection'], ['60000 IU', '800 IU/ml', '400 IU/ml']),
+        ('Vitamins & Supplements', 'Iron + Folic Acid', ['Dexorange', 'Livogen', 'Autrin', 'Ferium', 'Orofer'], ['Syrup', 'Tablet', 'Tonic', 'Capsule', 'Injection'], ['Standard', '200ml']),
+        ('Vitamins & Supplements', 'Calcium + Vit D3', ['Shelcal', 'Gemcal', 'Cipcal', 'Macalvit'], ['Tablet', 'Syrup', 'Suspension'], ['500mg', '250mg/5ml']),
+        ('Vitamins & Supplements', 'B-Complex', ['Neurobion Forte', 'PolyBion', 'Optineuron', 'Nurokind'], ['Tablet', 'Syrup', 'Injection', 'Capsule'], ['Standard', '2ml']),
+        ('Vitamins & Supplements', 'Protein Supplement', ['Protinex', 'B-Protin', 'Ensure'], ['Powder', 'Granules'], ['250g', '400g']),
+        ('Vitamins & Supplements', 'Vitamin C', ['Limcee', 'Celin', 'Sukcee'], ['Chewable Tablet', 'Drops'], ['500mg']),
+
+        ('Dermatological', 'Ketoconazole', ['Nizral', 'Ketomac', 'Abzorb', 'Phytoral', 'Sebizole'], ['Shampoo', 'Cream', 'Dusting Powder', 'Soap', 'Lotion'], ['2%', '1%', 'Standard', '50g']),
+        ('Dermatological', 'Clotrimazole', ['Candid', 'SurfAZ', 'Canesten', 'Surfaz-SN'], ['Cream', 'Dusting Powder', 'Lotion', 'Ear Drops'], ['1%', 'Standard', '15g']),
+        ('Dermatological', 'Mupirocin', ['T-Bact', 'Supirocin', 'Bactroban'], ['Ointment', 'Cream'], ['2%', '5g']),
+        ('Dermatological', 'Permethrin', ['Perlice', 'Scaboma', 'Permite', 'Zeroscab'], ['Lotion', 'Cream', 'Soap'], ['5%', '1%']),
+        ('Dermatological', 'Luliconazole', ['Lulifin', 'Lulimac', 'Lulican'], ['Cream', 'Lotion'], ['1%', '10g', '20g']),
+        ('Dermatological', 'Diclofenac', ['Volini', 'Moov', 'Omnigel'], ['Gel', 'Spray', 'Ointment'], ['Standard', '30g', '50g']),
+        ('Dermatological', 'Povidone Iodine', ['Betadine', 'Wokadine'], ['Ointment', 'Solution', 'Gargle', 'Powder'], ['5%', '10%', '2%']),
+
+        ('Neurology / CNS', 'Pregabalin', ['Pregeb', 'Lyrica', 'Maxgalin', 'Pregalin'], ['Capsule', 'Tablet'], ['75mg', '150mg', '300mg']),
+        ('Neurology / CNS', 'Gabapentin', ['Gabapin', 'Neurontin', 'Pentanevrin'], ['Tablet', 'Capsule', 'Syrup'], ['100mg', '300mg', '400mg']),
+        ('Neurology / CNS', 'Escitalopram', ['Nexito', 'Lexapro', 'Stalopam', 'Cilentra'], ['Tablet'], ['5mg', '10mg', '20mg']),
+        ('Neurology / CNS', 'Clonazepam', ['Clonotril', 'Zapiz', 'Lonazep', 'Petril'], ['Tablet', 'Mouth Dissolving Tablet'], ['0.25mg', '0.5mg', '1mg']),
+        ('Neurology / CNS', 'Amitriptyline', ['Tryptomer', 'Eliwel', 'Amitone'], ['Tablet'], ['10mg', '25mg', '50mg']),
+
+        ('Antiviral', 'Acyclovir', ['Zovirax', 'Herpex', 'Acivir'], ['Tablet', 'Cream', 'Ointment', 'Injection'], ['200mg', '400mg', '5%', '500mg']),
+        ('Antiviral', 'Oseltamivir', ['Antiflu', 'Tamiflu', 'Fluvir'], ['Capsule', 'Suspension'], ['75mg']),
+        
+        ('Antimalarial', 'Hydroxychloroquine', ['HCQS', 'Zyq'], ['Tablet'], ['200mg', '400mg']),
+        ('Antimalarial', 'Artemether + Lumefantrine', ['Lumerax', 'Arteether'], ['Tablet', 'Injection', 'Syrup'], ['80mg/480mg', '20mg/120mg']),
+
+        ('Anthelmintic', 'Albendazole', ['Zentel', 'Bandy', 'Noworm'], ['Tablet', 'Suspension'], ['400mg', '200mg/5ml']),
+        ('Anthelmintic', 'Ivermectin', ['Iver', 'Ivecop', 'Scaboma Plus'], ['Tablet'], ['6mg', '12mg']),
+        
+        ('Ophthalmic', 'Moxifloxacin', ['Vigamox', 'Moxicip', 'Milflox', 'MahaMox'], ['Eye Drops'], ['0.5%', '5ml']),
+        ('Ophthalmic', 'Carboxymethylcellulose', ['Refresh Tears', 'EcoTears', 'Tear Drops', 'Lubistar'], ['Eye Drops', 'Gel Drops'], ['0.5%', '1%', '10ml']),
+        ('Ophthalmic', 'Tobramycin', ['Toba', 'Tobacin'], ['Eye Drops', 'Eye Ointment'], ['0.3%']),
+        
+        ('Steroids', 'Prednisolone', ['Omnacortil', 'Wysolone'], ['Tablet', 'Drops', 'Syrup'], ['5mg', '10mg', '20mg', '1%']),
+        ('Steroids', 'Dexamethasone', ['Dexona', 'Decadron'], ['Tablet', 'Injection', 'Drops'], ['0.5mg', '4mg/ml']),
+        
+        ('Gynaecology', 'Progesterone', ['Susten', 'Naturogest'], ['Capsule', 'Injection'], ['200mg', '300mg', '100mg']),
+        ('Gynaecology', 'Drotaverine', ['Drotin', 'Drotikind'], ['Tablet', 'Injection', 'Syrup'], ['40mg', '80mg']),
+
+        # MORE OTC, OINTMENTS, SOAPS, SURGICALS AND DEVICES
+        ('Ointment & First Aid', 'Povidone Iodine', ['Betadine', 'Wokadine', 'Cipladine'], ['Ointment', 'Solution', 'Gargle', 'Powder'], ['5%', '10%', '2%']),
+        ('Ointment & First Aid', 'Chlorhexidine Cetrimide', ['Savlon', 'Dettol', 'Suthol'], ['Liquid', 'Cream', 'Spray'], ['Standard', '200ml', '500ml']),
+        ('Ointment & First Aid', 'Framycetin', ['Soframycin'], ['Skin Cream'], ['1%', '30g', '15g']),
+        ('Ointment & First Aid', 'Neomycin + Bacitracin', ['Neosporin', 'Nebasulf'], ['Ointment', 'Powder'], ['10g', '20g']),
+        ('Ointment & First Aid', 'Silver Sulfadiazine', ['Silverex', 'Burnol', 'Silvadene'], ['Cream', 'Ointment'], ['1%', '15g']),
+
+        ('OTC Pain Relief', 'Diclofenac / Methyl Salicylate', ['Volini', 'Moov', 'Relispray', 'Iodex'], ['Spray', 'Gel', 'Balm', 'Ointment'], ['30g', '50g', 'Standard']),
+        ('OTC Pain Relief', 'Ayurvedic Pain Balm', ['Zandu Balm', 'Amrutanjan', 'Tiger Balm'], ['Balm', 'Roll-on'], ['10g', '25g', 'Standard']),
+
+        ('Medical Soaps & Washes', 'Ketoconazole Soap', ['Ketomac', 'Nizral', 'Phytoral Soap'], ['Soap'], ['75g', '100g']),
+        ('Medical Soaps & Washes', 'Monosulfiram', ['Tetmosol'], ['Soap'], ['100g', 'Standard']),
+        ('Medical Soaps & Washes', 'Antiseptic Soap', ['Dettol Original', 'Savlon Glycerin', 'Lifebuoy'], ['Soap', 'Handwash'], ['75g', '125g', '200ml']),
+        ('Medical Soaps & Washes', 'Acne Care Soap', ['Acnesan', 'AcneStar', 'Klite'], ['Soap', 'Face Wash'], ['75g', '100g']),
+        ('Medical Soaps & Washes', 'Intimate Wash', ['VWash Plus', 'Everteen', 'Clean & Dry'], ['Liquid Wash', 'Foam'], ['100ml', '200ml']),
+
+        ('Powders & Dusting', 'Clotrimazole Dusting', ['Candid Powder', 'Clocip', 'SurfAZ'], ['Powder'], ['50g', '100g']),
+        ('Powders & Dusting', 'Prickly Heat Powder', ['Nycil', 'DermiCool', 'Shower to Shower'], ['Powder'], ['150g', 'Standard']),
+
+        ('Hydration & Energy', 'ORS', ['Electral', 'Walyte', 'Prolyte'], ['Powder', 'Liquid Solution'], ['4.4g', '21g', '200ml']),
+        ('Hydration & Energy', 'Glucose', ['Glucon-D', 'Dabur Glucose', 'Glucose-C'], ['Powder'], ['100g', '200g', '500g']),
+
+        ('Surgicals & Essentials', 'Cotton', ['Absorbent Cotton Roll', 'Sterile Cotton Swab'], ['Roll', 'Pack'], ['50g', '100g', '500g']),
+        ('Surgicals & Essentials', 'Bandage', ['Crepe Bandage', 'Roller Bandage', 'Adhesive Tape'], ['Roll', 'Pack'], ['5cm', '10cm', 'Standard']),
+        ('Surgicals & Essentials', 'Band-Aid', ['Band-Aid Washproof', 'Hansaplast', 'Medipore'], ['Strip', 'Patch', 'Box'], ['Standard', '100 Strips']),
+        ('Surgicals & Essentials', 'Syringe & Needle', ['Dispovan 2ml', 'Dispovan 5ml', 'Insulin Syringe'], ['Piece', 'Box'], ['24G', '22G', 'Standard']),
+        ('Surgicals & Essentials', 'Masks & Gloves', ['N95 Mask', 'Surgical Mask', 'Latex Gloves', 'Sterile Gloves'], ['Piece', 'Box of 50', 'Box of 100'], ['Standard', 'Medium', 'Large']),
+
+        ('Medical Devices', 'Monitoring Device', ['Digital Thermometer', 'Omron BP Monitor', 'Accu-Chek Glucometer', 'Pulse Oximeter', 'Nebulizer Machine'], ['Device', 'Kit'], ['Standard']),
+        ('Medical Devices', 'Device Accessories', ['Glucometer Strips', 'Lancets', 'Nebulizer Mask'], ['Pack of 25', 'Pack of 50'], ['Standard']),
+
+        ('Baby Care', 'Baby Soap & Wash', ['Johnson Baby Soap', 'Himalaya Baby Wash', 'Sebamed Baby'], ['Soap', 'Body Wash', 'Shampoo'], ['75g', '100g', '200ml']),
+        ('Baby Care', 'Diapers & Wipes', ['Pampers Active', 'MamyPoko Pants', 'Himalaya Wipes'], ['Pack', 'Jumbo Pack'], ['Small', 'Medium', 'Large']),
+        ('Baby Care', 'Baby Food', ['Cerelac Stage 1', 'Lactogen 1', 'Nan Pro', 'Dexolac'], ['Powder Box'], ['400g']),
+        ('Baby Care', 'Gripe Water', ['Woodwards Gripe Water', 'Dabur Gripe Water'], ['Syrup'], ['130ml', '200ml']),
+
+        ('Nutrition & Drinks', 'Health Drink', ['Ensure', 'Protinex', 'Pediasure', 'Horlicks', 'Bournvita'], ['Powder Jar', 'Refill Pack'], ['200g', '400g', '500g']),
+
+        ('Dental & Oral', 'Toothpaste', ['Sensodyne', 'Colgate Total', 'Meswak', 'Paradontax'], ['Tube'], ['50g', '100g', '150g']),
+        ('Dental & Oral', 'Mouthwash', ['Listerine', 'Colgate Plax', 'Hexidine', 'Clohex'], ['Bottle'], ['100ml', '250ml', '500ml']),
+        ('Dental & Oral', 'Oral Gear', ['Oral-B Toothbrush', 'Sensodyne Brush', 'Dental Floss'], ['Piece', 'Pack of 2'], ['Standard', 'Soft']),
+
+        ('Ayurvedic / Herbal', 'Digestive', ['Liv.52', 'Hajmola', 'Pudin Hara', 'Eno Fruit Salt', 'Kayam Churna', 'Isabgol Husk'], ['Tablet', 'Syrup', 'Powder', 'Drops'], ['Standard', '100g', '200ml']),
+        ('Ayurvedic / Herbal', 'Immunity & Tonic', ['Chyawanprash', 'Ashwagandha', 'Giloy Ghanvati', 'Revital H'], ['Paste', 'Tablet', 'Capsule'], ['500g', '1kg', 'Standard']),
+
+        ('Specific Syrups / Tonics', 'Blood & Iron Tonic', ['Dexorange Tonic', 'Cinkara', 'LivoHills', 'Neeri Syrup'], ['Syrup', 'Tonic', 'Liquid'], ['200ml', '500ml']),
+    ]
+
+    manufacturers = ['Sun Pharma', 'Cipla', 'Abbott', 'Mankind', 'Lupin', 'Alkem', 'Torrent', 'Glenmark', 'Intas', 'Zydus', 'Micro Labs', 'Macleods', 'Aristo', 'Dr. Reddys', 'Pfizer', 'GSK', 'Sanofi', 'Novartis', 'Mylan', 'Aurobindo']
+
+    import random
+    rng = random.Random(42) # Fixed seed for predictable catalog list on restart
+    generated_count = 0
+
+    while generated_count < item_count:
+        for cat, base, brands, forms, strengths in drug_profiles:
+            if generated_count >= item_count:
+                break
+                
+            brand = rng.choice(brands)
+            form = rng.choice(forms)
+            strength = rng.choice(strengths)
+            manufacturer = rng.choice(manufacturers)
+            
+            # Make the brand name unique if we exceed 1000 items so we have diverse records
+            suffix_num = rng.randint(1, 9) if generated_count > 1000 else ""
+            prefix = rng.choice(['', 'Max', 'Plus', 'Forte', 'XR', 'SR']) if generated_count > 2000 else ""
+            
+            final_brand = brand
+            if suffix_num or prefix:
+                parts = [p for p in [brand, prefix, str(suffix_num)] if p]
+                final_brand = "-".join(parts)
+                
+            # Formulate the final name
+            if strength == 'Standard':
+                name = f"{final_brand} {form}"
+            else:
+                name = f"{final_brand} {strength} {form}"
+
+            stock = rng.randint(50, 6000)
+
+            # Realistic price heuristic (in INR) based on form and category
+            lower_name = name.lower()
+            lower_cat = cat.lower()
+            if 'device' in lower_cat or 'monitor' in lower_name or 'meter' in lower_name or 'nebulizer' in lower_name:
+                price = round(rng.uniform(500.0, 2500.0), 2)
+            elif 'nutrition' in lower_cat or 'supplement' in lower_cat or 'powder jar' in lower_name or 'cerelac' in lower_name:
+                price = round(rng.uniform(250.0, 800.0), 2)
+            elif 'diaper' in lower_name or 'wipes' in lower_name:
+                price = round(rng.uniform(90.0, 450.0), 2)
+            elif 'tablet' in lower_name or 'capsule' in lower_name:
+                if 'paracetamol' in lower_name or 'ibuprofen' in lower_name or 'aspirin' in lower_name or 'diclofenac' in lower_name:
+                    price = round(rng.uniform(10.0, 45.0), 2)
+                elif 'antibiotic' in lower_cat or 'amoxicillin' in lower_name or 'azithromycin' in lower_name:
+                    price = round(rng.uniform(40.0, 150.0), 2)
+                else:
+                    price = round(rng.uniform(30.0, 200.0), 2)
+            elif 'syrup' in lower_name or 'suspension' in lower_name or 'liquid' in lower_name or 'drop' in lower_name or 'wash' in lower_name or 'shampoo' in lower_name:
+                price = round(rng.uniform(40.0, 180.0), 2)
+            elif 'ointment' in lower_name or 'cream' in lower_name or 'gel' in lower_name or 'soap' in lower_name or 'powder' in lower_name or 'paste' in lower_name:
+                price = round(rng.uniform(50.0, 200.0), 2)
+            elif 'injection' in lower_name or 'vaccine' in lower_name:
+                price = round(rng.uniform(15.0, 500.0), 2)
+            else:
+                price = round(rng.uniform(20.0, 300.0), 2)
+            
+            catalog.append({
+                'id': 0,
+                'name': name,
+                'brand': final_brand,
+                'category': cat,
+                'price': float(price),
+                'stock': stock,
+                'manufacturer': manufacturer
+            })
+            generated_count += 1
+
+_append_bulk_pharmacy_items(_BUILTIN_MEDICINE_CATALOG, item_count=5000)
 
 # ============================================================================
 # STEP 8: NEW CORRECT CHATBOT - INTEGRATED WITH FLASK
@@ -22,9 +339,9 @@ def get_chatbot_instance():
     if chatbot_instance is None:
         try:
             chatbot_instance = StrictMedicalChatbot()
-            print("✅ Strict Medical Chatbot initialized for Flask")
+            print("[OK] Strict Medical Chatbot initialized for Flask")
         except Exception as e:
-            print(f"❌ Error initializing chatbot: {e}")
+            print(f"[ERROR] Error initializing chatbot: {e}")
             return None
     
     return chatbot_instance
@@ -33,29 +350,51 @@ def get_chatbot_instance():
 
 @features_bp.route('/api/ai-chat', methods=['POST'])
 @login_required
+@patient_required
 def ai_chat():
     """
-    API Endpoint for Local AI Chatbot (Ollama + BioMistral)
+    API Endpoint for AI Chatbot - Uses Groq Cloud AI
     """
+    print("=" * 60)
+    print("[ALERT] FEATURES.AI_CHAT ENDPOINT HIT!")
+    print("=" * 60)
+    
     data = request.get_json()
     message = data.get('message', '')
     
+    print(f"[NOTE] Received message: {message}")
+    
     if not message:
+        print("[ERROR] No message provided!")
         return jsonify({'error': 'No message provided'}), 400
     
     try:
+        print(f"[AI] Calling LocalAIService.get_ai_response()")
         response = LocalAIService.get_ai_response(message)
+        print(f"[OK] Got response: {response[:100]}...")
         return jsonify({'response': response})
     except Exception as e:
-        return jsonify({'response': "Error: Local AI service is offline."}), 500
+        print(f"[ERROR] Exception in ai_chat: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'response': f"Error: {str(e)}"}), 500
+
+
+@features_bp.route('/api/symptom-chat', methods=['POST'])
+@login_required
+def symptom_chat():
+    """Backward-compatible endpoint for legacy symptom checker template."""
+    return ai_chat()
 
 @features_bp.route('/ai-assistant')
 @login_required
+@patient_required
 def ai_assistant():
     """Page for the Local AI Medical Assistant"""
     return render_template('features/ai_assistant.html')
 
 from app.models.models import db, Medicine, BloodInventory, Bed
+from sqlalchemy import func
 
 @features_bp.route('/operations')
 @login_required
@@ -149,8 +488,7 @@ def pharmacy():
         
     inventory = query.all()
     
-    # Calculate Stats (using full inventory for stats context, or just hardcode if easier, 
-    # but let's do real stats on full table to be proper)
+    # Calculate Stats
     all_inventory = Medicine.query.all()
     
     low_stock = sum(1 for m in all_inventory if m.stock < 50)
@@ -169,15 +507,81 @@ def pharmacy():
     
     return render_template('features/pharmacy.html', inventory=inventory, stats=stats, search_query=search_query)
 
+@features_bp.route('/api/pharmacy/search', methods=['GET'])
+@login_required
+def search_pharmacy_medicines():
+    """Autocomplete endpoint for the /features/pharmacy modal."""
+    q = (request.args.get('q') or '').strip()
+    if len(q) < 2:
+        return jsonify([])
+
+    prefix = f"{q}%"
+    contains = f"%{q}%"
+
+    try:
+        matches = (
+            Medicine.query
+            .filter(
+                or_(
+                    Medicine.name.ilike(contains),
+                    Medicine.brand.ilike(contains),
+                    Medicine.category.ilike(contains),
+                    Medicine.manufacturer.ilike(contains),
+                )
+            )
+            .order_by(
+                case((Medicine.name.ilike(prefix), 0), else_=1),
+                func.length(Medicine.name),
+                Medicine.name.asc()
+            )
+            .limit(12)
+            .all()
+        )
+
+        if matches:
+            return jsonify([
+                {
+                    'id': med.id,
+                    'name': med.name,
+                    'brand': med.brand or '',
+                    'price': float(med.unit_price) if med.unit_price else 0,
+                    'stock': int(med.stock) if med.stock else 0,
+                    'manufacturer': med.manufacturer or '',
+                }
+                for med in matches
+            ])
+    except Exception as e:
+        print(f"[Pharmacy Search] DB query error: {e}")
+
+    # ---------- Fallback: built-in medicine catalog ----------
+    q_lower = q.lower()
+    fallback_results = [
+        m for m in _BUILTIN_MEDICINE_CATALOG
+        if q_lower in m['name'].lower()
+           or q_lower in m.get('brand', '').lower()
+           or q_lower in m.get('category', '').lower()
+    ]
+    # Prioritise prefix matches, then sort by name length
+    fallback_results.sort(key=lambda m: (
+        0 if m['name'].lower().startswith(q_lower) else 1,
+        len(m['name']),
+        m['name']
+    ))
+    return jsonify(fallback_results[:12])
+
 @features_bp.route('/api/pharmacy/restock', methods=['POST'])
 @login_required
 def restock_pharmacy():
     """API to Restock Medicine"""
     data = request.get_json()
-    med_id = data.get('id')
-    amount = data.get('amount')
     
-    if not med_id or not amount:
+    try:
+        med_id = int(data.get('id'))
+        amount = int(data.get('amount'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid format'})
+        
+    if not med_id or amount <= 0:
         return jsonify({'success': False, 'error': 'Invalid data'})
         
     medicine = Medicine.query.get(med_id)
@@ -192,23 +596,129 @@ def restock_pharmacy():
 @features_bp.route('/api/pharmacy/add', methods=['POST'])
 @login_required
 def add_medicine():
-    """API to Add New Medicine"""
+    """API to Add New Medicine or update existing"""
+    from sqlalchemy.exc import IntegrityError
+    
     data = request.get_json()
     
     try:
-        new_med = Medicine(
-            name=data['name'],
-            stock=int(data['stock']),
-            unit_price=float(data['unit_price']),
-            expiry_date=data['expiry_date'],
-            batch_number=data.get('batch_number', 'N/A'),
-            manufacturer=data.get('manufacturer', 'N/A')
+        med_name = data['name'].strip() if data.get('name') else None
+        med_brand = data.get('brand', '').strip() if data.get('brand') else None
+        
+        if not med_name:
+            return jsonify({'success': False, 'error': 'Medicine name is required'}), 400
+            
+        # Robust duplicate check: find by BOTH name and brand (case-insensitive, trimmed)
+        query = Medicine.query.filter(
+            func.lower(func.trim(Medicine.name)) == med_name.lower()
         )
-        db.session.add(new_med)
-        db.session.commit()
-        return jsonify({'success': True})
+        
+        if med_brand:
+            # Brand is provided - match exactly
+            query = query.filter(
+                func.lower(func.trim(func.coalesce(Medicine.brand, ''))) == med_brand.lower()
+            )
+        else:
+            # No brand - match medicines with NULL or empty brand
+            query = query.filter(
+                or_(
+                    Medicine.brand.is_(None),
+                    func.trim(Medicine.brand) == ''
+                )
+            )
+        
+        existing_med = query.first()
+        
+        try:
+            stock_to_add = int(data['stock']) if data.get('stock') else 0
+            unit_price = float(data['unit_price']) if data.get('unit_price') else 0
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': 'Invalid stock or price value'}), 400
+        
+        if existing_med:
+            # If medicine already exists, just update stock and relevant details
+            old_stock = existing_med.stock or 0
+            existing_med.stock = old_stock + stock_to_add
+            if unit_price > 0:
+                existing_med.unit_price = unit_price
+            if data.get('expiry_date'):
+                existing_med.expiry_date = data['expiry_date']
+            if data.get('batch_number'):
+                existing_med.batch_number = data['batch_number']
+            if data.get('manufacturer'):
+                existing_med.manufacturer = data['manufacturer']
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': f'[OK] Updated: added {stock_to_add} units to "{existing_med.name}" (total: {existing_med.stock} units)',
+                'medicine': {
+                    'id': existing_med.id,
+                    'name': existing_med.name,
+                    'stock': existing_med.stock
+                }
+            }), 200
+        else:
+            new_med = Medicine(
+                name=med_name,
+                brand=med_brand or None,
+                stock=max(stock_to_add, 0),
+                unit_price=unit_price,
+                expiry_date=data.get('expiry_date'),
+                batch_number=data.get('batch_number', 'N/A'),
+                manufacturer=data.get('manufacturer', 'N/A')
+            )
+            db.session.add(new_med)
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': f'[OK] New medicine "{new_med.name}" added with {new_med.stock} units',
+                'medicine': {
+                    'id': new_med.id,
+                    'name': new_med.name,
+                    'stock': new_med.stock
+                }
+            }), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        # Handle unique constraint violation on (name, brand) pair
+        if 'unique' in str(e).lower():
+            # Try to find and update the existing medicine
+            try:
+                med_name = data['name'].strip() if data.get('name') else None
+                med_brand = data.get('brand', '').strip() if data.get('brand') else None
+                
+                query = Medicine.query.filter(
+                    func.lower(func.trim(Medicine.name)) == med_name.lower()
+                )
+                if med_brand:
+                    query = query.filter(
+                        func.lower(func.trim(func.coalesce(Medicine.brand, ''))) == med_brand.lower()
+                    )
+                else:
+                    query = query.filter(
+                        or_(
+                            Medicine.brand.is_(None),
+                            func.trim(Medicine.brand) == ''
+                        )
+                    )
+                
+                existing_med = query.first()
+                if existing_med:
+                    stock_to_add = int(data['stock']) if data.get('stock') else 0
+                    existing_med.stock = (existing_med.stock or 0) + stock_to_add
+                    db.session.commit()
+                    return jsonify({
+                        'success': True,
+                        'message': f'[OK] Updated: added {stock_to_add} units to "{existing_med.name}"'
+                    }), 200
+            except Exception:
+                db.session.rollback()
+                pass
+            return jsonify({'success': False, 'error': 'This medicine with this brand already exists. Please add stock instead.'}), 409
+        return jsonify({'success': False, 'error': f'Database error: {str(e)}'}), 500
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Error processing medicine: {str(e)}'}), 500
 
 @features_bp.route('/features/pharmacy/export')
 @login_required
@@ -298,7 +808,7 @@ def digital_checkin():
                 doctor_id = first_doctor.id if first_doctor else None
 
             if not doctor_id:
-                flash('❌ Error: No doctor selected or available.', 'danger')
+                flash('[ERROR] Error: No doctor selected or available.', 'danger')
                 return redirect(url_for('features.digital_checkin'))
 
             # Create check-in record
@@ -323,10 +833,10 @@ def digital_checkin():
             assigned_doctor = Doctor.query.get(doctor_id)
             doctor_name = f"Dr. {assigned_doctor.first_name} {assigned_doctor.last_name}" if assigned_doctor else "the doctor"
 
-            flash(f'✅ Express Check-in Successful! Your request has been sent to {doctor_name}.', 'success')
+            flash(f'[OK] Express Check-in Successful! Your request has been sent to {doctor_name}.', 'success')
             return redirect(url_for('patient.dashboard'))
         else:
-            flash('❌ Error: Patient profile not found.', 'danger')
+            flash('[ERROR] Error: Patient profile not found.', 'danger')
             return redirect(url_for('patient.dashboard'))
     
     return render_template('patient/check_in.html', doctors=doctors)
@@ -342,6 +852,7 @@ def feedback():
 
 @features_bp.route('/emergency-sos')
 @login_required
+@patient_required
 def emergency_sos():
     """Emergency SOS Handler - Now Hospital Finder"""
     import json
@@ -409,44 +920,6 @@ def schedule():
         })
     return render_template('features/schedule.html', events=events)
 
-@features_bp.route('/nurse-tasks')
-@login_required
-def nurse_tasks():
-    """Nurse Task Management System"""
-    tasks_db = NurseTask.query.all()
-    # Serialize for template
-    tasks = []
-    for t in tasks_db:
-        tasks.append({
-            'id': t.id,
-            'patient': t.patient_name,
-            'bed': t.bed_number,
-            'task': t.task_description,
-            'time': t.due_time,
-            'status': t.status,
-            'priority': t.priority
-        })
-    return render_template('features/nurse_tasks.html', tasks=tasks)
-
-@features_bp.route('/api/nurse/complete-task', methods=['POST'])
-@login_required
-def complete_nurse_task():
-    """API to Complete Nurse Task"""
-    data = request.get_json()
-    task_id = data.get('id')
-    
-    if not task_id:
-        return jsonify({'success': False, 'error': 'Invalid data'})
-        
-    task = NurseTask.query.get(task_id)
-    if not task:
-        return jsonify({'success': False, 'error': 'Task not found'})
-        
-    task.status = 'Completed'
-    db.session.commit()
-    
-    return jsonify({'success': True})
-
 @features_bp.route('/blood-bank')
 @login_required
 def blood_bank():
@@ -477,7 +950,7 @@ def donate_blood():
         db.session.add(new_inv)
         
     db.session.commit()
-    flash('✅ Donation registered successfully!', 'success')
+    flash('[OK] Donation registered successfully!', 'success')
     return redirect(url_for('features.blood_bank'))
 
 
@@ -512,7 +985,7 @@ def doctor_pending_checkins():
     doctor = current_user.doctor if hasattr(current_user, 'doctor') else None
     
     if not doctor:
-        flash('❌ Access denied. Doctor profile not found.', 'danger')
+        flash('[ERROR] Access denied. Doctor profile not found.', 'danger')
         return redirect(url_for('main.index'))
     
     # Get all pending check-ins for this doctor
@@ -554,11 +1027,17 @@ def accept_checkin(checkin_id):
     
     doctor = current_user.doctor if hasattr(current_user, 'doctor') else None
     
-    if not doctor or checkin.doctor_id != doctor.id:
+    if not doctor:
+        return jsonify({'success': False, 'error': 'Doctor profile not found'}), 403
+    
+    # Allow doctor to accept if assigned OR no doctor assigned yet
+    if checkin.doctor_id is not None and checkin.doctor_id != doctor.id:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # Get doctor notes
-    notes = request.form.get('notes', '') or request.json.get('notes', '')
+    # Get doctor notes safely (request.json can be None with FormData)
+    notes = request.form.get('notes', '')
+    if not notes and request.json:
+        notes = request.json.get('notes', '')
     
     # Update check-in
     checkin.status = 'accepted'
@@ -569,7 +1048,7 @@ def accept_checkin(checkin_id):
     
     return jsonify({
         'success': True,
-        'message': f'✅ Check-in from {checkin.patient.user.username} accepted!',
+        'message': f'[OK] Check-in from {checkin.patient.user.username} accepted!',
         'checkin_id': checkin.id
     })
 
@@ -586,11 +1065,16 @@ def reject_checkin(checkin_id):
     
     doctor = current_user.doctor if hasattr(current_user, 'doctor') else None
     
-    if not doctor or checkin.doctor_id != doctor.id:
+    if not doctor:
+        return jsonify({'success': False, 'error': 'Doctor profile not found'}), 403
+    
+    if checkin.doctor_id is not None and checkin.doctor_id != doctor.id:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # Get rejection reason
-    reason = request.form.get('reason', '') or request.json.get('reason', '')
+    # Get rejection reason safely
+    reason = request.form.get('reason', '')
+    if not reason and request.json:
+        reason = request.json.get('reason', '')
     
     # Update check-in
     checkin.status = 'rejected'
@@ -600,7 +1084,7 @@ def reject_checkin(checkin_id):
     
     return jsonify({
         'success': True,
-        'message': f'❌ Check-in from {checkin.patient.user.username} rejected.',
+        'message': f'[ERROR] Check-in from {checkin.patient.user.username} rejected.',
         'checkin_id': checkin.id
     })
 
@@ -617,11 +1101,16 @@ def complete_checkin(checkin_id):
     
     doctor = current_user.doctor if hasattr(current_user, 'doctor') else None
     
-    if not doctor or checkin.doctor_id != doctor.id:
+    if not doctor:
+        return jsonify({'success': False, 'error': 'Doctor profile not found'}), 403
+    
+    if checkin.doctor_id is not None and checkin.doctor_id != doctor.id:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    # Get completion notes
-    notes = request.form.get('notes', '') or request.json.get('notes', '')
+    # Get completion notes safely
+    notes = request.form.get('notes', '')
+    if not notes and request.json:
+        notes = request.json.get('notes', '')
     
     # Update check-in
     checkin.status = 'completed'
@@ -632,7 +1121,7 @@ def complete_checkin(checkin_id):
     
     return jsonify({
         'success': True,
-        'message': f'✅ Check-in marked as completed!',
+        'message': f'[OK] Check-in marked as completed!',
         'checkin_id': checkin.id
     })
 

@@ -1,0 +1,655 @@
+﻿{% extends "base.html" %}
+{% block title %}Create Prescription - CarePoint{% endblock %}
+
+{% block content %}
+<style>
+    .prescription-container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .rx-sheet {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        margin-bottom: 24px;
+        color: #1e293b;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rx-sheet::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #0ea5e9, #2dd4bf);
+    }
+
+    .rx-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .hospital-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0369a1;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .doctor-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .hospital-contact {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .patient-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 30px;
+        font-size: 0.95rem;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+    }
+
+    .detail-label {
+        width: 115px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        flex: 1;
+        border-bottom: 1px dotted #94a3b8;
+        padding-bottom: 2px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .rx-symbol {
+        font-size: 3rem;
+        font-family: serif;
+        font-weight: bold;
+        color: #334155;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    .med-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .med-table th {
+        text-align: left;
+        padding: 12px 10px;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .med-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+    }
+
+    .med-input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+
+    .med-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .btn-remove {
+        color: #ef4444;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 6px;
+    }
+
+    .btn-remove:hover {
+        background: #fee2e2;
+    }
+
+    .btn-add-row {
+        background: #f1f5f9;
+        color: #0369a1;
+        border: 1px dashed #cbd5e1;
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .diagnosis-notes {
+        margin-top: 30px;
+        display: grid;
+        gap: 16px;
+    }
+
+    .text-area-box label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .text-area-box textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        resize: vertical;
+        font-size: 0.95rem;
+    }
+
+    .rx-footer {
+        margin-top: 50px;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 20px;
+    }
+
+    .signature-area {
+        text-align: center;
+        width: 200px;
+    }
+
+    .signature-line {
+        border-bottom: 1px solid #1e293b;
+        margin-bottom: 8px;
+        height: 30px;
+    }
+
+    .signature-label {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-action {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .voice-panel {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-voice {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-voice.recording {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .voice-feedback {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .voice-feedback.success {
+        color: #10b981;
+        font-weight: 600;
+    }
+
+    .voice-feedback.error {
+        color: #ef4444;
+        font-weight: 600;
+    }
+
+    .voice-guide {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.03));
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+
+    .voice-guide-title {
+        font-weight: 700;
+        color: #4f46e5;
+        margin-bottom: 8px;
+    }
+
+    .voice-transcript-panel {
+        display: none;
+        background: #f8fafc;
+        border: 1px solid #dbeafe;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 18px;
+    }
+
+    .voice-transcript-panel.active {
+        display: block;
+    }
+
+    .transcript-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .transcript-header .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ef4444;
+    }
+
+    .transcript-text {
+        font-size: 0.95rem;
+        color: #334155;
+        min-height: 22px;
+    }
+
+    .parsed-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .parsed-pill {
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+
+    .parsed-pill.added {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .parsed-pill.corrected {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        border-color: rgba(99, 102, 241, 0.25);
+    }
+
+    .parsed-pill.duplicate {
+        background: rgba(245, 158, 11, 0.1);
+        color: #b45309;
+        border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    @media print {
+
+        .action-bar,
+        .voice-transcript-panel,
+        .voice-guide,
+        .btn-add-row,
+        .btn-remove,
+        .app-sidebar,
+        .top-navbar {
+            display: none !important;
+        }
+
+        .prescription-container {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .rx-sheet {
+            box-shadow: none;
+            padding: 0;
+        }
+
+        input,
+        select,
+        textarea {
+            border: none !important;
+            background: transparent !important;
+        }
+    }
+</style>
+
+<div class="prescription-container">
+    <div class="action-bar">
+        <div class="voice-panel">
+            <button class="btn-voice" id="btnVoice" onclick="toggleVoiceRecording()">
+                <i class="fas fa-microphone"></i> Start Voice Dictation
+            </button>
+            <span class="voice-feedback" id="voiceFeedback">Click and speak prescription. Voice assistant is
+                enabled.</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-outline-secondary" onclick="previewPrescription()"
+                style="border-radius:10px; font-weight:600;">
+                <i class="fas fa-eye"></i> Preview
+            </button>
+            <button class="btn-primary-action" onclick="savePrescription()">
+                <i class="fas fa-save"></i> Save & Send to Pharmacy
+            </button>
+        </div>
+    </div>
+
+    <div class="voice-guide" id="voiceGuide">
+        <div class="voice-guide-title"><i class="fas fa-robot"></i> Voice Format</div>
+        <div style="font-size:0.86rem; color:#475569;">
+            Example:
+            <code>medicine paracetamol dose 500 mg frequency twice daily duration 5 days instruction after food</code>
+        </div>
+    </div>
+
+    <div class="voice-transcript-panel" id="voiceTranscriptPanel">
+        <div class="transcript-header">
+            <div class="dot"></div>
+            <span>Live Dictation</span>
+        </div>
+        <div class="transcript-text" id="transcriptText">Listening...</div>
+        <div class="parsed-pills" id="parsedPills"></div>
+    </div>
+
+    <div class="rx-sheet" id="prescriptionSheet">
+        <div class="rx-header">
+            <div class="hospital-title">CarePoint Hospital</div>
+            <div class="doctor-title">Dr. {{ doctor.first_name }} {{ doctor.last_name }} <span
+                    style="font-size:0.9rem; color:#64748b; font-weight:normal;">{{ doctor.specialization }}</span>
+            </div>
+            <div class="hospital-contact">123 Health Avenue, Medical District • Ph: +1 (555) 0192</div>
+        </div>
+
+        <div class="patient-details-grid">
+            <div class="detail-row">
+                <div class="detail-label">Patient Name:</div>
+                <div class="detail-value">{{ patient.first_name }} {{ patient.last_name }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">ID / Date:</div>
+                <div class="detail-value">PT-{{ patient.id }} / <span id="currentDateText"></span></div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Age/Gender:</div>
+                <div class="detail-value">{{ patient.age }} Yrs / {{ patient.gender }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Prescription ID:</div>
+                <div class="detail-value">RX-TEMP</div>
+            </div>
+        </div>
+
+        <div class="rx-symbol">Rx</div>
+
+        <table class="med-table" id="medTable">
+            <thead>
+                <tr>
+                    <th width="30%">Medicine Name</th>
+                    <th width="15%">Dosage</th>
+                    <th width="15%">Frequency</th>
+                    <th width="12%">Duration</th>
+                    <th width="20%">Instructions</th>
+                    <th width="8%"></th>
+                </tr>
+            </thead>
+            <tbody id="medTableBody"></tbody>
+        </table>
+
+        <button class="btn-add-row" onclick="addEmptyRow()"><i class="fas fa-plus"></i> Add Medicine Row</button>
+
+        <div class="diagnosis-notes">
+            <div class="text-area-box">
+                <label>Diagnosis / Problem Details</label>
+                <textarea id="valDiagnosis" rows="2" placeholder="E.g., Viral Fever, Hypertension..."></textarea>
+            </div>
+            <div class="text-area-box">
+                <label>Additional Doctor Notes</label>
+                <textarea id="valNotes" rows="2" placeholder="Any additional advice, next visit date..."></textarea>
+            </div>
+        </div>
+
+        <div class="rx-footer">
+            <div class="signature-area">
+                <div class="signature-line"
+                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; border-bottom:none;">{{
+                    doctor.first_name }} {{ doctor.last_name }}</div>
+                <div style="border-top: 1px solid #1e293b; width:100%;"></div>
+                <div class="signature-label">Doctor's Signature</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<datalist id="medSuggestions">
+    {% for med in medicines %}
+    <option value="{{ med.name }}"></option>
+    {% endfor %}
+</datalist>
+
+<script>
+    const medTableBody = document.getElementById('medTableBody');
+
+    document.getElementById('currentDateText').innerText = new Date().toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const KNOWN_MEDICINES = [{% for med in medicines %}"{{ med.name|replace('"', '\\"') }}"{% if not loop.last %}, {% endif %} {% endfor %}];
+
+    function levenshtein(a, b) {
+        const an = a.length, bn = b.length;
+        const matrix = Array.from({ length: an + 1 }, (_, i) => Array.from({ length: bn + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+        for (let i = 1; i <= an; i++) {
+            for (let j = 1; j <= bn; j++) {
+                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+            }
+        }
+        return matrix[an][bn];
+    }
+
+    function matchMedicineName(spoken) {
+        const spokenLower = (spoken || '').toLowerCase().trim();
+        if (!spokenLower || spokenLower.length < 2) return { name: spoken, corrected: false, confidence: 'none' };
+
+        let bestMatch = null;
+        let bestScore = Infinity;
+
+        for (const med of KNOWN_MEDICINES) {
+            const medLower = med.toLowerCase();
+            if (spokenLower === medLower) return { name: med, corrected: false, confidence: 'exact' };
+            const dist = levenshtein(spokenLower, medLower);
+            if (dist < bestScore) {
+                bestScore = dist;
+                bestMatch = med;
+            }
+        }
+
+        const threshold = Math.max(2, Math.floor(spokenLower.length * 0.4));
+        if (bestMatch && bestScore <= threshold) {
+            return { name: bestMatch, corrected: bestScore > 0, confidence: bestScore <= 1 ? 'high' : 'medium' };
+        }
+
+        return { name: spoken.trim(), corrected: false, confidence: 'unknown' };
+    }
+
+    function parseFrequency(text) {
+        const t = (text || '').toLowerCase();
+        if (/\b(twice|two times|bd)\b/.test(t)) return 'BD';
+        if (/\b(thrice|three times|tid)\b/.test(t)) return 'TID';
+        if (/\b(four times|qid)\b/.test(t)) return 'QID';
+        if (/\b(sos|prn|as needed|when needed)\b/.test(t)) return 'SOS';
+        if (/\b(at night|bedtime|hs)\b/.test(t)) return 'HS';
+        return 'OD';
+    }
+
+    function parseInstruction(text) {
+        const t = (text || '').toLowerCase();
+        if (/\bafter (food|meal|eating)\b/.test(t)) return 'After food';
+        if (/\bbefore (food|meal|eating)\b/.test(t)) return 'Before food';
+        if (/\bwith (food|meal)\b/.test(t)) return 'With food';
+        if (/\bempty stomach\b/.test(t)) return 'On empty stomach';
+        return '';
+    }
+
+    function addPill(name, type, label) {
+        const parsedPillsEl = document.getElementById('parsedPills');
+        if (!parsedPillsEl) return;
+        const pill = document.createElement('span');
+        pill.className = `parsed-pill ${type}`;
+        pill.textContent = label || name;
+        parsedPillsEl.appendChild(pill);
+    }
+
+    function getExistingMedicines() {
+        const names = new Set();
+        document.querySelectorAll('#medTableBody tr').forEach(row => {
+            const inp = row.querySelector('.med-name');
+            if (inp && inp.value.trim()) names.add(inp.value.trim().toLowerCase());
+        });
+        return names;
+    }
+
+    function createRowElement(name = '', dose = '', freq = 'OD', dur = '', inst = '') {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="med-input med-name" placeholder="Type medicine..." value="${name}" list="medSuggestions"></td>
+            <td><input type="text" class="med-input med-dosage" placeholder="e.g. 500mg" value="${dose}"></td>
+            <td>
+                <select class="med-input med-freq">
+                    <option value="OD" ${freq === 'OD' ? 'selected' : ''}>OD</option>
+                    <option value="BD" ${freq === 'BD' ? 'selected' : ''}>BD</option>
+                    <option value="TID" ${freq === 'TID' ? 'selected' : ''}>TID</option>
+                    <option value="QID" ${freq === 'QID' ? 'selected' : ''}>QID</option>
+                    <option value="SOS" ${freq === 'SOS' ? 'selected' : ''}>SOS</option>
+                    <option value="HS" ${freq === 'HS' ? 'selected' : ''}>HS</option>
+                </select>
+            </td>
+            <td><input type="text" class="med-input med-duration" placeholder="e.g. 5 days" value="${dur}"></td>
+            <td><input type="text" class="med-input med-inst" placeholder="e.g. After food" value="${inst}"></td>
+            <td style="text-align:center;"><button class="btn-remove" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+        `;
+        return tr;
+    }
+
+    function removeEmptyRows() {
+        const rows = medTableBody.querySelectorAll('tr');
+        rows.forEach(r => {
+            const name = r.querySelector('.med-name')?.value?.trim() || '';
+            const dose = r.querySelector('.med-dosage')?.value?.trim() || '';
+            const dur = r.querySelector('.med-duration')?.value?.trim() || '';
+            const inst = r.querySelector('.med-inst')?.value?.trim() || '';
+            if (!name && !dose && !dur && !inst) r.remove();
+        });
+    }
+
+    function addEmptyRow() { medTableBody.appendChild(createRowElement()); }
+    addEmptyRow();
+
+    async function savePrescription() {
+        const rows = Array.from(document.querySelectorAll('#medTableBody tr'));
+        const medicines = rows
+            .map(row => ({
+                medicine_name: row.querySelector('.med-name')?.value.trim() || '',
+                dosage: row.querySelector('.med-dosage')?.value.trim() || '',
+                frequency: row.querySelector('.med-freq')?.value || '',
+                duration: row.querySelector('.med-duration')?.value.trim() || '',
+                instruction: row.querySelector('.med-inst')?.value.trim() || '',
+                food_relation: ''
+            }))
+            .filter(m => m.medicine_name);
+
+        if (!medicines.length) {
+            alert('Please add at least one medicine.');
+            return;
+        }
+
+        const payload = {
+            patient_id: {{ patient.id }},
+            diagnosis: document.getElementById('valDiagnosis').value.trim(),
+            notes: document.getElementById('valNotes').value.trim(),
+            medicines
+        };
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const resp = await fetch('/doctor/api/prescription/create', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {})
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await resp.json();
+    if (!resp.ok || !data.success) {
+        alert(data.error || 'Could not save prescription.');
+        return;
+    }
+
+    alert('Prescription saved and sent to pharmacy.');
+    window.location.href = '/doctor/patient/{{ patient.id }}';
+    }
+
+    {% include 'doctor/_voice_whisper.js' %}
+</script>
+{% endblock %}

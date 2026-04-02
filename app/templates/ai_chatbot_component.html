@@ -328,7 +328,7 @@ function setupEventListeners() {
 
 async function checkChatbotHealth() {
     try {
-        const response = await fetch('/api/ai/health');
+        const response = await fetch('/api/ai/health', { credentials: 'include' });
         const data = await response.json();
         
         if (data.ollama_running) {
@@ -384,6 +384,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ message: message })
         });
 

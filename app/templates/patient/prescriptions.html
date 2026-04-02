@@ -1,215 +1,641 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block title %}Prescriptions - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Prescriptions' %}
+{% set breadcrumb_current = 'My Pharmacy' %}
+
+{% block extra_css %}
 <style>
-    .prescription-card {
-        transition: all 0.3s ease;
-        border: 1px solid #e2e8f0;
+    /* ═══════════════════════════════════════════════════════
+       PRESCRIPTIONS — LEGEND PRO DARK THEME
+       Glassmorphism + Neon Glow + 3D Hover + Animated Pills
+       ═══════════════════════════════════════════════════════ */
+
+    .rx-page {
+        position: relative;
+        min-height: 80vh;
     }
 
-    .prescription-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .verified-badge {
-        background: #e0f2fe;
-        color: #0284c7;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        display: inline-flex;
+    /* Page Header */
+    .rx-header {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 4px;
+        margin-bottom: 36px;
     }
 
-    .stamp-seal {
-        width: 60px;
-        opacity: 0.8;
-        transform: rotate(-15deg);
-        border: 2px solid #10b981;
-        color: #10b981;
-        border-radius: 50%;
-        height: 60px;
+    .rx-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .rx-header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1));
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        text-align: center;
+        font-size: 1.5rem;
+        color: #34d399;
+        box-shadow: 0 0 40px rgba(16, 185, 129, 0.15);
+        animation: iconFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-4px) rotate(3deg);
+        }
+    }
+
+    .rx-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .rx-subtitle {
+        color: rgba(241, 245, 249, 0.45);
+        font-size: 0.88rem;
+        margin-top: 2px;
+    }
+
+    /* Prescription Cards Grid */
+    .rx-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 24px;
+    }
+
+    /* Individual Prescription Card */
+    .rx-card {
+        background: rgba(15, 15, 30, 0.65);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        isolation: isolate;
+    }
+
+    /* Top shine */
+    .rx-card::before {
+        content: '';
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.2), transparent);
+    }
+
+    /* Glow on hover */
+    .rx-card::after {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 25px;
+        z-index: -1;
+        opacity: 0;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.15));
+        filter: blur(12px);
+        transition: opacity 0.4s ease;
+    }
+
+    .rx-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 60px rgba(16, 185, 129, 0.08);
+    }
+
+    .rx-card:hover::after {
+        opacity: 0.7;
+    }
+
+    /* Card Header */
+    .rx-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .rx-id-badge {
+        padding: 4px 12px;
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .rx-medicine-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin: 6px 0 2px;
+    }
+
+    .rx-doctor-name {
+        font-size: 0.8rem;
+        color: rgba(241, 245, 249, 0.45);
+    }
+
+    .rx-doctor-name i {
+        color: #818cf8;
+    }
+
+    /* Verified Stamp */
+    .rx-verified-stamp {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 2px solid rgba(16, 185, 129, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transform: rotate(-12deg);
+        font-size: 0.5rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #34d399;
+        letter-spacing: 1px;
+        line-height: 1.2;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        animation: stampPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes stampPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+
+        50% {
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+        }
+    }
+
+    /* Dosage Panel */
+    .rx-dosage-panel {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+    }
+
+    .rx-dosage-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #34d399;
+    }
+
+    .rx-dosage-info {
+        flex: 1;
+    }
+
+    .rx-dosage-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: rgba(241, 245, 249, 0.35);
+    }
+
+    .rx-dosage-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #f1f5f9;
+    }
+
+    .rx-divider {
+        width: 1px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .rx-freq-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #22d3ee;
+    }
+
+    .rx-duration-value {
+        font-size: 0.72rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    /* Doctor's Note */
+    .rx-note {
+        background: rgba(99, 102, 241, 0.06);
+        border-left: 3px solid #6366f1;
+        border-radius: 0 12px 12px 0;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+    }
+
+    .rx-note-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(241, 245, 249, 0.4);
+        margin-bottom: 4px;
+    }
+
+    .rx-note-text {
+        color: rgba(241, 245, 249, 0.7);
+        font-size: 0.85rem;
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    /* Daily Tracker */
+    .rx-tracker {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .rx-tracker-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(241, 245, 249, 0.3);
+    }
+
+    .rx-tracker-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    .rx-track-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid;
+        background: transparent;
+    }
+
+    .rx-track-btn.taken-btn {
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34d399;
+    }
+
+    .rx-track-btn.taken-btn:hover,
+    .rx-track-btn.taken-btn.active {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.5);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        transform: scale(1.05);
+    }
+
+    .rx-track-btn.missed-btn {
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #f87171;
+    }
+
+    .rx-track-btn.missed-btn:hover,
+    .rx-track-btn.missed-btn.active {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.5);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        transform: scale(1.05);
+    }
+
+    /* Empty State */
+    .rx-empty {
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .rx-empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #34d399;
+        margin: 0 auto 24px;
+        animation: iconFloat 4s ease-in-out infinite;
+    }
+
+    .rx-empty h3 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+    }
+
+    .rx-empty p {
+        color: rgba(241, 245, 249, 0.4);
+        font-size: 0.95rem;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background: rgba(15, 15, 30, 0.95) !important;
+        backdrop-filter: blur(24px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 24px !important;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+        padding: 24px 28px !important;
+    }
+
+    .modal-title {
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 700 !important;
+        color: #f1f5f9 !important;
+    }
+
+    .modal-body {
+        padding: 24px 28px !important;
+    }
+
+    .modal .form-label {
+        color: rgba(241, 245, 249, 0.6) !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .modal .form-control,
+    .modal .form-select {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: #f1f5f9 !important;
+        padding: 12px 16px !important;
+    }
+
+    .modal .form-control:focus,
+    .modal .form-select:focus {
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    .modal .btn-close {
+        filter: invert(1);
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    .modal .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+    }
+
+    .modal .btn-secondary {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: rgba(241, 245, 249, 0.7) !important;
+        border-radius: 12px !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .rx-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .rx-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+        }
     }
 </style>
+{% endblock %}
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark">My Pharmacy</h2>
-        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#requestRefillModal">
-            <i class="fas fa-sync-alt me-2"></i> Request Refill
+{% block content %}
+<!-- Background -->
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-2"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="rx-page">
+    <!-- Header -->
+    <div class="rx-header pro-reveal">
+        <div class="rx-header-left">
+            <div class="rx-header-icon">
+                <i class="fas fa-prescription-bottle-alt"></i>
+            </div>
+            <div>
+                <h1 class="rx-title pro-gradient-text">My Pharmacy</h1>
+                <p class="rx-subtitle">Manage your prescriptions and track medication adherence</p>
+            </div>
+        </div>
+        <button class="pro-btn pro-btn-primary pro-magnetic" data-bs-toggle="modal"
+            data-bs-target="#requestRefillModal">
+            <span class="magnetic-inner" style="display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-sync-alt"></i> Request Refill
+            </span>
         </button>
     </div>
 
-    <!-- Active Prescriptions -->
-    <div class="row g-4 mb-5">
+    <!-- Prescription Cards -->
+    <div class="rx-grid pro-stagger-grid">
         {% if prescriptions %}
         {% for prescription in prescriptions %}
-        <div class="col-lg-6">
-            <div class="card prescription-card h-100 border-0 shadow-sm position-relative overflow-hidden">
-                <!-- Verified Stamp -->
-                {% if prescription.is_verified %}
-                <div class="stamp-seal">Verified<br>Hospital</div>
-                {% endif %}
+        <div class="rx-card pro-tilt-card pro-reveal" style="transition-delay:{{ loop.index * 0.1 }}s;">
+            <div class="tilt-shine"></div>
 
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div>
-                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2">Rx #{{ prescription.id
-                                }}</span>
-                            <h5 class="fw-bold mb-1">{{ prescription.medicines }}</h5>
-                            <small class="text-muted">Dr. {{ prescription.doctor.last_name }}</small>
-                        </div>
-                        <div class="text-end">
-                            <h6 class="fw-bold text-dark mb-0">{{ prescription.frequency }}</h6>
-                            <small class="text-muted">{{ prescription.duration }}</small>
-                        </div>
-                    </div>
-
-                    <div class="bg-light p-3 rounded-3 mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="text-center">
-                                <i class="fas fa-pills fa-2x text-secondary"></i>
-                            </div>
-                            <div class="border-start ps-3">
-                                <div class="small fw-bold text-uppercase text-muted">Dosage</div>
-                                <div class="fw-bold text-dark">{{ prescription.dosage }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Instructions -->
-                    {% if prescription.instructions %}
-                    <div class="mb-3">
-                        <div class="small fw-bold text-muted mb-1"><i class="fas fa-info-circle me-1"></i> Doctor's Note
-                        </div>
-                        <p class="small mb-0 fst-italic">"{{ prescription.instructions }}"</p>
-                    </div>
+            <div class="rx-card-header">
+                <div>
+                    <span class="rx-id-badge">Rx #{{ prescription.id }}</span>
+                    {% if prescription.diagnosis %}
+                    <div class="rx-medicine-name">{{ prescription.diagnosis }}</div>
+                    {% else %}
+                    <div class="rx-medicine-name">General Prescription</div>
                     {% endif %}
-
-                    <!-- Handwritten Image View -->
-                    {% if prescription.image_path %}
-                    <div class="mb-3">
-                        <button class="btn btn-sm btn-outline-dark w-100" data-bs-toggle="modal"
-                            data-bs-target="#viewImageModal{{ prescription.id }}">
-                            <i class="fas fa-file-image me-2"></i> View Handwritten Rx
-                        </button>
-                    </div>
-
-                    <!-- Image Modal -->
-                    <div class="modal fade" id="viewImageModal{{ prescription.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Original Prescription</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <img src="{{ url_for('static', filename=prescription.image_path) }}"
-                                        class="img-fluid rounded shadow-sm">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Medicine Tracker -->
-                    <!-- Medicine Tracker -->
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
-                        <div class="small text-muted">Daily Tracker</div>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-success"
-                                id="btn-taken-{{ prescription.id }}"
-                                onclick="trackMedicine({{ prescription.id }}, 'taken')">
-                                <i class="fas fa-check"></i> Taken
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                id="btn-missed-{{ prescription.id }}"
-                                onclick="trackMedicine({{ prescription.id }}, 'missed')">
-                                <i class="fas fa-times"></i> Missed
-                            </button>
-                        </div>
-                    </div>
+                    <div class="rx-doctor-name"><i class="fas fa-user-md me-1"></i> Dr. {{ prescription.doctor.last_name
+                        }}</div>
                 </div>
+                {% if prescription.is_verified %}
+                <div class="rx-verified-stamp">
+                    <i class="fas fa-check" style="font-size:0.8rem;margin-bottom:2px;"></i>
+                    Verified
+                </div>
+                {% endif %}
+            </div>
+
+            {% if prescription.medicine_items and prescription.medicine_items.count() > 0 %}
+            {% for med in prescription.medicine_items %}
+            <div class="rx-dosage-panel" style="margin-bottom: 8px; padding: 12px 14px;">
+                <div class="rx-dosage-icon"><i class="fas fa-pills"></i></div>
+                <div class="rx-dosage-info">
+                    <div class="rx-dosage-label" style="color: #34d399;">{{ med.medicine_name }}</div>
+                    <div class="rx-dosage-value">{{ med.dosage }}</div>
+                </div>
+                <div class="rx-divider"></div>
+                <div>
+                    <div class="rx-freq-value">{{ med.frequency }}</div>
+                    <div class="rx-duration-value">{{ med.duration }}</div>
+                </div>
+            </div>
+            {% if med.instruction %}
+            <div
+                style="font-size: 0.75rem; color: rgba(241, 245, 249, 0.6); margin-top: -4px; margin-bottom: 12px; margin-left: 60px;">
+                <i class="fas fa-info-circle"></i> {{ med.instruction }} · {{ med.food_relation }}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <!-- Legacy support -->
+            <div class="rx-dosage-panel">
+                <div class="rx-dosage-icon"><i class="fas fa-pills"></i></div>
+                <div class="rx-dosage-info">
+                    <div class="rx-dosage-label">{{ prescription.medicines }}</div>
+                    <div class="rx-dosage-value">{{ prescription.dosage }}</div>
+                </div>
+                <div class="rx-divider"></div>
+                <div>
+                    <div class="rx-freq-value">{{ prescription.frequency }}</div>
+                    <div class="rx-duration-value">{{ prescription.duration }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if prescription.notes or prescription.instructions %}
+            <div class="rx-note">
+                <div class="rx-note-label"><i class="fas fa-stethoscope me-1"></i> Doctor's Note</div>
+                <div class="rx-note-text">"{{ prescription.notes or prescription.instructions }}"</div>
+            </div>
+            {% endif %}
+
+            {% if prescription.image_path %}
+            <div style="margin-bottom:16px;">
+                <button class="pro-btn pro-btn-ghost" style="width:100%;padding:10px 16px;font-size:0.8rem;"
+                    data-bs-toggle="modal" data-bs-target="#viewImageModal{{ prescription.id }}">
+                    <i class="fas fa-file-image"></i> View Handwritten Rx
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Daily Medicine Tracker -->
+            <div class="rx-tracker">
+                <span class="rx-tracker-label">Daily Tracker</span>
+                <div class="rx-tracker-btns">
+                    <button class="rx-track-btn taken-btn" id="btn-taken-{{ prescription.id }}"
+                        onclick="trackMedicine({{ prescription.id }}, 'taken')">
+                        <i class="fas fa-check"></i> Taken
+                    </button>
+                    <button class="rx-track-btn missed-btn" id="btn-missed-{{ prescription.id }}"
+                        onclick="trackMedicine({{ prescription.id }}, 'missed')">
+                        <i class="fas fa-times"></i> Missed
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <a href="{{ url_for('patient.view_prescription', id=prescription.id) }}" class="pro-btn pro-btn-primary"
+                    style="width:100%;padding:10px 16px;font-size:0.85rem; text-align: center; display: block; text-decoration: none;">
+                    <i class="fas fa-file-medical"></i> View & Share Full Prescription
+                </a>
             </div>
         </div>
         {% endfor %}
-        <script>
-            function trackMedicine(id, status) {
-                const dateKey = new Date().toISOString().split('T')[0];
-                const storageKey = `med_track_${dateKey}_${id}`;
-
-                // Clear previous
-                localStorage.removeItem(storageKey);
-
-                // Set new
-                localStorage.setItem(storageKey, status);
-
-                updateButtonState(id, status);
-            }
-
-            function updateButtonState(id, status) {
-                const btnTaken = document.getElementById(`btn-taken-${id}`);
-                const btnMissed = document.getElementById(`btn-missed-${id}`);
-
-                btnTaken.classList.remove('active', 'btn-success');
-                btnTaken.classList.add('btn-outline-success');
-
-                btnMissed.classList.remove('active', 'btn-danger');
-                btnMissed.classList.add('btn-outline-danger');
-
-                if (status === 'taken') {
-                    btnTaken.classList.add('active', 'btn-success');
-                    btnTaken.classList.remove('btn-outline-success');
-                } else if (status === 'missed') {
-                    btnMissed.classList.add('active', 'btn-danger');
-                    btnMissed.classList.remove('btn-outline-danger');
-                }
-            }
-
-            // Initialize on load
-            document.addEventListener('DOMContentLoaded', function () {
-                const dateKey = new Date().toISOString().split('T')[0];
-                // Find all tracking buttons to identify IDs
-                document.querySelectorAll('[id^="btn-taken-"]').forEach(btn => {
-                    const id = btn.id.replace('btn-taken-', '');
-                    const storageKey = `med_track_${dateKey}_${id}`;
-                    const status = localStorage.getItem(storageKey);
-                    if (status) {
-                        updateButtonState(id, status);
-                    }
-                });
-            });
-        </script>
         {% else %}
-        <div class="col-12">
-            <div class="text-center py-5">
-                <i class="fas fa-prescription-bottle-alt fa-3x text-muted mb-3"></i>
-                <h5>No Active Prescriptions</h5>
-                <p class="text-muted">Your prescribed medications will appear here.</p>
+        <div class="rx-empty pro-reveal-zoom" style="grid-column:1/-1;">
+            <div class="rx-empty-icon">
+                <i class="fas fa-prescription-bottle-alt"></i>
             </div>
+            <h3>No Active Prescriptions</h3>
+            <p>Your prescribed medications will appear here.</p>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Image Modals — placed OUTSIDE rx-card to avoid overflow:hidden / isolation:isolate clipping -->
+{% if prescriptions %}
+{% for prescription in prescriptions %}
+{% if prescription.image_path %}
+<div class="modal fade" id="viewImageModal{{ prescription.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Original Prescription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ url_for('static', filename=prescription.image_path) }}" class="img-fluid rounded"
+                    style="border-radius:16px !important;">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
 
 <!-- Refill Request Modal -->
 <div class="modal fade" id="requestRefillModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Request Medication Refill</h5>
+                <h5 class="modal-title"><i class="fas fa-sync-alt me-2" style="color:#818cf8;"></i> Request Medication
+                    Refill</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -230,16 +656,58 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
-                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                        <textarea class="form-control" name="notes" rows="2"
+                            placeholder="Any additional information..."></textarea>
                     </div>
-                    <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Send Request</button>
+                    <div class="d-flex gap-2 justify-content-end pt-2">
+                        <button type="button" class="pro-btn pro-btn-ghost" data-bs-dismiss="modal"
+                            style="padding:10px 20px;">Close</button>
+                        <button type="submit" class="pro-btn pro-btn-primary" style="padding:10px 20px;">Send
+                            Request</button>
                     </div>
                 </form>
             </div>
-            <!-- Footer removed as it is now inside the form -->
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function trackMedicine(id, status) {
+        const dateKey = new Date().toISOString().split('T')[0];
+        const storageKey = `med_track_${dateKey}_${id}`;
+        localStorage.removeItem(storageKey);
+        localStorage.setItem(storageKey, status);
+        updateButtonState(id, status);
+    }
+
+    function updateButtonState(id, status) {
+        const btnTaken = document.getElementById(`btn-taken-${id}`);
+        const btnMissed = document.getElementById(`btn-missed-${id}`);
+        if (!btnTaken || !btnMissed) return;
+
+        btnTaken.classList.remove('active');
+        btnMissed.classList.remove('active');
+
+        if (status === 'taken') {
+            btnTaken.classList.add('active');
+        } else if (status === 'missed') {
+            btnMissed.classList.add('active');
+        }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateKey = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('[id^="btn-taken-"]').forEach(btn => {
+            const id = btn.id.replace('btn-taken-', '');
+            const storageKey = `med_track_${dateKey}_${id}`;
+            const status = localStorage.getItem(storageKey);
+            if (status) {
+                updateButtonState(id, status);
+            }
+        });
+    });
+</script>
 {% endblock %}

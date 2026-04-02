@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, abort, session
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from app.models.models import db, User, UserRole, Doctor, Patient, AuditLog, SystemSettings, Hospital
+from app.models.models import db, User, UserRole, Doctor, Nurse, Patient, AuditLog, SystemSettings, Hospital
 from functools import wraps
 from datetime import datetime
 
@@ -38,9 +38,11 @@ def log_audit(action, target_id=None, details=None):
 @host_required
 def dashboard():
     """Main Host Dashboard"""
-    # Quick Stats
+    # Quick Stats - Doctors
     total_doctors = Doctor.query.filter_by(is_deleted=False).count()
     pending_doctors = Doctor.query.filter_by(verified=False, is_deleted=False).count()
+    
+    # Quick Stats - Patients
     total_patients = Patient.query.count()
     suspicious_activities = 0 # Placeholder for logic
     
@@ -163,7 +165,7 @@ def create_staff():
         # Validate role
         try:
             role = UserRole[role_name]
-            if role not in [UserRole.NURSE, UserRole.LAB_STAFF, UserRole.DOCTOR, UserRole.ADMIN]:
+            if role not in [UserRole.LAB_STAFF, UserRole.DOCTOR, UserRole.ADMIN, UserRole.PHARMACIST, UserRole.RECEPTIONIST]:
                 raise ValueError("Invalid role assignment")
         except:
             flash('Invalid role selected.', 'danger')
@@ -184,7 +186,7 @@ def create_staff():
         db.session.flush()
         
         # If Doctor, create empty doctor profile for them to fill?
-        # For Nurse/Lab, we don't have specific tables yet, but UserRole is enough for login.
+        # For Lab/Pharmacy/Reception, UserRole is enough for login.
         if role == UserRole.DOCTOR:
             doctor = Doctor(user_id=user.id, first_name="New", last_name="Doctor", verified=True)
             db.session.add(doctor)
@@ -195,6 +197,65 @@ def create_staff():
         return redirect(url_for('host.dashboard'))
         
     return render_template('host/create_staff.html')
+
+
+@host_bp.route('/nurse/create', methods=['GET', 'POST'])
+@login_required
+@host_required
+def create_nurse():
+    """Create new Nurse accounts with Nurse profile"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        registration_number = request.form.get('registration_number')
+        specialization = request.form.get('specialization', 'General')
+        phone = request.form.get('phone', '')
+        
+        # Auto-generate email
+        email = f"nurse.{username}@hospital.internal"
+        
+        if User.query.filter(User.username==username).first():
+            flash('User already exists.', 'danger')
+            return redirect(url_for('host.create_nurse'))
+        
+        try:
+            # Create User account
+            user = User(
+                username=username, 
+                email=email, 
+                password_hash=generate_password_hash(password),
+                role=UserRole.NURSE
+            )
+            db.session.add(user)
+            db.session.flush()
+            
+            # Create Nurse profile linked to User
+            nurse = Nurse(
+                user_id=user.id,
+                first_name=first_name,
+                last_name=last_name,
+                registration_number=registration_number,
+                specialization=specialization,
+                phone=phone,
+                verified=True,  # Auto-verified since created by host
+                is_active=True
+            )
+            db.session.add(nurse)
+            db.session.commit()
+            
+            log_audit("CREATE_NURSE", user.id, f"Created Nurse: {first_name} {last_name}")
+            flash(f'Nurse {username} ({first_name} {last_name}) created successfully.', 'success')
+            return redirect(url_for('host.dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating nurse: {str(e)}', 'danger')
+            return redirect(url_for('host.create_nurse'))
+    
+    return render_template('host/create_nurse.html')
+
 
 # --- Emergency Override (Global) ---
 # This is a bit tricky to implement globally without middleware, 

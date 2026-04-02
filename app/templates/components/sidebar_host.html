@@ -1,0 +1,66 @@
+<!-- Host Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{{ url_for('host.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Admin</span>
+
+        <a href="{{ url_for('host.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'host.dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('host.doctor_management') }}"
+            class="sidebar-link {% if request.endpoint == 'host.doctor_management' %}active{% endif %}">
+            <i class="fas fa-user-md"></i>
+            Doctors
+        </a>
+
+        <a href="{{ url_for('host.create_staff') }}"
+            class="sidebar-link {% if request.endpoint == 'host.create_staff' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i>
+            Add Staff
+        </a>
+
+        <span class="sidebar-section-label">Governance</span>
+
+        <a href="{{ url_for('host.audit_logs') }}"
+            class="sidebar-link {% if request.endpoint == 'host.audit_logs' %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i>
+            Audit Logs
+        </a>
+
+        <a href="{{ url_for('host.settings') }}"
+            class="sidebar-link {% if request.endpoint == 'host.settings' %}active{% endif %}">
+            <i class="fas fa-cogs"></i>
+            Settings
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ current_user.username }}</div>
+            <div class="sidebar-user-role">Super Admin</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>

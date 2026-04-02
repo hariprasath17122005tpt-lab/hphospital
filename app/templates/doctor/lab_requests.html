@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Lab Requests - Doctor Dashboard{% endblock %}
+{% set topbar_title = 'My Lab Requests' %}
+{% set breadcrumb_current = 'Lab Tests' %}
+
+{% block content %}
+<style>
+    .lab-card {
+        background: rgba(20, 20, 30, 0.9);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-card table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .lab-card th {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.9rem 1.2rem;
+        text-align: left;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .lab-card td {
+        padding: 0.85rem 1.2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .lab-card tr:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .badge-status {
+        padding: 0.3rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .badge-pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-progress {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-completed {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .section-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.03em;
+    }
+
+    .empty-state {
+        color: rgba(255, 255, 255, 0.4);
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-mini {
+        background: rgba(20, 20, 30, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .stat-mini .val {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .stat-mini .lbl {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+</style>
+
+<div style="margin-bottom: 1.5rem">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title"><i class="fas fa-flask me-2" style="color:#818cf8;"></i>Lab Test Requests</div>
+        <a href="{{ url_for('lab.dashboard') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Go to Lab
+            Dashboard</a>
+    </div>
+
+    {% set pending_count = reports|selectattr('status','in',['PENDING','CREATED'])|list|length %}
+    {% set progress_count = (reports|selectattr('status','equalto','SAMPLE_COLLECTED')|list|length) + (reports|selectattr('status','equalto','PROCESSING')|list|length) %}
+    {% set completed_count = reports|selectattr('status','equalto','COMPLETED')|list|length %}
+
+    <div class="stats-row">
+        <div class="stat-mini">
+            <div class="val" style="color:#fbbf24;">{{ pending_count }}</div>
+            <div class="lbl">Pending</div>
+        </div>
+        <div class="stat-mini">
+            <div class="val" style="color:#60a5fa;">{{ progress_count }}</div>
+            <div class="lbl">In Progress</div>
+        </div>
+        <div class="stat-mini">
+            <div class="val" style="color:#34d399;">{{ completed_count }}</div>
+            <div class="lbl">Completed</div>
+        </div>
+    </div>
+</div>
+
+<div class="lab-card">
+    {% if reports|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Test Name</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reports %}
+            <tr>
+                <td>#{{ r.id }}</td>
+                <td>{{ r.patient.first_name }} {{ r.patient.last_name }}</td>
+                <td><strong>{{ r.test_name }}</strong></td>
+                <td>
+                    <span
+                        class="badge-status {% if r.status in ['PENDING', 'CREATED'] %}badge-pending{% elif r.status == 'COMPLETED' %}badge-completed{% else %}badge-progress{% endif %}">
+                        {{ r.status.replace('_',' ') }}
+                    </span>
+                </td>
+                <td>{{ r.created_at.strftime('%d %b %Y') if r.created_at else '—' }}</td>
+                <td>
+                    {% if r.status == 'COMPLETED' and r.result_attachment_rel_path() %}
+                    <a href="{{ url_for('lab.download_order_file', order_id=r.id) }}"
+                        class="btn btn-sm btn-outline-success rounded-pill px-3"><i
+                            class="fas fa-download me-1"></i>View</a>
+                    {% elif r.result_preview() %}
+                    <span class="small">{{ r.result_preview()[:120] }}{% if r.result_preview()|length > 120 %}…{% endif %}</span>
+                    {% else %}
+                    <span style="color:rgba(255,255,255,0.3);">Awaiting</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-flask fa-2x mb-3 opacity-50"></i>
+        <p>No lab tests requested yet</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

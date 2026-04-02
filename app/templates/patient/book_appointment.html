@@ -1,129 +1,436 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-lg">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-calendar-plus"></i> Book an Appointment
-                    </h4>
-                </div>
-                <div class="card-body">
-                    {% if doctors %}
-                    <form method="POST" class="needs-validation">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                        <div class="mb-3">
-                            <label for="doctor" class="form-label">
-                                <i class="fas fa-user-md"></i> Select Doctor
-                            </label>
-                            <select class="form-select" id="doctor" name="doctor_id" required>
-                                <option value="">-- Choose a doctor --</option>
-                                {% for doctor in doctors %}
-                                <option value="{{ doctor.id }}">
-                                    Dr. {{ doctor.user.username }}
-                                    {% if doctor.specialization %} ({{ doctor.specialization }}){% endif %}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="invalid-feedback">Please select a doctor.</div>
-                        </div>
+{% block title %}Book Appointment - CarePoint AI{% endblock %}
 
-                        <div class="mb-3">
-                            <label for="date" class="form-label">
-                                <i class="fas fa-calendar"></i> Appointment Date
-                            </label>
-                            <input type="date" class="form-control" id="date" name="date" required
-                                min="{{ today_date }}">
-                            <div class="invalid-feedback">Please select a valid date.</div>
-                        </div>
+{% set topbar_title = 'Book Appointment' %}
+{% set breadcrumb_current = 'New Booking' %}
 
-                        <div class="mb-3">
-                            <label for="time" class="form-label">
-                                <i class="fas fa-clock"></i> Appointment Time
-                            </label>
-                            <input type="time" class="form-control" id="time" name="time" required>
-                            <div class="invalid-feedback">Please select a time.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="reason" class="form-label">
-                                <i class="fas fa-stethoscope"></i> Reason for Appointment
-                            </label>
-                            <textarea class="form-control" id="reason" name="reason" rows="3"
-                                placeholder="Describe your symptoms or reason for visit..."></textarea>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            <small>Please note that the appointment is subject to doctor's availability
-                                confirmation.</small>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check"></i> Book Appointment
-                            </button>
-                            <a href="{{ url_for('patient.appointments') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Appointments
-                            </a>
-                        </div>
-                    </form>
-                    {% else %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        No doctors available at the moment. Please try again later.
-                    </div>
-                    <a href="{{ url_for('patient.dashboard') }}" class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // Bootstrap form validation
-    (function () {
-        'use strict';
-        window.addEventListener('load', function () {
-            var forms = document.querySelectorAll('.needs-validation');
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-</script>
-
+{% block extra_css %}
 <style>
-    .card {
+    /* ═══════════════════════════════════════════════════════
+       BOOKING — LEGEND PRO DARK THEME
+       Wizard Style + 3D Doctor Cards + Glassmorphism Inputs
+       ═══════════════════════════════════════════════════════ */
+
+    .booking-page {
+        position: relative;
+        min-height: 80vh;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Wizard Steps (Visual only) */
+    .pro-wizard-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .pro-wizard-steps::before {
+        content: '';
+        position: absolute;
+        top: 24px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.08);
+        z-index: -1;
+    }
+
+    .pro-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: default;
+    }
+
+    .pro-step-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(15, 15, 30, 0.8);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.3);
+        transition: all 0.4s ease;
+    }
+
+    .pro-step.active .pro-step-icon {
+        border-color: #818cf8;
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .pro-step.completed .pro-step-icon {
+        border-color: #34d399;
+        background: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+    }
+
+    .pro-step-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .pro-step.active .pro-step-label {
+        color: #f1f5f9;
+    }
+
+    /* Main Card */
+    .pro-booking-card {
+        background: rgba(15, 15, 30, 0.65);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pro-booking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+    }
+
+    .booking-section-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .booking-section-title i {
+        color: #818cf8;
+    }
+
+    /* Doctor Selection */
+    .doctor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .doctor-radio {
+        display: none;
+    }
+
+    .doctor-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .doctor-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateY(-2px);
+    }
+
+    .doctor-radio:checked+.doctor-card {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: #6366f1;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .doc-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .doc-info h5 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin: 0 0 2px;
+        color: #f1f5f9;
+    }
+
+    .doc-info p {
+        font-size: 0.75rem;
+        color: rgba(241, 245, 249, 0.5);
+        margin: 0;
+    }
+
+    /* Date & Time Grid */
+    .datetime-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .pro-input-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: rgba(241, 245, 249, 0.5);
+        margin-bottom: 8px;
+    }
+
+    .pro-control {
+        width: 100%;
+        background: rgba(15, 15, 30, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: #f1f5f9;
+        font-family: 'Outfit', sans-serif;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .pro-control:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        background: rgba(15, 15, 30, 0.6);
+    }
+
+    /* Textarea */
+    textarea.pro-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Submit Button */
+    .pro-submit-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
         border: none;
-        border-radius: 10px;
+        border-radius: 14px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        overflow: hidden;
+        position: relative;
     }
 
-    .card-header {
-        border-radius: 10px 10px 0 0;
-        padding: 1.5rem;
+    .pro-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
     }
 
-    .form-control,
-    .form-select {
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
+    .pro-submit-btn::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
     }
 
-    .btn {
-        border-radius: 5px;
-        font-weight: 500;
+    .pro-submit-btn:hover::after {
+        left: 100%;
+    }
+
+    /* Alert */
+    .pro-alert-info {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        font-size: 0.85rem;
+        color: #93c5fd;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .datetime-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pro-wizard-steps {
+            display: none;
+        }
+
+        /* Hide steps on mobile for simplicity */
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Background -->
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="booking-page pro-reveal-zoom">
+    <!-- Wizard Steps -->
+    <div class="pro-wizard-steps">
+        <div class="pro-step active">
+            <div class="pro-step-icon"><i class="fas fa-user-md"></i></div>
+            <div class="pro-step-label">Select Doctor</div>
+        </div>
+        <div class="pro-step">
+            <div class="pro-step-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="pro-step-label">Choose Date</div>
+        </div>
+        <div class="pro-step">
+            <div class="pro-step-icon"><i class="fas fa-clock"></i></div>
+            <div class="pro-step-label">Set Time</div>
+        </div>
+        <div class="pro-step">
+            <div class="pro-step-icon"><i class="fas fa-check"></i></div>
+            <div class="pro-step-label">Confirm</div>
+        </div>
+    </div>
+
+    <!-- Main Booking Form -->
+    <div class="pro-booking-card">
+        <form method="POST" class="needs-validation">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <!-- Section 1: Doctor -->
+            <div class="booking-section-title">
+                <i class="fas fa-user-md"></i> Choose Specialist
+            </div>
+
+            {% if doctors %}
+            <div class="doctor-grid">
+                {% for doctor in doctors %}
+                <label>
+                    <input type="radio" name="doctor_id" value="{{ doctor.id }}" class="doctor-radio" required>
+                    <div class="doctor-card pro-tilt-card">
+                        <div class="doc-avatar">
+                            {{ doctor.user.username[0] }}
+                        </div>
+                        <div class="doc-info">
+                            <h5>Dr. {{ doctor.user.username }}</h5>
+                            <p>{{ doctor.specialization or 'General Practitioner' }}</p>
+                        </div>
+                        <i class="fas fa-check-circle text-primary ms-auto opacity-0 check-mark"
+                            style="transition:all 0.3s ease;"></i>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> No doctors currently available.
+            </div>
+            {% endif %}
+
+            <!-- Section 2: Date & Time -->
+            <div class="datetime-grid">
+                <div class="pro-input-group">
+                    <label><i class="fas fa-calendar me-1"></i> Preferred Date</label>
+                    <input type="date" class="pro-control" name="date" required min="{{ today_date }}">
+                </div>
+                <div class="pro-input-group">
+                    <label><i class="fas fa-clock me-1"></i> Preferred Time</label>
+                    <input type="time" class="pro-control" name="time" required>
+                </div>
+            </div>
+
+            <!-- Section 3: Reason -->
+            <div class="pro-input-group mb-4">
+                <label><i class="fas fa-notes-medical me-1"></i> Reason for Visit</label>
+                <textarea class="pro-control" name="reason"
+                    placeholder="Describe your symptoms or the main reason for this appointment..." required></textarea>
+            </div>
+
+            <!-- Info -->
+            <div class="pro-alert-info">
+                <i class="fas fa-info-circle mt-1"></i>
+                <div>
+                    <strong>Note:</strong> Your appointment request will be sent to the doctor for confirmation. You
+                    will receive a notification once the status is updated.
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('patient.appointments') }}" class="pro-btn pro-btn-ghost" style="flex:1;">Cancel</a>
+                <button type="submit" class="pro-submit-btn" style="flex:2;">
+                    Confirm Booking <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhance visual selection for doctors
+    document.querySelectorAll('.doctor-radio').forEach(radio => {
+        radio.addEventListener('change', function () {
+            // Reset all checkmarks
+            document.querySelectorAll('.check-mark').forEach(el => el.classList.add('opacity-0'));
+            // Show checkmark for selected
+            if (this.checked) {
+                this.closest('.doctor-card').querySelector('.check-mark').classList.remove('opacity-0');
+            }
+
+            // Minimal Wizard Logic update (Visual)
+            updateWizard(1);
+        });
+    });
+
+    const inputs = document.querySelectorAll('input[type="date"], input[type="time"], textarea');
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            // Check if all filled to update wizard visual
+            let allFilled = true;
+            inputs.forEach(i => { if (!i.value) allFilled = false; });
+            if (allFilled) updateWizard(2);
+        });
+    });
+
+    function updateWizard(stepIndex) {
+        const steps = document.querySelectorAll('.pro-step');
+        steps.forEach((s, i) => {
+            if (i <= stepIndex) s.classList.add('active');
+        });
+    }
+</script>
 {% endblock %}

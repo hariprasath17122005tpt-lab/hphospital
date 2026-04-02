@@ -1,0 +1,42 @@
+# ============================================================
+#  Hospital Management System — Production Python Dependencies
+#  Used for production deployment targeting AWS EC2 + RDS MySQL
+# ============================================================
+
+# ── Core Flask ────────────────────────────────────────────────────────────────
+Flask==3.0.0
+Flask-SocketIO==5.3.6
+flask-login==0.6.3
+Flask-WTF==1.2.1
+WTForms==3.2.1
+
+# ── Database: MySQL (AWS RDS) ─────────────────────────────────────────────────
+SQLAlchemy==2.0.23
+Flask-SQLAlchemy==3.1.1
+PyMySQL==1.1.0
+cryptography==42.0.5      # Required for MySQL caching_sha2_password auth plugin
+Flask-Migrate==4.0.5       # Alembic-based DB migrations (zero-downtime schema upgrades)
+
+# ── Production WSGI Server ────────────────────────────────────────────────────
+gunicorn==21.2.0
+gevent==24.2.1             # Async workers for SocketIO compatibility
+
+# ── AWS Integration ───────────────────────────────────────────────────────────
+boto3==1.34.69             # S3 file uploads (medical documents, lab reports, scans)
+botocore==1.34.69
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+requests==2.31.0
+rapidfuzz==3.14.1
+pandas==2.3.1
+openpyxl==3.1.5
+
+# ── Voice Transcription (Doctor Prescription Dictation) ──────────────────────
+faster-whisper==1.0.3
+soundfile==0.12.1
+av==12.3.0
+
+# ── PDF / Image Generation (Reports) ─────────────────────────────────────────
+fpdf==1.7.2
+Pillow==10.4.0

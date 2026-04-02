@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Search & Selection{% endblock %}
+
+{% block css %}
+<style>
+    .walkin-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .search-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .search-box input {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .search-box button {
+        padding: 12px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    
+    .search-box button:hover {
+        background: #5568d3;
+    }
+    
+    .btn-new {
+        background: #28a745;
+        padding: 12px 20px;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .btn-new:hover {
+        background: #218838;
+    }
+    
+    .patient-list {
+        margin-top: 20px;
+    }
+    
+    .patient-item {
+        background: white;
+        border: 1px solid #ddd;
+        padding: 16px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .patient-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        transform: translateX(5px);
+    }
+    
+    .patient-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 8px;
+    }
+    
+    .patient-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .patient-uhid {
+        background: #667eea;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .patient-info {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+    
+    .info-field {
+        font-size: 13px;
+        color: #666;
+    }
+    
+    .info-field strong {
+        color: #333;
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    
+    .patient-tags {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .tag {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    
+    .tag.walkin {
+        background: #fffbf0;
+        color: #d9480f;
+        border: 1px solid #ffc107;
+    }
+    
+    .tag.registered {
+        background: #e7f3ff;
+        color: #0056b3;
+        border: 1px solid #2196F3;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+    
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .alert {
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    
+    .alert-info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+    
+    .pagination {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .pagination button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    
+    .pagination button:hover {
+        background: #f0f0f0;
+    }
+    
+    .pagination button.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #eee;
+    }
+    
+    .tab {
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+    }
+    
+    .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="walkin-container">
+    <!-- Header -->
+    <div class="card-header">
+        <h2 style="margin: 0; font-size: 24px;">
+            <i class="fas fa-search"></i> Patient Search
+        </h2>
+        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">
+            Find existing patients by UHID, name, or phone number
+        </p>
+    </div>
+    
+    <!-- Main Card -->
+    <div class="card" style="border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div style="padding: 30px;">
+            <!-- Search Box -->
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by UHID, name, or phone..." 
+                       onkeyup="handleSearch(event)">
+                <button onclick="searchPatients()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">
+                    <i class="fas fa-users"></i> All Patients
+                </button>
+                <button class="tab" onclick="switchTab('walkin')">
+                    <i class="fas fa-sign-in-alt"></i> Walk-in Only
+                </button>
+                <button class="tab" onclick="switchTab('registered')">
+                    <i class="fas fa-user-check"></i> Registered
+                </button>
+            </div>
+            
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+            
+            <!-- Results -->
+            <div id="results"></div>
+            
+            <!-- New Patient Button -->
+            <button class="btn-new" onclick="goToRegister()">
+                <i class="fas fa-user-plus"></i> Register New Walk-in Patient
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTab = 'all';
+let allPatients = [];
+
+// Handle Enter key in search
+function handleSearch(event) {
+    if (event.key === 'Enter') {
+        searchPatients();
+    }
+}
+
+async function searchPatients() {
+    const query = document.getElementById('searchInput').value.trim();
+    const resultsDiv = document.getElementById('results');
+    
+    if (!query) {
+        loadAllPatients();
+        return;
+    }
+    
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Searching...</p></div>';
+    
+    try {
+        const response = await fetch(`/walkin/api/search?q=${encodeURIComponent(query)}&limit=50`, { credentials: 'include' });
+        const data = await response.json();
+        
+        if (data.success) {
+            allPatients = data.patients;
+            displayPatients(filterByTab(allPatients));
+        } else {
+            showError(resultsDiv, data.error || 'Search failed');
+        }
+    } catch (error) {
+        showError(resultsDiv, error.message);
+    }
+}
+
+async function loadAllPatients() {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading patients...</p></div>';
+    
+    try {
+        const response = await fetch('/walkin/api/list?limit=20', { credentials: 'include' });
+        const data = await response.json();
+        
+        if (data.success) {
+            allPatients = data.patients;
+            displayPatients(filterByTab(allPatients));
+        } else {
+            showError(resultsDiv, data.error || 'Failed to load patients');
+        }
+    } catch (error) {
+        showError(resultsDiv, error.message);
+    }
+}
+
+function filterByTab(patients) {
+    if (currentTab === 'walkin') {
+        return patients.filter(p => p.is_walk_in);
+    } else if (currentTab === 'registered') {
+        return patients.filter(p => p.has_account);
+    }
+    return patients;
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    // Update active tab styling
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    displayPatients(filterByTab(allPatients));
+}
+
+function displayPatients(patients) {
+    const resultsDiv = document.getElementById('results');
+    
+    if (patients.length === 0) {
+        resultsDiv.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>No patients found</h3>
+                <p>Try a different search or register a new walk-in patient.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="patient-list">';
+    
+    patients.forEach(patient => {
+        const walkinTag = patient.is_walk_in ? '<span class="tag walkin"><i class="fas fa-sign-in-alt"></i> Walk-in</span>' : '';
+        const accountTag = patient.has_account ? '<span class="tag registered"><i class="fas fa-user-check"></i> Registered</span>' : '';
+        
+        html += `
+            <div class="patient-item" onclick="selectPatient(${patient.id})">
+                <div class="patient-header">
+                    <div class="patient-name">
+                        <i class="fas fa-user-circle"></i> ${patient.name}
+                    </div>
+                    <div class="patient-uhid">${patient.uhid}</div>
+                </div>
+                <div class="patient-info">
+                    <div class="info-field">
+                        <strong>Age</strong>
+                        ${patient.age} years
+                    </div>
+                    <div class="info-field">
+                        <strong>Gender</strong>
+                        ${patient.gender}
+                    </div>
+                    <div class="info-field">
+                        <strong>Phone</strong>
+                        ${patient.phone || 'N/A'}
+                    </div>
+                </div>
+                <div class="patient-tags">
+                    ${walkinTag}
+                    ${accountTag}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    resultsDiv.innerHTML = html;
+}
+
+function selectPatient(patientId) {
+    // Store selected patient and redirect to doctor/patient view
+    sessionStorage.setItem('selectedPatientId', patientId);
+    window.location.href = `/lab/dashboard?patient_id=${patientId}`;
+}
+
+function goToRegister() {
+    window.location.href = '/walkin/register';
+}
+
+function showError(element, message) {
+    element.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> ${message}
+        </div>
+    `;
+}
+
+// Load all patients on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllPatients();
+});
+</script>
+{% endblock %}

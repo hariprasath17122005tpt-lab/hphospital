@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Consent Forms — CarePoint{% endblock %}
+
+{% block content %}
+<style>
+    .consent-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 800px;
+        margin: 20px auto;
+        backdrop-filter: blur(10px);
+    }
+    
+    .consent-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .consent-text {
+        background: rgba(15, 23, 42, 0.5);
+        padding: 24px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        line-height: 1.6;
+        height: 200px;
+        overflow-y: auto;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .signature-container {
+        margin-top: 20px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 10px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    canvas {
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        background: #f8fafc;
+        cursor: crosshair;
+        width: 100%;
+        height: 200px;
+        touch-action: none;
+    }
+    
+    .btn-clear {
+        padding: 6px 16px;
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .btn-submit {
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 20px;
+        width: 100%;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        margin-bottom: 20px;
+        outline: none;
+    }
+    
+    .history-card {
+        margin-top: 40px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 24px;
+    }
+    
+    .signed-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="consent-card">
+        <div class="consent-title">
+            <i class="fas fa-file-signature text-emerald-400"></i>
+            Digital Legal Consents (HIPAA/GDPR)
+        </div>
+        
+        <form method="POST" action="{{ url_for('patient.sign_consent') }}" id="consentForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="signature_base64" id="signature_base64">
+            
+            <div class="form-group">
+                <label>Select Form to Sign:</label>
+                <select name="form_type" id="formTypeSelector" onchange="updateConsentText()">
+                    <option value="General Treatment Consent">General Treatment Consent</option>
+                    <option value="HIPAA Privacy Notice">HIPAA / Data Privacy Notice</option>
+                    <option value="Telemedicine Agreement">Telemedicine Agreement</option>
+                </select>
+            </div>
+            
+            <div class="consent-text" id="consentTextBox">
+                <strong>General Treatment Consent</strong><br><br>
+                I, the undersigned, hereby authorize the doctors and staff at CarePoint Hospital to perform medical treatments, examinations, and procedures as deemed necessary. I understand that medical practice is not an exact science and no guarantees have been made to me regarding the results of treatments or examinations.<br><br>
+                By signing below, I acknowledge that I am voluntarily agreeing to receive medical care and giving consent to the hospital staff.
+            </div>
+            <input type="hidden" name="consent_text" id="hidden_consent_text" value="">
+            
+            <div class="form-group">
+                <label><i class="fas fa-pen-nib"></i> Please Provide Your Digital Signature:</label>
+                <div class="signature-container">
+                    <canvas id="signatureCanvas"></canvas>
+                    <div style="text-align: right;">
+                        <button type="button" class="btn-clear" onclick="clearCanvas()">Clear Signature</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">Sign & Submit Document</button>
+        </form>
+
+        {% if past_consents %}
+        <div class="history-card">
+            <h4 class="mb-3" style="font-weight:700; font-size:1.1rem;"><i class="fas fa-history me-2"></i>Signed Documents</h4>
+            {% for c in past_consents %}
+            <div class="signed-item">
+                <div>
+                    <h5 class="m-0" style="font-size: 0.95rem; font-weight:700;">{{ c.form_type }}</h5>
+                    <small class="text-muted"><i class="fas fa-clock me-1"></i>Signed: {{ c.signed_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                </div>
+                <div>
+                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Verified & Encrypted</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Consent text database
+    const textDB = {
+        "General Treatment Consent": "I, the undersigned, hereby authorize the doctors and staff at CarePoint Hospital to perform medical treatments, examinations, and procedures as deemed necessary. I understand that medical practice is not an exact science and no guarantees have been made to me regarding the results of treatments or examinations. By signing below, I acknowledge that I am voluntarily agreeing to receive medical care.",
+        "HIPAA Privacy Notice": "I acknowledge that I have received the CarePoint HIPAA Privacy Notice. I understand that my medical records, lab reports, and demographic data may be used and disclosed to carry out treatment, payment, and healthcare operations. CarePoint is authorized to securely share my digital records strictly within authorized medical personnel parameters.",
+        "Telemedicine Agreement": "I understand that telemedicine involves the use of electronic communications to enable health care providers at different locations to share individual patient medical information for the purpose of improving patient care. I give my consent to CarePoint to record, transmit, and store my video/audio data solely for clinical and legal compliance purposes."
+    };
+
+    function updateConsentText() {
+        const val = document.getElementById('formTypeSelector').value;
+        const text = textDB[val];
+        // Visual text
+        document.getElementById('consentTextBox').innerHTML = `<strong>${val}</strong><br><br>${text}`;
+        // Hidden input text for DB
+        document.getElementById('hidden_consent_text').value = `${val} - ${text}`;
+    }
+
+    // Initialize hidden input
+    updateConsentText();
+
+    // Canvas Signature Logic
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasSignature = false;
+
+    // Resize canvas to match CSS size
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width - 20; // accounting for padding
+        canvas.height = 200;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#0f172a';
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startPosition(e) {
+        isDrawing = true;
+        draw(e);
+    }
+
+    function endPosition() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        if(e.touches) {
+            return {
+                x: e.touches[0].clientX - rect.left,
+                y: e.touches[0].clientY - rect.top
+            };
+        }
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault(); // Prevent scrolling on touch
+        const pos = getMousePos(e);
+        
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        
+        hasSignature = true;
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+    
+    // Touch events
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasSignature = false;
+    }
+
+    // Submit handler
+    document.getElementById('consentForm').addEventListener('submit', function(e) {
+        if (!hasSignature) {
+            e.preventDefault();
+            alert("A digital signature is required before submitting legal consent.");
+            return;
+        }
+        
+        // Export canvas to base64 PNG
+        const base64Data = canvas.toDataURL('image/png');
+        document.getElementById('signature_base64').value = base64Data;
+    });
+</script>
+{% endblock %}

@@ -1,197 +1,315 @@
 {% extends "base.html" %}
 
-{% block title %}My Bills{% endblock %}
+{% block title %}My Invoices - CarePoint AI{% endblock %}
 
-{% block content %}
+{% set topbar_title = 'Billing & Payments' %}
+{% set breadcrumb_current = 'Invoices' %}
+
+{% block extra_css %}
 <style>
-    .invoice-card {
-        transition: all 0.3s ease;
-        border: 1px solid #e2e8f0;
-    }
+    /* ═══════════════════════════════════════════════════════
+       BILLING — LEGEND PRO DARK THEME
+       Credit Card Style + Animated Receipts + Spending Graph
+       ═══════════════════════════════════════════════════════ */
 
-    .invoice-card:hover {
-        border-color: #0ea5e9;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .timeline-item {
+    .billing-page {
         position: relative;
-        padding-left: 2rem;
-        border-left: 2px solid #e2e8f0;
-        margin-bottom: 1.5rem;
+        min-height: 80vh;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -9px;
-        top: 0;
-        width: 16px;
-        height: 16px;
-        background: white;
-        border: 4px solid #3b82f6;
-        border-radius: 50%;
+    /* Summary Cards */
+    .bill-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
     }
 
-    .bg-invoice {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    .bill-summary-card {
+        background: linear-gradient(135deg, rgba(15, 15, 30, 0.8), rgba(15, 15, 30, 0.6));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bill-summary-card.highlight {
+        background: linear-gradient(135deg, #4f46e5, #ec4899);
+        border: none;
+    }
+
+    .bill-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
         color: white;
+        margin-bottom: 16px;
+    }
+
+    .bill-amount {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .bill-label {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Invoice List */
+    .invoice-list {
+        background: rgba(15, 15, 30, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        overflow: hidden;
+    }
+
+    .invoice-item {
+        display: flex;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .invoice-item:last-child {
+        border-bottom: none;
+    }
+
+    .invoice-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .inv-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+        font-size: 1.1rem;
+    }
+
+    .inv-details {
+        flex: 1;
+    }
+
+    .inv-id {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 0.95rem;
+    }
+
+    .inv-date {
+        font-size: 0.75rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    .inv-amount {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #f1f5f9;
+        margin-right: 24px;
+    }
+
+    .inv-status {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .status-paid {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .status-unpaid {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .inv-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(241, 245, 249, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .inv-action:hover {
+        border-color: #818cf8;
+        color: #818cf8;
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background: #0f172a !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #f1f5f9 !important;
     }
 </style>
+{% endblock %}
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">My Invoices</h2>
-            <p class="text-muted">Manage payments & Insurance claims</p>
-        </div>
-        <div class="d-flex gap-3">
-            <div class="card bg-invoice text-white border-0 shadow-sm">
-                <div class="card-body py-2 px-3">
-                    <small class="text-uppercase text-white-50">Total Due</small>
-                    <h4 class="mb-0 fw-bold text-white">
-                        {% set total_due = bills|selectattr('status', 'equalto', 'Unpaid')|sum(attribute='amount') %}
-                        ₹{{ "%.2f"|format(total_due) }}
-                    </h4>
-                </div>
+{% block content %}
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="billing-page pro-reveal-zoom">
+    <!-- Summary -->
+    <div class="bill-summary-grid">
+        <div class="bill-summary-card highlight pro-tilt-card">
+            <div class="bill-card-icon"><i class="fas fa-wallet"></i></div>
+            <div class="bill-amount">
+                {% set total_due = bills|selectattr('status', 'equalto', 'Unpaid')|sum(attribute='amount') %}
+                ₹{{ "%.2f"|format(total_due) }}
             </div>
+            <div class="bill-label">Total Outstanding</div>
+            <div
+                style="position:absolute; right:-20px; bottom:-20px; font-size:8rem; opacity:0.1; transform:rotate(-15deg);">
+                ₹</div>
+        </div>
+
+        <div class="bill-summary-card pro-tilt-card">
+            <div class="bill-card-icon" style="background:rgba(16,185,129,0.1); color:#34d399;"><i
+                    class="fas fa-check-circle"></i></div>
+            <div class="bill-amount">
+                {% set paid_count = bills|selectattr('status', 'equalto', 'Paid')|list|length %}
+                {{ paid_count }}
+            </div>
+            <div class="bill-label">Settled Invoices</div>
+        </div>
+
+        <div class="bill-summary-card pro-tilt-card">
+            <div class="bill-card-icon" style="background:rgba(59,130,246,0.1); color:#60a5fa;"><i
+                    class="fas fa-chart-pie"></i></div>
+            <div style="height:60px; width:100%; display:flex; align-items:flex-end; gap:4px;">
+                <div style="width:20%; height:40%; background:rgba(255,255,255,0.2); border-radius:4px;"></div>
+                <div style="width:20%; height:70%; background:rgba(255,255,255,0.4); border-radius:4px;"></div>
+                <div style="width:20%; height:50%; background:rgba(255,255,255,0.3); border-radius:4px;"></div>
+                <div style="width:20%; height:90%; background:#60a5fa; border-radius:4px;"></div>
+            </div>
+            <div class="bill-label mt-2">Spending Trend</div>
         </div>
     </div>
 
-    <!-- Payment History Timeline -->
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="fw-bold mb-0">Billing History</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Invoice</th>
-                                    <th>Description</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for bill in bills %}
-                                <tr>
-                                    <td class="ps-4">
-                                        <span class="fw-bold">#{{ "%05d"|format(bill.id) }}</span>
-                                        {% if bill.status == 'Unpaid' %}
-                                        <span class="badge bg-warning text-dark ms-2">Unpaid</span>
-                                        {% else %}
-                                        <span class="badge bg-success ms-2">Paid</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ bill.description }}</td>
-                                    <td>{{ bill.created_at.strftime('%b %d, %Y') }}</td>
-                                    <td class="fw-bold">₹{{ "%.2f"|format(bill.amount) }}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal"
-                                            data-bs-target="#invoiceModal{{ bill.id }}">
-                                            <i class="fas fa-file-invoice"></i> View
-                                        </button>
-                                        {% if bill.status == 'Unpaid' %}
-                                        <form action="{{ url_for('patient.pay_bill', bill_id=bill.id) }}" method="POST"
-                                            class="d-inline">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                            <button type="submit" class="btn btn-sm btn-primary">Pay</button>
-                                        </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+    <!-- Invoices -->
+    <h4 class="mb-4" style="color:#f1f5f9; font-family:'Space Grotesk'; font-weight:700;">Transaction History</h4>
 
-                                <!-- Invoice Modal (Simulated breakdown) -->
-                                <div class="modal fade" id="invoiceModal{{ bill.id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Invoice #{{ "%05d"|format(bill.id) }} Breakdown
-                                                </h5>
-                                                <button type="button" class="btn-close"
-                                                    data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-light border">
-                                                    <div class="d-flex justify-content-between mb-2">
-                                                        <span>Consultation Fee</span>
-                                                        <span>₹{{ "%.2f"|format(bill.amount * 0.8) }}</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between mb-2">
-                                                        <span>Service Charge</span>
-                                                        <span>₹{{ "%.2f"|format(bill.amount * 0.15) }}</span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between fw-bold border-top pt-2">
-                                                        <span>Total</span>
-                                                        <span>₹{{ "%.2f"|format(bill.amount) }}</span>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Features requested -->
-                                                <div class="d-grid gap-2">
-                                                    <a href="{{ url_for('patient.download_invoice', bill_id=bill.id) }}"
-                                                        class="btn btn-outline-secondary btn-sm">
-                                                        <i class="fas fa-file-pdf me-2"></i> Download Hospital Signed
-                                                        Invoice
-                                                    </a>
-                                                    <a href="{{ url_for('patient.download_insurance_form') }}"
-                                                        class="btn btn-outline-info btn-sm">
-                                                        <i class="fas fa-shield-alt me-2"></i> Download Insurance Claim
-                                                        Form
-                                                    </a>
-                                                </div>
-
-                                                <div class="tp-2 mt-3 text-center">
-                                                    <small class="text-success"><i class="fas fa-check-circle"></i> No
-                                                        overcharge detected.</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% else %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">No invoices found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="invoice-list">
+        {% if bills %}
+        {% for bill in bills %}
+        <div class="invoice-item pro-reveal" style="transition-delay:{{ loop.index * 0.05 }}s;">
+            <div class="inv-icon">
+                <i class="fas {{ 'fa-file-invoice-dollar' if bill.status == 'Unpaid' else 'fa-receipt' }}"></i>
+            </div>
+            <div class="inv-details">
+                <div class="inv-id">Invoice #{{ "%05d"|format(bill.id) }}</div>
+                <div class="inv-date">{{ bill.created_at.strftime('%b %d, %Y') }} • {{ bill.description }}</div>
+            </div>
+            <div class="inv-amount">₹{{ "%.2f"|format(bill.amount) }}</div>
+            <div class="me-4">
+                <span class="inv-status {{ 'status-unpaid' if bill.status == 'Unpaid' else 'status-paid' }}">
+                    {{ bill.status }}
+                </span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="inv-action" data-bs-toggle="modal" data-bs-target="#invoiceModal{{ bill.id }}">
+                    <i class="far fa-eye"></i>
+                </button>
+                {% if bill.status == 'Unpaid' %}
+                <form action="{{ url_for('patient.pay_bill', bill_id=bill.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="inv-action" style="border-color:#fbbf24; color:#fbbf24;">
+                        <i class="fas fa-credit-card"></i>
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
+        {% endfor %}
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="fas fa-file-invoice fa-3x mb-3 opacity-25"></i>
+            <p>No invoices found.</p>
+        </div>
+        {% endif %}
+    </div>
 
-        <div class="col-lg-4">
-            <!-- Analytics -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="fw-bold">Spending Analysis</h5>
-                    <div
-                        style="height: 150px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <span class="text-muted small">Spend Chart Visualization</span>
-                    </div>
+    <!-- Invoice Modals — placed OUTSIDE .invoice-list to avoid overflow:hidden clipping -->
+    {% if bills %}
+    {% for bill in bills %}
+    <div class="modal fade" id="invoiceModal{{ bill.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title">Invoice Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Invoice ID</span>
+                        <span class="fw-bold">#{{ "%05d"|format(bill.id) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Date</span>
+                        <span>{{ bill.created_at.strftime('%d %b %Y') }}</span>
+                    </div>
+                    <hr class="border-secondary">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Service Charge</span>
+                        <span>₹{{ "%.2f"|format(bill.amount * 0.85) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span>Tax (15%)</span>
+                        <span>₹{{ "%.2f"|format(bill.amount * 0.15) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span class="{{ 'text-warning' if bill.status == 'Unpaid' else 'text-success' }}">
+                            ₹{{ "%.2f"|format(bill.amount) }}
+                        </span>
+                    </div>
 
-            <!-- Alerts -->
-            <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
-                <div class="card-body">
-                    <div class="d-flex">
-                        <i class="fas fa-exclamation-circle text-danger mt-1 me-3"></i>
-                        <div>
-                            <h6 class="fw-bold text-danger text-uppercase small">Overcharge Protection</h6>
-                            <p class="small mb-0 text-dark">Our AI scans every bill. If we find an error, we
-                                automatically flag it for review.</p>
-                        </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('patient.download_invoice', bill_id=bill.id) }}"
+                            class="btn btn-outline-light">
+                            <i class="fas fa-download me-2"></i> Download Invoice
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

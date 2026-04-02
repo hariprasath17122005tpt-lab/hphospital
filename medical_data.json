@@ -1,20 +1,47 @@
 {
   "fever": {
-    "output": "💊 Fever is an increase in body temperature, commonly caused by infections.\n💊 Take adequate rest and drink plenty of fluids to prevent dehydration.\n💊 Paracetamol can be used to reduce fever unless contraindicated.\n💊 Avoid unnecessary antibiotics without medical advice.\n💊 Monitor your temperature regularly.\n💊 Consult a doctor if fever exceeds 102°F or lasts more than two days."
+    "output": "Fever is an increase in body temperature, commonly caused by infections.\nTake adequate rest and drink plenty of fluids to prevent dehydration.\nParacetamol can be used to reduce fever unless contraindicated.\nAvoid unnecessary antibiotics without medical advice.\nMonitor your temperature regularly.\nConsult a doctor if fever exceeds 102 F or lasts more than two days."
   },
   "fever asthma": {
-    "output": "💊 Fever in patients with asthma may worsen breathing symptoms.\n💊 Continue prescribed asthma inhalers without stopping.\n💊 Avoid cold air, smoke, and known asthma triggers.\n💊 Paracetamol is generally safer than NSAIDs for fever in asthma.\n💊 Monitor breathing difficulty closely.\n💊 Seek immediate medical help if wheezing or breathlessness increases."
+    "output": "Fever in patients with asthma may worsen breathing symptoms.\nContinue prescribed asthma inhalers without stopping.\nAvoid cold air, smoke, and known asthma triggers.\nParacetamol is generally safer than NSAIDs for fever in asthma.\nMonitor breathing difficulty closely.\nSeek immediate medical help if wheezing or breathlessness increases."
   },
   "headache": {
-    "output": "💊 A headache is pain in any region of the head or upper neck.\n💊 Stay in a quiet, dark room to help alleviate tension or migraine pain.\n💊 Stay hydrated and ensure you are getting enough sleep each night.\n💊 Over-the-counter pain relievers can help with occasional headaches.\n💊 Avoid triggers like bright lights or strong odors if they affect you.\n💊 See a doctor if it is severe, sudden, or accompanied by a stiff neck."
+    "output": "A headache is pain in any region of the head or upper neck.\nStay in a quiet, dark room to help alleviate tension or migraine pain.\nStay hydrated and ensure you are getting enough sleep each night.\nOver-the-counter pain relievers can help with occasional headaches.\nAvoid triggers like bright lights or strong odors if they affect you.\nSee a doctor if it is severe, sudden, or accompanied by a stiff neck."
   },
   "high blood pressure": {
-    "output": "💊 High blood pressure, or hypertension, is a condition where the force of the blood against artery walls is too high.\n💊 Reduce salt intake and maintain a healthy weight to manage pressure.\n💊 Engage in regular physical activity like brisk walking for 30 minutes.\n💊 Limit alcohol consumption and avoid smoking completely.\n💊 Take prescribed medications consistently as directed by your doctor.\n💊 Monitor your blood pressure at home and keep a record."
+    "output": "High blood pressure, or hypertension, is a condition where the force of the blood against artery walls is too high.\nReduce salt intake and maintain a healthy weight to manage pressure.\nEngage in regular physical activity like brisk walking for 30 minutes.\nLimit alcohol consumption and avoid smoking completely.\nTake prescribed medications consistently as directed by your doctor.\nMonitor your blood pressure at home and keep a record."
   },
   "diabetes symptoms": {
-    "output": "💊 Common symptoms of diabetes include increased thirst, frequent urination, and unexplained weight loss.\n💊 You may also experience fatigue, blurred vision, and slow-healing sores.\n💊 Extreme hunger and irritability can also be indicators of high blood sugar.\n💊 If you notice these symptoms, consult a doctor for a blood glucose test.\n💊 Early diagnosis helps in managing the condition effectively.\n💊 Maintaining a balanced diet is crucial for symptom control."
+    "output": "Common symptoms of diabetes include increased thirst, frequent urination, and unexplained weight loss.\nYou may also experience fatigue, blurred vision, and slow-healing sores.\nExtreme hunger and irritability can also be indicators of high blood sugar.\nIf you notice these symptoms, consult a doctor for a blood glucose test.\nEarly diagnosis helps in managing the condition effectively.\nMaintaining a balanced diet is crucial for symptom control."
   },
   "stomach pain": {
-    "output": "💊 Stomach pain can range from mild indigestion to severe conditions requiring urgent care.\n💊 If the pain is sharp and persistent, seek medical attention immediately.\n💊 Avoid heavy meals and spicy food if you have occasional bloating or gas.\n💊 Stay hydrated and try a bland diet like rice, bananas, and toast.\n💊 Over-the-counter antacids may help with acid reflux symptoms.\n💊 Consult a physician if pain is accompanied by fever or vomiting."
+    "output": "Stomach pain can range from mild indigestion to severe conditions requiring urgent care.\nIf the pain is sharp and persistent, seek medical attention immediately.\nAvoid heavy meals and spicy food if you have occasional bloating or gas.\nStay hydrated and try a bland diet like rice, bananas, and toast.\nOver-the-counter antacids may help with acid reflux symptoms.\nConsult a physician if pain is accompanied by fever or vomiting."
+  },
+  "cold": {
+    "output": "The common cold is a viral infection of the upper respiratory tract.\nSymptoms include a runny nose, sore throat, cough, and mild body aches.\nRest well and drink warm fluids like soup or tea with honey.\nOver-the-counter decongestants and antihistamines may help relieve symptoms.\nWash your hands frequently to prevent spreading the virus.\nSee a doctor if symptoms persist beyond 10 days or worsen significantly."
+  },
+  "cough": {
+    "output": "A cough is the body's way of clearing irritants from the airways.\nDrink warm fluids and use honey to soothe throat irritation.\nAvoid exposure to smoke, dust, and other respiratory irritants.\nOver-the-counter cough suppressants may help with dry coughs.\nIf the cough produces blood or lasts more than 3 weeks, see a doctor.\nConsult a healthcare professional for persistent or worsening cough."
+  },
+  "back pain": {
+    "output": "Back pain is one of the most common reasons for doctor visits.\nMaintain good posture while sitting and standing to reduce strain.\nApply ice for the first 48 hours, then switch to heat therapy.\nGentle stretching and light exercise can help relieve muscle tension.\nAvoid heavy lifting and sudden movements that may worsen the pain.\nSee a doctor if pain radiates down your legs or is accompanied by numbness."
+  },
+  "anxiety": {
+    "output": "Anxiety is a feeling of worry, nervousness, or unease about something.\nPractice deep breathing exercises and mindfulness meditation daily.\nRegular physical activity helps reduce anxiety symptoms significantly.\nLimit caffeine and alcohol intake as they can worsen anxiety.\nMaintain a consistent sleep schedule for better mental health.\nConsult a mental health professional if anxiety interferes with daily life."
+  },
+  "allergy": {
+    "output": "Allergies occur when the immune system reacts to harmless substances.\nCommon symptoms include sneezing, itchy eyes, runny nose, and skin rashes.\nIdentify and avoid known allergens when possible.\nAntihistamines can help relieve mild to moderate allergy symptoms.\nKeep windows closed during high pollen seasons.\nConsult an allergist if symptoms are severe or affect your quality of life."
+  },
+  "chest pain": {
+    "output": "IMPORTANT: Chest pain can be a sign of a serious medical emergency.\nIf you are experiencing chest pain right now, call emergency services immediately.\nDo not ignore chest pain, especially if accompanied by shortness of breath, sweating, or pain radiating to the arm or jaw.\nChew an aspirin if available while waiting for emergency help.\nDo not attempt to drive yourself to the hospital.\nPlease consult a qualified healthcare professional for medical advice."
+  },
+  "diarrhea": {
+    "output": "Diarrhea involves frequent loose or watery bowel movements.\nStay well hydrated with water, clear broths, or oral rehydration solutions.\nAvoid dairy products, fatty foods, and caffeine until symptoms improve.\nThe BRAT diet (bananas, rice, applesauce, toast) can help firm stools.\nWash hands thoroughly to prevent spreading infection.\nSee a doctor if diarrhea lasts more than 2 days or contains blood."
+  },
+  "insomnia": {
+    "output": "Insomnia is difficulty falling asleep or staying asleep at night.\nMaintain a consistent sleep schedule, going to bed and waking at the same time.\nAvoid screens and bright lights at least one hour before bedtime.\nLimit caffeine intake, especially in the afternoon and evening.\nCreate a comfortable, dark, and quiet sleeping environment.\nConsult a doctor if insomnia persists for more than a few weeks."
+  },
+  "fatigue": {
+    "output": "Fatigue is a persistent feeling of tiredness or lack of energy.\nEnsure you are getting 7-9 hours of quality sleep each night.\nEat a balanced diet rich in iron, vitamins, and whole grains.\nStay physically active with regular moderate exercise.\nDehydration can cause fatigue, so drink adequate water throughout the day.\nConsult a doctor if fatigue is unexplained or accompanied by other symptoms."
   }
 }

@@ -74,6 +74,7 @@
         if (confirm('Confirm this appointment?')) {
             fetch(`/doctor/appointments/${appointmentId}/approve`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token() }}'
@@ -94,6 +95,7 @@
         if (confirm('Are you sure you want to cancel this appointment?')) {
             fetch(`/doctor/appointments/${appointmentId}/reject`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token() }}'
@@ -114,6 +116,7 @@
         if (confirm('Mark this appointment as completed?')) {
             fetch(`/doctor/appointments/${appointmentId}/complete`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token() }}'

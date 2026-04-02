@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription #{{ prescription.id }}</title>
+    <style>
+        :root { --ink:#0f172a; --muted:#475569; --line:#cbd5e1; --brand:#0ea5e9; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); background: #f8fafc; }
+        .sheet {
+            max-width: 900px; margin: 18px auto; background: #fff; border: 1px solid var(--line);
+            border-radius: 10px; overflow: hidden;
+        }
+        .hdr { padding: 20px 24px; border-bottom: 2px solid var(--line); display:flex; justify-content:space-between; gap:16px; }
+        .brand h1 { margin:0; font-size: 24px; letter-spacing: .4px; color: var(--brand); }
+        .brand p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+        .meta { text-align: right; font-size: 12px; color: var(--muted); }
+        .body { padding: 22px 24px; }
+        .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+        .box { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 56px; }
+        .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+        .value { font-size: 14px; font-weight: 600; }
+        table { width:100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid var(--line); padding: 9px 10px; text-align:left; font-size: 13px; vertical-align: top; }
+        th { background: #f1f5f9; font-size: 12px; text-transform: uppercase; letter-spacing: .8px; }
+        .notes { margin-top: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+        .ftr {
+            display:flex; justify-content:space-between; align-items:flex-end; gap:16px;
+            margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line);
+        }
+        .sig { text-align: right; font-size: 13px; }
+        .sig .line { margin-top: 24px; border-top: 1px solid #94a3b8; width: 210px; margin-left: auto; }
+        .qr-wrap { text-align:center; font-size:11px; color: var(--muted); }
+        @media print {
+            body { background: #fff; }
+            .sheet { margin: 0; border: none; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sheet">
+        <div class="hdr">
+            <div class="brand">
+                <h1>{{ prescription.doctor.hospital.name if prescription.doctor and prescription.doctor.hospital else 'Hospital Information System' }}</h1>
+                <p>e-Prescription Document</p>
+            </div>
+            <div class="meta">
+                <div>Prescription ID: <strong>#{{ prescription.id }}</strong></div>
+                <div>Issued: {{ prescription.prescribed_at.strftime('%Y-%m-%d %I:%M %p') }}</div>
+                <div>Token: {{ verify_token }}</div>
+            </div>
+        </div>
+        <div class="body">
+            <div class="row">
+                <div class="box">
+                    <div class="label">Patient</div>
+                    <div class="value">{{ prescription.patient.first_name }} {{ prescription.patient.last_name }}</div>
+                    <div>{{ prescription.patient.age }}Y / {{ prescription.patient.gender }}</div>
+                </div>
+                <div class="box">
+                    <div class="label">Doctor</div>
+                    <div class="value">Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}</div>
+                    <div>{{ prescription.doctor.specialization }}</div>
+                </div>
+                <div class="box">
+                    <div class="label">Diagnosis</div>
+                    <div class="value">{{ prescription.diagnosis or 'General Consultation' }}</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Duration</th>
+                        <th>Instructions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in medicines %}
+                    <tr>
+                        <td>{{ m.name }}</td>
+                        <td>{{ m.dosage }}</td>
+                        <td>{{ m.frequency }}</td>
+                        <td>{{ m.duration }}</td>
+                        <td>{{ m.instruction }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not medicines %}
+                    <tr><td colspan="5">No medicines listed.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+            <div class="notes">
+                <div class="label">Clinical Notes</div>
+                <div>{{ prescription.notes or 'No additional notes.' }}</div>
+            </div>
+
+            <div class="ftr">
+                <div class="qr-wrap">
+                    <div id="qr"></div>
+                    <div>Scan to verify</div>
+                </div>
+                <div class="sig">
+                    <div class="line"></div>
+                    <div>Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}</div>
+                    <div>Authorized Signature</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/vendor/qrcode.min.js"></script>
+    <script>
+        new QRCode(document.getElementById('qr'), {
+            text: {{ qr_payload|tojson }},
+            width: 92,
+            height: 92
+        });
+        window.onload = () => window.print();
+    </script>
+</body>
+</html>

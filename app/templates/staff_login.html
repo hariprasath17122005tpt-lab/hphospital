@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Staff Portal — CarePoint</title>
+    
+    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg: #020818;
+            --glass: rgba(10, 18, 40, 0.65);
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --gold: #d4a853;
+            --gold-l: #f0d48a;
+            --lab-color: #a78bfa;
+            --lab-bg: rgba(139, 92, 246, 0.12);
+            --pharm-color: #fbbf24;
+            --pharm-bg: rgba(245, 158, 11, 0.12);
+            --recep-color: #67e8f9;
+            --recep-bg: rgba(6, 182, 212, 0.12);
+            --nurse-color: #34d399;
+            --nurse-bg: rgba(52, 211, 153, 0.12);
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* === Animated Background === */
+        .cosmos {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .cosmos .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        .cosmos .orb.a {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+            top: -10%;
+            right: -5%;
+            animation: orbFloat1 18s ease-in-out infinite alternate;
+        }
+
+        .cosmos .orb.b {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.12), transparent 70%);
+            bottom: -8%;
+            left: -5%;
+            animation: orbFloat2 20s ease-in-out infinite alternate;
+        }
+
+        .cosmos .orb.c {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.08), transparent 70%);
+            top: 40%;
+            left: 50%;
+            animation: orbFloat3 22s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbFloat1 {
+            to {
+                transform: translate(-40px, 50px) scale(1.1);
+            }
+        }
+
+        @keyframes orbFloat2 {
+            to {
+                transform: translate(40px, -30px) scale(1.15);
+            }
+        }
+
+        @keyframes orbFloat3 {
+            to {
+                transform: translate(-60px, -40px) scale(1.08);
+            }
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* === Main Container === */
+        .staff-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 5;
+            padding: 40px 20px;
+        }
+
+        .staff-shell {
+            width: 100%;
+            max-width: 580px;
+            border-radius: 32px;
+            background: var(--glass);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5), 0 0 60px rgba(139, 92, 246, 0.05);
+            backdrop-filter: blur(24px);
+            overflow: hidden;
+            animation: shellIn 0.7s ease both;
+        }
+
+        @keyframes shellIn {
+            from {
+                opacity: 0;
+                transform: translateY(28px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* === Header === */
+        .staff-header {
+            text-align: center;
+            padding: 40px 36px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .staff-header .brand-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.15));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 1.6rem;
+            color: var(--lab-color);
+            animation: iconBob 3s ease-in-out infinite;
+        }
+
+        @keyframes iconBob {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .staff-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .staff-header h1 .gradient {
+            background: linear-gradient(135deg, #a78bfa, #67e8f9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .staff-header p {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        /* === Role Selection Step === */
+        .step-roles,
+        .step-login {
+            padding: 28px 36px 36px;
+        }
+
+        .step-login {
+            display: none;
+        }
+
+        .step-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .role-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .role-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 22px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--rc-accent, rgba(139, 92, 246, 0.3)), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .role-card:hover {
+            background: rgba(255, 255, 255, 0.055);
+            border-color: var(--rc-border, rgba(139, 92, 246, 0.2));
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), 0 0 30px var(--rc-glow, rgba(139, 92, 246, 0.04));
+            color: #fff;
+        }
+
+        .role-card:hover::before {
+            opacity: 1;
+        }
+
+        .rc-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .role-card:hover .rc-icon {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .rc-icon.lab {
+            background: var(--lab-bg);
+            color: var(--lab-color);
+        }
+
+        .rc-icon.pharm {
+            background: var(--pharm-bg);
+            color: var(--pharm-color);
+        }
+
+        .rc-icon.recep {
+            background: var(--recep-bg);
+            color: var(--recep-color);
+        }
+
+        .rc-icon.nurse {
+            background: var(--nurse-bg);
+            color: var(--nurse-color);
+        }
+
+        .rc-content {
+            flex: 1;
+        }
+
+        .rc-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .rc-desc {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .rc-arrow {
+            color: var(--muted);
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .role-card:hover .rc-arrow {
+            transform: translateX(4px);
+        }
+
+        /* Role-specific hover colors */
+        .role-card[data-role="LAB_STAFF"] {
+            --rc-accent: rgba(139, 92, 246, 0.3);
+            --rc-border: rgba(139, 92, 246, 0.2);
+            --rc-glow: rgba(139, 92, 246, 0.04);
+        }
+
+        .role-card[data-role="PHARMACIST"] {
+            --rc-accent: rgba(245, 158, 11, 0.3);
+            --rc-border: rgba(245, 158, 11, 0.2);
+            --rc-glow: rgba(245, 158, 11, 0.04);
+        }
+
+        .role-card[data-role="RECEPTIONIST"] {
+            --rc-accent: rgba(6, 182, 212, 0.3);
+            --rc-border: rgba(6, 182, 212, 0.2);
+            --rc-glow: rgba(6, 182, 212, 0.04);
+        }
+
+        .role-card[data-role="NURSE"] {
+            --rc-accent: rgba(52, 211, 153, 0.3);
+            --rc-border: rgba(52, 211, 153, 0.2);
+            --rc-glow: rgba(52, 211, 153, 0.04);
+        }
+
+        .role-card[data-role="LAB_STAFF"]:hover .rc-arrow {
+            color: var(--lab-color);
+        }
+
+        .role-card[data-role="PHARMACIST"]:hover .rc-arrow {
+            color: var(--pharm-color);
+        }
+
+        .role-card[data-role="RECEPTIONIST"]:hover .rc-arrow {
+            color: var(--recep-color);
+        }
+
+        .role-card[data-role="NURSE"]:hover .rc-arrow {
+            color: var(--nurse-color);
+        }
+
+        /* === Login Form Step === */
+        .login-role-banner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .login-role-banner .lr-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .login-role-banner .lr-text {
+            flex: 1;
+        }
+
+        .login-role-banner .lr-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .login-role-banner .lr-sub {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .login-role-banner .lr-change {
+            color: var(--muted);
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .login-role-banner .lr-change:hover {
+            color: var(--lab-color);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Form Styles */
+        .login-form {
+            animation: fadeUp 0.4s ease 0.1s both;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label-custom {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border-radius: 14px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-wrap input:focus {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .input-wrap input:focus+i,
+        .input-wrap:focus-within i {
+            color: var(--lab-color);
+        }
+
+        .input-wrap input::placeholder {
+            color: #475569;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-login:hover::before {
+            opacity: 1;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login.lab {
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+            box-shadow: 0 6px 22px rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-login.pharm {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            box-shadow: 0 6px 22px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-login.recep {
+            background: linear-gradient(135deg, #0891b2, #06b6d4);
+            box-shadow: 0 6px 22px rgba(6, 182, 212, 0.25);
+        }
+
+        .btn-login.nurse {
+            background: linear-gradient(135deg, #059669, #34d399);
+            box-shadow: 0 6px 22px rgba(52, 211, 153, 0.25);
+        }
+
+        /* === Footer === */
+        .staff-footer {
+            text-align: center;
+            padding: 0 36px 32px;
+        }
+
+        .staff-footer a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .staff-footer a:hover {
+            color: var(--gold);
+        }
+
+        /* Flash Messages */
+        .flash-area {
+            padding: 0 36px;
+        }
+
+        .flash-area .alert {
+            border-radius: 12px;
+            font-size: 0.85rem;
+            border: none;
+            padding: 10px 16px;
+        }
+
+        /* Transition classes */
+        .fade-out {
+            animation: fadeOut 0.25s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.35s ease both;
+        }
+
+        /* Responsive */
+        @media (max-width: 560px) {
+            .staff-shell {
+                border-radius: 24px;
+            }
+
+            .staff-header,
+            .step-roles,
+            .step-login {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+
+            .staff-header h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background -->
+    <div class="cosmos">
+        <div class="orb a"></div>
+        <div class="orb b"></div>
+        <div class="orb c"></div>
+    </div>
+    <div class="grid-bg"></div>
+
+    <div class="staff-page">
+        <div class="staff-shell">
+            <!-- Header -->
+            <div class="staff-header">
+                <div class="brand-icon"><i class="fas fa-user-shield"></i></div>
+                <h1><span class="gradient">Staff Portal</span></h1>
+                <p>Select your department to sign in</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-area" style="padding-top: 16px;">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                        style="font-size: 0.6rem;"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Step 1: Role Selection -->
+            <div class="step-roles" id="stepRoles">
+                <div class="step-label">Choose Your Department</div>
+                <div class="role-cards">
+                    <div class="role-card" data-role="LAB_STAFF">
+                        <div class="rc-icon lab"><i class="fas fa-flask"></i></div>
+                        <div class="rc-content">
+                            <div class="rc-name">Laboratory</div>
+                            <div class="rc-desc">Lab tests, reports, sample processing & diagnostics</div>
+                        </div>
+                        <div class="rc-arrow"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                    <div class="role-card" data-role="PHARMACIST">
+                        <div class="rc-icon pharm"><i class="fas fa-prescription-bottle-alt"></i></div>
+                        <div class="rc-content">
+                            <div class="rc-name">Pharmacy</div>
+                            <div class="rc-desc">Prescription dispensing, inventory & medication management</div>
+                        </div>
+                        <div class="rc-arrow"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                    <div class="role-card" data-role="RECEPTIONIST">
+                        <div class="rc-icon recep"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="rc-content">
+                            <div class="rc-name">Reception</div>
+                            <div class="rc-desc">Patient registration, queue management & appointments</div>
+                        </div>
+                        <div class="rc-arrow"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                    <div class="role-card" data-role="NURSE">
+                        <div class="rc-icon nurse"><i class="fas fa-stethoscope"></i></div>
+                        <div class="rc-content">
+                            <div class="rc-name">Nursing</div>
+                            <div class="rc-desc">Patient care, vitals monitoring, tasks & notes</div>
+                        </div>
+                        <div class="rc-arrow"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Login Form (hidden by default) -->
+            <div class="step-login" id="stepLogin">
+                <!-- Role Banner (filled dynamically) -->
+                <div class="login-role-banner" id="roleBanner"></div>
+
+                <!-- Login Form -->
+                <form method="POST"
+                      action="{{ url_for('auth.staff_login') }}"
+                      class="login-form"
+                      id="loginForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="staff_role" id="staffRoleInput" value="">
+
+                    <div class="form-group">
+                        <label class="form-label-custom">Username</label>
+                        <div class="input-wrap">
+                            <input type="text" name="username" id="usernameInput" placeholder="Enter your username"
+                                required autocomplete="username">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label-custom">Password</label>
+                        <div class="input-wrap">
+                            <input type="password" name="password" placeholder="Enter your password" required
+                                autocomplete="current-password">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="btnLogin">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="staff-footer">
+                <a href="{{ url_for('auth.choose_login') }}">
+                    <i class="fas fa-arrow-left"></i> Back to portal selection
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        const ROLE_CONFIG = {
+            LAB_STAFF: {
+                icon: 'fas fa-flask',
+                iconClass: 'lab',
+                title: 'Laboratory Staff',
+                subtitle: 'Lab tests & diagnostics',
+                btnClass: 'lab',
+                bannerBg: 'rgba(139,92,246,0.08)',
+                bannerBorder: 'rgba(139,92,246,0.18)'
+            },
+            PHARMACIST: {
+                icon: 'fas fa-prescription-bottle-alt',
+                iconClass: 'pharm',
+                title: 'Pharmacist',
+                subtitle: 'Pharmacy operations',
+                btnClass: 'pharm',
+                bannerBg: 'rgba(245,158,11,0.08)',
+                bannerBorder: 'rgba(245,158,11,0.18)'
+            },
+            RECEPTIONIST: {
+                icon: 'fas fa-clipboard-list',
+                iconClass: 'recep',
+                title: 'Receptionist',
+                subtitle: 'Queue & registration',
+                btnClass: 'recep',
+                bannerBg: 'rgba(6,182,212,0.08)',
+                bannerBorder: 'rgba(6,182,212,0.18)'
+            },
+            NURSE: {
+                icon: 'fas fa-stethoscope',
+                iconClass: 'nurse',
+                title: 'Nurse',
+                subtitle: 'Patient care & vitals',
+                btnClass: 'nurse',
+                bannerBg: 'rgba(52,211,153,0.08)',
+                bannerBorder: 'rgba(52,211,153,0.18)'
+            }
+        };
+
+        function selectRole(card) {
+            const role = card.dataset.role;
+            const config = ROLE_CONFIG[role];
+            if (!config) return;
+
+            // Set hidden input
+            document.getElementById('staffRoleInput').value = role;
+
+            // Build the role banner
+            const banner = document.getElementById('roleBanner');
+            banner.style.background = config.bannerBg;
+            banner.style.borderColor = config.bannerBorder;
+            banner.innerHTML = `
+                <div class="lr-icon rc-icon ${config.iconClass}">
+                    <i class="${config.icon}"></i>
+                </div>
+                <div class="lr-text">
+                    <div class="lr-title">${config.title}</div>
+                    <div class="lr-sub">${config.subtitle}</div>
+                </div>
+                <a class="lr-change" onclick="goBackToRoles()">
+                    <i class="fas fa-exchange-alt me-1"></i>Change
+                </a>
+            `;
+
+            // Set button style
+            const btn = document.getElementById('btnLogin');
+            btn.className = 'btn-login ' + config.btnClass;
+
+            // Animate: fade out roles, fade in login
+            const stepRoles = document.getElementById('stepRoles');
+            const stepLogin = document.getElementById('stepLogin');
+
+            stepRoles.classList.add('fade-out');
+            setTimeout(() => {
+                stepRoles.style.display = 'none';
+                stepRoles.classList.remove('fade-out');
+                stepLogin.style.display = 'block';
+                stepLogin.classList.add('fade-in');
+
+                // Focus username
+                setTimeout(() => {
+                    document.getElementById('usernameInput').focus();
+                }, 150);
+            }, 250);
+        }
+
+        function goBackToRoles() {
+            const stepRoles = document.getElementById('stepRoles');
+            const stepLogin = document.getElementById('stepLogin');
+
+            stepLogin.classList.add('fade-out');
+            setTimeout(() => {
+                stepLogin.style.display = 'none';
+                stepLogin.classList.remove('fade-out');
+                stepLogin.classList.remove('fade-in');
+                stepRoles.style.display = 'block';
+                stepRoles.classList.add('fade-in');
+            }, 250);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Keep functions available for legacy inline calls in rendered HTML.
+            window.selectRole = selectRole;
+            window.goBackToRoles = goBackToRoles;
+
+            // Robust click binding (works even if inline onclick is blocked).
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    selectRole(this);
+                });
+                card.addEventListener('mouseenter', function () {
+                    this.style.setProperty('--glow-intensity', '1');
+                });
+                card.addEventListener('mouseleave', function () {
+                    this.style.setProperty('--glow-intensity', '0');
+                });
+            });
+
+            // Ensure form actually submits when Sign In is clicked & validate role is selected
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function (e) {
+                    const u = document.getElementById('usernameInput');
+                    const p = this.querySelector('input[name="password"]');
+                    const role = document.getElementById('staffRoleInput');
+                    
+                    // Validate username and password
+                    if (!u || !p || !u.value.trim() || !p.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter both username and password.');
+                        return false;
+                    }
+                    
+                    // Validate that a role was selected
+                    if (!role || !role.value.trim()) {
+                        e.preventDefault();
+                        alert('Please select a department from the previous step.');
+                        // Go back to role selection
+                        goBackToRoles();
+                        return false;
+                    }
+                });
+            }
+
+            // Optional deep-link: /staff/login?role=PHARMACIST|RECEPTIONIST|LAB_STAFF|NURSE
+            const roleFromQuery = new URLSearchParams(window.location.search).get('role');
+            if (roleFromQuery && ROLE_CONFIG[roleFromQuery]) {
+                const target = document.querySelector(`.role-card[data-role="${roleFromQuery}"]`);
+                if (target) selectRole(target);
+            } else {
+                const initialRole = '{{ initial_role|default('') }}';
+                if (initialRole && ROLE_CONFIG[initialRole]) {
+                    const target = document.querySelector(`.role-card[data-role="${initialRole}"]`);
+                    if (target) selectRole(target);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

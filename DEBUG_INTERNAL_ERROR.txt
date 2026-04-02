@@ -1,0 +1,50 @@
+# INTERNAL SERVER ERROR DIAGNOSTIC GUIDE
+# ════════════════════════════════════════════════════════════════════════════════
+
+## ✅ WHAT I VERIFIED:
+- All main routes working (200 OK)
+- Flask app startup successful
+- Database connected
+- All blueprints registered
+- No syntax errors in auth.py, lab.py, pharmacy_ops.py, reception.py
+
+## ❓ TO HELP YOU FIX THE ERROR:
+
+### STEP 1: Tell me which page/route shows the error
+Examples:
+- "/" (home page)
+- "/staff/login" (staff login)
+- "/walkin/register" (walk-in registration)
+- "/lab/dashboard" (lab dashboard)
+- "/doctor/dashboard" (doctor dashboard)
+- Anything else?
+
+### STEP 2: Tell me what action
+Examples:
+- Clicking a button
+- Submitting a form
+- Loading the page
+- Logging in
+
+### STEP 3: Check the server logs for error details
+When you see the 500 error:
+1. Look at your Flask server terminal output (where you ran python run.py)
+2. Copy the error traceback and error message
+3. Send that to me
+
+## 🔍 TEMPORARY FIX:
+If you're stuck, try these:
+1. Restart the Flask server: python run.py
+2. Clear browser cache: Ctrl+Shift+Del
+3. Clear cookies for localhost
+4. Try incognito/private mode
+
+## 📝 KNOWN FIXED ISSUES:
+✅ Variable scope issue in staff_login (auth.py) - FIXED
+✅ Missing hasattr checks for current_user.doctor in lab.py - FIXED
+✅ Missing hasattr checks in pharmacy_ops.py - FIXED
+✅ Missing hasattr checks in reception.py - FIXED
+
+All these are now protected with proper safety checks.
+
+═════════════════════════════════════════════════════════════════════════════════

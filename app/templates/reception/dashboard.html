@@ -1,0 +1,1407 @@
+{% extends "base.html" %}
+{% block title %}Reception Dashboard — CarePoint{% endblock %}
+
+{% block content %}
+<style>
+    .reception-dash {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: #a78bfa;
+    }
+
+    .badge-count {
+        background: rgba(139, 92, 246, 0.15);
+        color: #a78bfa;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Stat Cards */
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .stat-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .stat-card .stat-num {
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+
+    .stat-num.incoming {
+        color: #fbbf24;
+    }
+
+    .stat-num.accepted {
+        color: #a78bfa;
+    }
+
+    .stat-num.doctor {
+        color: #67e8f9;
+    }
+
+    .stat-num.completed {
+        color: #34d399;
+    }
+
+    .stat-num.cancelled {
+        color: #f87171;
+    }
+
+    /* Incoming Section */
+    .incoming-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+
+    .patient-card {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 20px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .patient-card:hover {
+        border-color: rgba(139, 92, 246, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .pc-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .pc-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .pc-avatar.appt {
+        background: rgba(139, 92, 246, 0.15);
+        color: #a78bfa;
+    }
+
+    .pc-avatar.checkin {
+        background: rgba(6, 182, 212, 0.15);
+        color: #67e8f9;
+    }
+
+    .pc-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .pc-type {
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .pc-type.appt {
+        background: rgba(139, 92, 246, 0.12);
+        color: #a78bfa;
+    }
+
+    .pc-type.checkin {
+        background: rgba(6, 182, 212, 0.12);
+        color: #67e8f9;
+    }
+
+    .pc-details {
+        margin: 10px 0;
+    }
+
+    .pc-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #94a3b8;
+        margin-bottom: 6px;
+    }
+
+    .pc-detail i {
+        width: 16px;
+        text-align: center;
+        color: #64748b;
+    }
+
+    .pc-detail strong {
+        color: #e2e8f0;
+    }
+
+    .pc-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .btn-accept {
+        flex: 1;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-accept:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-reject {
+        padding: 8px 14px;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        border-radius: 10px;
+        background: rgba(248, 113, 113, 0.08);
+        color: #f87171;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-reject:hover {
+        background: rgba(248, 113, 113, 0.15);
+    }
+
+    /* Queue Table */
+    .queue-section {
+        margin-top: 8px;
+    }
+
+    .queue-table-wrap {
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .queue-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .queue-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        background: rgba(30, 41, 59, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .queue-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    .queue-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .token-badge {
+        background: rgba(139, 92, 246, 0.15);
+        color: #a78bfa;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .status-pill.waiting {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+
+    .status-pill.accepted-reception {
+        background: rgba(139, 92, 246, 0.12);
+        color: #a78bfa;
+    }
+
+    .status-pill.sent-doctor {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .status-pill.accepted-doctor {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+    }
+
+    .status-pill.rejected-doctor {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+    }
+
+    .status-pill.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #22c55e;
+    }
+
+    .status-pill.cancelled {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+    }
+
+    .doctor-name {
+        font-weight: 600;
+        font-size: 0.82rem;
+    }
+
+    .time-info {
+        font-size: 0.78rem;
+        color: #94a3b8;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    /* Walkin Section */
+    .walkin-section {
+        margin-top: 32px;
+    }
+
+    .walkin-form {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 24px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 4px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        color: #f1f5f9;
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-register {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #7c3aed, #a78bfa);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Animations */
+    .fade-card {
+        animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Auto-refresh indicator */
+    .refresh-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+
+    .refresh-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #34d399;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+    }
+</style>
+
+<div class="reception-dash">
+    <!-- Refresh Indicator -->
+    <div class="refresh-bar">
+        <div class="refresh-dot"></div>
+        <span>Live — Auto-refreshes every 15s</span>
+        <span style="margin-left: auto; cursor: pointer;" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i> Refresh Now
+        </span>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stat-row">
+        <div class="stat-card fade-card">
+            <div class="stat-num incoming">{{ (incoming_appointments|length) + (incoming_checkins|length) }}</div>
+            <div class="stat-label">Incoming Requests</div>
+        </div>
+        <div class="stat-card fade-card" style="animation-delay:0.05s">
+            <div class="stat-num accepted">{{ accepted_by_reception }}</div>
+            <div class="stat-label">Sent to Doctor</div>
+        </div>
+        <div class="stat-card fade-card" style="animation-delay:0.1s">
+            <div class="stat-num doctor">{{ with_doctor }}</div>
+            <div class="stat-label">With Doctor</div>
+        </div>
+        <div class="stat-card fade-card" style="animation-delay:0.15s">
+            <div class="stat-num completed">{{ completed_count }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card fade-card" style="animation-delay:0.2s">
+            <div class="stat-num cancelled">{{ cancelled_by_doctor }}</div>
+            <div class="stat-label">Cancelled by Doctor</div>
+        </div>
+    </div>
+
+    <!-- ═══ INCOMING APPOINTMENTS ═══ -->
+    {% if current_user.role.value in ['RECEPTIONIST', 'HOST', 'ADMIN'] %}
+    {% if incoming_appointments|length > 0 %}
+    <div class="section-title">
+        <i class="fas fa-calendar-check"></i> Incoming Appointments
+        <span class="badge-count">{{ incoming_appointments|length }}</span>
+    </div>
+    <div class="incoming-grid">
+        {% for appt in incoming_appointments %}
+        <div class="patient-card fade-card" id="appt-card-{{ appt.id }}"
+            style="animation-delay: {{ loop.index0 * 0.06 }}s">
+            <div class="pc-header">
+                <div class="pc-avatar appt">{{ appt.patient.first_name[0] if appt.patient else '?' }}</div>
+                <div>
+                    <div class="pc-name">{{ appt.patient.first_name }} {{ appt.patient.last_name }}</div>
+                </div>
+                <span class="pc-type appt" style="margin-left:auto"><i
+                        class="fas fa-calendar-alt me-1"></i>Appointment</span>
+            </div>
+            <div class="pc-details">
+                <div class="pc-detail"><i class="fas fa-stethoscope"></i> <strong>Doctor:</strong> Dr. {{
+                    appt.doctor.first_name }} {{ appt.doctor.last_name }}</div>
+                <div class="pc-detail"><i class="fas fa-clock"></i> <strong>Time:</strong> {{
+                    appt.appointment_date.strftime('%d %b %Y, %I:%M %p') }}</div>
+                <div class="pc-detail"><i class="fas fa-comment-medical"></i> <strong>Reason:</strong> {{ appt.reason or
+                    'General' }}</div>
+                <div class="pc-detail"><i class="fas fa-calendar-plus"></i> <strong>Booked:</strong> {{
+                    appt.created_at.strftime('%I:%M %p') if appt.created_at else 'N/A' }}</div>
+                {% if appt.patient.phone %}
+                <div class="pc-detail"><i class="fas fa-phone"></i> <strong>Phone:</strong> {{ appt.patient.phone }}
+                </div>
+                {% endif %}
+                {% if appt.patient.age %}
+                <div class="pc-detail"><i class="fas fa-user"></i> <strong>Age:</strong> {{ appt.patient.age }} | {{
+                    appt.patient.gender or 'N/A' }}</div>
+                {% endif %}
+            </div>
+            <div class="pc-actions">
+                <button class="btn-accept" onclick="acceptAppointment({{ appt.id }})">
+                    <i class="fas fa-check me-1"></i>Accept & Send to Doctor
+                </button>
+                <button class="btn-reject" onclick="rejectAppointment({{ appt.id }})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ═══ INCOMING CHECK-INS ═══ -->
+    {% if incoming_checkins|length > 0 %}
+    <div class="section-title">
+        <i class="fas fa-clipboard-check"></i> Incoming Check-Ins
+        <span class="badge-count">{{ incoming_checkins|length }}</span>
+    </div>
+    <div class="incoming-grid">
+        {% for ci in incoming_checkins %}
+        <div class="patient-card fade-card" id="checkin-card-{{ ci.id }}"
+            style="animation-delay: {{ loop.index0 * 0.06 }}s">
+            <div class="pc-header">
+                <div class="pc-avatar checkin">{{ ci.patient.first_name[0] if ci.patient else '?' }}</div>
+                <div>
+                    <div class="pc-name">{{ ci.patient.first_name }} {{ ci.patient.last_name }}</div>
+                </div>
+                <span class="pc-type checkin" style="margin-left:auto"><i
+                        class="fas fa-clipboard-check me-1"></i>Check-in</span>
+            </div>
+            <div class="pc-details">
+                {% if ci.doctor %}
+                <div class="pc-detail"><i class="fas fa-stethoscope"></i> <strong>Doctor:</strong> Dr. {{
+                    ci.doctor.first_name }} {{ ci.doctor.last_name }}</div>
+                {% endif %}
+                <div class="pc-detail"><i class="fas fa-comment-medical"></i> <strong>Reason:</strong> {{
+                    ci.check_in_reason or 'General' }}</div>
+                <div class="pc-detail"><i class="fas fa-clock"></i> <strong>Checked in:</strong> {{
+                    ci.created_at.strftime('%I:%M %p') if ci.created_at else 'N/A' }}</div>
+                {% if ci.symptoms %}
+                <div class="pc-detail"><i class="fas fa-notes-medical"></i> <strong>Symptoms:</strong> {{ ci.symptoms }}
+                </div>
+                {% endif %}
+                {% if ci.severity %}
+                <div class="pc-detail"><i class="fas fa-exclamation-triangle"></i> <strong>Severity:</strong>
+                    <span
+                        style="color: {{ '#f87171' if ci.severity == 'severe' else '#fbbf24' if ci.severity == 'moderate' else '#34d399' }}">{{
+                        ci.severity|capitalize }}</span>
+                </div>
+                {% endif %}
+                {% if ci.temperature %}
+                <div class="pc-detail"><i class="fas fa-thermometer-half"></i> <strong>Temp:</strong> {{ ci.temperature
+                    }}°F</div>
+                {% endif %}
+                {% if ci.blood_pressure %}
+                <div class="pc-detail"><i class="fas fa-heartbeat"></i> <strong>BP:</strong> {{ ci.blood_pressure }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="pc-actions">
+                <button class="btn-accept" onclick="acceptCheckin({{ ci.id }})">
+                    <i class="fas fa-check me-1"></i>Accept & Send to Doctor
+                </button>
+                <button class="btn-reject" onclick="rejectCheckin({{ ci.id }})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if incoming_appointments|length == 0 and incoming_checkins|length == 0 %}
+    <div class="patient-card fade-card" style="margin-bottom: 28px; border-color: rgba(52,211,153,0.15);">
+        <div class="empty-state" style="padding: 20px;">
+            <i class="fas fa-inbox" style="color: #34d399;"></i>
+            <span style="font-size: 0.88rem;">No incoming appointment or check-in requests right now</span>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- ═══ DOCTOR'S PATIENT QUEUE (Accept / Reject / Complete) ═══ -->
+    {% if current_user.role.value == 'DOCTOR' and doctor_queue|length > 0 %}
+    <div class="queue-section" style="margin-bottom: 32px;">
+        <div class="section-title">
+            <i class="fas fa-user-md"></i> Your Patient Queue
+            <span class="badge-count">{{ doctor_queue|length }}</span>
+        </div>
+        <div class="incoming-grid">
+            {% for q in doctor_queue %}
+            <div class="patient-card fade-card" id="dq-card-{{ q.id }}" style="animation-delay: {{ loop.index0 * 0.06 }}s">
+                <div class="pc-header">
+                    <div class="pc-avatar checkin">{{ q.patient.first_name[0] if q.patient else '?' }}</div>
+                    <div>
+                        <div class="pc-name">{{ q.patient.first_name }} {{ q.patient.last_name }}</div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Token #{{ q.token_number }}</div>
+                    </div>
+                    <span class="pc-type {{ 'appt' if q.patient_type == 'Appointment' else 'checkin' }}" style="margin-left:auto">
+                        <i class="fas {{ 'fa-calendar-alt' if q.patient_type == 'Appointment' else 'fa-clipboard-check' }} me-1"></i>{{ q.patient_type }}
+                    </span>
+                </div>
+                <div class="pc-details">
+                    <div class="pc-detail"><i class="fas fa-comment-medical"></i> <strong>Reason:</strong> {{ q.visit_reason or 'General' }}</div>
+                    <div class="pc-detail"><i class="fas fa-clock"></i> <strong>Arrival:</strong> {{ q.arrival_time.strftime('%I:%M %p') if q.arrival_time else 'N/A' }}</div>
+                    {% if q.patient.phone %}
+                    <div class="pc-detail"><i class="fas fa-phone"></i> <strong>Phone:</strong> {{ q.patient.phone }}</div>
+                    {% endif %}
+                    {% if q.patient.age %}
+                    <div class="pc-detail"><i class="fas fa-user"></i> <strong>Age:</strong> {{ q.patient.age }} | {{ q.patient.gender or 'N/A' }}</div>
+                    {% endif %}
+                    {% if q.reception_notes %}
+                    <div class="pc-detail"><i class="fas fa-sticky-note"></i> <strong>Reception Notes:</strong> {{ q.reception_notes }}</div>
+                    {% endif %}
+                    <div class="pc-detail"><i class="fas fa-info-circle"></i> <strong>Status:</strong>
+                        {% if q.doctor_status == 'Accepted' %}
+                        <span style="color: #34d399;">✓ Accepted</span>
+                        {% elif q.doctor_status == 'Cancelled' %}
+                        <span style="color: #f87171;">✗ Cancelled</span>
+                        {% elif q.doctor_status == 'Completed' %}
+                        <span style="color: #22c55e;">✓ Completed</span>
+                        {% else %}
+                        <span style="color: #fbbf24;">⏳ Pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="pc-actions">
+                    {% if q.doctor_status == 'Pending' %}
+                    <button class="btn-accept" onclick="doctorAccept({{ q.id }}, '{{ q.patient.first_name }} {{ q.patient.last_name }}')">
+                        <i class="fas fa-check me-1"></i>Accept Patient
+                    </button>
+                    <button class="btn-reject" onclick="doctorReject({{ q.id }}, '{{ q.patient.first_name }} {{ q.patient.last_name }}')">
+                        <i class="fas fa-times me-1"></i>Reject
+                    </button>
+                    {% elif q.doctor_status == 'Accepted' %}
+                    <button class="btn-accept" style="background: linear-gradient(135deg, #2563eb, #3b82f6);" onclick="doctorComplete({{ q.id }}, '{{ q.patient.first_name }} {{ q.patient.last_name }}')">
+                        <i class="fas fa-flag-checkered me-1"></i>Mark Complete
+                    </button>
+                    <button class="btn-reject" onclick="doctorReject({{ q.id }}, '{{ q.patient.first_name }} {{ q.patient.last_name }}')">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    {% elif q.doctor_status == 'Completed' %}
+                    <span class="status-pill completed" style="padding: 8px 16px;">✓ Consultation Complete</span>
+                    {% elif q.doctor_status == 'Cancelled' %}
+                    <span class="status-pill cancelled" style="padding: 8px 16px;">✗ Cancelled</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif current_user.role.value == 'DOCTOR' %}
+    <div class="patient-card fade-card" style="margin-bottom: 28px; border-color: rgba(52,211,153,0.15);">
+        <div class="empty-state" style="padding: 20px;">
+            <i class="fas fa-inbox" style="color: #34d399;"></i>
+            <span style="font-size: 0.88rem;">No patients in your queue right now. Reception will send patients to you.</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ═══ ACTIVE QUEUE ═══ -->
+    <div class="queue-section">
+        <div class="section-title">
+            <i class="fas fa-list-ol"></i> Today's Queue
+            <span class="badge-count">{{ total }}</span>
+        </div>
+
+        {% if queue|length > 0 %}
+        <div class="queue-table-wrap">
+            <table class="queue-table">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Patient</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>Doctor</th>
+                        <th>Arrival</th>
+                        <th>Reception</th>
+                        <th>Doctor Status</th>
+                        <th>Overall</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in queue %}
+                    <tr>
+                        <td><span class="token-badge">#{{ q.token_number }}</span></td>
+                        <td>
+                            <div style="font-weight:600;">{{ q.patient.first_name }} {{ q.patient.last_name }}</div>
+                            {% if q.patient.uhid %}<div class="time-info" style="color:#a78bfa;font-weight:600;">{{ q.patient.uhid }}</div>{% endif %}
+                            {% if q.patient.phone %}<div class="time-info">{{ q.patient.phone }}</div>{% endif %}
+                        </td>
+                        <td>
+                            <span
+                                class="pc-type {{ 'appt' if q.patient_type == 'Appointment' else 'checkin' if q.patient_type == 'Check-in' else '' }}"
+                                style="{{ '' if q.patient_type in ['Appointment','Check-in'] else 'background:rgba(148,163,184,0.12);color:#94a3b8;' }}">
+                                {{ q.patient_type }}
+                            </span>
+                        </td>
+                        <td><span class="time-info">{{ q.visit_reason or '—' }}</span></td>
+                        <td>
+                            {% if q.doctor %}
+                            <span class="doctor-name">Dr. {{ q.doctor.first_name }} {{ q.doctor.last_name }}</span>
+                            {% else %}
+                            <span class="time-info">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="time-info">{{ q.arrival_time.strftime('%I:%M %p') if q.arrival_time else '—'
+                                }}</span></td>
+                        <td>
+                            {% if q.reception_status == 'Accepted' %}
+                            <span class="status-pill accepted-reception">✓ Accepted</span>
+                            {% elif q.reception_status == 'Rejected' %}
+                            <span class="status-pill cancelled">✗ Rejected</span>
+                            {% else %}
+                            <span class="status-pill waiting">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if q.doctor_status == 'Accepted' %}
+                            <span class="status-pill accepted-doctor">✓ Accepted</span>
+                            {% elif q.doctor_status == 'Cancelled' %}
+                            <span class="status-pill rejected-doctor">✗ Cancelled</span>
+                            {% if q.doctor_notes %}<div class="time-info mt-1">{{ q.doctor_notes }}</div>{% endif %}
+                            {% elif q.doctor_status == 'Completed' %}
+                            <span class="status-pill completed">✓ Done</span>
+                            {% else %}
+                            <span class="status-pill sent-doctor">⏳ Waiting</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if q.status == 'Completed' %}
+                            <span class="status-pill completed">Completed</span>
+                            {% elif 'Rejected' in q.status %}
+                            <span class="status-pill rejected-doctor">{{ q.status }}</span>
+                            {% elif 'Accepted by Doctor' in q.status %}
+                            <span class="status-pill accepted-doctor">In Consultation</span>
+                            {% else %}
+                            <span class="status-pill waiting">{{ q.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="patient-card">
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                No patients in the queue yet today
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ═══ SEARCH EXISTING / RETURNING PATIENT ═══ -->
+    {% if current_user.role.value in ['RECEPTIONIST', 'HOST', 'ADMIN'] %}
+    <div class="walkin-section" style="margin-top:28px;">
+        <div class="section-title">
+            <i class="fas fa-search"></i> Search Existing / Returning Patient
+        </div>
+        <div class="walkin-form" style="margin-bottom:16px;">
+            <div class="form-row" style="grid-template-columns: 1fr auto;align-items:end;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Search by UHID, Name, or Phone</label>
+                    <input type="text" id="search_patient_input" placeholder="e.g. CHN-2026-000001 or Ravi or 9876543210" oninput="searchExistingPatient()">
+                </div>
+                <button type="button" class="btn-register" style="height:42px;padding:0 20px;" onclick="searchExistingPatient()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div id="search_results" style="display:none;margin-top:14px;"></div>
+        </div>
+    </div>
+
+    <!-- ═══ WALK-IN REGISTRATION ═══ -->
+    <div class="walkin-section">
+        <div class="section-title">
+            <i class="fas fa-walking"></i> Register Walk-in Patient
+        </div>
+        <!-- Duplicate Warning Banner -->
+        <div id="wk_duplicate_warning" style="display:none;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <i class="fas fa-exclamation-triangle" style="color:#fbbf24;font-size:1.1rem;"></i>
+                <strong style="color:#fbbf24;">Possible existing patient found</strong>
+            </div>
+            <div id="wk_duplicate_list" style="max-height:200px;overflow-y:auto;"></div>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button type="button" class="btn-register" style="flex:1;background:linear-gradient(135deg,#059669,#10b981);" onclick="forceCreateWalkin()">
+                    <i class="fas fa-plus me-1"></i>Create New Patient Anyway
+                </button>
+                <button class="btn-reject" style="flex:0;padding:8px 16px;" onclick="hideDuplicateWarning()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+        <div class="form-row" style="margin-bottom:14px;flex-wrap:wrap;gap:16px;">
+            <span style="font-size:0.82rem;color:#94a3b8;font-weight:600;">Visit type</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#e2e8f0;">
+                <input type="radio" name="wk_visit" value="consult" checked onchange="toggleVisitType()">
+                Doctor consultation
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#e2e8f0;">
+                <input type="radio" name="wk_visit" value="lab" onchange="toggleVisitType()">
+                Lab test only
+            </label>
+        </div>
+        <div class="walkin-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" id="wk_first_name" placeholder="First name" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="wk_last_name" placeholder="Last name">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="wk_phone" placeholder="Phone number">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="wk_age" placeholder="Age" min="0" max="150">
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="wk_gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group" id="wk_doctor_wrap">
+                    <label>Assign Doctor</label>
+                    <select id="wk_doctor">
+                        <option value="">— Select Doctor —</option>
+                        {% for doc in doctors %}
+                        <option value="{{ doc.id }}">Dr. {{ doc.first_name }} {{ doc.last_name }} ({{ doc.specialization
+                            }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" id="wk_reason_wrap">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Visit Reason</label>
+                    <input type="text" id="wk_reason" placeholder="Reason for visit" value="General Consultation">
+                </div>
+            </div>
+            <div id="wk_lab_tests_wrap" style="display:none;margin-bottom:16px;">
+                <label style="display:block;margin-bottom:8px;color:#94a3b8;font-size:0.82rem;font-weight:600;">Select
+                    lab test(s)</label>
+                <div
+                    style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;font-size:0.85rem;color:#cbd5e1;">
+                    {% for tn in [
+                        'Complete Blood Count (CBC)', 'Blood Test', 'Blood Sugar (Fasting)', 'HbA1c', 'Lipid Profile',
+                        'Liver Function Test (LFT)', 'Kidney Function Test (KFT)', 'Thyroid Profile (T3, T4, TSH)',
+                        'Urine Analysis', 'Vitamin D', 'COVID-19 RT-PCR'
+                    ] %}
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                        <input type="checkbox" class="lab-test-cb" value="{{ tn }}"> {{ tn }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="button" class="btn-register" onclick="registerWalkin()">
+                <i class="fas fa-plus-circle me-1"></i><span id="wk_btn_label">Register &amp; Generate Token</span>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+    let _pendingForceCreate = false;
+    let _searchDebounce = null;
+
+    function apiCall(url, body) {
+        return fetch(url, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': CSRF
+            },
+            body: JSON.stringify(body)
+        }).then(async r => {
+            const ct = r.headers.get('content-type') || '';
+            const text = await r.text();
+            
+            // Debug log to diagnose redirect issues
+            if (!r.ok) {
+                console.error('API Error Response:', {
+                    status: r.status,
+                    contentType: ct,
+                    bodyPreview: text.substring(0, 200)
+                });
+            }
+            
+            if (!r.ok) {
+                let msg = `Request failed ${r.status}`;
+                try {
+                    const json = JSON.parse(text);
+                    msg = json.error || json.message || msg;
+                } catch (ignored) {
+                    if (text) msg = text.substring(0, 300);
+                }
+                const err = new Error(msg);
+                err.status = r.status;
+                throw err;
+            }
+            if (!ct.includes('application/json')) {
+                throw new Error('Invalid response from server: expected JSON but got HTML or text.');
+            }
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                throw new Error('Invalid JSON received from server: ' + err.message);
+            }
+        });
+    }
+
+    function handleApiError(e) {
+        const msg = (e && e.message) ? e.message : String(e);
+        const status = e && typeof e.status === 'number' ? e.status : null;
+        const lower = msg.toLowerCase();
+        
+        // Log for debugging
+        console.error('API Error:', { msg, status, lower });
+        
+        if (
+            status === 401 ||
+            lower.includes('authentication required') ||
+            lower.includes('please login') ||
+            lower.includes('login required')
+        ) {
+            console.error('Authentication error detected - redirecting to login');
+            alert('Session expired or login required. Redirecting to login page.');
+            window.location.href = '/staff/login?role=RECEPTIONIST';
+            return;
+        }
+        alert('Error: ' + msg);
+    }
+
+    // Check session health before major operations
+    async function checkSessionHealth() {
+        try {
+            const resp = await fetch('/api/debug/session', {
+                credentials: 'include'
+            });
+            const data = await resp.json();
+            console.log('Session health check:', data);
+            return data.authenticated;
+        } catch (e) {
+            console.warn('Session health check failed:', e);
+            return false;
+        }
+    }
+
+    // ═══ SEARCH EXISTING PATIENT ═══
+    function searchExistingPatient() {
+        clearTimeout(_searchDebounce);
+        const q = document.getElementById('search_patient_input').value.trim();
+        const resultsDiv = document.getElementById('search_results');
+        if (q.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        _searchDebounce = setTimeout(() => {
+            fetch(`/reception/api/search-patients?q=${encodeURIComponent(q)}`, {
+                credentials: 'include',
+                headers: { 'X-CSRFToken': CSRF }
+            })
+            .then(r => r.json())
+            .then(patients => {
+                if (!patients.length) {
+                    resultsDiv.innerHTML = '<div style="padding:12px;color:#94a3b8;font-size:0.85rem;"><i class="fas fa-info-circle me-1"></i>No patients found. Register as walk-in below.</div>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                let html = '<div style="font-size:0.78rem;color:#64748b;margin-bottom:8px;">Found ' + patients.length + ' patient(s):</div>';
+                patients.forEach(p => {
+                    const uhid = p.uhid || 'N/A';
+                    html += `
+                    <div class="patient-card" style="padding:12px;margin-bottom:8px;cursor:pointer;" onclick="selectExistingPatient(${p.id}, '${(p.name||'').replace(/'/g, "\\'")}',' ${uhid}')">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:700;font-size:0.9rem;">${p.name}</div>
+                                <div style="font-size:0.78rem;color:#a78bfa;font-weight:600;">${uhid}</div>
+                                <div style="font-size:0.78rem;color:#94a3b8;">Age: ${p.age || 'N/A'} | ${p.gender || ''} | Phone: ${p.phone || 'N/A'}</div>
+                            </div>
+                            <button class="btn-accept" style="flex:0;white-space:nowrap;padding:6px 14px;font-size:0.78rem;">
+                                <i class="fas fa-check me-1"></i>Select & Queue
+                            </button>
+                        </div>
+                    </div>`;
+                });
+                resultsDiv.innerHTML = html;
+                resultsDiv.style.display = 'block';
+            })
+            .catch(() => { resultsDiv.style.display = 'none'; });
+        }, 300);
+    }
+
+    function selectExistingPatient(patientId, patientName, uhid) {
+        const doctorSel = document.getElementById('wk_doctor');
+        const doctorVal = doctorSel ? doctorSel.value : '';
+        const reason = prompt(`Reason for visit for ${patientName}:`, 'Follow-up / General Consultation');
+        if (reason === null) return;
+
+        apiCall('/reception/api/register-existing', {
+            patient_id: patientId,
+            doctor_id: doctorVal ? parseInt(doctorVal) : null,
+            reason: reason
+        }).then(d => {
+            if (d.success) {
+                alert('✅ ' + d.message + (uhid ? ` | UHID: ${uhid.trim()}` : ''));
+                location.reload();
+            } else {
+                alert('❌ ' + (d.error || 'Failed'));
+            }
+        }).catch(handleApiError);
+    }
+
+    // ═══ APPOINTMENT / CHECKIN ACTIONS ═══
+    function acceptAppointment(id) {
+        if (!confirm('Accept this appointment and send patient to the doctor?')) return;
+        apiCall('/reception/api/accept-appointment', { appointment_id: id })
+            .then(d => {
+                if (d.success) {
+                    alert('✅ ' + d.message);
+                    document.getElementById('appt-card-' + id)?.remove();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    function rejectAppointment(id) {
+        const reason = prompt('Reason for rejection (optional):');
+        if (reason === null) return;
+        apiCall('/reception/api/reject-appointment', { appointment_id: id, reason: reason })
+            .then(d => {
+                if (d.success) {
+                    document.getElementById('appt-card-' + id)?.remove();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    function acceptCheckin(id) {
+        if (!confirm('Accept this check-in and send patient to the doctor?')) return;
+        apiCall('/reception/api/accept-checkin', { checkin_id: id })
+            .then(d => {
+                if (d.success) {
+                    alert('✅ ' + d.message);
+                    document.getElementById('checkin-card-' + id)?.remove();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    function rejectCheckin(id) {
+        const reason = prompt('Reason for rejection (optional):');
+        if (reason === null) return;
+        apiCall('/reception/api/reject-checkin', { checkin_id: id, reason: reason })
+            .then(d => {
+                if (d.success) {
+                    document.getElementById('checkin-card-' + id)?.remove();
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    // ═══ DOCTOR ACCEPT / REJECT / COMPLETE ═══
+    function doctorAccept(entryId, patientName) {
+        if (!confirm(`Accept patient ${patientName} for consultation?`)) return;
+        const notes = prompt('Notes (optional):') || '';
+        apiCall('/reception/api/doctor-accept', { entry_id: entryId, notes: notes })
+            .then(d => {
+                if (d.success) {
+                    alert('✅ ' + d.message);
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    function doctorReject(entryId, patientName) {
+        const reason = prompt(`Reason for rejecting/cancelling ${patientName}:`);
+        if (reason === null) return;
+        apiCall('/reception/api/doctor-cancel', { entry_id: entryId, reason: reason })
+            .then(d => {
+                if (d.success) {
+                    alert('✅ ' + d.message);
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    function doctorComplete(entryId, patientName) {
+        if (!confirm(`Mark consultation with ${patientName} as complete?`)) return;
+        apiCall('/reception/api/doctor-complete', { entry_id: entryId })
+            .then(d => {
+                if (d.success) {
+                    alert('✅ ' + d.message);
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+    }
+
+    // ═══ WALK-IN REGISTRATION WITH DUPLICATE DETECTION ═══
+    function toggleVisitType() {
+        const lab = document.querySelector('input[name="wk_visit"]:checked')?.value === 'lab';
+        document.getElementById('wk_lab_tests_wrap').style.display = lab ? 'block' : 'none';
+        document.getElementById('wk_doctor_wrap').style.display = lab ? 'none' : 'block';
+        document.getElementById('wk_reason_wrap').style.display = lab ? 'none' : 'block';
+        document.getElementById('wk_btn_label').textContent = lab ? 'Create lab orders' : 'Register & Generate Token';
+    }
+
+    function hideDuplicateWarning() {
+        document.getElementById('wk_duplicate_warning').style.display = 'none';
+        _pendingForceCreate = false;
+    }
+
+    function showDuplicateWarning(duplicates) {
+        const listDiv = document.getElementById('wk_duplicate_list');
+        let html = '';
+        duplicates.forEach(dup => {
+            html += `
+            <div class="patient-card" style="padding:10px;margin-bottom:6px;border-color:rgba(251,191,36,0.2);cursor:pointer;" onclick="selectExistingPatient(${dup.id}, '${(dup.name||'').replace(/'/g, "\\'")}',' ${dup.uhid || ''}')">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <span style="font-weight:700;">${dup.name}</span>
+                        <span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;margin-left:6px;">${Math.round((dup.similarity||0)*100)}% match</span>
+                        <div style="font-size:0.78rem;color:#a78bfa;font-weight:600;">${dup.uhid || ''}</div>
+                        <div style="font-size:0.78rem;color:#94a3b8;">Age: ${dup.age||'N/A'} | Phone: ${dup.phone||'N/A'} | ${dup.reason||''}</div>
+                    </div>
+                    <button class="btn-accept" style="flex:0;white-space:nowrap;padding:5px 12px;font-size:0.75rem;">
+                        <i class="fas fa-check me-1"></i>Use This
+                    </button>
+                </div>
+            </div>`;
+        });
+        listDiv.innerHTML = html;
+        document.getElementById('wk_duplicate_warning').style.display = 'block';
+    }
+
+    function forceCreateWalkin() {
+        _pendingForceCreate = true;
+        hideDuplicateWarning();
+        _doRegisterWalkin(true);
+    }
+
+    function registerWalkin() {
+        _doRegisterWalkin(false);
+    }
+
+    function _doRegisterWalkin(forceCreate) {
+        const firstName = document.getElementById('wk_first_name').value.trim();
+        if (!firstName) { alert('First name is required'); return; }
+
+        const labVisit = document.querySelector('input[name="wk_visit"]:checked')?.value === 'lab';
+        if (labVisit) {
+            const tests = Array.from(document.querySelectorAll('.lab-test-cb:checked')).map(c => c.value);
+            if (!tests.length) { alert('Select at least one laboratory test'); return; }
+            apiCall('/reception/api/lab-only-visit', {
+                first_name: firstName,
+                last_name: document.getElementById('wk_last_name').value.trim(),
+                phone: document.getElementById('wk_phone').value.trim(),
+                age: document.getElementById('wk_age').value || null,
+                gender: document.getElementById('wk_gender').value,
+                tests: tests
+            }).then(d => {
+                if (d.success) {
+                    let msg = '✅ ' + d.message;
+                    if (d.uhid) msg += '\nUHID: ' + d.uhid;
+                    alert(msg);
+                    sessionStorage.removeItem('rcp_walkin_form');
+                    location.reload();
+                } else {
+                    alert('❌ ' + (d.error || 'Failed'));
+                }
+            }).catch(handleApiError);
+            return;
+        }
+
+        // Check for duplicates first (unless forcing)
+        if (!forceCreate) {
+            const phone = document.getElementById('wk_phone').value.trim();
+            const age = document.getElementById('wk_age').value;
+            const fullName = firstName + ' ' + (document.getElementById('wk_last_name').value.trim() || '');
+
+            if (phone || firstName) {
+                apiCall('/api/patients/find-similar', {
+                    name: fullName.trim(),
+                    phone: phone || null,
+                    age: age ? parseInt(age) : null,
+                    threshold: 0.6
+                }).then(d => {
+                    if (d.success && d.similar && d.similar.length > 0) {
+                        showDuplicateWarning(d.similar);
+                        return;
+                    }
+                    // No duplicates — proceed
+                    _doRegisterWalkin(true);
+                }).catch(() => {
+                    // API error — proceed anyway
+                    _doRegisterWalkin(true);
+                });
+                return;
+            }
+        }
+
+        const doctorVal = document.getElementById('wk_doctor').value;
+
+        apiCall('/reception/api/register-walkin', {
+            first_name: firstName,
+            last_name: document.getElementById('wk_last_name').value.trim(),
+            phone: document.getElementById('wk_phone').value.trim(),
+            age: document.getElementById('wk_age').value || null,
+            gender: document.getElementById('wk_gender').value,
+            doctor_id: doctorVal ? parseInt(doctorVal) : null,
+            reason: document.getElementById('wk_reason').value.trim()
+        }).then(d => {
+            if (d.success) {
+                let msg = '✅ ' + d.message;
+                if (d.uhid) msg += '\nUHID: ' + d.uhid;
+                alert(msg);
+                sessionStorage.removeItem('rcp_walkin_form');
+                location.reload();
+            } else {
+                alert('❌ ' + (d.error || 'Failed'));
+            }
+        }).catch(handleApiError);
+    }
+
+    // ═══ SMART AUTO-REFRESH ═══
+    // Pauses when user is interacting with the walk-in form
+    // Saves & restores form data across reloads
+    (function () {
+        const REFRESH_INTERVAL = 30000; // 30 seconds (was 15)
+        const STORAGE_KEY = 'rcp_walkin_form';
+        let refreshTimer = null;
+        let userIsTyping = false;
+        let typingTimeout = null;
+
+        // All form fields in the walk-in section
+        const formFields = ['wk_first_name', 'wk_last_name', 'wk_phone', 'wk_age', 'wk_gender', 'wk_doctor', 'wk_reason'];
+
+        // ── Save form data to session ──
+        function saveFormData() {
+            const data = {};
+            let hasData = false;
+            formFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    data[id] = el.value;
+                    if (el.value && el.value.trim() !== '' && id !== 'wk_gender' && id !== 'wk_reason') {
+                        hasData = true;
+                    }
+                }
+            });
+            if (hasData) {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+        }
+
+        // ── Restore form data from session ──
+        function restoreFormData() {
+            const saved = sessionStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                formFields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && data[id] !== undefined) {
+                        el.value = data[id];
+                    }
+                });
+            } catch (e) { /* ignore */ }
+        }
+
+        // ── Check if any form field has content ──
+        function formHasContent() {
+            const checkFields = ['wk_first_name', 'wk_last_name', 'wk_phone', 'wk_age'];
+            return checkFields.some(id => {
+                const el = document.getElementById(id);
+                return el && el.value.trim() !== '';
+            });
+        }
+
+        // ── Update refresh indicator ──
+        const refreshBar = document.querySelector('.refresh-bar span:first-of-type');
+        const refreshDot = document.querySelector('.refresh-dot');
+
+        function updateIndicator(paused) {
+            if (refreshBar) {
+                refreshBar.textContent = paused
+                    ? 'Auto-refresh paused (form in use)'
+                    : 'Live — Auto-refreshes every 30s';
+            }
+            if (refreshDot) {
+                refreshDot.style.background = paused ? '#fbbf24' : '#34d399';
+            }
+        }
+
+        // ── Start/Stop refresh ──
+        function startRefresh() {
+            if (refreshTimer) return;
+            refreshTimer = setInterval(() => {
+                if (!userIsTyping && !formHasContent()) {
+                    location.reload();
+                }
+            }, REFRESH_INTERVAL);
+            updateIndicator(false);
+        }
+
+        function pauseRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+            updateIndicator(true);
+        }
+
+        // ── Track user interaction with form ──
+        formFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            el.addEventListener('focus', () => {
+                userIsTyping = true;
+                pauseRefresh();
+            });
+
+            el.addEventListener('input', () => {
+                userIsTyping = true;
+                pauseRefresh();
+                saveFormData();
+                // Reset typing timeout
+                if (typingTimeout) clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    userIsTyping = false;
+                    // Only resume if form is empty
+                    if (!formHasContent()) {
+                        startRefresh();
+                    }
+                }, 60000); // Resume after 60s of no typing if form empty
+            });
+
+            el.addEventListener('blur', () => {
+                // Check if any field still focused after a short delay
+                setTimeout(() => {
+                    const activeEl = document.activeElement;
+                    const stillInForm = formFields.some(fid => document.getElementById(fid) === activeEl);
+                    if (!stillInForm && !formHasContent()) {
+                        userIsTyping = false;
+                        startRefresh();
+                    }
+                }, 200);
+            });
+        });
+
+        // ── Init ──
+        restoreFormData();
+        // If form already has data (restored), don't auto-refresh
+        if (formHasContent()) {
+            pauseRefresh();
+        } else {
+            startRefresh();
+        }
+    })();
+</script>
+{% endblock %}

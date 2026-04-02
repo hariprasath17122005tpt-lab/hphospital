@@ -1,0 +1,9 @@
+GET /login Cookie: eyJjc3JmX3Rva2VuIjoiZDk4ZTRiYmNiNjlmNmRhNTVkYTBjOGJjODllZjJjMDNjMGVkMmE2ZiJ9.ac4nMw.DwSQQ6JoxdhoKeLA-T_zZwMGFcg
+Decoded GET Cookie: {'csrf_token': 'd98e4bbcb69f6da55da0c8bc89ef2c03c0ed2a6f'}
+POST /login Status: 200
+POST /login Location: None
+POST /login Set-Cookie: session=eyJfZnJlc2giOmZhbHNlLCJjc3JmX3Rva2VuIjoiZDk4ZTRiYmNiNjlmNmRhNTVkYTBjOGJjODllZjJjMDNjMGVkMmE2ZiJ9.ac4nMw.PRSI7nzlj5REOSqv2Bqnoau9Sso; HttpOnly; Path=/; SameSite=Lax
+POST /login Cookie: eyJfZnJlc2giOmZhbHNlLCJjc3JmX3Rva2VuIjoiZDk4ZTRiYmNiNjlmNmRhNTVkYTBjOGJjODllZjJjMDNjMGVkMmE2ZiJ9.ac4nMw.PRSI7nzlj5REOSqv2Bqnoau9Sso
+Decoded POST Cookie: {'_fresh': False, 'csrf_token': 'd98e4bbcb69f6da55da0c8bc89ef2c03c0ed2a6f'}
+GET /dashboard Status: 302
+GET /dashboard Location: /patient/login

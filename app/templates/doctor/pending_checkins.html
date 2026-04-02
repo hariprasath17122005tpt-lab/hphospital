@@ -314,6 +314,33 @@
 <script>
     let currentCheckinId = null;
 
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '{{ csrf_token() }}';
+    }
+
+    async function postCheckinAction(url, formData) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData,
+            credentials: 'include'
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || `Request failed (${response.status})`);
+        }
+        if (contentType.includes('application/json')) {
+            return response.json();
+        }
+        const text = await response.text();
+        throw new Error(text || 'Unexpected response format');
+    }
+
     function showAcceptModal(checkinId, patientName) {
         currentCheckinId = checkinId;
         document.getElementById('acceptPatientName').textContent = patientName;
@@ -335,35 +362,34 @@
         new bootstrap.Modal(document.getElementById('completeModal')).show();
     }
 
+    function cleanupModal(modalId) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+        if (modal) modal.hide();
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    }
+
     // Accept Check-in
     document.getElementById('confirmAcceptBtn').addEventListener('click', function () {
         const notes = document.getElementById('acceptNotes').value;
         const formData = new FormData();
         formData.append('notes', notes);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch(`/features/doctor/checkin/${currentCheckinId}/accept`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-            .then(response => response.json())
+        postCheckinAction(`/features/doctor/checkin/${currentCheckinId}/accept`, formData)
             .then(data => {
+                cleanupModal('acceptModal');
                 if (data.success) {
-                    alert('✅ ' + data.message);
+                    alert('OK: ' + data.message);
                     location.reload();
                 } else {
-                    alert('❌ Error: ' + data.error);
+                    alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                alert('❌ Error processing request: ' + error);
+                cleanupModal('acceptModal');
+                alert('Error processing request: ' + error.message);
             });
-
-        bootstrap.Modal.getInstance(document.getElementById('acceptModal')).hide();
     });
 
     // Reject Check-in
@@ -371,36 +397,27 @@
         const reason = document.getElementById('rejectReason').value;
 
         if (!reason.trim()) {
-            alert('⚠️ Please provide a reason for rejection');
+            alert('Please provide a reason for rejection');
             return;
         }
 
         const formData = new FormData();
         formData.append('reason', reason);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch(`/features/doctor/checkin/${currentCheckinId}/reject`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-            .then(response => response.json())
+        postCheckinAction(`/features/doctor/checkin/${currentCheckinId}/reject`, formData)
             .then(data => {
+                cleanupModal('rejectModal');
                 if (data.success) {
-                    alert('✅ ' + data.message);
+                    alert('OK: ' + data.message);
                     location.reload();
                 } else {
-                    alert('❌ Error: ' + data.error);
+                    alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                alert('❌ Error processing request: ' + error);
+                cleanupModal('rejectModal');
+                alert('Error processing request: ' + error.message);
             });
-
-        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
     });
 
     // Complete Check-in
@@ -409,29 +426,20 @@
         const formData = new FormData();
         formData.append('notes', notes);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        fetch(`/features/doctor/checkin/${currentCheckinId}/complete`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-            .then(response => response.json())
+        postCheckinAction(`/features/doctor/checkin/${currentCheckinId}/complete`, formData)
             .then(data => {
+                cleanupModal('completeModal');
                 if (data.success) {
-                    alert('✅ ' + data.message);
+                    alert('OK: ' + data.message);
                     location.reload();
                 } else {
-                    alert('❌ Error: ' + data.error);
+                    alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                alert('❌ Error processing request: ' + error);
+                cleanupModal('completeModal');
+                alert('Error processing request: ' + error.message);
             });
-
-        bootstrap.Modal.getInstance(document.getElementById('completeModal')).hide();
     });
 </script>
 {% endblock %}

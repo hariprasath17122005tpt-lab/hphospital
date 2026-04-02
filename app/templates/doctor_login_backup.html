@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+
+{% block title %}Doctor Login - CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container auth-shell">
+        <div class="auth-grid w-100">
+            <section class="auth-hero">
+                <div class="auth-kicker">
+                    <span class="badge text-bg-success" style="border-radius: 999px;">Doctor</span>
+                    <span>Clinical operations and intelligent tools</span>
+                </div>
+                <h1 class="auth-title">Doctor Portal</h1>
+                <p class="auth-subtitle">
+                    Manage schedules, patient records, prescriptions, analytics, and collaborative workflows with secure
+                    role-based access.
+                </p>
+
+                <div class="auth-metrics">
+                    <div class="auth-metric">
+                        <div class="value">Patients</div>
+                        <div class="label">Live caseload</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Insights</div>
+                        <div class="label">AI-assisted review</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Workflow</div>
+                        <div class="label">Appointments and tasks</div>
+                    </div>
+                </div>
+
+                <div class="auth-footnote">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <a class="text-decoration-none fw-bold" href="{{ url_for('main.index') }}">Back to Home</a>
+                </div>
+            </section>
+
+            <aside class="auth-panel">
+                <div class="panel-head">
+                    <div class="auth-badge success"><i class="fas fa-user-md"></i></div>
+                    <div>
+                        <h3>Secure sign in</h3>
+                        <p>Authorized medical personnel only.</p>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ 'exclamation-circle' if category == 'danger' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form class="auth-form" method="POST" action="{{ url_for('auth.doctor_login') }}" accept-charset="UTF-8">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Dr. username"
+                            required autofocus autocomplete="username">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="••••••••"
+                            required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 auth-cta shadow-sm">
+                        Secure Login <i class="fas fa-lock ms-2"></i>
+                    </button>
+
+                    <div class="auth-footnote auth-links text-center">
+                        New doctor?
+                        <a href="{{ url_for('auth.doctor_register') }}" class="text-success">Register</a>
+                        <span class="mx-2">&bull;</span>
+                        <a href="{{ url_for('auth.choose_login') }}" class="text-secondary">Choose portal</a>
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

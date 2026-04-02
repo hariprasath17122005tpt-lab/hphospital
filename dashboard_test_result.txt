@@ -1,0 +1,8 @@
+Found 5 patient users:
+  id=3 username=patient_john email=john@email.com
+  id=4 username=sad email=road@gmail.com
+  id=6 username=testpatient email=testpatient@example.com
+  id=7 username=zxc email=zxc@gmail.com
+  id=14 username=hari email=hari@hospital.ai
+
+Testing dashboard via Flask test client...

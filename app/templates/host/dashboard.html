@@ -1,7 +1,177 @@
 {% extends "base.html" %}
 {% block title %}Hospital Governance & Host Control{% endblock %}
 
+{% set topbar_title = 'Governance Dashboard' %}
+{% set breadcrumb_current = 'Admin Panel' %}
+
 {% block content %}
+<style>
+    /* Host Dashboard - Dark Theme */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    .container-fluid {
+        color: #fff;
+    }
+
+    .text-dark,
+    h1,
+    h2,
+    h5,
+    .fw-bold {
+        color: #fff !important;
+    }
+
+    .text-secondary,
+    .text-muted,
+    p {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    .card {
+        background: rgba(20, 20, 30, 0.9) !important;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .card:hover {
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        transform: translateY(-4px);
+    }
+
+    .card-header {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .card-header h5 {
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: -0.02em;
+    }
+
+    /* Icon boxes */
+    .icon-box.primary {
+        background: rgba(99, 102, 241, 0.2) !important;
+        color: #818cf8 !important;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    /* Tables */
+    .table {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .table thead {
+        background: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    .table th {
+        color: rgba(255, 255, 255, 0.5) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+    }
+
+    .table td {
+        border-color: rgba(255, 255, 255, 0.05) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    .table tbody {
+        background: rgba(15, 15, 25, 0.95) !important;
+    }
+
+    .table tbody tr {
+        background: rgba(15, 15, 25, 0.95) !important;
+    }
+
+    .table tbody .fw-bold {
+        color: #fff !important;
+    }
+
+    .table tbody .text-muted,
+    .table tbody small {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background: rgba(30, 30, 45, 0.95) !important;
+    }
+
+    .bg-light {
+        background: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    /* Badges */
+    .badge.bg-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+    }
+
+    .badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    }
+
+    .badge.bg-secondary {
+        background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        border: none !important;
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        border: none !important;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-dark {
+        background: linear-gradient(135deg, #1f2937, #111827) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .btn-outline-secondary {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Stats */
+    h2.fw-bold {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.25rem !important;
+    }
+
+    /* Alert */
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        color: #f87171 !important;
+    }
+
+    .alert-danger h5 {
+        color: #f87171 !important;
+    }
+
+    /* Links */
+    a.btn {
+        transition: all 0.3s ease;
+    }
+</style>
 <div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-5 align-items-center">
@@ -146,6 +316,25 @@
         </div>
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Live Ops Console</h5>
+                    <span id="hostOpsClock" class="badge bg-secondary">--:--:--</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Target Incident Response (minutes)</label>
+                        <input id="hostResponseTarget" type="number" min="1" class="form-control" value="15">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Current Incident Queue</label>
+                        <input id="hostIncidentQueue" type="number" min="0" class="form-control" value="{{ pending_doctors }}">
+                    </div>
+                    <button id="hostRunSnapshotBtn" class="btn btn-primary w-100 mb-2">Run Snapshot</button>
+                    <div id="hostSnapshotResult" class="small text-muted">No snapshot yet.</div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
                     <h5 class="fw-bold mb-0">System Controls</h5>
                 </div>
@@ -163,20 +352,63 @@
                             <span><i class="fas fa-user-plus me-2"></i> Add Staff</span>
                             <i class="fas fa-chevron-right"></i>
                         </a>
+                        <a href="{{ url_for('host.create_nurse') }}"
+                            class="btn btn-success d-flex align-items-center justify-content-between p-3">
+                            <span><i class="fas fa-user-nurse me-2"></i> Add Nurse</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
                         <a href="{{ url_for('host.settings') }}"
                             class="btn btn-dark d-flex align-items-center justify-content-between p-3">
                             <span><i class="fas fa-cogs me-2"></i> Settings & Emergency</span>
                             <i class="fas fa-chevron-right"></i>
                         </a>
-                        <button class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-3"
-                            disabled>
-                            <span><i class="fas fa-file-invoice me-2"></i> Content Governance (Soon)</span>
-                            <i class="fas fa-lock"></i>
-                        </button>
+                        <a href="{{ url_for('host.audit_logs') }}"
+                            class="btn btn-outline-secondary d-flex align-items-center justify-content-between p-3">
+                            <span><i class="fas fa-file-invoice me-2"></i> Compliance Logs</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const clock = document.getElementById('hostOpsClock');
+        const target = document.getElementById('hostResponseTarget');
+        const queue = document.getElementById('hostIncidentQueue');
+        const runBtn = document.getElementById('hostRunSnapshotBtn');
+        const result = document.getElementById('hostSnapshotResult');
+        const key = 'cp-host-snapshots-{{ current_user.id }}';
+
+        function tickClock() {
+            if (clock) {
+                clock.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+            }
+        }
+        setInterval(tickClock, 1000);
+        tickClock();
+
+        if (runBtn && result && target && queue) {
+            runBtn.addEventListener('click', function () {
+                const t = Math.max(1, parseInt(target.value || '15', 10));
+                const q = Math.max(0, parseInt(queue.value || '0', 10));
+                const severity = q === 0 ? 'LOW' : (q <= 3 ? 'MEDIUM' : 'HIGH');
+                const eta = q * t;
+                const ts = new Date().toLocaleString();
+                const line = `[${ts}] Queue=${q}, Target=${t}m, Severity=${severity}, Clearance ETA=${eta}m`;
+
+                const items = JSON.parse(localStorage.getItem(key) || '[]');
+                items.unshift(line);
+                localStorage.setItem(key, JSON.stringify(items.slice(0, 8)));
+
+                result.innerHTML = `<strong>${severity}</strong> load. Estimated queue clearance in <strong>${eta} min</strong>.`;
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -75,7 +75,7 @@
         container.scrollTop = container.scrollHeight;
 
         try {
-            const response = await fetch("{{ url_for('features.symptom_chat') }}", {
+            const response = await fetch("{{ url_for('features.ai_chat') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

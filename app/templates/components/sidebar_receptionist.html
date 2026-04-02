@@ -1,0 +1,52 @@
+<!-- Receptionist Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{{ url_for('reception.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Reception</span>
+
+        <a href="{{ url_for('reception.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'reception.dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('reception.queue_display') }}"
+            class="sidebar-link {% if request.endpoint == 'reception.queue_display' %}active{% endif %}">
+            <i class="fas fa-tv"></i>
+            Queue Display
+        </a>
+
+        <a href="{{ url_for('reception.patient_history') }}"
+            class="sidebar-link {% if request.endpoint == 'reception.patient_history' %}active{% endif %}">
+            <i class="fas fa-notes-medical"></i>
+            Patient History
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ current_user.username }}</div>
+            <div class="sidebar-user-role">Receptionist</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>

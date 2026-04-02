@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+
+{% block title %}Host Access - CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container auth-shell">
+        <div class="auth-grid w-100">
+            <section class="auth-hero">
+                <div class="auth-kicker">
+                    <span class="badge text-bg-danger" style="border-radius: 999px;">Restricted</span>
+                    <span>All actions are monitored and audited</span>
+                </div>
+                <h1 class="auth-title">Host Access</h1>
+                <p class="auth-subtitle">
+                    Administrative control plane for governance, doctor approvals, staff operations, and security
+                    settings.
+                </p>
+
+                <div class="auth-metrics">
+                    <div class="auth-metric">
+                        <div class="value">Audit</div>
+                        <div class="label">Session logging</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Control</div>
+                        <div class="label">Role restricted</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Protected</div>
+                        <div class="label">Critical endpoints</div>
+                    </div>
+                </div>
+
+                <div class="auth-footnote">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <a class="text-decoration-none fw-bold" href="{{ url_for('main.index') }}">Return to Public Gateway</a>
+                </div>
+            </section>
+
+            <aside class="auth-panel">
+                <div class="panel-head">
+                    <div class="auth-badge danger"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <h3>Authenticate</h3>
+                        <p>Authorized host operators only.</p>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show"
+                    role="alert">
+                    <i class="fas fa-{{ 'exclamation-circle' if category == 'danger' else 'check-circle' if category == 'success' else 'info-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form class="auth-form" method="POST" action="{{ url_for('auth.host_login') }}" accept-charset="UTF-8">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Operator ID</label>
+                        <input id="username" type="text" name="username" class="form-control" required
+                            placeholder="Enter operator ID" autofocus autocomplete="username">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Access Code</label>
+                        <input id="password" type="password" name="password" class="form-control" required
+                            placeholder="••••••••" autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 auth-cta shadow-sm">
+                        Authenticate <i class="fas fa-fingerprint ms-2"></i>
+                    </button>
+
+                    <div class="auth-footnote text-center">
+                        <i class="fas fa-video me-1"></i> Session telemetry and audit logging enabled.
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

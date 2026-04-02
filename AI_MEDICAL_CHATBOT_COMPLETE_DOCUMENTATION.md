@@ -325,7 +325,7 @@ Ollama Server (Port 11434)
 
 ### Pattern 3: Containerized (Docker)
 ```dockerfile
-FROM python:3.10
+FROM python:3.12-slim
 COPY PHASE_2_FLASK_BACKEND.py .
 RUN pip install -r requirements.txt
 CMD ["python", "PHASE_2_FLASK_BACKEND.py"]

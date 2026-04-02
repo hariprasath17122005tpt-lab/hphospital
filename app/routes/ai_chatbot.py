@@ -23,8 +23,10 @@ ai_bp = Blueprint('ai_chatbot', __name__, url_prefix='/api/ai')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import os
+
 # Ollama configuration
-OLLAMA_URL = "http://localhost:11434"
+OLLAMA_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = "neural-chat"
 API_TIMEOUT = 60
 
@@ -120,15 +122,19 @@ class MedicalChatbotService:
 
 @ai_bp.route('/health', methods=['GET'])
 def health_check():
-    """Check if AI chatbot service is healthy"""
-    ollama_running = MedicalChatbotService.check_ollama_health()
+    """Check if AI chatbot service is healthy - Now using Groq Cloud"""
+    import os
+    groq_key = os.getenv('GROQ_API_KEY')
+    is_configured = bool(groq_key and groq_key != 'YOUR_GROQ_KEY_HERE')
     
     return jsonify({
-        "status": "healthy" if ollama_running else "degraded",
-        "ollama_running": ollama_running,
-        "model": OLLAMA_MODEL,
+        "status": "healthy" if is_configured else "not_configured",
+        "service": "Groq Cloud AI",
+        "ollama_running": True,  # Keep for backwards compatibility with frontend
+        "model": "llama-3.3-70b-versatile",
         "timestamp": datetime.utcnow().isoformat()
-    }), 200 if ollama_running else 503
+    }), 200
+
 
 
 @ai_bp.route('/info', methods=['GET'])
@@ -163,6 +169,7 @@ def info():
 def chat():
     """
     Main chat endpoint for medical queries
+    NOW USES GROQ CLOUD AI (not Ollama)
     
     Request JSON:
     {
@@ -173,11 +180,14 @@ def chat():
     {
         "success": true/false,
         "response": "AI's answer",
-        "model": "neural-chat",
+        "model": "llama-3.3-70b-versatile",
         "user_id": 123,
         "timestamp": "2025-12-23T..."
     }
     """
+    
+    # Import the Groq-based AI service
+    from app.services.ai_service import LocalAIService
     
     try:
         # Validate request
@@ -203,43 +213,32 @@ def chat():
                 "error": "Message too long (max 500 characters)"
             }), 400
         
-        # Check Ollama health
-        if not MedicalChatbotService.check_ollama_health():
-            return jsonify({
-                "success": False,
-                "error": "AI service unavailable. Please ensure Ollama is running."
-            }), 503
-        
-        # Get AI response
-        ai_response = MedicalChatbotService.get_ai_response(message)
-        
-        if not ai_response["success"]:
-            return jsonify(ai_response), 500
+        # Get AI response using Groq Cloud AI
+        logger.info(f"[CHAT] Processing chat request: {message[:50]}...")
+        ai_text = LocalAIService.get_ai_response(message)
         
         # Save chat to database (if ChatHistory model exists)
+        chat_id = None
         try:
             if ChatHistory:
                 chat_entry = ChatHistory(
                     user_id=current_user.id,
                     user_message=message,
-                    ai_response=ai_response["response"],
-                    model_used=ai_response["model"],
+                    ai_response=ai_text,
+                    model_used="groq-llama-3.3",
                     timestamp=datetime.utcnow()
                 )
                 db.session.add(chat_entry)
                 db.session.commit()
                 chat_id = chat_entry.id
-            else:
-                chat_id = None
         except Exception as e:
             logger.warning(f"Could not save chat to database: {str(e)}")
-            chat_id = None
         
         # Return successful response
         return jsonify({
             "success": True,
-            "response": ai_response["response"],
-            "model": ai_response["model"],
+            "response": ai_text,
+            "model": "groq-llama-3.3-70b",
             "user_id": current_user.id,
             "chat_id": chat_id,
             "timestamp": datetime.utcnow().isoformat()
@@ -251,6 +250,8 @@ def chat():
             "success": False,
             "error": f"Internal server error: {str(e)}"
         }), 500
+
+
 
 
 @ai_bp.route('/chat-history', methods=['GET'])

@@ -27,22 +27,22 @@ if __name__ == '__main__':
     
     try:
         from app import create_app
+        from app.events import socketio
         app = create_app(os.getenv('FLASK_ENV', 'development'))
         
         # Run with threadless simple server
-        app.run(
+        socketio.run(app, 
             host='127.0.0.1',
             port=5000,
             debug=True,
             use_reloader=True,
-            use_debugger=True,
-            threaded=False
+            use_debugger=True
         )
     except KeyboardInterrupt:
-        print("\n✋ Server stopped.")
+        print("\n[STOP] Server stopped.")
         sys.exit(0)
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

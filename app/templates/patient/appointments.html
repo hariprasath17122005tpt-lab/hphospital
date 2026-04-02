@@ -1,99 +1,661 @@
 {% extends "base.html" %}
 
+{% block title %}Appointments - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Appointments' %}
+{% set breadcrumb_current = 'My Appointments' %}
+
+{% block extra_css %}
+<style>
+    /* ═══════════════════════════════════════════════════════
+       APPOINTMENTS — LEGEND PRO DARK THEME
+       3D Cards + Immersive Scroll + Premium Table + Neon Status
+       ═══════════════════════════════════════════════════════ */
+
+    .appt-page {
+        position: relative;
+        min-height: 80vh;
+    }
+
+    /* Header */
+    .appt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 36px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .appt-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .appt-header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #22d3ee;
+        box-shadow: 0 0 40px rgba(6, 182, 212, 0.15);
+        animation: apptIconFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes apptIconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-4px) rotate(2deg);
+        }
+    }
+
+    .appt-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #f1f5f9;
+        margin: 0;
+    }
+
+    .appt-subtitle {
+        color: rgba(241, 245, 249, 0.45);
+        font-size: 0.88rem;
+        margin-top: 2px;
+    }
+
+    /* Summary Strip */
+    .appt-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+
+    .appt-stat-card {
+        background: rgba(15, 15, 30, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .appt-stat-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .appt-stat-num {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .appt-stat-label {
+        font-size: 0.72rem;
+        color: rgba(241, 245, 249, 0.4);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Table Card */
+    .appt-table-card {
+        background: rgba(15, 15, 30, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .appt-table-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.3), rgba(99, 102, 241, 0.2), transparent);
+    }
+
+    .appt-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .appt-table-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #f1f5f9;
+    }
+
+    /* Premium Table */
+    .appt-table {
+        width: 100%;
+        border-spacing: 0;
+    }
+
+    .appt-table thead th {
+        padding: 14px 20px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: rgba(241, 245, 249, 0.3);
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        white-space: nowrap;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .appt-table tbody tr {
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+
+    .appt-table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.04);
+    }
+
+    .appt-table tbody td {
+        padding: 18px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+        font-size: 0.88rem;
+    }
+
+    /* Doctor Cell */
+    .appt-doctor-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .appt-doctor-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        font-family: 'Space Grotesk', sans-serif;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .appt-doctor-avatar.av-1 {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .appt-doctor-avatar.av-2 {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+    }
+
+    .appt-doctor-avatar.av-3 {
+        background: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .appt-doctor-avatar.av-4 {
+        background: linear-gradient(135deg, #f43f5e, #fb7185);
+    }
+
+    .appt-doctor-name {
+        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 0.9rem;
+    }
+
+    .appt-doctor-spec {
+        font-size: 0.72rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    /* Date Cell */
+    .appt-date-cell {
+        white-space: nowrap;
+    }
+
+    .appt-date-main {
+        font-weight: 700;
+        color: #f1f5f9;
+        font-size: 0.88rem;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .appt-date-day {
+        font-size: 0.72rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    /* Time Cell */
+    .appt-time-cell {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        color: #f1f5f9;
+    }
+
+    .appt-time-cell i {
+        color: #818cf8;
+        margin-right: 6px;
+    }
+
+    /* Reason Cell */
+    .appt-reason-cell {
+        color: rgba(241, 245, 249, 0.6);
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Status Badges */
+    .appt-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .appt-status::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        animation: statusPulse 2s ease-in-out infinite;
+    }
+
+    .appt-status.confirmed {
+        background: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .appt-status.confirmed::before {
+        background: #34d399;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+
+    .appt-status.pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .appt-status.pending::before {
+        background: #fbbf24;
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+    }
+
+    .appt-status.completed {
+        background: rgba(99, 102, 241, 0.1);
+        color: #818cf8;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .appt-status.completed::before {
+        background: #818cf8;
+        box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+    }
+
+    .appt-status.cancelled {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .appt-status.cancelled::before {
+        background: #f87171;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    @keyframes statusPulse {
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.4;
+            transform: scale(1.3);
+        }
+    }
+
+    /* Action Buttons */
+    .appt-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .appt-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(241, 245, 249, 0.5);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        font-size: 0.82rem;
+    }
+
+    .appt-action:hover {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.3);
+        color: #818cf8;
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .appt-empty {
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .appt-empty-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(6, 182, 212, 0.05));
+        border: 1px solid rgba(6, 182, 212, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #22d3ee;
+        margin: 0 auto 24px;
+        animation: apptIconFloat 4s ease-in-out infinite;
+    }
+
+    .appt-empty h3 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+    }
+
+    .appt-empty p {
+        color: rgba(241, 245, 249, 0.4);
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+    }
+
+    /* Quick Access */
+    .appt-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 40px;
+    }
+
+    .appt-quick-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 20px;
+        background: rgba(15, 15, 30, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 18px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .appt-quick-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(99, 102, 241, 0.2);
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+        color: inherit;
+    }
+
+    .appt-quick-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #f1f5f9;
+    }
+
+    .appt-quick-desc {
+        font-size: 0.75rem;
+        color: rgba(241, 245, 249, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .appt-table-card {
+            overflow-x: auto;
+        }
+
+        .appt-table {
+            min-width: 800px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .appt-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .appt-quick-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="card shadow-lg">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-calendar-alt"></i> My Appointments
-                    </h4>
-                    <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-light btn-sm">
-                        <i class="fas fa-plus"></i> Book New Appointment
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if appointments %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th><i class="fas fa-user-md"></i> Doctor</th>
-                                    <th><i class="fas fa-calendar"></i> Date</th>
-                                    <th><i class="fas fa-clock"></i> Time</th>
-                                    <th><i class="fas fa-stethoscope"></i> Reason</th>
-                                    <th><i class="fas fa-info-circle"></i> Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for appointment in appointments %}
-                                <tr>
-                                    <td>
-                                        <strong>Dr. {{ appointment.doctor.user.username }}</strong>
-                                    </td>
-                                    <td>{{ appointment.appointment_date.strftime('%B %d, %Y') }}</td>
-                                    <td>{{ appointment.appointment_date.strftime('%I:%M %p') }}</td>
-                                    <td>{{ appointment.reason if appointment.reason else '-' }}</td>
-                                    <td>
-                                        {% if appointment.status == 'confirmed' %}
-                                        <span class="badge bg-success">Confirmed</span>
-                                        {% elif appointment.status == 'pending' %}
-                                        <span class="badge bg-warning">Pending</span>
-                                        {% elif appointment.status == 'completed' %}
-                                        <span class="badge bg-info">Completed</span>
-                                        {% else %}
-                                        <span class="badge bg-danger">Cancelled</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if appointment.status != 'cancelled' %}
-                                        <a href="#" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ url_for('patient.chat', doctor_id=appointment.doctor.id) }}"
-                                            class="btn btn-sm btn-outline-success" title="Message Doctor">
-                                            <i class="fas fa-comment-medical"></i>
-                                        </a>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-inbox"></i><br>
-                        You don't have any appointments yet.
-                        <a href="{{ url_for('patient.book_appointment') }}" class="alert-link">Book one now!</a>
-                    </div>
-                    {% endif %}
-                </div>
+<!-- Background -->
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-2"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<div class="appt-page">
+    <!-- Header -->
+    <div class="appt-header pro-reveal">
+        <div class="appt-header-left">
+            <div class="appt-header-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div>
+                <h1 class="appt-title pro-gradient-text">Appointments</h1>
+                <p class="appt-subtitle">Manage your upcoming visits and schedule new appointments</p>
+            </div>
+        </div>
+        <a href="{{ url_for('patient.book_appointment') }}" class="pro-btn pro-btn-primary pro-magnetic">
+            <span class="magnetic-inner" style="display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-plus"></i> Book New Appointment
+            </span>
+        </a>
+    </div>
+
+    <!-- Summary -->
+    <div class="appt-summary-strip pro-stagger-grid">
+        <div class="appt-stat-card">
+            <div class="pro-icon-box cyan" style="width:44px;height:44px;">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <div class="appt-stat-num" style="color:#22d3ee;"
+                    data-count-to="{{ appointments|length if appointments else 0 }}" data-count-duration="1200">0</div>
+                <div class="appt-stat-label">Total</div>
+            </div>
+        </div>
+        <div class="appt-stat-card">
+            <div class="pro-icon-box emerald" style="width:44px;height:44px;">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <div>
+                <div class="appt-stat-num" style="color:#34d399;"
+                    data-count-to="{{ appointments|selectattr('status', 'equalto', 'confirmed')|list|length if appointments else 0 }}"
+                    data-count-duration="1200">0</div>
+                <div class="appt-stat-label">Confirmed</div>
+            </div>
+        </div>
+        <div class="appt-stat-card">
+            <div class="pro-icon-box amber" style="width:44px;height:44px;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <div class="appt-stat-num" style="color:#fbbf24;"
+                    data-count-to="{{ appointments|selectattr('status', 'equalto', 'pending')|list|length if appointments else 0 }}"
+                    data-count-duration="1200">0</div>
+                <div class="appt-stat-label">Pending</div>
             </div>
         </div>
     </div>
+
+    <!-- Table -->
+    <div class="appt-table-card pro-reveal pro-delay-2">
+        <div class="appt-table-header">
+            <span class="appt-table-title"><i class="fas fa-list me-2" style="color:#818cf8;"></i> All
+                Appointments</span>
+        </div>
+
+        {% if appointments %}
+        <table class="appt-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr class="pro-reveal" style="transition-delay:{{ loop.index * 0.06 }}s;">
+                    <td>
+                        <div class="appt-doctor-cell">
+                            <div class="appt-doctor-avatar av-{{ loop.index0 % 4 + 1 }}">
+                                {{ appt.doctor.first_name[0] }}{{ appt.doctor.last_name[0] }}
+                            </div>
+                            <div>
+                                <div class="appt-doctor-name">Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name
+                                    }}</div>
+                                <div class="appt-doctor-spec">{{ appt.doctor.specialization }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="appt-date-cell">
+                        <div class="appt-date-main">{{ appt.appointment_date.strftime('%d %b %Y') }}</div>
+                        <div class="appt-date-day">{{ appt.appointment_date.strftime('%A') }}</div>
+                    </td>
+                    <td class="appt-time-cell">
+                        <i class="far fa-clock"></i>
+                        {{ appt.appointment_date.strftime('%I:%M %p') }}
+                    </td>
+                    <td class="appt-reason-cell">{{ appt.reason or 'General Checkup' }}</td>
+                    <td>
+                        <span class="appt-status {{ appt.status }}">{{ appt.status|capitalize }}</span>
+                    </td>
+                    <td>
+                        <div class="appt-actions">
+                            <button class="appt-action pro-tooltip" data-tooltip="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="appt-action pro-tooltip" data-tooltip="Message Doctor">
+                                <i class="fas fa-comment-medical"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="appt-empty">
+            <div class="appt-empty-icon">
+                <i class="far fa-calendar-times"></i>
+            </div>
+            <h3>No Appointments Found</h3>
+            <p>You don't have any scheduled appointments yet.</p>
+            <a href="{{ url_for('patient.book_appointment') }}" class="pro-btn pro-btn-primary">
+                <i class="fas fa-plus"></i> Book Your First Appointment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Access -->
+    <div class="appt-quick-grid pro-stagger-grid pro-reveal pro-delay-3">
+        <a href="{{ url_for('patient.dashboard') }}" class="appt-quick-card">
+            <div class="pro-icon-box indigo" style="width:40px;height:40px;font-size:0.9rem;">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div>
+                <div class="appt-quick-title">Dashboard</div>
+                <div class="appt-quick-desc">Return to health overview</div>
+            </div>
+        </a>
+        <a href="{{ url_for('patient.prescriptions') }}" class="appt-quick-card">
+            <div class="pro-icon-box emerald" style="width:40px;height:40px;font-size:0.9rem;">
+                <i class="fas fa-pills"></i>
+            </div>
+            <div>
+                <div class="appt-quick-title">Prescriptions</div>
+                <div class="appt-quick-desc">Manage medications</div>
+            </div>
+        </a>
+        <a href="{{ url_for('patient.lab_reports') }}" class="appt-quick-card">
+            <div class="pro-icon-box violet" style="width:40px;height:40px;font-size:0.9rem;">
+                <i class="fas fa-flask"></i>
+            </div>
+            <div>
+                <div class="appt-quick-title">Lab Reports</div>
+                <div class="appt-quick-desc">View diagnostic results</div>
+            </div>
+        </a>
+        <a href="{{ url_for('features.ai_assistant') }}" class="appt-quick-card">
+            <div class="pro-icon-box rose" style="width:40px;height:40px;font-size:0.9rem;">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div>
+                <div class="appt-quick-title">AI Assistant</div>
+                <div class="appt-quick-desc">Health insights & chat</div>
+            </div>
+        </a>
+    </div>
 </div>
-
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
-    }
-
-    .card-header {
-        border-radius: 10px 10px 0 0;
-        padding: 1.5rem;
-    }
-
-    .table {
-        margin-bottom: 0;
-    }
-
-    .badge {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-</style>
 {% endblock %}

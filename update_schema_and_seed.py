@@ -1,6 +1,6 @@
 
 from app import create_app, db
-from app.models.models import Medicine, BloodInventory, Bed, DoctorEvent, NurseTask, Staff
+from app.models.models import Medicine, BloodInventory, Bed, DoctorEvent, Staff
 from datetime import datetime, timedelta
 
 app = create_app()
@@ -66,18 +66,6 @@ with app.app_context():
         for data in events:
             event = DoctorEvent(**data)
             db.session.add(event)
-
-    # --- Seed Nurse Tasks ---
-    if not NurseTask.query.first():
-        print("Seeding Nurse Tasks...")
-        tasks = [
-            {'patient_name': 'John Doe', 'bed_number': 'ICU-04', 'task_description': 'Check Vitals', 'due_time': '10:00 AM', 'status': 'Pending', 'priority': 'High'},
-            {'patient_name': 'Alice Smith', 'bed_number': 'Gen-12', 'task_description': 'Insulin Injection', 'due_time': '10:15 AM', 'status': 'Completed', 'priority': 'Medium'},
-            {'patient_name': 'Bob Jones', 'bed_number': 'ICU-01', 'task_description': 'Change Drip', 'due_time': '10:30 AM', 'status': 'Pending', 'priority': 'High'}
-        ]
-        for data in tasks:
-            task = NurseTask(**data)
-            db.session.add(task)
 
     # --- Seed Staff (HR) ---
     if not Staff.query.first():

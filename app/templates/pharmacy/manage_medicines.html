@@ -1,0 +1,659 @@
+{% extends "base.html" %}
+{% block title %}Pharmacy Medicine Management{% endblock %}
+
+{% block content %}
+<style>
+    /* ========== ADD STOCK MODAL STYLES ========== */
+    .modal-content {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        border-radius: 20px !important;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1) !important;
+    }
+
+    .modal-title {
+        color: #f1f5f9 !important;
+        font-weight: 700 !important;
+    }
+
+    .form-label {
+        color: #cbd5e1 !important;
+        font-weight: 500 !important;
+    }
+
+    .form-control {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        color: #f1f5f9 !important;
+    }
+
+    .form-control:focus {
+        background: rgba(30, 41, 59, 0.9) !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15) !important;
+        color: #f1f5f9 !important;
+    }
+
+    .form-control::placeholder {
+        color: rgba(148, 163, 184, 0.5) !important;
+    }
+
+    /* ========== AUTOCOMPLETE DROPDOWN ========== */
+    .suggestions-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .suggestions-box.show {
+        display: block;
+    }
+
+    .suggestion-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        transition: all 0.15s ease;
+        color: #e2e8f0;
+    }
+
+    .suggestion-item:hover {
+        background: rgba(99, 102, 241, 0.2);
+        border-left: 3px solid #6366f1;
+        padding-left: 13px;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item-name {
+        font-weight: 600;
+        color: #f1f5f9;
+    }
+
+    .suggestion-item-info {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    /* ========== MAIN CONTAINER ========== */
+    .medicine-container {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.5));
+        border-radius: 16px;
+        padding: 28px;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .card {
+        background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+        border: 1px solid rgba(99, 102, 241, 0.15) !important;
+        border-radius: 16px !important;
+    }
+
+    .card-header {
+        background: rgba(99, 102, 241, 0.1) !important;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;
+        color: #a5b4fc !important;
+    }
+
+    .card-body {
+        color: #e2e8f0 !important;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        border: none !important;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    }
+
+    .badge {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+    }
+
+    .alert {
+        border-radius: 12px !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1) !important;
+        color: #34d399 !important;
+    }
+
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1) !important;
+        color: #fca5a5 !important;
+    }
+
+    .alert-info {
+        background: rgba(59, 130, 246, 0.1) !important;
+        color: #93c5fd !important;
+    }
+
+    h3 {
+        color: #f1f5f9 !important;
+    }
+
+    .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    code {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">
+                <i class="fas fa-pills me-2" style="color: #f59e0b;"></i>Pharmacy Medicine Management
+            </h3>
+            <p class="text-muted mb-0">Upload medicines, search with autocomplete, or add them manually</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary px-4 rounded-3" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                <i class="fas fa-plus-circle me-2"></i>Add Stock
+            </button>
+            <span class="badge bg-success px-3 py-2">
+                <i class="fas fa-check-circle me-1"></i>Ready
+            </span>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="globalAlert"></div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Section 1: Upload Medicines -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <strong>
+                        <i class="fas fa-file-upload me-2" style="color: #f59e0b;"></i>1) Upload Medicines (Excel/CSV)
+                    </strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 text-muted small">
+                        <strong>Required columns:</strong>
+                        <code>medicine_name, brand, category, price, stock, supplier</code>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="file" id="medicineFile" class="form-control" accept=".xlsx,.csv">
+                        <button class="btn btn-primary" id="uploadBtn" type="button">
+                            <i class="fas fa-cloud-upload-alt me-1"></i>Upload
+                        </button>
+                    </div>
+                    <div id="uploadResult" class="small"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Search Medicines -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <strong>
+                        <i class="fas fa-search me-2" style="color: #f59e0b;"></i>2) Search Medicines
+                    </strong>
+                </div>
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <input type="text" id="medicine-search" class="form-control" placeholder="Type medicine name... (e.g., Paracetamol)">
+                        <div id="searchDropdown" class="suggestions-box"></div>
+                    </div>
+                    <div class="p-3 border rounded" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2) !important;">
+                        <div id="selectedMedicine" class="text-muted small">
+                            <i class="fas fa-info-circle me-1"></i>Select a medicine from results
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Add Medicine Manually -->
+    <div class="row g-4 mt-3">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <strong>
+                        <i class="fas fa-plus-circle me-2" style="color: #f59e0b;"></i>3) Add Medicine Manually
+                    </strong>
+                </div>
+                <div class="card-body">
+                    <form id="addMedicineForm" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g., Paracetamol" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Brand</label>
+                            <input type="text" name="brand" class="form-control" placeholder="e.g., Calpol">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <input type="text" name="category" class="form-control" placeholder="e.g., Analgesic">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Price (₹) *</label>
+                            <input type="number" step="0.01" min="0" name="price" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Stock Qty *</label>
+                            <input type="number" min="0" name="stock" class="form-control" placeholder="0" value="0" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" name="supplier" class="form-control" placeholder="e.g., MediCare Inc">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="month" name="expiry_date" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Batch Number</label>
+                            <input type="text" name="batch_number" class="form-control" placeholder="e.g., BATCH001">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Manufacturer</label>
+                            <input type="text" name="manufacturer" class="form-control" placeholder="e.g., Sun Pharma">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check me-1"></i>Add Medicine
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== ADD STOCK MODAL (CRITICAL) ========== -->
+<div class="modal fade" id="addStockModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2" style="color: #f59e0b;"></i>Add Stock
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Autocomplete Search Field -->
+                <div class="mb-3">
+                    <label class="form-label">Search Medicine *</label>
+                    <div class="position-relative">
+                        <input 
+                            type="text" 
+                            id="modal-medicine-search" 
+                            class="form-control" 
+                            placeholder="Type medicine name... (min 2 chars)"
+                            autocomplete="off"
+                        >
+                        <div id="modal-suggestions-box" class="suggestions-box"></div>
+                    </div>
+                    <small class="text-muted">Start typing to see suggestions</small>
+                </div>
+
+                <!-- Hidden Field for Selected Medicine ID -->
+                <input type="hidden" id="modal-selected-medicine-id">
+
+                <!-- Selected Medicine Info -->
+                <div id="modal-medicine-info" class="alert alert-info d-none" role="alert">
+                    <strong>Selected:</strong> <span id="modal-selected-medicine-name">—</span><br>
+                    <small>Brand: <span id="modal-selected-medicine-brand">—</span></small><br>
+                    <small>Current Stock: <span id="modal-selected-medicine-stock">—</span> units</small><br>
+                    <small>Price: ₹<span id="modal-selected-medicine-price">—</span></small>
+                </div>
+
+                <!-- Stock Quantity to Add -->
+                <div class="mb-3">
+                    <label class="form-label">Quantity to Add *</label>
+                    <input type="number" id="modal-quantity" class="form-control" min="1" value="1" required>
+                    <small class="text-muted">Enter the number of units to add</small>
+                </div>
+
+                <!-- Optional: Cost/Notes -->
+                <div class="mb-3">
+                    <label class="form-label">Notes (Optional)</label>
+                    <input type="text" id="modal-notes" class="form-control" placeholder="e.g., Batch #12345">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal-submit-btn">
+                    <i class="fas fa-plus me-1"></i>Add Stock
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    function showAlert(message, type = 'info') {
+        const el = document.getElementById('globalAlert');
+        el.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        setTimeout(() => {
+            el.innerHTML = '';
+        }, 5000);
+    }
+
+    // ========== SECTION 1: FILE UPLOAD ==========
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+        const fileInput = document.getElementById('medicineFile');
+        if (!fileInput.files.length) {
+            showAlert('Please choose a file first.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('uploadBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Uploading...';
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/pharmacy/upload-medicines', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'X-CSRFToken': csrfToken },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('uploadResult').innerHTML =
+                    `<span class="text-success"><i class="fas fa-check-circle me-1"></i>Inserted: ${data.inserted}, Updated: ${data.updated}</span>`;
+                showAlert(`✅ Upload complete! Added ${data.inserted}, Updated ${data.updated}`, 'success');
+                fileInput.value = '';
+            } else {
+                showAlert(data.error || 'Upload failed.', 'danger');
+            }
+        } catch (err) {
+            showAlert(`Error: ${err.message}`, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1"></i>Upload';
+        }
+    });
+
+    // ========== SECTION 2: MAIN SEARCH & DROPDOWN ==========
+    const searchInput = document.getElementById('medicine-search');
+    const dropdown = document.getElementById('searchDropdown');
+    let searchTimer = null;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        const q = searchInput.value.trim();
+
+        if (q.length < 2) {
+            dropdown.classList.remove('show');
+            return;
+        }
+
+        searchTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/pharmacy/search?q=${encodeURIComponent(q)}`);
+                const items = await res.json();
+
+                if (items.length === 0) {
+                    dropdown.innerHTML = '<div class="suggestion-item">No medicines found</div>';
+                    dropdown.classList.add('show');
+                    return;
+                }
+
+                dropdown.innerHTML = items.map(item => `
+                    <div class="suggestion-item" onclick="selectMainSearchItem(${item.id}, '${item.name}', '${item.brand || ''}', '${item.price || ''}', '${item.stock || 0}')">
+                        <div class="suggestion-item-name">${item.name}</div>
+                        <div class="suggestion-item-info">
+                            ${item.brand ? `Brand: ${item.brand} • ` : ''}Price: ₹${item.price || '—'} • Stock: ${item.stock || 0} units
+                        </div>
+                    </div>
+                `).join('');
+
+                dropdown.classList.add('show');
+            } catch (err) {
+                console.error('Search error:', err);
+            }
+        }, 250);
+    });
+
+    function selectMainSearchItem(id, name, brand, price, stock) {
+        document.getElementById('medicine-search').value = name;
+        document.getElementById('searchDropdown').classList.remove('show');
+        document.getElementById('selectedMedicine').innerHTML = `
+            <div class="row">
+                <div class="col-6"><strong>Name:</strong> ${name}</div>
+                <div class="col-6"><strong>Brand:</strong> ${brand || '—'}</div>
+                <div class="col-6"><strong>Price:</strong> ₹${price || '—'}</div>
+                <div class="col-6"><strong>Stock:</strong> ${stock || 0} units</div>
+            </div>
+        `;
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput && e.target !== dropdown) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // ========== SECTION 3: MANUAL ADD FORM ==========
+    let addMedicineInProgress = false;  // Prevent double-submission
+    
+    document.getElementById('addMedicineForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Prevent double submission
+        if (addMedicineInProgress) {
+            showAlert('Request already in progress. Please wait...', 'warning');
+            return;
+        }
+        
+        addMedicineInProgress = true;
+        
+        const fd = new FormData(e.target);
+        const payload = {
+            name: fd.get('name'),
+            brand: fd.get('brand'),
+            category: fd.get('category'),
+            price: fd.get('price'),
+            stock: fd.get('stock'),
+            supplier: fd.get('supplier'),
+            expiry_date: fd.get('expiry_date'),
+            batch_number: fd.get('batch_number'),
+            manufacturer: fd.get('manufacturer')
+        };
+
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adding...';
+
+        try {
+            const res = await fetch('/pharmacy/add-medicine', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                showAlert(`✅ ${data.message || 'Medicine added successfully'}`, 'success');
+                e.target.reset();
+                // Refresh page after 1 second to show updated inventory
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert(data.error || 'Failed to add medicine.', 'danger');
+            }
+        } catch (err) {
+            showAlert(`Error: ${err.message}`, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Add Medicine';
+            addMedicineInProgress = false;
+        }
+    });
+
+    // ========== SECTION 4: ADD STOCK MODAL (CRITICAL AUTOCOMPLETE) ==========
+    const modalSearchInput = document.getElementById('modal-medicine-search');
+    const modalSuggestionsBox = document.getElementById('modal-suggestions-box');
+    let modalSearchTimer = null;
+
+    modalSearchInput.addEventListener('input', () => {
+        clearTimeout(modalSearchTimer);
+        const q = modalSearchInput.value.trim();
+
+        if (q.length < 2) {
+            modalSuggestionsBox.classList.remove('show');
+            return;
+        }
+
+        modalSearchTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/pharmacy/search?q=${encodeURIComponent(q)}`);
+                const items = await res.json();
+
+                if (items.length === 0) {
+                    modalSuggestionsBox.innerHTML = '<div class="suggestion-item">No medicines found</div>';
+                    modalSuggestionsBox.classList.add('show');
+                    return;
+                }
+
+                modalSuggestionsBox.innerHTML = items.map(item => `
+                    <div class="suggestion-item" onclick="selectModalMedicine('${item.id}', '${item.name}', '${item.brand || ''}', '${item.price || ''}', '${item.stock || 0}')">
+                        <div class="suggestion-item-name">${item.name}</div>
+                        <div class="suggestion-item-info">
+                            ${item.brand ? `Brand: ${item.brand} • ` : ''}Price: ₹${item.price || '—'} • Stock: ${item.stock || 0}
+                        </div>
+                    </div>
+                `).join('');
+
+                modalSuggestionsBox.classList.add('show');
+            } catch (err) {
+                console.error('Modal search error:', err);
+            }
+        }, 250);
+    });
+
+    function selectModalMedicine(id, name, brand, price, stock) {
+        document.getElementById('modal-selected-medicine-id').value = id;
+        document.getElementById('modal-medicine-search').value = name;
+        document.getElementById('modal-suggestions-box').classList.remove('show');
+
+        // Show medicine info
+        const infoDiv = document.getElementById('modal-medicine-info');
+        infoDiv.classList.remove('d-none');
+        document.getElementById('modal-selected-medicine-name').textContent = name;
+        document.getElementById('modal-selected-medicine-brand').textContent = brand || 'N/A';
+        document.getElementById('modal-selected-medicine-stock').textContent = stock;
+        document.getElementById('modal-selected-medicine-price').textContent = price;
+
+        // Reset quantity to 1
+        document.getElementById('modal-quantity').value = 1;
+    }
+
+    // Close modal suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== modalSearchInput && e.target !== modalSuggestionsBox) {
+            modalSuggestionsBox.classList.remove('show');
+        }
+    });
+
+    // Modal Submit Button
+    document.getElementById('modal-submit-btn').addEventListener('click', async () => {
+        const medId = document.getElementById('modal-selected-medicine-id').value;
+        const qty = document.getElementById('modal-quantity').value;
+
+        if (!medId) {
+            showAlert('Please select a medicine first.', 'warning');
+            return;
+        }
+
+        if (!qty || parseInt(qty) < 1) {
+            showAlert('Please enter a valid quantity.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('modal-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adding...';
+
+        try {
+            const res = await fetch('/pharmacy/add-stock', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    medicine_id: medId,
+                    quantity: qty,
+                    notes: document.getElementById('modal-notes').value
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                showAlert(`✅ Added ${qty} units to stock!`, 'success');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addStockModal'));
+                if (modal) modal.hide();
+                // Reset form
+                document.getElementById('modal-medicine-search').value = '';
+                document.getElementById('modal-selected-medicine-id').value = '';
+                document.getElementById('modal-medicine-info').classList.add('d-none');
+                document.getElementById('modal-quantity').value = 1;
+                document.getElementById('modal-notes').value = '';
+            } else {
+                showAlert(data.error || 'Failed to add stock.', 'danger');
+            }
+        } catch (err) {
+            showAlert(`Error: ${err.message}`, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus me-1"></i>Add Stock';
+        }
+    });
+
+</script>
+{% endblock %}

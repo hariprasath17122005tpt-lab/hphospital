@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+
+{% block title %}Nurse Registration — CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth-nextgen.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-background-grid"></div>
+
+<div class="auth-page">
+    <div class="auth-shell">
+        <div class="auth-grid">
+            <!-- LEFT HERO SECTION -->
+            <section class="auth-hero">
+                <div class="auth-brand-badge">
+                    <div class="auth-brand-icon"
+                        style="background: linear-gradient(135deg, #34d399, #059669);">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <div class="auth-brand-text"
+                        style="background: linear-gradient(135deg, #34d399, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Nurse Registration</div>
+                </div>
+
+                <h1 class="auth-title">
+                    Join the<br>
+                    CarePoint<br>
+                    Nursing Team.
+                </h1>
+
+                <p class="auth-subtitle">
+                    Register to access the Nurse Portal. Your account will need to be verified
+                    by a hospital administrator before you can log in.
+                </p>
+
+                <a href="{{ url_for('auth.nurse_login') }}" class="auth-back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Nurse Login</span>
+                </a>
+            </section>
+
+            <!-- RIGHT PANEL -->
+            <aside class="auth-panel">
+                <div class="panel-header">
+                    <div class="panel-icon-wrapper"
+                        style="background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 10px 40px rgba(52, 211, 153, 0.3);">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h2 class="panel-title">Create Nurse Account</h2>
+                    <p class="panel-subtitle">Fill in your details to register</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' }}"
+                    role="alert">
+                    <i class="fas fa-{{ 'exclamation-circle' if category == 'danger' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()">x</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <!-- Registration Form -->
+                <form class="auth-form" method="POST" action="{{ url_for('auth.nurse_register') }}" accept-charset="UTF-8">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="Choose a username" required autofocus autocomplete="username">
+                            <i class="fas fa-user form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="form-control-wrapper">
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Choose a secure password" required autocomplete="new-password">
+                            <i class="fas fa-lock form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="first_name" name="first_name"
+                                placeholder="Your first name" required>
+                            <i class="fas fa-id-card form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="last_name" name="last_name"
+                                placeholder="Your last name" required>
+                            <i class="fas fa-id-card form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registration_number" class="form-label">Nursing Registration Number</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="registration_number" name="registration_number"
+                                placeholder="e.g., RN-12345" required>
+                            <i class="fas fa-certificate form-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialization" class="form-label">Specialization (Optional)</label>
+                        <div class="form-control-wrapper">
+                            <input type="text" class="form-control" id="specialization" name="specialization"
+                                placeholder="e.g., ICU, Pediatric, Surgical">
+                            <i class="fas fa-stethoscope form-icon"></i>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit"
+                        style="background: linear-gradient(135deg, #34d399, #059669);">
+                        <span class="btn-text">
+                            <i class="fas fa-user-plus"></i>
+                            Register
+                        </span>
+                    </button>
+                </form>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}

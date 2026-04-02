@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+
+{% block title %}Choose Login - CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container auth-shell">
+        <div class="auth-grid w-100">
+            <section class="auth-hero">
+                <div class="auth-kicker">
+                    <span class="badge text-bg-primary" style="border-radius: 999px;">Secure Access</span>
+                    <span>Unified entry for every role</span>
+                </div>
+
+                <h1 class="auth-title">One platform. Three secure portals.</h1>
+                <p class="auth-subtitle">
+                    Patients manage care journeys, doctors run clinical workflows, and hosts administer system
+                    operations from a single trusted environment.
+                </p>
+
+                <div class="auth-metrics">
+                    <div class="auth-metric">
+                        <div class="value">Always On</div>
+                        <div class="label">24/7 access</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Encrypted</div>
+                        <div class="label">Protected sessions</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Role-Based</div>
+                        <div class="label">Scoped controls</div>
+                    </div>
+                </div>
+
+                <div class="auth-footnote">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <a class="text-decoration-none fw-bold" href="{{ url_for('main.index') }}">Back to Home</a>
+                </div>
+            </section>
+
+            <aside class="auth-panel">
+                <div class="panel-head">
+                    <div class="auth-badge primary"><i class="fas fa-heartbeat"></i></div>
+                    <div>
+                        <h3>Choose Portal</h3>
+                        <p>Select your role to continue.</p>
+                    </div>
+                </div>
+
+                <div class="auth-choice">
+                    <a class="choice" href="{{ url_for('auth.patient_login') }}">
+                        <div class="auth-badge primary" style="width: 42px; height: 42px; border-radius: 14px;">
+                            <i class="fas fa-user-injured"></i>
+                        </div>
+                        <div class="meta">
+                            <div class="name">Patient Portal</div>
+                            <div class="desc">Appointments, reports, messages, and AI guidance.</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-primary"></i>
+                    </a>
+
+                    <a class="choice" href="{{ url_for('auth.doctor_login') }}">
+                        <div class="auth-badge success" style="width: 42px; height: 42px; border-radius: 14px;">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="meta">
+                            <div class="name">Doctor Portal</div>
+                            <div class="desc">Patients, schedules, insights, and clinical tools.</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-success"></i>
+                    </a>
+
+                    <a class="choice" href="{{ url_for('auth.host_login') }}">
+                        <div class="auth-badge danger" style="width: 42px; height: 42px; border-radius: 14px;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="meta">
+                            <div class="name">Host Portal</div>
+                            <div class="desc">Approvals, audit logs, settings, and governance.</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-danger"></i>
+                    </a>
+                </div>
+
+                <div class="auth-footnote auth-links">
+                    New patient?
+                    <a href="{{ url_for('auth.patient_register') }}" class="text-primary">Create account</a>
+                    <span class="mx-2">&bull;</span>
+                    New doctor?
+                    <a href="{{ url_for('auth.doctor_register') }}" class="text-success">Register</a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Queue Display — CarePoint{% endblock %}
+
+{% block extra_css %}
+<style>
+    .queue-display-body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        min-height: 100vh;
+    }
+
+    .queue-header {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        padding: 24px 40px;
+    }
+
+    .queue-header h1 {
+        color: #f1f5f9;
+        font-weight: 800;
+        font-size: 2rem;
+    }
+
+    .queue-time {
+        color: #94a3b8;
+        font-size: 1.1rem;
+    }
+
+    .queue-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        border-radius: 16px;
+        padding: 20px 24px;
+        transition: all 0.3s ease;
+    }
+
+    .queue-card.in-consultation {
+        border-color: rgba(59, 130, 246, 0.4);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        animation: pulseGlow 2s ease-in-out infinite;
+    }
+
+    .queue-card.waiting {
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    @keyframes pulseGlow {
+
+        0%,
+        100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        50% {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.25);
+        }
+    }
+
+    .token-big {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .now-serving {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .now-serving-label {
+        color: #60a5fa;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .now-serving .token-big {
+        font-size: 4rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="queue-display-body">
+    <!-- Header -->
+    <div class="queue-header d-flex justify-content-between align-items-center">
+        <h1><i class="fas fa-hospital-alt me-3" style="color: #06b6d4;"></i>CarePoint — Patient Queue</h1>
+        <div class="queue-time" id="currentTime"></div>
+    </div>
+
+    <div class="container-fluid px-5 py-4">
+        <!-- Now Serving -->
+        {% set serving = queue | selectattr('status', 'equalto', 'In Consultation') | list %}
+        {% if serving %}
+        <div class="now-serving text-center">
+            <div class="now-serving-label mb-2"><i class="fas fa-bell me-2"></i>Now Serving</div>
+            {% for s in serving %}
+            <div class="d-inline-block mx-4">
+                <div class="token-big">#{{ s.token_number }}</div>
+                <div style="color: #e2e8f0; font-size: 1.1rem;">{{ s.patient.first_name }} {{ s.patient.last_name }}
+                </div>
+                {% if s.doctor %}
+                <div class="small" style="color: #94a3b8;">Dr. {{ s.doctor.first_name }} {{ s.doctor.last_name }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Waiting Queue -->
+        {% set waiting_list = queue | selectattr('status', 'equalto', 'Waiting') | list %}
+        {% if waiting_list %}
+        <h4 class="fw-bold mb-3" style="color: #fbbf24;"><i class="fas fa-hourglass-half me-2"></i>Waiting ({{
+            waiting_list|length }})</h4>
+        <div class="row g-3 mb-4">
+            {% for w in waiting_list %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="queue-card waiting">
+                    <div class="d-flex align-items-center">
+                        <span class="token-big me-3" style="font-size: 1.8rem;">#{{ w.token_number }}</span>
+                        <div>
+                            <div class="fw-bold" style="color: #e2e8f0;">{{ w.patient.first_name }} {{
+                                w.patient.last_name }}</div>
+                            {% if w.doctor %}
+                            <div class="small" style="color: #94a3b8;">Dr. {{ w.doctor.first_name }} {{
+                                w.doctor.last_name }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not serving and not waiting_list %}
+        <div class="text-center py-5">
+            <div style="font-size: 5rem; color: rgba(6,182,212,0.2);"><i class="fas fa-check-circle"></i></div>
+            <h3 style="color: #94a3b8;" class="mt-3">All clear! No patients currently in queue.</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live clock
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+        }) + '  •  ' + now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => location.reload(), 30000);
+</script>
+{% endblock %}

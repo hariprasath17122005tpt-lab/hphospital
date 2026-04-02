@@ -1,0 +1,64 @@
+<!-- Pharmacist Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{{ url_for('pharmacy_ops.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i class="fas fa-prescription-bottle-alt"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Pharmacy</span>
+
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'pharmacy_ops.dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}?status=Pending" class="sidebar-link">
+            <i class="fas fa-clock"></i>
+            Pending Orders
+        </a>
+
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}?status=Dispensed" class="sidebar-link">
+            <i class="fas fa-check-circle"></i>
+            Dispensed
+        </a>
+
+        <a href="{{ url_for('pharmacy_ops.patient_history_page') }}"
+            class="sidebar-link {% if request.endpoint == 'pharmacy_ops.patient_history_page' %}active{% endif %}">
+            <i class="fas fa-user-clock"></i>
+            Patient History
+        </a>
+
+        <span class="sidebar-section-label">Inventory</span>
+
+        <a href="{{ url_for('features.pharmacy') }}"
+            class="sidebar-link {% if request.endpoint == 'features.pharmacy' %}active{% endif %}">
+            <i class="fas fa-capsules"></i>
+            Medicine Stock
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ current_user.username }}</div>
+            <div class="sidebar-user-role">Pharmacist</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>

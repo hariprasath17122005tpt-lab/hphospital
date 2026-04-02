@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
+import random
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, session
 from flask_login import login_required, current_user
-from app.models.models import (db, Patient, HealthData, Appointment, Prescription,
+from app.models.models import (db, Patient, HealthData, PatientVitals, Appointment, Prescription,
                                Message, DietPlan, ExercisePlan, Doctor, MedicalImage,
-                               Billing, LabReport)
+                               Billing, LabReport, LabOrder)
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -17,6 +18,11 @@ except (ImportError, ModuleNotFoundError, KeyboardInterrupt):
 from app.routes.auth import patient_required
 from datetime import datetime, timedelta
 import os
+import random
+import json
+import re
+from types import SimpleNamespace
+from sqlalchemy import text, inspect
 from werkzeug.utils import secure_filename
 
 patient_bp = Blueprint('patient', __name__, url_prefix='/patient')
@@ -187,7 +193,7 @@ def generate_personalized_diet_plan(patient, health_data):
             'Week 2 (Variety)': generate_days(2, 'Diabetes'),
             'Week 3 (Boost)': generate_days(3, 'Diabetes')
         }
-        lab_insights.append({'test': 'Fasting Sugar', 'value': f"{health_data.fasting_sugar} mg/dL",'status': 'High' if health_data.fasting_sugar > 100 else 'Normal','diet_rule': 'Complex Carbs Only', 'reason': 'Prevents insulin spikes.'})
+        lab_insights.append({'test': 'Fasting Sugar', 'value': f"{health_data.fasting_sugar} mg/dL",'status': 'High' if (health_data.fasting_sugar or 0) > 100 else 'Normal','diet_rule': 'Complex Carbs Only', 'reason': 'Prevents insulin spikes.'})
         consequences = ['Persistent hyperglycemia', 'Nerve damage risk', 'Kidney strain']
         superfood = {'name': 'Bitter Melon (Karela)', 'benefit': 'Contains compounds that act like insulin.'}
         why_this_food = "Focuses on complex carbs to prevent spikes."
@@ -320,36 +326,297 @@ def generate_personalized_diet_plan(patient, health_data):
 @patient_required
 def dashboard():
     """Patient dashboard"""
-    patient = current_user.patient
-    
-    # Get latest health data
-    latest_health = HealthData.query.filter_by(patient_id=patient.id).order_by(
-        HealthData.recorded_at.desc()).first()
-    
-    # Get upcoming appointments
-    upcoming_appointments = Appointment.query.filter_by(patient_id=patient.id).filter(
-        Appointment.appointment_date > datetime.utcnow()).order_by(
-        Appointment.appointment_date).limit(5).all()
-    
-    # Get unread messages count
-    unread_messages = Message.query.filter_by(patient_id=patient.id, is_read=False).count()
-    
-    # Get latest prescription
-    latest_prescription = Prescription.query.filter_by(patient_id=patient.id).order_by(
-        Prescription.prescribed_at.desc()).first()
 
-    # Get Express Check-in history
-    from app.models.models import PatientCheckIn
-    my_checkins = PatientCheckIn.query.filter_by(patient_id=patient.id).order_by(
-        PatientCheckIn.created_at.desc()).limit(5).all()
+    try:
+        patient = current_user.patient
+        
+        # Initialize default values to prevent undefined errors
+        health_score = 0
+        h_status = {
+            'heart': {'label': 'No Data', 'class': 'secondary'},
+            'bp': {'label': 'No Data', 'class': 'secondary'},
+            'sugar': {'label': 'No Data', 'class': 'secondary'},
+            'sleep': {'label': 'No Data', 'class': 'secondary'}
+        }
+        trends = {
+            'heart': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+            'bp': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+            'sugar': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+            'sleep': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'}
+        }
+        
+        # Get latest 2 health records for trend analysis
+        last_two_health = HealthData.query.filter_by(patient_id=patient.id).order_by(
+            HealthData.recorded_at.desc()).limit(2).all()
+        
+        latest_health = last_two_health[0] if last_two_health else None
+        previous_health = last_two_health[1] if len(last_two_health) > 1 else None
+
+        # Staff-entered vitals (for backward compatibility and dashboard sync)
+        latest_vitals = PatientVitals.query.filter_by(patient_id=patient.id).order_by(
+            PatientVitals.recorded_at.desc()).first()
+
+        # Choose a source for displayed vitals: prefer HealthData for AI metrics, fallback to nurse vitals
+        displayed_vitals = latest_health if latest_health else latest_vitals
+
+        # Process Health Data if available
+        if latest_health:
+            # 1. Update Health Score
+            d_risk = latest_health.diabetes_risk or 0
+            h_risk = latest_health.heart_disease_risk or 0
+            hy_risk = latest_health.hypertension_risk or 0
+             
+            avg_risk = (d_risk + h_risk + hy_risk) / 3
+            lifestyle_bonus = 0
+            if latest_health.smoking is False: lifestyle_bonus += 5
+            if latest_health.alcohol is False: lifestyle_bonus += 5
+            if (latest_health.exercise_minutes or 0) > 30: lifestyle_bonus += 5
+             
+            health_score = int(100 - avg_risk + lifestyle_bonus)
+            health_score = max(0, min(100, health_score)) 
+            
+            # 2. Update Statuses
+            # Heart Rate
+            hr = latest_health.heart_rate or 0
+            if 60 <= hr <= 100:
+                h_status['heart'] = {'label': 'Normal', 'class': 'success'}
+            else:
+                h_status['heart'] = {'label': 'Attention', 'class': 'warning'}
+                
+            # BP
+            sys_bp = latest_health.systolic_bp or 0
+            dia_bp = latest_health.diastolic_bp or 0
+            if 90 <= sys_bp <= 120 and 60 <= dia_bp <= 80:
+                h_status['bp'] = {'label': 'Optimal', 'class': 'info'}
+            elif sys_bp > 140 or dia_bp > 90:
+                h_status['bp'] = {'label': 'High', 'class': 'danger'}
+            else:
+                h_status['bp'] = {'label': 'Normal', 'class': 'success'}
+                
+            # Sugar (Fasting)
+            sugar = latest_health.fasting_sugar or 0
+            if sugar < 100:
+                h_status['sugar'] = {'label': 'Normal', 'class': 'success'}
+            elif sugar < 125:
+                 h_status['sugar'] = {'label': 'Pre-Diabetic', 'class': 'warning'}
+            else:
+                 h_status['sugar'] = {'label': 'High', 'class': 'danger'}
+                 
+            # Sleep
+            sleep = latest_health.sleep_hours or 0
+            if 7 <= sleep <= 9:
+                h_status['sleep'] = {'label': 'Optimal', 'class': 'success'}
+            elif sleep > 0:
+                h_status['sleep'] = {'label': 'Review', 'class': 'warning'}
+
+        # 3. Calculate Trends
+        if latest_health and previous_health:
+            # Helper for trend calculation
+            def calc_trend(curr, prev, unit=""):
+                if curr is None or prev is None: return {'msg': 'Insufficient Data', 'icon': 'fa-minus', 'class': 'change-neutral'}
+                diff = curr - prev
+                if diff > 0:
+                    return {'msg': f"+{diff}{unit} vs last", 'icon': 'fa-arrow-up', 'class': 'change-up'}
+                elif diff < 0:
+                    return {'msg': f"{diff}{unit} vs last", 'icon': 'fa-arrow-down', 'class': 'change-down'}
+                else:
+                    return {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'}
+
+            trends['heart'] = calc_trend(latest_health.heart_rate, previous_health.heart_rate, " bpm")
+            trends['bp'] = calc_trend(latest_health.systolic_bp, previous_health.systolic_bp, "")
+            trends['sugar'] = calc_trend(latest_health.fasting_sugar, previous_health.fasting_sugar, "")
+            trends['sleep'] = calc_trend(latest_health.sleep_hours, previous_health.sleep_hours, "h")
+        
+        # Get upcoming appointments
+        upcoming_appointments = Appointment.query.filter_by(patient_id=patient.id).filter(
+            Appointment.appointment_date > datetime.utcnow()).order_by(
+            Appointment.appointment_date).limit(5).all()
+        
+        # Get unread messages count
+        unread_messages = Message.query.filter_by(patient_id=patient.id, is_read=False).count()
+        
+        # Get latest prescription using schema-adaptive SQL (avoids ORM column mismatch crashes)
+        cols = {c['name'] for c in inspect(db.engine).get_columns('prescriptions')}
+        med_expr = 'medicines' if 'medicines' in cols else ("medicine_name" if 'medicine_name' in cols else "''")
+        dosage_expr = 'dosage' if 'dosage' in cols else "''"
+        frequency_expr = 'frequency' if 'frequency' in cols else "''"
+        instructions_expr = 'instructions' if 'instructions' in cols else "''"
+        prescribed_expr = 'prescribed_at' if 'prescribed_at' in cols else ('created_at' if 'created_at' in cols else 'id')
+
+        row = db.session.execute(
+            text(f"""
+                SELECT
+                    id,
+                    {med_expr} AS medicines,
+                    {dosage_expr} AS dosage,
+                    {frequency_expr} AS frequency,
+                    {instructions_expr} AS instructions,
+                    {prescribed_expr} AS prescribed_at
+                FROM prescriptions
+                WHERE patient_id = :patient_id
+                ORDER BY {prescribed_expr} DESC
+                LIMIT 1
+            """),
+            {'patient_id': patient.id}
+        ).mappings().first()
+        latest_prescription = SimpleNamespace(**row) if row else None
+
+        def _parse_medicines(medicines_raw):
+            if not medicines_raw:
+                return []
+            if isinstance(medicines_raw, list):
+                return [str(m).strip() for m in medicines_raw if str(m).strip()]
+            text = str(medicines_raw).strip()
+            if not text:
+                return []
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, list):
+                    return [str(m).strip() for m in parsed if str(m).strip()]
+                if isinstance(parsed, str):
+                    text = parsed.strip()
+            except Exception:
+                pass
+            parts = re.split(r'[,\n;]+', text)
+            return [p.strip() for p in parts if p.strip()]
+
+        today_meds = _parse_medicines(latest_prescription.medicines) if latest_prescription else []
+        med_details_parts = []
+        if latest_prescription:
+            if latest_prescription.dosage:
+                med_details_parts.append(latest_prescription.dosage)
+            if latest_prescription.frequency:
+                med_details_parts.append(latest_prescription.frequency)
+            if latest_prescription.instructions:
+                med_details_parts.append(latest_prescription.instructions)
+        med_details_text = " | ".join(med_details_parts) if med_details_parts else "As directed by your doctor"
+        medication_entries = [{'name': name, 'details': med_details_text} for name in today_meds]
     
-    return render_template('patient/dashboard.html',
-                         patient=patient,
-                         latest_health=latest_health,
-                         upcoming_appointments=upcoming_appointments,
-                         unread_messages=unread_messages,
-                         latest_prescription=latest_prescription,
-                         my_checkins=my_checkins)
+        # Get recent lab reports
+        recent_reports = LabReport.query.filter_by(patient_id=patient.id).order_by(
+            LabReport.conducted_at.desc()).limit(10).all()
+    
+        # Get health data history for charts (last 7 entries)
+        health_records = HealthData.query.filter_by(patient_id=patient.id).filter(
+            HealthData.recorded_at >= (datetime.now() - timedelta(days=7))
+        ).order_by(HealthData.recorded_at.asc()).all()
+    
+        # Process into Last 7 Days structure
+        today = datetime.now().date()
+        last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
+        
+        chart_dates = [d.strftime('%a') for d in last_7_days] # e.g. "Mon", "Tue"
+        
+        # Map data by date (key: date object)
+        health_map = {h.recorded_at.date(): h for h in health_records}
+        
+        chart_heart_rate = []
+        chart_bp_sys = []
+        chart_sugar = []
+        chart_sleep = []
+        
+        for d in last_7_days:
+            if d in health_map:
+                h = health_map[d]
+                chart_heart_rate.append(h.heart_rate or 0)
+                chart_bp_sys.append(h.systolic_bp or 0)
+                chart_sugar.append(h.fasting_sugar or 0)
+                chart_sleep.append(h.sleep_hours or 0)
+            else:
+                # No data for this day -> 0 (Flat line)
+                chart_heart_rate.append(0)
+                chart_bp_sys.append(0)
+                chart_sugar.append(0)
+                chart_sleep.append(0)
+    
+        # Get Express Check-in history
+        from app.models.models import PatientCheckIn
+        my_checkins = PatientCheckIn.query.filter_by(patient_id=patient.id).order_by(
+            PatientCheckIn.created_at.desc()).limit(5).all()
+        
+        # Get patient's recent check-ins for Express Check-in widget
+        my_checkins = PatientCheckIn.query.filter_by(patient_id=patient.id).order_by(
+            PatientCheckIn.created_at.desc()).limit(5).all()
+        
+        # Total counts for Hero Section
+        total_reports = LabReport.query.filter_by(patient_id=patient.id).count() + LabOrder.query.filter_by(
+            patient_id=patient.id).count()
+        
+        return render_template('patient/dashboard_enhanced.html',
+                             patient=patient,
+                             latest_health=latest_health,
+                             appointments=upcoming_appointments,
+                             upcoming_appointments=upcoming_appointments,
+                             unread_messages=unread_messages,
+                             latest_prescription=latest_prescription,
+                             medication_entries=medication_entries,
+                             recent_reports=recent_reports,
+                             health_history=health_records,
+                             chart_dates=chart_dates,
+                             chart_heart_rate=chart_heart_rate,
+                             chart_bp_sys=chart_bp_sys,
+                             chart_sugar=chart_sugar,
+                             chart_sleep=chart_sleep,
+                             my_checkins=my_checkins,
+                             health_score=health_score,
+                             total_reports=total_reports,
+                             h_status=h_status,
+                             trends=trends,
+                             current_date=datetime.now(),
+                             hide_sidebar=True)
+    except Exception as e:
+        import traceback
+        with open('debug_dashboard_error.txt', 'w') as f:
+            f.write(str(e) + '\n' + traceback.format_exc())
+        return f"FIXED DASHBOARD ERROR [dashboard_v3]: {str(e)}", 500
+
+@patient_bp.route('/consent', methods=['GET'])
+@login_required
+@patient_required
+def consent():
+    """Digital signature and consent forms page"""
+    patient = current_user.patient
+    # Import here to avoid circular dependencies if any
+    from app.models.models import PatientConsent
+    
+    # Get all past signed consents
+    past_consents = PatientConsent.query.filter_by(patient_id=patient.id).order_by(PatientConsent.signed_at.desc()).all()
+    
+    return render_template('patient/consent.html', past_consents=past_consents)
+
+@patient_bp.route('/consent/sign', methods=['POST'])
+@login_required
+@patient_required
+def sign_consent():
+    """Handle processing of the canvas base64 signature"""
+    patient = current_user.patient
+    from app.models.models import PatientConsent
+    
+    form_type = request.form.get('form_type')
+    consent_text = request.form.get('consent_text')
+    signature_base64 = request.form.get('signature_base64')
+    
+    if not signature_base64 or not form_type:
+        flash('Invalid submission: Signature is required.', 'danger')
+        return redirect(url_for('patient.consent'))
+        
+    try:
+        new_consent = PatientConsent(
+            patient_id=patient.id,
+            form_type=form_type,
+            consent_text=consent_text,
+            signature_base64=signature_base64,
+            ip_address=request.remote_addr
+        )
+        db.session.add(new_consent)
+        db.session.commit()
+        
+        flash(f'Digital signature attached to {form_type} successfully. Saved natively secured with base64 encoding.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error saving digital signature: {str(e)}', 'danger')
+        
+    return redirect(url_for('patient.consent'))
 
 @patient_bp.route('/profile')
 @login_required
@@ -621,11 +888,25 @@ def generate_doctor_prescribed_plan(patient, health_data):
     }
 
     # --- 2. PATIENT PROFILING ---
+    def _to_num(value):
+        try:
+            if value is None:
+                return 0.0
+            return float(value)
+        except (TypeError, ValueError):
+            return 0.0
+
     conditions = []
-    if health_data.heart_disease_risk > 60: conditions.append('Cardiac')
-    if health_data.bmi > 30: conditions.append('Obesity')
-    if health_data.hypertension_risk > 60: conditions.append('Hypertension')
-    if health_data.diabetes_risk > 60: conditions.append('Diabetes')
+    # Guard against missing or non-numeric health metrics
+    heart_risk = _to_num(health_data.heart_disease_risk)
+    bmi = _to_num(health_data.bmi)
+    hypertension_risk = _to_num(health_data.hypertension_risk)
+    diabetes_risk = _to_num(health_data.diabetes_risk)
+
+    if heart_risk > 60: conditions.append('Cardiac')
+    if bmi > 30: conditions.append('Obesity')
+    if hypertension_risk > 60: conditions.append('Hypertension')
+    if diabetes_risk > 60: conditions.append('Diabetes')
     
     if not conditions: conditions.append('General Recovery')
     
@@ -789,21 +1070,34 @@ def generate_doctor_prescribed_plan(patient, health_data):
 @patient_required
 def exercise_plan():
     """View AI-generated exercise plan"""
-    patient = current_user.patient
-    latest_health = HealthData.query.filter_by(patient_id=patient.id).order_by(
-        HealthData.recorded_at.desc()).first()
-    
-    if not latest_health:
-        flash('Please enter health data first', 'info')
-        return redirect(url_for('patient.enter_health_data'))
-    
-    # Generate Doctor Prescribed Plan
-    # Format: { 'plan': {...}, 'doctor_note': {...}, 'analysis': {...} }
-    prescribed_data = generate_doctor_prescribed_plan(patient, latest_health)
-    
-    return render_template('patient/exercise_plan.html', 
-                         full_plan=prescribed_data, # Passing the whole object
-                         patient=patient)
+    try:
+        if not current_user.patient:
+             import traceback
+             print("ERROR: User has no patient record - possible incomplete registration.")
+             return "Data Integrity Error: User has no patient record.", 500
+
+        patient = current_user.patient
+        latest_health = HealthData.query.filter_by(patient_id=patient.id).order_by(
+            HealthData.recorded_at.desc()).first()
+        
+        if not latest_health:
+            flash('Please enter health data first', 'info')
+            return redirect(url_for('patient.enter_health_data'))
+        
+        # Generate Doctor Prescribed Plan
+        # Format: { 'plan': {...}, 'doctor_note': {...}, 'analysis': {...} }
+        prescribed_data = generate_doctor_prescribed_plan(patient, latest_health)
+        
+        return render_template('patient/exercise_plan.html', 
+                             full_plan=prescribed_data, # Passing the whole object
+                             patient=patient)
+    except Exception as e:
+        import traceback
+        error_msg = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"CRITICAL ERROR IN EXERCISE PLAN: {error_msg}")
+        with open('debug_exercise_error.txt', 'w') as f:
+            f.write(error_msg)
+        return f"Internal Server Error (Logged): {str(e)}", 500
 
 @patient_bp.route('/appointments')
 @login_required
@@ -880,10 +1174,46 @@ def book_appointment():
 def prescriptions():
     """View prescriptions"""
     patient = current_user.patient
-    prescriptions = Prescription.query.filter_by(patient_id=patient.id).order_by(
-        Prescription.prescribed_at.desc()).all()
+    try:
+        prescriptions = Prescription.query.filter_by(patient_id=patient.id).order_by(
+            Prescription.prescribed_at.desc()).all()
+    except Exception:
+        # Fallback: column mismatch between ORM model and DB — use raw SQL
+        db.session.rollback()
+        cols = {c['name'] for c in inspect(db.engine).get_columns('prescriptions')}
+        safe_cols = ', '.join(c for c in cols)
+        rows = db.session.execute(
+            text(f"SELECT {safe_cols} FROM prescriptions WHERE patient_id = :pid ORDER BY id DESC"),
+            {'pid': patient.id}
+        ).mappings().all()
+        prescriptions = [SimpleNamespace(**dict(r)) for r in rows]
     
     return render_template('patient/prescriptions.html', prescriptions=prescriptions)
+
+@patient_bp.route('/prescription/<int:id>/view')
+@login_required
+@patient_required
+def view_prescription(id):
+    """View full prescription sheet"""
+    try:
+        prescription = Prescription.query.get_or_404(id)
+    except Exception:
+        db.session.rollback()
+        cols = {c['name'] for c in inspect(db.engine).get_columns('prescriptions')}
+        safe_cols = ', '.join(c for c in cols)
+        row = db.session.execute(
+            text(f"SELECT {safe_cols} FROM prescriptions WHERE id = :rid"),
+            {'rid': id}
+        ).mappings().first()
+        if not row:
+            from flask import abort
+            return abort(404)
+        prescription = SimpleNamespace(**dict(row))
+    if prescription.patient_id != current_user.patient.id:
+        from flask import abort
+        return abort(403)
+    return render_template('patient/view_prescription.html', prescription=prescription)
+
 
 @patient_bp.route('/messages')
 @login_required
@@ -894,7 +1224,16 @@ def messages():
     
     # Get doctors from appointments, prescriptions, and existing messages
     appointment_doctor_ids = [a.doctor_id for a in Appointment.query.filter_by(patient_id=patient.id).all()]
-    prescription_doctor_ids = [p.doctor_id for p in Prescription.query.filter_by(patient_id=patient.id).all()]
+    # Use lightweight raw SQL — we only need doctor_id, avoids loading all ORM columns
+    try:
+        prescription_doctor_ids = [p.doctor_id for p in Prescription.query.filter_by(patient_id=patient.id).all()]
+    except Exception:
+        db.session.rollback()
+        rows = db.session.execute(
+            text("SELECT DISTINCT doctor_id FROM prescriptions WHERE patient_id = :pid"),
+            {'pid': patient.id}
+        ).all()
+        prescription_doctor_ids = [r[0] for r in rows]
     message_doctor_ids = [m.doctor_id for m in Message.query.filter_by(patient_id=patient.id).all()]
     
     # Unique doctor IDs
@@ -974,6 +1313,21 @@ def send_message(doctor_id):
     db.session.add(message)
     db.session.commit()
     
+    try:
+        from app.events import emit_to_user
+        doctor_profile = Doctor.query.get(doctor_id)
+        if doctor_profile and doctor_profile.user_id:
+             emit_to_user(doctor_profile.user_id, 'new_message', {
+                 'message_id': message.id,
+                 'message_text': message.message_text,
+                 'patient_id': patient.id,
+                 'doctor_id': doctor_id,
+                 'sender_type': 'patient',
+                 'created_at': message.created_at.isoformat() if message.created_at else datetime.utcnow().isoformat()
+             })
+    except Exception as e:
+        print(f"Socket emit failed: {e}")
+    
     return jsonify({'success': True, 'message_id': message.id})
 
 @patient_bp.route('/health-history')
@@ -1034,45 +1388,155 @@ def pay_bill(bill_id):
 @login_required
 @patient_required
 def lab_reports():
-    """View lab reports"""
+    """View lab reports (workflow orders + legacy lab report rows)."""
     patient = current_user.patient
-    reports = LabReport.query.filter_by(patient_id=patient.id).order_by(
-        LabReport.conducted_at.desc()).all()
+    try:
+        lab_orders = LabOrder.query.filter_by(patient_id=patient.id).order_by(
+            LabOrder.created_at.desc()).all()
+        reports = LabReport.query.filter_by(patient_id=patient.id).order_by(
+            LabReport.conducted_at.desc()).all()
+    except Exception as e:
+        current_app.logger.exception('Patient lab_reports error')
+        flash('Unable to load lab reports at this time. Please contact support.', 'danger')
+        lab_orders = []
+        reports = []
+
+    return render_template(
+        'patient/lab_reports.html',
+        patient=patient,
+        lab_orders=lab_orders,
+        reports=reports,
+        show_requests=True,
+    )
+
+
+@patient_bp.route('/lab-requests')
+@login_required
+@patient_required
+def lab_requests():
+    """View lab requests only"""
+    # ✅ DEBUG: Verify session persistence in protected route
+    print(f"[LAB_REQUESTS] protected route accessed")
+    print(f"  is_authenticated={current_user.is_authenticated}")
+    print(f"  user_id={current_user.id}")
+    print(f"  session_keys={list(session.keys())}")
+    print(f"  session_get('_user_id')={session.get('_user_id')}")
+    print(f"  cookies={dict(request.cookies)}")
     
-    return render_template('patient/lab_reports.html', reports=reports)
+    patient = current_user.patient
+    try:
+        lab_orders = LabOrder.query.filter_by(patient_id=patient.id).order_by(
+            LabOrder.created_at.desc()).all()
+        reports = LabReport.query.filter_by(patient_id=patient.id).order_by(
+            LabReport.conducted_at.desc()).all()
+    except Exception as e:
+        current_app.logger.exception('Patient lab_requests error')
+        flash('Unable to load lab requests at this time. Please contact support.', 'danger')
+        lab_orders = []
+        reports = []
+
+    return render_template(
+        'patient/lab_reports.html',
+        patient=patient,
+        lab_orders=lab_orders,
+        reports=reports,
+        show_requests=False,
+    )
+
+
+
+@patient_bp.route('/medicine-status')
+@login_required
+@patient_required
+def medicine_status():
+    """View pharmacy / medicine dispensing status"""
+    from app.models.models import PharmacyOrder
+    patient = current_user.patient
+    orders = PharmacyOrder.query.filter_by(patient_id=patient.id).order_by(
+        PharmacyOrder.created_at.desc()).all()
+    
+    return render_template('patient/medicine_status.html', orders=orders)
 
 
 @patient_bp.route('/lab-reports/<int:report_id>/download')
 @login_required
 @patient_required
 def download_report(report_id):
-    """Download Lab Report as PDF (Mock)"""
+    """Download Lab Report as PDF."""
     report = LabReport.query.get_or_404(report_id)
-    
+
     if report.patient_id != current_user.patient.id:
         return "Unauthorized", 403
-        
-    # Generate mock PDF content
-    content = f"""
-    HOSPITAL LAB REPORT
-    -------------------
-    Patient: {current_user.patient.first_name} {current_user.patient.last_name}
-    Test: {report.test_name}
-    Date: {report.conducted_at}
-    Result: {report.result_value} {report.unit}
-    Reference: {report.reference_range}
-    
-    Notes: {report.notes}
-    
-    This is a computer generated report.
-    """
-    
+
+    # Generate PDF using fpdf
+    from fpdf import FPDF
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(0, 10, 'Hospital Lab Report', ln=True, align='C')
+    pdf.ln(8)
+    pdf.set_font('Arial', '', 12)
+
+    def add_line(label, value):
+        pdf.set_font('Arial', 'B', 12)
+        pdf.cell(45, 8, f'{label}:', ln=False)
+        pdf.set_font('Arial', '', 12)
+        pdf.multi_cell(0, 8, str(value or '-'))
+
+    add_line('Patient', f'{current_user.patient.first_name} {current_user.patient.last_name}')
+    add_line('UHID', current_user.patient.uhid)
+    add_line('Test', report.test_name)
+    add_line('Date', report.conducted_at.strftime('%Y-%m-%d') if report.conducted_at else 'N/A')
+    add_line('Status', report.status)
+
+    report_result = report.result_value or report.report_data or 'N/A'
+    add_line('Result', report_result)
+    add_line('Reference', report.reference_range or '-')
+    add_line('Remarks', report.remarks or report.doctor_notes or '-')
+
+    pdf.ln(8)
+    pdf.set_font('Arial', 'I', 10)
+    pdf.multi_cell(0, 6, 'This report was generated by the CarePoint hospital system. Please verify the details before sharing.')
+
+    output = pdf.output(dest='S').encode('latin-1')
+
     from flask import Response
     return Response(
-        content,
-        mimetype="text/plain",
-        headers={"Content-Disposition": f"attachment;filename=report_{report_id}.txt"}
+        output,
+        mimetype='application/pdf',
+        headers={'Content-Disposition': f'attachment;filename=lab_report_{report_id}.pdf'}
     )
+
+@patient_bp.route('/lab-orders/<int:order_id>/download-attachment')
+@login_required
+@patient_required
+def download_lab_order_attachment(order_id):
+    """Download the result attachment for a lab order."""
+    from app.models.models import LabOrder
+    order = LabOrder.query.get_or_404(order_id)
+
+    if order.patient_id != current_user.patient.id:
+        return "Unauthorized", 403
+
+    # If there's a generated report, redirect to the report PDF download
+    for report in (order.generated_reports or []):
+        return redirect(url_for('patient.download_report', report_id=report.id))
+
+    # Otherwise try to serve a file attachment from the order's result_data
+    rel_path = order.result_attachment_rel_path()
+    if rel_path:
+        import os
+        from flask import send_file, current_app, abort
+        abs_path = os.path.join(current_app.root_path, '..', rel_path)
+        if not os.path.isfile(abs_path):
+            abs_path = os.path.join(current_app.root_path, rel_path)
+        if os.path.isfile(abs_path):
+            return send_file(abs_path, as_attachment=True)
+
+    flash('No attachment available for this lab order.', 'info')
+    return redirect(url_for('patient.lab_reports'))
+
 
 @patient_bp.route('/billing/<int:bill_id>/download')
 @login_required

@@ -12,8 +12,8 @@ with app.app_context():
     try:
         with db.engine.connect() as conn:
             # 0. Update User Role Enum in MySQL
-            print("Updating User Role Enum to include HOST, NURSE, LAB_STAFF...")
-            conn.execute(text("ALTER TABLE users MODIFY COLUMN role ENUM('PATIENT', 'DOCTOR', 'ADMIN', 'HOST', 'NURSE', 'LAB_STAFF') NOT NULL"))
+            print("Updating User Role Enum to include HOST, LAB_STAFF...")
+            conn.execute(text("ALTER TABLE users MODIFY COLUMN role ENUM('PATIENT', 'DOCTOR', 'ADMIN', 'HOST', 'LAB_STAFF') NOT NULL"))
             
             # 1. Add Columns to Doctor Table using Inspector
             inspector = inspect(db.engine)

@@ -1,0 +1,132 @@
+<!-- Doctor Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{{ url_for('doctor.portal') }}" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Main</span>
+
+        <a href="{{ url_for('doctor.portal') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.portal' and request.args.get('mode') != 'op' %}active{% endif %}">
+            <i class="fas fa-hospital-user"></i>
+            Doctor Portal
+        </a>
+
+        <a href="{{ url_for('doctor.portal') }}?mode=op"
+            class="sidebar-link {% if request.endpoint == 'doctor.portal' and request.args.get('mode') == 'op' %}active{% endif %}"
+            style="position:relative;">
+            <i class="fas fa-bolt" style="color:#a78bfa;"></i>
+            OP Patients
+            <span id="sidebarOPBadge" style="
+                position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                color:#fff; font-size:.6rem; font-weight:800;
+                padding:2px 7px; border-radius:50px;
+                display:none;
+            ">NEW</span>
+        </a>
+
+        <a href="{{ url_for('reception.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('reception.') %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i>
+            Reception Queue
+        </a>
+
+        <a href="{{ url_for('doctor.dashboard') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            Legacy Dashboard
+        </a>
+
+        <a href="{{ url_for('doctor.patient_list') }}"
+            class="sidebar-link {% if request.endpoint in ['doctor.patient_list', 'doctor.view_patient'] %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            Patients
+        </a>
+
+        <a href="{{ url_for('doctor.appointments') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.appointments' %}active{% endif %}">
+            <i class="fas fa-calendar-alt"></i>
+            Appointments
+        </a>
+
+        <span class="sidebar-section-label">Clinical</span>
+
+        <a href="{{ url_for('doctor.messages') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.messages' %}active{% endif %}">
+            <i class="fas fa-comment-medical"></i>
+            Messages
+        </a>
+
+        <a href="{{ url_for('doctor.lab_requests') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.lab_requests' %}active{% endif %}">
+            <i class="fas fa-flask"></i>
+            Lab Requests
+        </a>
+
+        <a href="{{ url_for('doctor.lab_reports_view') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.lab_reports_view' %}active{% endif %}">
+            <i class="fas fa-file-medical-alt"></i>
+            Lab Reports
+        </a>
+
+        <a href="{{ url_for('doctor.pharmacy_orders') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.pharmacy_orders' %}active{% endif %}">
+            <i class="fas fa-pills"></i>
+            Pharmacy Orders
+        </a>
+
+        <a href="{{ url_for('doctor.analytics') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.analytics' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            Analytics
+        </a>
+
+        <span class="sidebar-section-label">Operations</span>
+
+        <a href="{{ url_for('lab.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('lab.') %}active{% endif %}">
+            <i class="fas fa-microscope"></i>
+            Lab Dashboard
+        </a>
+
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('pharmacy_ops.') %}active{% endif %}">
+            <i class="fas fa-prescription-bottle-alt"></i>
+            Pharmacy Dashboard
+        </a>
+
+        <span class="sidebar-section-label">Account</span>
+
+        <a href="{{ url_for('doctor.edit_profile') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.edit_profile' %}active{% endif %}">
+            <i class="fas fa-cog"></i>
+            Settings
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Dr. {{ current_user.username }}</div>
+            <div class="sidebar-user-role">Doctor</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>

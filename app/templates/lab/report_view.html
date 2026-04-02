@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report.test_name }} - Lab Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .report-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            width: 100%;
+            max-width: 800px;
+            padding: 2.5rem;
+            border-top: 6px solid #4f46e5;
+        }
+        .hospital-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .hospital-details h2 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+        }
+        .hospital-details p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        .patient-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .info-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.05em;
+        }
+        .info-group span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .test-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .test-title h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        .results-table th, .results-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .results-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        .results-table td {
+            font-size: 0.95rem;
+            color: #334155;
+        }
+        .results-table tr:hover {
+            background-color: #f8fafc;
+        }
+        .value-cell {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .footer-note {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 3rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+        .action-btns {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0 0.5rem;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: #4f46e5;
+            border: 1px solid #4f46e5;
+        }
+        .btn-outline:hover {
+            background-color: #eef2ff;
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .report-card { box-shadow: none; border: none; padding: 0; }
+            .action-btns { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-card">
+    <div class="hospital-header">
+        <div class="hospital-details">
+            <h2>CarePoint Health</h2>
+            <p>Advanced Diagnostics Laboratory</p>
+            <p>123 Medical Parkway, Tech District</p>
+        </div>
+        <div style="text-align: right;">
+            <i class="fas fa-microscope" style="font-size: 2.5rem; color: #4f46e5;"></i>
+        </div>
+    </div>
+
+    <div class="patient-info">
+        <div class="info-group">
+            <label>Patient Name</label>
+            <span>{{ report.patient.first_name }} {{ report.patient.last_name }}</span>
+        </div>
+        <div class="info-group">
+            <label>UHID / Patient ID</label>
+            <span>{{ report.patient.uhid or report.patient.id }}</span>
+        </div>
+        <div class="info-group">
+            <label>Report Date</label>
+            <span>
+                {% if report_date %}
+                    {{ report_date.strftime('%d %b %Y, %I:%M %p') }}
+                {% else %}
+                    -
+                {% endif %}
+            </span>
+        </div>
+        <div class="info-group">
+            <label>Referred By</label>
+            <span>{% if report.doctor %}Dr. {{ report.doctor.first_name }} {{ report.doctor.last_name }}{% else %}Walk-in / Self{% endif %}</span>
+        </div>
+    </div>
+
+    <div class="test-title">
+        <h3>{{ report.test_name }}</h3>
+    </div>
+
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Test Parameter</th>
+                <th>Result</th>
+                <th>Units</th>
+                <th>Reference Range</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if report_rows and report_rows|length > 0 %}
+                {% for row in report_rows %}
+                <tr>
+                    <td>{{ row.name }}</td>
+                    <td class="value-cell">{{ row.value }}</td>
+                    <td>{{ row.unit }}</td>
+                    <td style="color: #64748b; font-size: 0.85rem;">{{ row.range }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 2rem; color: #94a3b8;">
+                        Legacy report or no structured data available.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        <p>This is an electronically generated report. No signature is required.</p>
+        <p>&copy; 2026 CarePoint Health Lab Systems</p>
+    </div>
+
+    <div class="action-btns">
+        <input type="hidden" id="patient-phone" value="{{ report.patient.phone or '' }}">
+        <input type="hidden" id="report-id" value="{{ report.id }}">
+        <input type="hidden" id="patient-name" value="{{ report.patient.full_name if report.patient else '' }}">
+        <button onclick="shareReport({{ report.id }})" class="btn"><i class="fas fa-share-alt"></i> Share Report</button>
+        <button onclick="window.print()" class="btn"><i class="fas fa-print"></i> Print</button>
+        <button onclick="sendWhatsApp()" class="btn btn-outline"><i class="fab fa-whatsapp"></i> Send WhatsApp</button>
+    </div>
+</div>
+
+<script>
+    function viewReport(reportId) {
+        const url = `/reports/${reportId}/image`;
+        window.open(url, "_blank");
+    }
+
+    async function shareReport(reportId) {
+        const reportPdfUrl = `/reports/${reportId}/pdf`;
+        const reportDownloadUrl = `${window.location.origin}/reports/${reportId}/download`;
+
+        try {
+            // Prefer native file sharing on supported mobile browsers.
+            if (navigator.share && navigator.canShare) {
+                const response = await fetch(reportPdfUrl);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const file = new File([blob], `report_${reportId}.pdf`, {
+                        type: "application/pdf"
+                    });
+
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: "Lab Report",
+                            text: "Your lab report is ready",
+                            files: [file]
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: share link (works on more browsers/devices).
+            if (navigator.share) {
+                await navigator.share({
+                    title: "Lab Report",
+                    text: `Your lab report is ready. Download here: ${reportDownloadUrl}`,
+                    url: reportDownloadUrl
+                });
+                return;
+            }
+
+            alert("Please open this page on mobile to share via WhatsApp.");
+            window.open(reportPdfUrl, "_blank");
+        } catch (error) {
+            // User cancellation is not an error.
+            if (error && error.name === "AbortError") {
+                return;
+            }
+            console.error("Share error:", error);
+            alert("Sharing is not supported on this browser. Opening PDF instead.");
+            window.open(reportPdfUrl, "_blank");
+        }
+    }
+
+    function sendWhatsApp() {
+        let phone = document.getElementById("patient-phone").value;
+        const reportId = document.getElementById("report-id").value;
+        const name = document.getElementById("patient-name").value || "Patient";
+
+        if (!phone) {
+            alert("Patient phone number missing");
+            return;
+        }
+
+        // Remove all non-numeric characters.
+        phone = phone.replace(/\D/g, "");
+
+        // Accept common Indian formats: 10-digit local, 11-digit with leading 0, 12-digit with 91.
+        if (phone.length === 11 && phone.startsWith("0")) {
+            phone = phone.slice(1);
+        }
+
+        // Validate number length.
+        if (phone.length < 10) {
+            alert("Invalid phone number");
+            return;
+        }
+
+        // Add India country code if not present.
+        if (!phone.startsWith("91")) {
+            if (phone.length > 10) {
+                alert("Invalid phone number");
+                return;
+            }
+            phone = "91" + phone;
+        }
+
+        if (phone.length !== 12) {
+            alert("Invalid phone number");
+            return;
+        }
+
+        const baseUrl = window.location.origin;
+        const reportLink = `${baseUrl}/reports/${reportId}/download`;
+        const message = "Dear " + name + ",\n\n"
+            + "Your lab report is ready.\n"
+            + "Report ID: LAB-" + reportId + "\n"
+            + "\nDownload your report here:\n"
+            + reportLink
+            + "\n\nRegards,\nCarePoint Lab";
+
+        const encodedMessage = encodeURIComponent(message);
+        const url = "https://wa.me/" + phone + "?text=" + encodedMessage;
+
+        const popup = window.open(url, "_blank");
+        if (!popup) {
+            window.location.href = url;
+        }
+    }
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ class StrictMedicalChatbot:
     def __init__(self, dataset_path="medical_data.json"):
         self.dataset_path = dataset_path
         self.dataset = {}
-        self.fallback_message = "💊 This medical query is not available in our health database. Please consult a qualified healthcare professional."
+        self.fallback_message = "This medical query is not available in our health database. Please consult a qualified healthcare professional for personalized medical advice."
         self.load_dataset()
 
     def load_dataset(self):

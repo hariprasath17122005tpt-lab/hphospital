@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% set hide_sidebar = false %}
+
+{% block title %}Patient Login - HealthCare AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+.debug-info {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: lime;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: monospace;
+    max-width: 300px;
+    z-index: 9999;
+    display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container auth-shell">
+        <div class="auth-grid w-100">
+            <section class="auth-hero">
+                <div class="auth-kicker">
+                    <span class="badge text-bg-primary" style="border-radius: 999px;">Patient</span>
+                    <span>Personalized care in one secure place</span>
+                </div>
+                <h1 class="auth-title">Patient Portal</h1>
+                <p class="auth-subtitle">
+                    Access appointments, lab reports, diet plans, and AI-powered insights tailored to your health.
+                </p>
+
+                <div class="auth-metrics">
+                    <div class="auth-metric">
+                        <div class="value">Records</div>
+                        <div class="label">Labs & history</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Plans</div>
+                        <div class="label">Diet & exercise</div>
+                    </div>
+                    <div class="auth-metric">
+                        <div class="value">Support</div>
+                        <div class="label">Messages & reminders</div>
+                    </div>
+                </div>
+
+                <div class="auth-footnote">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <a class="text-decoration-none fw-bold" href="{{ url_for('main.index') }}">Back to Home</a>
+                </div>
+            </section>
+
+            <aside class="auth-panel">
+                <div class="panel-head">
+                    <div class="auth-badge primary"><i class="fas fa-user-injured"></i></div>
+                    <div>
+                        <h3>Sign in</h3>
+                        <p>Enter your credentials to continue.</p>
+                    </div>
+                </div>
+
+                <!-- Display Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'warning' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form class="auth-form" id="loginForm" method="POST" action="{{ url_for('auth.patient_login') }}">
+                    <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}" />
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Enter your username" required autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary w-100 auth-cta shadow-sm">
+                        Continue <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+
+                    <div class="auth-footnote auth-links text-center">
+                        New here?
+                        <a href="{{ url_for('auth.patient_register') }}" class="text-primary">Create account</a>
+                        <span class="mx-2">•</span>
+                        <a href="{{ url_for('auth.choose_login') }}" class="text-secondary">Choose portal</a>
+                    </div>
+                </form>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<div class="debug-info" id="debugInfo"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const debugInfo = document.getElementById('debugInfo');
+    
+    // Show debug info on focus (enable by adding ?debug=1 to URL)
+    if (window.location.search.includes('debug=1')) {
+        debugInfo.style.display = 'block';
+    }
+    
+    // Log form submission
+    form.addEventListener('submit', function(e) {
+        const timestamp = new Date().toLocaleTimeString();
+        const username = document.getElementById('username').value;
+        const csrf = document.getElementById('csrf_token').value;
+        
+        debugInfo.innerHTML += `[${timestamp}] Form submit intercepted<br>`;
+        debugInfo.innerHTML += `Username: ${username}<br>`;
+        debugInfo.innerHTML += `CSRF: ${csrf.substring(0, 20)}...<br>`;
+        debugInfo.innerHTML += `FormData ready<br>`;
+        
+        // Allow form to submit normally
+    });
+    
+    // Log any errors
+    window.addEventListener('error', function(e) {
+        debugInfo.innerHTML += `[ERROR] ${e.message}<br>`;
+        debugInfo.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}

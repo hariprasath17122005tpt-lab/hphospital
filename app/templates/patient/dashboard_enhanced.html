@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Medical Dashboard' %}
+{% set breadcrumb_current = 'Overview' %}
+{% set displayed_vitals = displayed_vitals|default(latest_health if latest_health else latest_vitals) %}
+{% set h_status = h_status|default({
+'heart': {'label': 'No Data', 'class': 'secondary'},
+'bp': {'label': 'No Data', 'class': 'secondary'},
+'sugar': {'label': 'No Data', 'class': 'secondary'},
+'sleep': {'label': ' No Data', 'class': 'secondary'}
+}, true) %}
+{% set trends = trends|default({
+'heart': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+'bp': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+'sugar': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'},
+'sleep': {'msg': 'Stable', 'icon': 'fa-minus', 'class': 'change-neutral'}
+}, true) %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/patient-dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth-nextgen.css') }}">
+<style>
+    /* Enhanced Features Styles */
+    .enhanced-feature-card {
+        background: var(--glass-bg, rgba(30, 41, 59, 0.6));
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .enhanced-feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #6366f1, transparent);
+        transform: translateX(-100%);
+        transition: transform 1s;
+    }
+
+    .enhanced-feature-card:hover::before {
+        transform: translateX(100%);
+    }
+
+    .enhanced-feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .medication-item,
+    .video-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(26, 31, 58, 0.4);
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s;
+    }
+
+    .medication-item:hover,
+    .video-card:hover {
+        background: rgba(26, 31, 58, 0.6);
+        transform: translateX(4px);
+    }
+
+    .medication-icon,
+    .video-thumbnail {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .checkin-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .checkin-status.pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #f59e0b;
+    }
+
+    .checkin-status.accepted {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .checkin-status.rejected {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Ambient Background -->
+<div class="pro-mesh-bg">
+    <div class="pro-orb pro-orb-1"></div>
+    <div class="pro-orb pro-orb-2"></div>
+    <div class="pro-orb pro-orb-3"></div>
+</div>
+<div class="pro-spotlight"></div>
+
+<!-- Hero Section -->
+<div class="pd-hero pro-hero-gradient pro-reveal-zoom" style="padding:36px 36px 32px;">
+    <div class="pd-hero-left">
+        <div class="pd-hero-pill" style="backdrop-filter:blur(10px);">
+            <span class="pulse-dot"></span>
+            <span style="font-family:'Space Grotesk',sans-serif;">System Online</span>
+        </div>
+        <h1 class="pd-hero-greeting pro-gradient-text" style="font-size:clamp(2rem,3vw,3.2rem);letter-spacing:-0.04em;">
+            Welcome back,<br>{{ current_user.username }}
+        </h1>
+        <p class="pd-hero-sub" style="max-width:540px;font-size:1rem;line-height:1.7;color:rgba(241,245,249,0.6);">
+            Your complete health command center with medication tracking, instant check-in, video education, and
+            AI-powered insights.
+        </p>
+        <div class="pd-hero-date" style="margin-top:4px;">
+            <i class="far fa-calendar-alt" style="color:#818cf8;"></i>
+            <span id="pd-current-date">Loading...</span>
+        </div>
+    </div>
+    <div class="pd-hero-right" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <!-- Animated Health Score Ring -->
+        <div class="pro-score-ring" id="healthScoreRing">
+            <svg viewBox="0 0 180 180">
+                <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6366f1" />
+                        <stop offset="50%" style="stop-color:#a855f7" />
+                        <stop offset="100%" style="stop-color:#22d3ee" />
+                    </linearGradient>
+                </defs>
+                <circle class="ring-glow" cx="90" cy="90" r="76"
+                    style="--ring-circumference:477.5;--ring-offset:477.5;" />
+                <circle class="ring-bg" cx="90" cy="90" r="76" />
+                <circle class="ring-fill" cx="90" cy="90" r="76" style="--ring-circumference:477.5;--ring-offset:477.5;"
+                    data-score="{{ health_score }}" />
+            </svg>
+            <div style="display:flex;flex-direction:column;align-items:center;">
+                <span class="pro-score-value pro-gradient-text" data-count-to="{{ health_score }}"
+                    data-count-duration="2000">0</span>
+                <span class="pro-score-label">Health Score</span>
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <div class="pd-hero-stat pro-tilt-card" style="min-width:90px;">
+                <div class="tilt-shine"></div>
+                <span class="stat-num" data-count-to="{{ upcoming_appointments|length }}"
+                    data-count-duration="1200">0</span>
+                <span class="stat-label">Upcoming</span>
+            </div>
+            <div class="pd-hero-stat pro-tilt-card" style="min-width:90px;">
+                <div class="tilt-shine"></div>
+                <span class="stat-num" data-count-to="{{ total_reports }}" data-count-duration="1000">0</span>
+                <span class="stat-label">Reports</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🆕 MEDICATION TRACKER -->
+<div class="pd-section pro-reveal pro-delay-1">
+    <div class="pro-section-header">
+        <div class="pro-icon-box rose" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+            <i class="fas fa-pills"></i>
+        </div>
+        <span class="pro-section-title">Today's Medications</span>
+        <div class="pro-section-line"></div>
+    </div>
+    <div class="enhanced-feature-card">
+        <div id="medication-list">
+            {% if medication_entries and medication_entries|length > 0 %}
+                {% for med in medication_entries %}
+                <div class="medication-item">
+                    <div class="medication-icon" style="background: rgba(99, 102, 241, 0.2); color: #6366f1;">
+                        <i class="fas fa-tablets"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #f1f5f9;">{{ med.name }}</div>
+                        <div style="font-size: 0.875rem; color: rgba(241, 245, 249, 0.6);">
+                            <i class="far fa-clock"></i> {{ med.details }}
+                        </div>
+                    </div>
+                    <input type="checkbox" class="medication-check" style="width: 24px; height: 24px; cursor: pointer;">
+                </div>
+                {% endfor %}
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: rgba(241, 245, 249, 0.6);">
+                    <i class="fas fa-info-circle"></i> Check off medications as you take them
+                </p>
+            {% else %}
+                <div class="text-muted" style="padding: 0.5rem 0;">
+                    No prescribed medications yet. Your doctor's prescriptions will appear here.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- HEALTH VITALS CARDS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-2">
+    <div class="pro-section-header">
+        <div class="pro-icon-box indigo" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <span class="pro-section-title">Health Vitals</span>
+        <div class="pro-section-line"></div>
+    </div>
+    <div class="pd-metrics-grid pro-stagger-grid">
+        <!-- Heart Rate -->
+        <div class="pd-metric-card pro-tilt-card pro-neon-card neon-rose pro-holo-border status-normal">
+            <div class="tilt-shine"></div>
+            <div class="pd-metric-top">
+                <div class="pro-icon-box rose" style="width:42px;height:42px;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <span class="pro-badge pro-badge-{{ h_status.heart.class }}">{{ h_status.heart.label }}</span>
+            </div>
+            <div class="pd-metric-title">Heart Rate</div>
+            <div class="pd-metric-value">
+                {% if displayed_vitals and displayed_vitals.heart_rate %}
+                <span data-count-to="{{ displayed_vitals.heart_rate }}" data-count-duration="1500">0</span>
+                {% else %}--{% endif %}
+                <span class="pd-metric-unit">bpm</span>
+            </div>
+            <div class="pd-metric-change {{ trends.heart.class }}"><i class=fas {{ trends.heart.icon }}"></i> {{
+                trends.heart.msg }}</div>
+            <div class="pd-mini-chart"><canvas id="chart-hr"></canvas></div>
+        </div>
+
+        <!-- Blood Pressure -->
+        <div class="pd-metric-card pro-tilt-card pro-neon-card neon-cyan pro-holo-border status-normal">
+            <div class="tilt-shine"></div>
+            <div class="pd-metric-top">
+                <div class="pro-icon-box blue" style="width:42px;height:42px;">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <span class="pro-badge pro-badge-{{ h_status.bp.class }}">{{ h_status.bp.label }}</span>
+            </div>
+            <div class="pd-metric-title">Blood Pressure</div>
+            <div class="pd-metric-value">
+                {% if latest_health and latest_health.systolic_bp %}{{ latest_health.systolic_bp }}/{{
+                latest_health.diastolic_bp }}{% else %}--/--{% endif %}
+                <span class="pd-metric-unit">mmHg</span>
+            </div>
+            <div class="pd-metric-change {{ trends.bp.class }}"><i class="fas {{ trends.bp.icon }}"></i> {{
+                trends.bp.msg }}</div>
+            <div class="pd-mini-chart"><canvas id="chart-bp"></canvas></div>
+        </div>
+
+        <!-- Glucose -->
+        <div class="pd-metric-card pro-tilt-card pro-neon-card neon-indigo pro-holo-border status-normal">
+            <div class="tilt-shine"></div>
+            <div class="pd-metric-top">
+                <div class="pro-icon-box violet" style="width:42px;height:42px;">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <span class="pro-badge pro-badge-{{ h_status.sugar.class }}">{{ h_status.sugar.label }}</span>
+            </div>
+            <div class="pd-metric-title">Fasting Glucose</div>
+            <div class="pd-metric-value">
+                {% if latest_health and latest_health.fasting_sugar %}
+                <span data-count-to="{{ latest_health.fasting_sugar }}" data-count-duration="1500">0</span>
+                {% else %}--{% endif %}
+                <span class="pd-metric-unit">mg/dL</span>
+            </div>
+            <div class="pd-metric-change {{ trends.sugar.class }}"><i class="fas {{ trends.sugar.icon }}"></i> {{
+                trends.sugar.msg }}</div>
+            <div class="pd-mini-chart"><canvas id="chart-sugar"></canvas></div>
+        </div>
+
+        <!-- Sleep -->
+        <div class="pd-metric-card pro-tilt-card pro-neon-card neon-emerald pro-holo-border status-warning">
+            <div class="tilt-shine"></div>
+            <div class="pd-metric-top">
+                <div class="pro-icon-box amber" style="width:42px;height:42px;">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <span class="pro-badge pro-badge-{{ h_status.sleep.class }}">{{ h_status.sleep.label }}</span>
+            </div>
+            <div class="pd-metric-title">Sleep Duration</div>
+            <div class="pd-metric-value">
+                {% if latest_health and latest_health.sleep_hours %}
+                <span data-count-to="{{ latest_health.sleep_hours }}" data-count-duration="1200"
+                    data-count-decimals="1">0</span>
+                {% else %}--{% endif %}
+                <span class="pd-metric-unit">hrs</span>
+            </div>
+            <div class="pd-metric-change {{ trends.sleep.class }}"><i class="fas {{ trends.sleep.icon }}"></i> {{
+                trends.sleep.msg }}</div>
+            <div class="pd-mini-chart"><canvas id="chart-sleep"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- HEALTH TRENDS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-3">
+    <div class="pd-trends-panel pro-glass">
+        <div class="pd-trends-header">
+            <div class="pro-section-header" style="margin-bottom:0;">
+                <div class="pro-icon-box cyan" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+                    <i class="fas fa-chart-area"></i>
+                </div>
+                <span class="pro-section-title">Health Trends</span>
+            </div>
+            <div class="pd-trends-actions">
+                <div class="pd-trends-tabs">
+                    <button class="pd-trends-tab active" data-chart="heartRate">Heart Rate</button>
+                    <button class="pd-trends-tab" data-chart="bloodPressure">Blood Pressure</button>
+                    <button class="pd-trends-tab" data-chart="sugar">Glucose</button>
+                    <button class="pd-trends-tab" data-chart="sleep">Sleep</button>
+                </div>
+                <div class="pd-time-toggle">
+                    <button class="pd-time-btn active" data-range="weekly">Weekly</button>
+                    <button class="pd-time-btn" data-range="monthly">Monthly</button>
+                </div>
+            </div>
+        </div>
+        <div class="pd-chart-area"><canvas id="pd-trends-chart"></canvas></div>
+    </div>
+</div>
+
+<!-- BODY VIZ + AI INSIGHTS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-4">
+    <div class="pd-dual-grid">
+        <div class="pd-body-panel pro-glass pro-reveal-left">
+            <div class="pd-body-visual">
+                <img src="{{ url_for('static', filename='img/human_body_visual.png') }}" class="pd-body-img"
+                    alt="Body visualization">
+
+                <div class="pd-vital-label" style="top:15%;right:5%;">
+                    <div class="vl-icon heart"><i class="fas fa-heartbeat"></i></div>
+                    <div class="vl-info">
+                        <span class="vl-val">{% if latest_health %}{{ latest_health.heart_rate }} bpm{% else %}--{%
+                            endif %}</span>
+                        <span class="vl-name">Heart Rate</span>
+                    </div>
+                </div>
+
+                <div class="pd-vital-label" style="top:45%;left:3%;">
+                    <div class="vl-icon sugar"><i class="fas fa-cubes"></i></div>
+                    <div class="vl-info">
+                        <span class="vl-val">{% if latest_health %}{{ latest_health.fasting_sugar }} mg/dL{% else %}--{%
+                            endif %}</span>
+                        <span class="vl-name">Glucose</span>
+                    </div>
+                </div>
+
+                <div class="pd-vital-label" style="bottom:20%;right:7%;">
+                    <div class="vl-icon bp"><i class="fas fa-tint"></i></div>
+                    <div class="vl-info">
+                        <span class="vl-val">{% if latest_health %}{{ latest_health.systolic_bp }}/{{
+                            latest_health.diastolic_bp }}{% else %}--/--{% endif %}</span>
+                        <span class="vl-name">Blood Pressure</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pd-ai-panel pro-glass pro-neon-card neon-indigo pro-reveal-right">
+            <div class="pd-ai-header">
+                <div class="pd-ai-orb"><i class="fas fa-brain"></i></div>
+                <div>
+                    <div class="pd-ai-title" style="font-family:'Space Grotesk',sans-serif;">AI Health Insights</div>
+                    <div class="pd-ai-subtitle">Powered by CarePoint Intelligence</div>
+                </div>
+            </div>
+
+            <div class="pd-insight-cards">
+                {% if latest_health %}
+                <div class="pd-insight-card pro-float-card">
+                    <div class="pd-insight-icon good"><i class="fas fa-heart"></i></div>
+                    <div class="pd-insight-info">
+                        <span class="pd-insight-name">Cardiovascular Health</span>
+                        <span class="pd-insight-desc">{{ h_status.heart.label }} Heart Rate & {{
+                            h_status.bp.label }} BP</span>
+                    </div>
+                    <div class="pd-insight-conf">
+                        <span class="pd-conf-val high" data-count-to="96" data-count-duration="1500">0</span>
+                        <span class="pd-conf-label">Confidence %</span>
+                    </div>
+                </div>
+                <div class="pd-insight-card pro-float-card">
+                    <div class="pd-insight-icon warn"><i class="fas fa-bed"></i></div>
+                    <div class="pd-insight-info">
+                        <span class="pd-insight-name">Sleep Quality</span>
+                        <span class="pd-insight-desc">{{ h_status.sleep.label }} Sleep Duration</span>
+                    </div>
+                    <div class="pd-insight-conf">
+                        <span class="pd-conf-val med" data-count-to="78" data-count-duration="1500">0</span>
+                        <span class="pd-conf-label">Confidence %</span>
+                    </div>
+                </div>
+                <div class="pd-insight-card pro-float-card">
+                    <div class="pd-insight-icon info"><i class="fas fa-shield-alt"></i></div>
+                    <div class="pd-insight-info">
+                        <span class="pd-insight-name">Immune Response</span>
+                        <span class="pd-insight-desc">Based on recent vitals</span>
+                    </div>
+                    <div class="pd-insight-conf">
+                        <span class="pd-conf-val high" data-count-to="94" data-count-duration="1500">0</span>
+                        <span class="pd-conf-label">Confidence %</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="pd-insight-card pro-float-card"
+                    style="justify-content: center; text-align: center; padding: 2rem;">
+                    <div class="pd-insight-info">
+                        <span class="pd-insight-name">No Health Data</span>
+                        <span class="pd-insight-desc">Enter your health vitals to unlock AI insights.</span>
+                    </div>
+                    <a href="{{ url_for('patient.enter_health_data') }}" class="pro-btn pro-btn-primary"
+                        style="margin-top: 10px;">Enter Vitals</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <a class="pd-full-report-btn pro-magnetic" href="{{ url_for('features.ai_assistant') }}">
+                <span class="magnetic-inner" style="display:flex;align-items:center;gap:8px;width:100%;">
+                    <i class="fas fa-file-medical-alt"></i> View Full AI Report
+                    <i class="fas fa-arrow-right" style="margin-left:auto;"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- QUICK ACTIONS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-5">
+    <div class="pro-section-header">
+        <div class="pro-icon-box amber" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+            <i class="fas fa-bolt"></i>
+        </div>
+        <span class="pro-section-title">Quick Actions</span>
+        <div class="pro-section-line"></div>
+    </div>
+    <div class="pd-actions-grid pro-stagger-grid">
+        <a href="{{ url_for('patient.book_appointment') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-cyan pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box cyan"><i class="fas fa-calendar-check"></i></div>
+            <span class="act-title">Book Appointment</span>
+            <span class="act-desc">Schedule a visit with a specialist</span>
+        </a>
+        <a href="{{ url_for('features.ai_assistant') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-rose pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box violet"><i class="fas fa-robot"></i></div>
+            <span class="act-title">Ask AI Doctor</span>
+            <span class="act-desc">Instant AI health assistant</span>
+        </a>
+    </div>
+</div>
+
+<!-- 🆕 HEALTH EDUCATION VIDEOS -->
+<div class="pd-section pro-reveal pro-delay-6">
+    <div class="pd-dual-grid">
+        <!-- HEALTH EDUCATION VIDEOS -->
+        <div>
+            <div class="pro-section-header" style="margin-bottom:16px;">
+                <div class="pro-icon-box violet" style="width:32px;height:32px;border-radius:8px;font-size:0.75rem;">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <span class="pro-section-title">Health Education</span>
+            </div>
+            <div class="enhanced-feature-card">
+                <div style="text-align: center; padding: 1.5rem;">
+                    <div
+                        style="width: 80px; height: 80px; margin: 0 auto 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa fa-graduation-cap" style="font-size: 2.5rem; color: #8b5cf6;"></i>
+                    </div>
+                    <h3 style="font-weight: 700; color: #f1f5f9; margin-bottom: 0.5rem;">Learn & Stay Healthy</h3>
+                    <p style="color: rgba(241, 245, 249, 0.6); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        Watch expert-verified health videos on diabetes, heart health, nutrition, and wellness.
+                    </p>
+                    <div style="display: grid; gap: 0.5rem; margin-bottom: 1.5rem; text-align: left;">
+                        <div
+                            style="display: flex; align-items: center; gap: 0.75rem; background: rgba(26, 31, 58, 0.4); padding: 0.75rem; border-radius: 8px;">
+                            <div
+                                style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-video" style="color: #ef4444;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 0.9rem;">14 Expert Videos</div>
+                                <div style="font-size: 0.8rem; color: rgba(241, 245, 249, 0.6);">CDC & Mayo Clinic</div>
+                            </div>
+                        </div>
+                        <div
+                            style="display: flex; align-items: center; gap: 0.75rem; background: rgba(26, 31, 58, 0.4); padding: 0.75rem; border-radius: 8px;">
+                            <div
+                                style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-certificate" style="color: #10b981;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #f1f5f9; font-size: 0.9rem;">Verified Content</div>
+                                <div style="font-size: 0.8rem; color: rgba(241, 245, 249, 0.6);">Trusted Sources Only
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('features.education') }}" class="btn btn-primary btn-auth-submit"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-play"></i> Watch Videos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- APPOINTMENTS -->
+<div class="pd-section pro-reveal pro-delay-7">
+    <div class="pd-dual-grid">
+        <div class="pd-appointments-panel pro-glass pro-reveal-left">
+            <div class="pro-section-header" style="margin-bottom:16px;">
+                <div class="pro-icon-box blue" style="width:32px;height:32px;border-radius:8px;font-size:0.75rem;">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="pro-section-title">Upcoming Appointments</span>
+            </div>
+            <div class="pd-appt-list">
+                {% if upcoming_appointments %}
+                {% for appt in upcoming_appointments %}
+                <div class="pd-appt-card pro-float-card">
+                    <div class="pd-appt-date">
+                        <span class="day">{{ appt.appointment_date.strftime('%d') }}</span>
+                        <span class="month">{{ appt.appointment_date.strftime('%b') }}</span>
+                    </div>
+                    <div class="pd-appt-info">
+                        <span class="pd-appt-doctor">Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name }}</span>
+                        <span class="pd-appt-specialty">{{ appt.doctor.specialization }}</span>
+                        <span class="pd-appt-time"><i class="far fa-clock"></i> {{ appt.appointment_date.strftime('%I:%M
+                            %p') }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="pd-empty">
+                    <i class="far fa-calendar-times"></i>
+                    <p>No upcoming appointments.</p>
+                    <a href="{{ url_for('patient.book_appointment') }}" class="pro-btn pro-btn-primary"
+                        style="font-size:0.8rem;padding:10px 20px;">Book Now</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MORE TOOLS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-8">
+    <div class="pro-section-header">
+        <div class="pro-icon-box emerald" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+            <i class="fas fa-grip-horizontal"></i>
+        </div>
+        <span class="pro-section-title">More Tools</span>
+        <div class="pro-section-line"></div>
+    </div>
+    <div class="pd-actions-grid pro-stagger-grid">
+        <a href="{{ url_for('patient.enter_health_data') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-rose pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box rose"><i class="fas fa-heartbeat"></i></div>
+            <span class="act-title">Enter Vitals</span>
+            <span class="act-desc">Log daily health data</span>
+        </a>
+        <a href="{{ url_for('patient.diet_plan') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-emerald pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box emerald"><i class="fas fa-apple-alt"></i></div>
+            <span class="act-title">Diet Plan</span>
+            <span class="act-desc">Your nutrition guide</span>
+        </a>
+        <a href="{{ url_for('patient.exercise_plan') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-cyan pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box cyan"><i class="fas fa-running"></i></div>
+            <span class="act-title">Exercise Plan</span>
+            <span class="act-desc">Workout routines</span>
+        </a>
+        <a href="{{ url_for('features.emergency_sos') }}"
+            class="pd-action-btn pro-tilt-card pro-neon-card neon-rose pro-holo-border">
+            <div class="tilt-shine"></div>
+            <div class="pro-icon-box rose"><i class="fas fa-ambulance"></i></div>
+            <span class="act-title">Emergency SOS</span>
+            <span class="act-desc">Immediate assistance</span>
+        </a>
+    </div>
+</div>
+
+<!-- WELLNESS MISSIONS (ORIGINAL) -->
+<div class="pd-section pro-reveal pro-delay-9">
+    <div class="pd-trends-panel pro-glass" style="padding:20px;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="pro-section-header" style="margin-bottom:0;">
+                <div class="pro-icon-box emerald" style="width:36px;height:36px;border-radius:10px;font-size:0.8rem;">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <span class="pro-section-title">Daily Wellness Missions</span>
+            </div>
+            <span id="wellnessStreak" class="pro-badge pro-badge-success">Streak: 0 days</span>
+        </div>
+        <div class="progress mb-3" style="height:10px;background:rgba(148,163,184,0.2);">
+            <div id="wellnessProgress" class="progress-bar" role="progressbar"
+                style="background:linear-gradient(90deg,#22d3ee,#34d399);width:0%;"></div>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-4"><label class="w-100 p-3 rounded-3"
+                    style="background:rgba(30,41,59,0.6);border:1px solid rgba(148,163,184,0.2);cursor:pointer;"><input
+                        class="form-check-input me-2 wellness-mission" type="checkbox" data-key="hydrate"> Drink 2L
+                    water</label></div>
+            <div class="col-md-4"><label class="w-100 p-3 rounded-3"
+                    style="background:rgba(30,41,59,0.6);border:1px solid rgba(148,163,184,0.2);cursor:pointer;"><input
+                        class="form-check-input me-2 wellness-mission" type="checkbox" data-key="walk"> Walk 30
+                    minutes</label></div>
+            <div class="col-md-4"><label class="w-100 p-3 rounded-3"
+                    style="background:rgba(30,41,59,0.6);border:1px solid rgba(148,163,184,0.2);cursor:pointer;"><input
+                        class="form-check-input me-2 wellness-mission" type="checkbox" data-key="sleep"> Sleep before 11
+                    PM</label></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script>
+    (function () {
+        'use strict';
+
+        // Date Display
+        const dateEl = document.getElementById('pd-current-date');
+        if (dateEl) {
+            const now = new Date();
+            dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // HEALTH SCORE RING ANIMATION
+        setTimeout(() => {
+            const ring = document.getElementById('healthScoreRing');
+            if (ring) {
+                const fills = ring.querySelectorAll('.ring-fill, .ring-glow');
+                fills.forEach(fill => {
+                    const score = parseInt(fill.dataset.score || {{ health_score }});
+                const circumference = 477.5;
+                const offset = circumference - (score / 100) * circumference;
+                fill.style.setProperty('--ring-offset', offset);
+            });
+    }
+    }, 500);
+
+    // Chart Data
+    const dates = {{ chart_dates|default ([], true) | tojson }};
+    const hrData = {{ chart_heart_rate|default ([], true) | tojson }};
+    const bpData = {{ chart_bp_sys|default ([], true) | tojson }};
+    const sugarData = {{ chart_sugar|default ([], true) | tojson }};
+    const sleepData = {{ chart_sleep|default ([], true) | tojson }};
+
+    function fallbackData(data, base) {
+        if (data && data.length) return data;
+        return [0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // Mini Sparkline Charts
+    function makeSpark(canvasId, data, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 50);
+        gradient.addColorStop(0, color.replace('1)', '0.25)'));
+        gradient.addColorStop(1, color.replace('1)', '0)'));
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map((_, i) => i),
+                datasets: [{
+                    data,
+                    borderColor: color,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.45,
+                    pointRadius: 0,
+                    borderWidth: 2.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 1800, easing: 'easeOutQuart' },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } }
+            }
+        });
+    }
+
+    setTimeout(() => makeSpark('chart-hr', fallbackData(hrData, 72), 'rgba(244,63,94,1)'), 600);
+    setTimeout(() => makeSpark('chart-bp', fallbackData(bpData, 120), 'rgba(59,130,246,1)'), 800);
+    setTimeout(() => makeSpark('chart-sugar', fallbackData(sugarData, 95), 'rgba(139,92,246,1)'), 1000);
+    setTimeout(() => makeSpark('chart-sleep', fallbackData(sleepData, 7), 'rgba(245,158,11,1)'), 1200);
+
+    // Main Trends Chart
+    const trendsCtx = document.getElementById('pd-trends-chart');
+    if (!trendsCtx) return;
+
+    const trendsData = {
+        heartRate: { weekly: { labels: dates, data: fallbackData(hrData, 72) }, monthly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: [0, 0, 0, 0] } },
+        bloodPressure: { weekly: { labels: dates, data: fallbackData(bpData, 120) }, monthly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: [0, 0, 0, 0] } },
+        sugar: { weekly: { labels: dates, data: fallbackData(sugarData, 95) }, monthly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: [0, 0, 0, 0] } },
+        sleep: { weekly: { labels: dates, data: fallbackData(sleepData, 7) }, monthly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: [0, 0, 0, 0] } }
+    };
+    const colors = { heartRate: '#f43f5e', bloodPressure: '#3b82f6', sugar: '#8b5cf6', sleep: '#f59e0b' };
+
+    let currentMetric = 'heartRate';
+    let currentRange = 'weekly';
+
+    function areaGradient(ctx, color) {
+        const g = ctx.createLinearGradient(0, 0, 0, 300);
+        const rgb = color.match(/\w\w/g).map(h => parseInt(h, 16));
+        g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.2)`);
+        g.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
+        return g;
+    }
+
+    const gridColor = 'rgba(148,163,184,0.06)';
+    const tickColor = 'rgba(148,163,184,0.4)';
+
+    const chart = new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+            labels: trendsData[currentMetric][currentRange].labels,
+            datasets: [{
+                data: trendsData[currentMetric][currentRange].data,
+                borderColor: colors[currentMetric],
+                backgroundColor: areaGradient(trendsCtx.getContext('2d'), colors[currentMetric]),
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointHoverRadius: 10,
+                pointBackgroundColor: colors[currentMetric],
+                pointBorderColor: 'rgba(255,255,255,0.9)',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors[currentMetric],
+                pointHoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1400, easing: 'easeOutQuart' },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(14, 20, 36, 0.95)',
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    borderColor: 'rgba(99, 102, 241, 0.3)',
+                    borderWidth: 1,
+                    cornerRadius: 14,
+                    padding: 14,
+                    displayColors: false,
+                    titleFont: { weight: '700', family: 'Space Grotesk', size: 13 },
+                    bodyFont: { family: 'Outfit' }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: tickColor, font: { size: 11, weight: '500', family: 'Space Grotesk' } }
+                },
+                y: {
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: tickColor, font: { size: 11, weight: '500', family: 'Space Grotesk' } }
+                }
+            }
+        }
+    });
+
+    function updateTrend() {
+        chart.data.labels = trendsData[currentMetric][currentRange].labels;
+        chart.data.datasets[0].data = trendsData[currentMetric][currentRange].data;
+        chart.data.datasets[0].borderColor = colors[currentMetric];
+        chart.data.datasets[0].backgroundColor = areaGradient(trendsCtx.getContext('2d'), colors[currentMetric]);
+        chart.data.datasets[0].pointBackgroundColor = colors[currentMetric];
+        chart.data.datasets[0].pointHoverBorderColor = colors[currentMetric];
+        chart.update('active');
+    }
+
+    document.querySelectorAll('.pd-trends-tab').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.pd-trends-tab').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentMetric = this.dataset.chart;
+            updateTrend();
+        });
+    });
+
+    document.querySelectorAll('.pd-time-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.pd-time-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentRange = this.dataset.range;
+            updateTrend();
+        });
+    });
+
+    // Wellness Missions Tracker
+    const missionChecks = Array.from(document.querySelectorAll('.wellness-mission'));
+    const progressEl = document.getElementById('wellnessProgress');
+    const streakEl = document.getElementById('wellnessStreak');
+    if (missionChecks.length && progressEl && streakEl) {
+        const dayKey = new Date().toISOString().slice(0, 10);
+        const storageKey = `cp-wellness-{{ current_user.id }}-${dayKey}`;
+        const streakKey = `cp-wellness-streak-{{ current_user.id }}`;
+        let saved = {};
+        try { saved = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (_) { saved = {}; }
+        missionChecks.forEach(cb => { cb.checked = !!saved[cb.dataset.key]; });
+
+        function renderMissions() {
+            const total = missionChecks.length;
+            const done = missionChecks.filter(cb => cb.checked).length;
+            progressEl.style.width = `${Math.round((done / total) * 100)}%`;
+            const streak = parseInt(localStorage.getItem(streakKey) || '0', 10);
+            streakEl.textContent = `Streak: ${streak} day${streak === 1 ? '' : 's'}`;
+            if (done === total && !localStorage.getItem(`${storageKey}-counted`)) {
+                localStorage.setItem(streakKey, String(streak + 1));
+                localStorage.setItem(`${storageKey}-counted`, '1');
+                streakEl.textContent = `Streak: ${streak + 1} day${streak + 1 === 1 ? '' : 's'}`;
+            }
+        }
+
+        missionChecks.forEach(cb => cb.addEventListener('change', () => {
+            saved[cb.dataset.key] = cb.checked;
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+            renderMissions();
+        }));
+        renderMissions();
+    }
+
+    // Medication Tracker
+    const medChecks = document.querySelectorAll('.medication-check');
+    medChecks.forEach(check => {
+        check.addEventListener('change', function () {
+            const item = this.closest('.medication-item');
+            if (this.checked) {
+                item.style.opacity = '0.6';
+                item.querySelector('div[style*="font-weight"]').style.textDecoration = 'line-through';
+                const medName = item.querySelector('div[style*="font-weight"]').textContent;
+                const today = new Date().toISOString().split('T')[0];
+                localStorage.setItem(`med-${medName}-${today}`, 'taken');
+            } else {
+                item.style.opacity = '1';
+                item.querySelector('div[style*="font-weight"]').style.textDecoration = 'none';
+            }
+        });
+
+        const item = check.closest('.medication-item');
+        const medName = item.querySelector('div[style*="font-weight"]').textContent;
+        const today = new Date().toISOString().split('T')[0];
+        if (localStorage.getItem(`med-${medName}-${today}`) === 'taken') {
+            check.checked = true;
+            item.style.opacity = '0.6';
+            item.querySelector('div[style*="font-weight"]').style.textDecoration = 'line-through';
+        }
+    });
+
+    // Animated counters
+    document.querySelectorAll('[data-count-to]').forEach(el => {
+        const target = parseInt(el.dataset.countTo);
+        const duration = parseInt(el.dataset.countDuration || 2000);
+        const decimals = parseInt(el.dataset.countDecimals || 0);
+        let start = 0;
+        const increment = target / (duration / 16);
+
+        const counter = setInterval(() => {
+            start += increment;
+            if (start >= target) {
+                el.textContent = decimals > 0 ? target.toFixed(decimals) : target;
+                clearInterval(counter);
+            } else {
+                el.textContent = decimals > 0 ? start.toFixed(decimals) : Math.floor(start);
+            }
+        }, 16);
+    });
+
+    // Theme Change Handler
+    window.addEventListener('themeChanged', () => {
+        const isLightNow = document.body.classList.contains('light-mode');
+        const newGridColor = isLightNow ? 'rgba(0,0,0,0.06)' : 'rgba(148,163,184,0.06)';
+        const newTickColor = isLightNow ? 'rgba(0,0,0,0.4)' : 'rgba(148,163,184,0.4)';
+        chart.options.scales.x.grid.color = newGridColor;
+        chart.options.scales.y.grid.color = newGridColor;
+        chart.options.scales.x.ticks.color = newTickColor;
+        chart.options.scales.y.ticks.color = newTickColor;
+        chart.update('none');
+    });
+}) ();
+</script>
+{% endblock %}
