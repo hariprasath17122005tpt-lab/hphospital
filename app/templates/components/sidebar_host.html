@@ -30,6 +30,38 @@
             Add Staff
         </a>
 
+        <a href="{{ url_for('host.frontpage_doctors') }}"
+            class="sidebar-link {% if request.endpoint == 'host.frontpage_doctors' %}active{% endif %}">
+            <i class="fas fa-id-badge"></i>
+            Homepage Doctors
+        </a>
+
+        <span class="sidebar-section-label">Department Views</span>
+
+        <a href="{{ url_for('lab.dashboard') }}"
+            class="sidebar-link {% if 'lab.' in request.endpoint|default('') %}active{% endif %}">
+            <i class="fas fa-flask"></i>
+            Laboratory
+        </a>
+
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}"
+            class="sidebar-link {% if 'pharmacy' in request.endpoint|default('') %}active{% endif %}">
+            <i class="fas fa-pills"></i>
+            Pharmacy
+        </a>
+
+        <a href="{{ url_for('reception.dashboard') }}"
+            class="sidebar-link {% if 'reception.' in request.endpoint|default('') %}active{% endif %}">
+            <i class="fas fa-concierge-bell"></i>
+            Reception
+        </a>
+
+        <a href="{{ url_for('nurse.dashboard') }}"
+            class="sidebar-link {% if 'nurse.' in request.endpoint|default('') %}active{% endif %}">
+            <i class="fas fa-user-nurse"></i>
+            Nursing
+        </a>
+
         <span class="sidebar-section-label">Governance</span>
 
         <a href="{{ url_for('host.audit_logs') }}"

@@ -555,6 +555,25 @@ def view_patient(patient_id):
             'notes': h.symptoms or ''
         })
 
+    # Merge nurse-recorded vitals into the same list
+    nurse_vitals_list = PatientVitals.query.filter_by(patient_id=patient_id).order_by(
+        PatientVitals.recorded_at.desc()).limit(20).all()
+    for v in nurse_vitals_list:
+        nurse_name = v.nurse.username if v.nurse else 'Nurse'
+        recent_health_data.append({
+            'source': 'nurse',
+            'recorded_at': v.recorded_at,
+            'systolic_bp': v.systolic_bp,
+            'diastolic_bp': v.diastolic_bp,
+            'heart_rate': v.heart_rate,
+            'temperature': v.temperature,
+            'oxygen_level': v.oxygen_level,
+            'respiratory_rate': v.respiratory_rate,
+            'weight': v.weight,
+            'nurse': nurse_name,
+            'notes': v.notes or ''
+        })
+
     recent_health_data.sort(key=lambda x: x['recorded_at'] or datetime.min, reverse=True)
 
     latest_health = health_data[0] if health_data else None
@@ -575,7 +594,12 @@ def view_patient(patient_id):
         doctor_id=doctor.id, patient_id=patient_id).order_by(LabOrder.created_at.desc()).all()
     lab_reports = LabReport.query.filter_by(
         doctor_id=doctor.id, patient_id=patient_id).order_by(LabReport.conducted_at.desc()).all()
-    
+
+    # Nurse-recorded vitals
+    nurse_vitals = PatientVitals.query.filter_by(
+        patient_id=patient_id).order_by(PatientVitals.recorded_at.desc()).limit(20).all()
+    latest_nurse_vitals = nurse_vitals[0] if nurse_vitals else None
+
     return render_template('doctor/view_patient.html',
                          patient=patient,
                          health_data=health_data,
@@ -584,7 +608,9 @@ def view_patient(patient_id):
                          prescriptions=prescriptions,
                          quick_brief=quick_brief,
                          lab_orders=lab_orders,
-                         lab_reports=lab_reports)
+                         lab_reports=lab_reports,
+                         nurse_vitals=nurse_vitals,
+                         latest_nurse_vitals=latest_nurse_vitals)
 
 @doctor_bp.route('/appointments')
 @login_required
@@ -1723,6 +1749,13 @@ def api_patient_emr(patient_id):
             'title': 'Vitals updated',
             'details': f"BP {h.systolic_bp or '-'} / {h.diastolic_bp or '-'}, HR {h.heart_rate or '-'}"
         })
+    for v in vitals:
+        timeline.append({
+            'type': 'vitals',
+            'time': v.recorded_at,
+            'title': 'Nurse Vitals Recorded',
+            'details': f"Temp {v.temperature or '-'}°F, BP {v.systolic_bp or '-'}/{v.diastolic_bp or '-'}, HR {v.heart_rate or '-'}, SpO2 {v.oxygen_level or '-'}%"
+        })
     for d in docs:
         timeline.append({
             'type': 'document',
@@ -1819,6 +1852,7 @@ def api_patient_emr(patient_id):
         'vitals': [{
             'id': h.id,
             'date': h.recorded_at.strftime('%Y-%m-%d %H:%M'),
+            'source': 'patient',
             'symptoms': h.symptoms or '',
             'bp': f"{h.systolic_bp or '-'} / {h.diastolic_bp or '-'}",
             'heart_rate': h.heart_rate or '',
@@ -1826,7 +1860,22 @@ def api_patient_emr(patient_id):
             'diabetes_risk': h.diabetes_risk or 0,
             'heart_disease_risk': h.heart_disease_risk or 0,
             'hypertension_risk': h.hypertension_risk or 0
-        } for h in health[:100]],
+        } for h in health[:100]] + [{
+            'id': v.id,
+            'date': v.recorded_at.strftime('%Y-%m-%d %H:%M'),
+            'source': 'nurse',
+            'symptoms': '',
+            'bp': f"{v.systolic_bp or '-'} / {v.diastolic_bp or '-'}",
+            'heart_rate': v.heart_rate or '',
+            'temperature': v.temperature or '',
+            'oxygen_level': v.oxygen_level or '',
+            'blood_sugar': v.blood_sugar or '',
+            'respiratory_rate': v.respiratory_rate or '',
+            'notes': v.notes or '',
+            'diabetes_risk': 0,
+            'heart_disease_risk': 0,
+            'hypertension_risk': 0
+        } for v in vitals[:100]],
         'documents': [{
             'id': d.id,
             'name': d.original_filename or d.filename,

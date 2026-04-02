@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Manage Homepage Doctors — Host{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold"><i class="fas fa-user-md text-primary me-2"></i>Homepage Doctors</h2>
+            <p class="text-muted mb-0">Manage doctors displayed on the hospital homepage</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                <i class="fas fa-plus me-1"></i> Add Doctor
+            </button>
+        </div>
+    </div>
+
+    <!-- Current Doctors -->
+    {% if doctors %}
+    <div class="row g-3">
+        {% for doc in doctors %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="text-center pt-3">
+                    {% if doc.photo_path %}
+                    <img src="{{ url_for('static', filename=doc.photo_path) }}" alt="{{ doc.name }}"
+                        style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0;">
+                    {% else %}
+                    <div style="width:120px;height:120px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:2.5rem;color:#94a3b8;">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="fw-bold mb-1">{{ doc.name }}</h6>
+                    <div class="text-primary small fw-semibold">{{ doc.specialization }}</div>
+                    {% if doc.qualification %}
+                    <div class="text-muted small">{{ doc.qualification }}</div>
+                    {% endif %}
+                    {% if doc.experience_years %}
+                    <div class="text-muted small">{{ doc.experience_years }} yrs experience</div>
+                    {% endif %}
+                    <div class="mt-2">
+                        {% if doc.is_active %}
+                        <span class="badge bg-success">Visible</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Hidden</span>
+                        {% endif %}
+                        <span class="badge bg-light text-dark">Order: {{ doc.display_order }}</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 text-center pb-3">
+                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ doc.id }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form method="POST" action="{{ url_for('host.frontpage_doctor_toggle', doc_id=doc.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-{{ 'warning' if doc.is_active else 'success' }} me-1" type="submit">
+                            <i class="fas fa-{{ 'eye-slash' if doc.is_active else 'eye' }}"></i>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('host.frontpage_doctor_delete', doc_id=doc.id) }}" style="display:inline;"
+                          onsubmit="return confirm('Remove Dr. {{ doc.name }} from homepage?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal{{ doc.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('host.frontpage_doctor_edit', doc_id=doc.id) }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="modal-header"><h6 class="modal-title">Edit Dr. {{ doc.name }}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            <div class="mb-3"><label class="form-label fw-semibold">Name</label><input type="text" name="name" class="form-control" value="{{ doc.name }}" required></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Specialization</label><input type="text" name="specialization" class="form-control" value="{{ doc.specialization }}" required></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Qualification</label><input type="text" name="qualification" class="form-control" value="{{ doc.qualification or '' }}"></div>
+                            <div class="row">
+                                <div class="col-6 mb-3"><label class="form-label fw-semibold">Experience (years)</label><input type="number" name="experience_years" class="form-control" value="{{ doc.experience_years or '' }}"></div>
+                                <div class="col-6 mb-3"><label class="form-label fw-semibold">Display Order</label><input type="number" name="display_order" class="form-control" value="{{ doc.display_order }}"></div>
+                            </div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Update Photo</label><input type="file" name="photo" class="form-control" accept="image/*"></div>
+                        </div>
+                        <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary btn-sm">Save Changes</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5 text-muted">
+            <i class="fas fa-user-md fa-3x mb-3 opacity-25"></i>
+            <h5>No Doctors Added</h5>
+            <p class="mb-2">Add doctors to display on the hospital homepage.</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                <i class="fas fa-plus me-1"></i> Add First Doctor
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('host.frontpage_doctor_add') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header bg-primary text-white">
+                    <h6 class="modal-title"><i class="fas fa-user-md me-2"></i>Add Doctor to Homepage</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label fw-semibold">Doctor Name *</label><input type="text" name="name" class="form-control" placeholder="Dr. John Smith" required></div>
+                    <div class="mb-3"><label class="form-label fw-semibold">Specialization *</label><input type="text" name="specialization" class="form-control" placeholder="General Medicine" required></div>
+                    <div class="mb-3"><label class="form-label fw-semibold">Qualification</label><input type="text" name="qualification" class="form-control" placeholder="MBBS, MD"></div>
+                    <div class="row">
+                        <div class="col-6 mb-3"><label class="form-label fw-semibold">Experience (years)</label><input type="number" name="experience_years" class="form-control" placeholder="10"></div>
+                        <div class="col-6 mb-3"><label class="form-label fw-semibold">Display Order</label><input type="number" name="display_order" class="form-control" value="0" placeholder="0"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Doctor Photo *</label>
+                        <input type="file" name="photo" class="form-control" accept="image/png,image/jpeg,image/webp" required>
+                        <small class="text-muted">Upload a professional headshot (JPG, PNG, WebP)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Doctor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

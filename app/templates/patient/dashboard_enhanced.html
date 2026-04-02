@@ -257,8 +257,8 @@
             </div>
             <div class="pd-metric-title">Blood Pressure</div>
             <div class="pd-metric-value">
-                {% if latest_health and latest_health.systolic_bp %}{{ latest_health.systolic_bp }}/{{
-                latest_health.diastolic_bp }}{% else %}--/--{% endif %}
+                {% if displayed_vitals and displayed_vitals.systolic_bp %}{{ displayed_vitals.systolic_bp }}/{{
+                displayed_vitals.diastolic_bp }}{% else %}--/--{% endif %}
                 <span class="pd-metric-unit">mmHg</span>
             </div>
             <div class="pd-metric-change {{ trends.bp.class }}"><i class="fas {{ trends.bp.icon }}"></i> {{
@@ -277,8 +277,8 @@
             </div>
             <div class="pd-metric-title">Fasting Glucose</div>
             <div class="pd-metric-value">
-                {% if latest_health and latest_health.fasting_sugar %}
-                <span data-count-to="{{ latest_health.fasting_sugar }}" data-count-duration="1500">0</span>
+                {% if displayed_vitals and (displayed_vitals.fasting_sugar is defined and displayed_vitals.fasting_sugar or displayed_vitals.blood_sugar is defined and displayed_vitals.blood_sugar) %}
+                <span data-count-to="{{ displayed_vitals.fasting_sugar if displayed_vitals.fasting_sugar is defined and displayed_vitals.fasting_sugar else displayed_vitals.blood_sugar }}" data-count-duration="1500">0</span>
                 {% else %}--{% endif %}
                 <span class="pd-metric-unit">mg/dL</span>
             </div>
@@ -349,7 +349,7 @@
                 <div class="pd-vital-label" style="top:15%;right:5%;">
                     <div class="vl-icon heart"><i class="fas fa-heartbeat"></i></div>
                     <div class="vl-info">
-                        <span class="vl-val">{% if latest_health %}{{ latest_health.heart_rate }} bpm{% else %}--{%
+                        <span class="vl-val">{% if displayed_vitals and displayed_vitals.heart_rate %}{{ displayed_vitals.heart_rate }} bpm{% else %}--{%
                             endif %}</span>
                         <span class="vl-name">Heart Rate</span>
                     </div>
@@ -358,7 +358,7 @@
                 <div class="pd-vital-label" style="top:45%;left:3%;">
                     <div class="vl-icon sugar"><i class="fas fa-cubes"></i></div>
                     <div class="vl-info">
-                        <span class="vl-val">{% if latest_health %}{{ latest_health.fasting_sugar }} mg/dL{% else %}--{%
+                        <span class="vl-val">{% if displayed_vitals and (displayed_vitals.fasting_sugar is defined and displayed_vitals.fasting_sugar or displayed_vitals.blood_sugar is defined and displayed_vitals.blood_sugar) %}{{ displayed_vitals.fasting_sugar if displayed_vitals.fasting_sugar is defined and displayed_vitals.fasting_sugar else displayed_vitals.blood_sugar }} mg/dL{% else %}--{%
                             endif %}</span>
                         <span class="vl-name">Glucose</span>
                     </div>
@@ -367,8 +367,8 @@
                 <div class="pd-vital-label" style="bottom:20%;right:7%;">
                     <div class="vl-icon bp"><i class="fas fa-tint"></i></div>
                     <div class="vl-info">
-                        <span class="vl-val">{% if latest_health %}{{ latest_health.systolic_bp }}/{{
-                            latest_health.diastolic_bp }}{% else %}--/--{% endif %}</span>
+                        <span class="vl-val">{% if displayed_vitals and displayed_vitals.systolic_bp %}{{ displayed_vitals.systolic_bp }}/{{
+                            displayed_vitals.diastolic_bp }}{% else %}--/--{% endif %}</span>
                         <span class="vl-name">Blood Pressure</span>
                     </div>
                 </div>
@@ -472,9 +472,9 @@
 
 <!-- 🆕 HEALTH EDUCATION VIDEOS -->
 <div class="pd-section pro-reveal pro-delay-6">
-    <div class="pd-dual-grid">
+    <div class="pd-dual-grid" style="align-items:stretch;">
         <!-- HEALTH EDUCATION VIDEOS -->
-        <div>
+        <div style="display:flex;flex-direction:column;">
             <div class="pro-section-header" style="margin-bottom:16px;">
                 <div class="pro-icon-box violet" style="width:32px;height:32px;border-radius:8px;font-size:0.75rem;">
                     <i class="fas fa-play-circle"></i>
@@ -523,13 +523,9 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- APPOINTMENTS -->
-<div class="pd-section pro-reveal pro-delay-7">
-    <div class="pd-dual-grid">
-        <div class="pd-appointments-panel pro-glass pro-reveal-left">
+        <!-- UPCOMING APPOINTMENTS (side-by-side) -->
+        <div class="pd-appointments-panel pro-glass pro-reveal-left" style="display:flex;flex-direction:column;">
             <div class="pro-section-header" style="margin-bottom:16px;">
                 <div class="pro-icon-box blue" style="width:32px;height:32px;border-radius:8px;font-size:0.75rem;">
                     <i class="fas fa-calendar-alt"></i>

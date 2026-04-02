@@ -42,12 +42,6 @@
             <span>Lab Reports</span>
         </a>
 
-        <a href="{{ safe_url_for('patient.lab_requests', 'patient.lab_reports') }}"
-            class="sidebar-link {% if request.endpoint == 'patient.lab_requests' %}active{% endif %}">
-            <i class="fas fa-vial"></i>
-            <span>Lab Requests</span>
-        </a>
-
         <a href="{{ safe_url_for('patient.medicine_status', 'patient.diet_plan') }}"
             class="sidebar-link {% if request.endpoint == 'patient.medicine_status' %}active{% endif %}">
             <i class="fas fa-prescription-bottle-alt"></i>

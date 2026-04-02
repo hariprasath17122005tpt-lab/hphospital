@@ -1,4 +1,4 @@
-<!-- Nurse Sidebar -->
+<!-- Nurse Portal Sidebar -->
 <aside class="app-sidebar" id="appSidebar">
     <!-- Brand -->
     <a href="{{ url_for('nurse.dashboard') }}" class="sidebar-brand">
@@ -16,6 +16,48 @@
             class="sidebar-link {% if request.endpoint == 'nurse.dashboard' %}active{% endif %}">
             <i class="fas fa-th-large"></i>
             Dashboard
+        </a>
+
+        <a href="{{ url_for('nurse.patients') }}"
+            class="sidebar-link {% if request.endpoint == 'nurse.patients' %}active{% endif %}">
+            <i class="fas fa-procedures"></i>
+            Assigned Patients
+        </a>
+
+        <a href="{{ url_for('nurse.vitals') }}"
+            class="sidebar-link {% if request.endpoint == 'nurse.vitals' %}active{% endif %}">
+            <i class="fas fa-heartbeat"></i>
+            Patient Vitals
+        </a>
+
+        <a href="{{ url_for('nurse.tasks') }}"
+            class="sidebar-link {% if request.endpoint in ('nurse.tasks', 'nurse.complete_task') %}active{% endif %}">
+            <i class="fas fa-tasks"></i>
+            Tasks / Instructions
+        </a>
+
+        <a href="{{ url_for('nurse.notes') }}"
+            class="sidebar-link {% if request.endpoint in ('nurse.notes', 'nurse.add_note') %}active{% endif %}">
+            <i class="fas fa-notes-medical"></i>
+            Nurse Notes
+        </a>
+
+        <a href="{{ url_for('nurse.lab') }}"
+            class="sidebar-link {% if request.endpoint == 'nurse.lab' %}active{% endif %}">
+            <i class="fas fa-flask"></i>
+            Lab Coordination
+        </a>
+
+        <a href="{{ url_for('nurse.medications') }}"
+            class="sidebar-link {% if request.endpoint in ('nurse.medications', 'nurse.medication_update') %}active{% endif %}">
+            <i class="fas fa-pills"></i>
+            Medication Admin
+        </a>
+
+        <a href="{{ url_for('nurse.handover') }}"
+            class="sidebar-link {% if request.endpoint in ('nurse.handover', 'nurse.handover_save') %}active{% endif %}">
+            <i class="fas fa-exchange-alt"></i>
+            Shift Handover
         </a>
     </nav>
 

@@ -474,7 +474,7 @@
     </div>
 
     <!-- ═══ INCOMING APPOINTMENTS ═══ -->
-    {% if current_user.role.value in ['RECEPTIONIST', 'HOST', 'ADMIN'] %}
+    {% if current_user.role.value in ['RECEPTIONIST', 'ADMIN'] %}
     {% if incoming_appointments|length > 0 %}
     <div class="section-title">
         <i class="fas fa-calendar-check"></i> Incoming Appointments
@@ -768,7 +768,7 @@
     </div>
 
     <!-- ═══ SEARCH EXISTING / RETURNING PATIENT ═══ -->
-    {% if current_user.role.value in ['RECEPTIONIST', 'HOST', 'ADMIN'] %}
+    {% if current_user.role.value in ['RECEPTIONIST', 'ADMIN'] %}
     <div class="walkin-section" style="margin-top:28px;">
         <div class="section-title">
             <i class="fas fa-search"></i> Search Existing / Returning Patient

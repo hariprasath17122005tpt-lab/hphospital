@@ -5,7 +5,7 @@
 <div class="container-fluid px-4 py-4" id="labDashboardRoot"
     data-flow-filter="{{ flow_filter }}" data-status-filter="{{ status_filter }}"
     data-search="{{ search_q|e }}" data-poll-url="{{ url_for('lab.orders_api') }}"
-    data-is-lab-staff="{{ '1' if current_user.role.value in ['LAB_STAFF','HOST','ADMIN'] else '0' }}">
+    data-is-lab-staff="{{ '1' if current_user.role.value in ['LAB_STAFF','ADMIN'] else '0' }}">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <h2 class="fw-bold mb-1" style="color: #f1f5f9;">
@@ -21,13 +21,13 @@
             </div>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
-        {% if current_user.role.value in ['LAB_STAFF', 'HOST', 'ADMIN'] %}
+        {% if current_user.role.value in ['LAB_STAFF', 'ADMIN'] %}
         <button class="btn btn-success px-3 py-2 rounded-3 shadow-sm" data-bs-toggle="modal"
             data-bs-target="#walkinLabModal" type="button">
             <i class="fas fa-vial me-2"></i>New walk-in order
         </button>
         {% endif %}
-        {% if current_user.role.value in ['DOCTOR', 'HOST', 'ADMIN'] %}
+        {% if current_user.role.value in ['DOCTOR', 'ADMIN'] %}
         <button class="btn btn-primary px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal"
             data-bs-target="#requestTestModal" type="button">
             <i class="fas fa-plus me-2"></i>Order lab test (doctor)
@@ -161,7 +161,7 @@
                     <td><span class="lab-status-pill" data-status="{{ o.status }}">{{ o.status.replace('_',' ') }}</span></td>
                     <td class="small text-secondary">{{ o.created_at.strftime('%d %b %Y %H:%M') if o.created_at else '—' }}</td>
                     <td class="pe-4 text-end lab-actions-cell">
-                        {% if current_user.role.value in ['LAB_STAFF','HOST','ADMIN'] %}
+                        {% if current_user.role.value in ['LAB_STAFF','ADMIN'] %}
                         <div class="btn-group btn-group-sm">
                             {% if o.status == 'CREATED' %}
                             <button type="button" class="btn btn-outline-info btn-lab-status" data-order-id="{{ o.id }}" data-new-status="SAMPLE_COLLECTED">Collect sample</button>

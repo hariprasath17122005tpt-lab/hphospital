@@ -2,7 +2,9 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, abort, session
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from app.models.models import db, User, UserRole, Doctor, Nurse, Patient, AuditLog, SystemSettings, Hospital
+from app.models.models import db, User, UserRole, Doctor, Nurse, Patient, AuditLog, SystemSettings, Hospital, FrontpageDoctor
+from werkzeug.utils import secure_filename
+import os
 from functools import wraps
 from datetime import datetime
 
@@ -129,8 +131,10 @@ def settings():
     if request.method == 'POST':
         settings.emergency_mode = request.form.get('emergency_mode') == 'on'
         settings.maintenance_mode = request.form.get('maintenance_mode') == 'on'
-        # settings.ai_enabled = request.form.get('ai_enabled') == 'on' # Removed per user request
         settings.disclaimer_text = request.form.get('disclaimer_text')
+        wa = request.form.get('whatsapp_number', '').strip()
+        if wa:
+            settings.whatsapp_number = wa.replace('+', '').replace(' ', '').replace('-', '')
         
         db.session.commit()
         flash('System settings updated.', 'success')
@@ -257,6 +261,111 @@ def create_nurse():
     return render_template('host/create_nurse.html')
 
 
+# ═══ FRONTPAGE DOCTOR MANAGEMENT ═══
+DOCTOR_PHOTO_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'img', 'doctors')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+
+
+def _allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@host_bp.route('/frontpage-doctors')
+@login_required
+@host_required
+def frontpage_doctors():
+    doctors = FrontpageDoctor.query.order_by(FrontpageDoctor.display_order.asc(), FrontpageDoctor.id.asc()).all()
+    return render_template('host/frontpage_doctors.html', doctors=doctors)
+
+
+@host_bp.route('/frontpage-doctors/add', methods=['POST'])
+@login_required
+@host_required
+def frontpage_doctor_add():
+    name = request.form.get('name', '').strip()
+    specialization = request.form.get('specialization', '').strip()
+    qualification = request.form.get('qualification', '').strip()
+    experience = request.form.get('experience_years', '')
+    display_order = request.form.get('display_order', '0')
+
+    if not name or not specialization:
+        flash('Doctor name and specialization are required.', 'danger')
+        return redirect(url_for('host.frontpage_doctors'))
+
+    photo_path = None
+    photo = request.files.get('photo')
+    if photo and photo.filename and _allowed_file(photo.filename):
+        os.makedirs(DOCTOR_PHOTO_FOLDER, exist_ok=True)
+        fname = secure_filename(f"dr_{name.lower().replace(' ','_')}_{int(datetime.utcnow().timestamp())}.{photo.filename.rsplit('.',1)[1].lower()}")
+        photo.save(os.path.join(DOCTOR_PHOTO_FOLDER, fname))
+        photo_path = f"img/doctors/{fname}"
+
+    doc = FrontpageDoctor(
+        name=name,
+        specialization=specialization,
+        qualification=qualification or None,
+        experience_years=int(experience) if experience.isdigit() else None,
+        photo_path=photo_path,
+        display_order=int(display_order) if display_order.isdigit() else 0,
+        is_active=True,
+    )
+    db.session.add(doc)
+    db.session.commit()
+    flash(f'Dr. {name} added to homepage.', 'success')
+    log_audit('frontpage_doctor_add', target_id=doc.id, details=f'Added {name}')
+    return redirect(url_for('host.frontpage_doctors'))
+
+
+@host_bp.route('/frontpage-doctors/edit/<int:doc_id>', methods=['POST'])
+@login_required
+@host_required
+def frontpage_doctor_edit(doc_id):
+    doc = FrontpageDoctor.query.get_or_404(doc_id)
+    doc.name = request.form.get('name', doc.name).strip()
+    doc.specialization = request.form.get('specialization', doc.specialization).strip()
+    doc.qualification = request.form.get('qualification', '').strip() or doc.qualification
+    exp = request.form.get('experience_years', '')
+    if exp.isdigit():
+        doc.experience_years = int(exp)
+    order = request.form.get('display_order', '')
+    if order.isdigit():
+        doc.display_order = int(order)
+
+    photo = request.files.get('photo')
+    if photo and photo.filename and _allowed_file(photo.filename):
+        os.makedirs(DOCTOR_PHOTO_FOLDER, exist_ok=True)
+        fname = secure_filename(f"dr_{doc.name.lower().replace(' ','_')}_{int(datetime.utcnow().timestamp())}.{photo.filename.rsplit('.',1)[1].lower()}")
+        photo.save(os.path.join(DOCTOR_PHOTO_FOLDER, fname))
+        doc.photo_path = f"img/doctors/{fname}"
+
+    db.session.commit()
+    flash(f'Dr. {doc.name} updated.', 'success')
+    return redirect(url_for('host.frontpage_doctors'))
+
+
+@host_bp.route('/frontpage-doctors/delete/<int:doc_id>', methods=['POST'])
+@login_required
+@host_required
+def frontpage_doctor_delete(doc_id):
+    doc = FrontpageDoctor.query.get_or_404(doc_id)
+    name = doc.name
+    db.session.delete(doc)
+    db.session.commit()
+    flash(f'Dr. {name} removed from homepage.', 'success')
+    return redirect(url_for('host.frontpage_doctors'))
+
+
+@host_bp.route('/frontpage-doctors/toggle/<int:doc_id>', methods=['POST'])
+@login_required
+@host_required
+def frontpage_doctor_toggle(doc_id):
+    doc = FrontpageDoctor.query.get_or_404(doc_id)
+    doc.is_active = not doc.is_active
+    db.session.commit()
+    flash(f'Dr. {doc.name} {"shown" if doc.is_active else "hidden"} on homepage.', 'success')
+    return redirect(url_for('host.frontpage_doctors'))
+
+
 # --- Emergency Override (Global) ---
-# This is a bit tricky to implement globally without middleware, 
+# This is a bit tricky to implement globally without middleware,
 # but we can simulate it by checking it in main decorators or context processors.

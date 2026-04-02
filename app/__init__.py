@@ -750,6 +750,29 @@ def create_app(config_name='development'):
     with app.app_context():
         db.create_all()
 
+        # ── Ensure patient_vitals has blood_sugar column ──
+        try:
+            db.session.execute(text("SELECT blood_sugar FROM patient_vitals LIMIT 1"))
+        except Exception:
+            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE patient_vitals ADD COLUMN `blood_sugar` FLOAT NULL"))
+                db.session.commit()
+                app.logger.info("Added blood_sugar column to patient_vitals")
+            except Exception:
+                db.session.rollback()
+
+        # ── Ensure system_settings has whatsapp_number column ──
+        try:
+            db.session.execute(text("SELECT whatsapp_number FROM system_settings LIMIT 1"))
+        except Exception:
+            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE system_settings ADD COLUMN `whatsapp_number` VARCHAR(20) DEFAULT '919443966329'"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
         # ── Ensure a default Hospital record exists ──────────────────────────
         # Every registration route requires Hospital.query.first() to return a
         # valid row.  If the database was freshly created (or the old init_db.py

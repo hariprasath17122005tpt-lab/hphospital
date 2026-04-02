@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Patient Vitals — Nurse Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="fas fa-heartbeat text-danger me-2"></i>Patient Vitals</h2>
+            <p class="text-muted mb-0">Record and monitor patient vital signs</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Record Vitals Form -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3"><h6 class="mb-0"><i class="fas fa-plus-circle me-2 text-success"></i>Record New Vitals</h6></div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('nurse.vitals_add') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Patient</label>
+                            <input type="text" id="patientSearch" class="form-control mb-2" placeholder="Search by name, UHID, or phone..." autocomplete="off">
+                            <select name="patient_id" id="patientSelect" class="form-select" required>
+                                <option value="">-- Choose Patient --</option>
+                                {% for p in patients %}
+                                <option value="{{ p.id }}" {% if patient_id and patient_id == p.id %}selected{% endif %}>
+                                    {{ p.first_name }} {{ p.last_name }} ({{ p.uhid or 'No UHID' }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="searchResults" class="list-group mt-1" style="display:none; max-height:200px; overflow-y:auto; position:absolute; z-index:100; width:calc(100% - 2rem);"></div>
+                            <small class="text-muted">Showing today's patients. Type above to search all patients.</small>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Temperature (°F)</label>
+                                <input type="number" step="0.1" name="temperature" class="form-control" placeholder="98.6" required>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Heart Rate (bpm)</label>
+                                <input type="number" name="heart_rate" class="form-control" placeholder="72" required>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Systolic BP</label>
+                                <input type="number" name="systolic_bp" class="form-control" placeholder="120" required>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Diastolic BP</label>
+                                <input type="number" name="diastolic_bp" class="form-control" placeholder="80" required>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Oxygen SpO2 (%)</label>
+                                <input type="number" step="0.1" name="oxygen_level" class="form-control" placeholder="98" required>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Respiratory Rate</label>
+                                <input type="number" name="respiratory_rate" class="form-control" placeholder="16">
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label class="form-label small">Fasting Glucose (mg/dL)</label>
+                                <input type="number" step="0.1" name="blood_sugar" class="form-control" placeholder="e.g. 95">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small">Remarks</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Additional observations..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-save me-2"></i>Save Vitals</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Vitals History -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>
+                        {% if selected_patient %}
+                        Vitals History — {{ selected_patient.first_name }} {{ selected_patient.last_name }}
+                        {% else %}
+                        Select a patient to view history
+                        {% endif %}
+                    </h6>
+                    {% if patients %}
+                    <form method="GET" action="{{ url_for('nurse.vitals') }}" class="d-flex" style="max-width:250px;">
+                        <select name="patient_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All</option>
+                            {% for p in patients %}
+                            <option value="{{ p.id }}" {% if patient_id == p.id %}selected{% endif %}>{{ p.first_name }} {{ p.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    {% if vitals_list %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Temp</th>
+                                    <th>BP</th>
+                                    <th>HR</th>
+                                    <th>SpO2</th>
+                                    <th>RR</th>
+                                    <th>Fasting Glucose</th>
+                                    <th>Alerts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in vitals_list %}
+                                <tr>
+                                    <td class="small">{{ v.recorded_at.strftime('%d %b %H:%M') }}</td>
+                                    <td class="{% if v.has_alerts and 'fever' in v.has_alerts %}text-danger fw-bold{% endif %}">{{ v.temperature }}°F</td>
+                                    <td class="{% if v.has_alerts and ('high_bp' in v.has_alerts or 'low_bp' in v.has_alerts) %}text-danger fw-bold{% endif %}">{{ v.systolic_bp }}/{{ v.diastolic_bp }}</td>
+                                    <td class="{% if v.has_alerts and ('tachycardia' in v.has_alerts or 'bradycardia' in v.has_alerts) %}text-danger fw-bold{% endif %}">{{ v.heart_rate }}</td>
+                                    <td class="{% if v.has_alerts and 'low_oxygen' in v.has_alerts %}text-danger fw-bold{% endif %}">{{ v.oxygen_level }}%</td>
+                                    <td>{{ v.respiratory_rate or '—' }}</td>
+                                    <td>{{ v.blood_sugar or '—' }}</td>
+                                    <td>
+                                        {% for a in v.has_alerts %}
+                                        <span class="badge bg-danger" style="font-size:0.65rem;">{{ a }}</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-chart-area fa-3x mb-3 opacity-25"></i>
+                        <h6>No Vitals Recorded</h6>
+                        <p class="mb-0 small">{% if selected_patient %}Record vitals using the form on the left.{% else %}Select a patient to view vitals history.{% endif %}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('patientSearch');
+    const selectEl = document.getElementById('patientSelect');
+    const resultsDiv = document.getElementById('searchResults');
+    let timer = null;
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timer);
+        const q = this.value.trim();
+        if (q.length < 2) { resultsDiv.style.display = 'none'; return; }
+
+        timer = setTimeout(async () => {
+            try {
+                const res = await fetch('/nurse/api/search-patients?q=' + encodeURIComponent(q));
+                const data = await res.json();
+                if (!data.length) {
+                    resultsDiv.innerHTML = '<div class="list-group-item text-muted small">No patients found</div>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                resultsDiv.innerHTML = data.map(p =>
+                    '<a href="#" class="list-group-item list-group-item-action py-2" data-id="' + p.id + '" data-name="' + p.name + ' (' + (p.uhid || 'No UHID') + ')">' +
+                    '<strong>' + p.name + '</strong> <small class="text-muted">' + (p.uhid || '') + '</small></a>'
+                ).join('');
+                resultsDiv.style.display = 'block';
+            } catch(e) { console.error(e); }
+        }, 300);
+    });
+
+    resultsDiv.addEventListener('click', function(e) {
+        e.preventDefault();
+        const item = e.target.closest('.list-group-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const name = item.dataset.name;
+
+        // Check if option exists, if not add it
+        let opt = selectEl.querySelector('option[value="' + id + '"]');
+        if (!opt) {
+            opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = name;
+            selectEl.appendChild(opt);
+        }
+        selectEl.value = id;
+        searchInput.value = '';
+        resultsDiv.style.display = 'none';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!resultsDiv.contains(e.target) && e.target !== searchInput) {
+            resultsDiv.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

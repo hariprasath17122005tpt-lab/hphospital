@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.first_name }} {{ patient.last_name }} — Nurse View{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Back + Header -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('nurse.patients') }}" class="btn btn-outline-secondary btn-sm me-3"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h2 class="fw-bold mb-0">{{ patient.first_name }} {{ patient.last_name }}</h2>
+            <span class="badge bg-light text-dark font-monospace">{{ patient.uhid or 'No UHID' }}</span>
+            {% if bed %}<span class="badge bg-info bg-opacity-10 text-info ms-2">{{ bed.ward_type }} - {{ bed.bed_number }}</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- Patient Summary Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Patient Summary</h6></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Age:</strong> {{ patient.age or '—' }}</div>
+                        <div class="col-sm-4"><strong>Gender:</strong> {{ patient.gender or '—' }}</div>
+                        <div class="col-sm-4"><strong>Blood Type:</strong> {{ patient.blood_type or '—' }}</div>
+                        <div class="col-sm-4 mt-2"><strong>Phone:</strong> {{ patient.phone or '—' }}</div>
+                        <div class="col-sm-4 mt-2"><strong>Weight:</strong> {{ patient.weight or '—' }} kg</div>
+                        <div class="col-sm-4 mt-2"><strong>Height:</strong> {{ patient.height or '—' }} cm</div>
+                    </div>
+                    {% if patient.allergies %}
+                    <div class="mt-2"><strong class="text-danger">Allergies:</strong> {{ patient.allergies }}</div>
+                    {% endif %}
+                    {% if patient.medical_history %}
+                    <div class="mt-2"><strong>History:</strong> {{ patient.medical_history[:200] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Latest Vitals -->
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-heartbeat me-2 text-danger"></i>Latest Vitals</h6></div>
+                <div class="card-body">
+                    {% if latest_vitals %}
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <small class="text-muted">Temp</small><br>
+                            <span class="fw-bold {% if latest_vitals.has_alerts and 'fever' in latest_vitals.has_alerts %}text-danger{% endif %}">{{ latest_vitals.temperature }}°F</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">BP</small><br>
+                            <span class="fw-bold {% if latest_vitals.has_alerts and ('high_bp' in latest_vitals.has_alerts or 'low_bp' in latest_vitals.has_alerts) %}text-danger{% endif %}">{{ latest_vitals.systolic_bp }}/{{ latest_vitals.diastolic_bp }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Heart Rate</small><br>
+                            <span class="fw-bold">{{ latest_vitals.heart_rate }} bpm</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">SpO2</small><br>
+                            <span class="fw-bold {% if latest_vitals.has_alerts and 'low_oxygen' in latest_vitals.has_alerts %}text-danger{% endif %}">{{ latest_vitals.oxygen_level }}%</span>
+                        </div>
+                        {% if latest_vitals.blood_sugar %}
+                        <div class="col-6">
+                            <small class="text-muted">Fasting Glucose</small><br>
+                            <span class="fw-bold">{{ latest_vitals.blood_sugar }} mg/dL</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="text-muted small mt-2">Recorded: {{ latest_vitals.recorded_at.strftime('%d %b %Y, %H:%M') }}</div>
+                    {% else %}
+                    <div class="text-muted text-center py-3"><i class="fas fa-heart-broken d-block mb-2 opacity-50"></i>No vitals recorded</div>
+                    {% endif %}
+                    <a href="{{ url_for('nurse.vitals', patient_id=patient.id) }}" class="btn btn-sm btn-outline-danger w-100 mt-2">
+                        <i class="fas fa-plus me-1"></i>Record Vitals
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks + Notes Row -->
+    <div class="row g-3 mb-4">
+        <!-- Doctor Instructions / Tasks -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-tasks me-2 text-warning"></i>Doctor Instructions / Tasks</h6></div>
+                <div class="card-body p-0">
+                    {% if tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr><th>Task</th><th>Type</th><th>Priority</th><th>Status</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {% for t in tasks %}
+                                <tr>
+                                    <td class="fw-semibold">{{ t.title }}</td>
+                                    <td><span class="badge bg-light text-dark">{{ t.task_type or '—' }}</span></td>
+                                    <td>
+                                        {% if t.priority == 'urgent' %}<span class="badge bg-danger">Urgent</span>
+                                        {% elif t.priority == 'high' %}<span class="badge bg-warning text-dark">High</span>
+                                        {% else %}<span class="badge bg-secondary">{{ t.priority|capitalize }}</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if t.status == 'Completed' %}<span class="badge bg-success">Done</span>
+                                        {% elif t.status == 'In Progress' %}<span class="badge bg-primary">In Progress</span>
+                                        {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if t.status != 'Completed' %}
+                                        <form method="POST" action="{{ url_for('nurse.complete_task', task_id=t.id) }}" style="display:inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="status" value="Completed">
+                                            <input type="hidden" name="redirect_to" value="{{ url_for('nurse.patient_detail', patient_id=patient.id) }}">
+                                            <button class="btn btn-sm btn-outline-success" type="submit"><i class="fas fa-check"></i></button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4"><i class="fas fa-clipboard-check d-block mb-2 opacity-50"></i>No tasks assigned</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Nurse Notes -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-notes-medical me-2 text-primary"></i>Nurse Notes</h6></div>
+                <div class="card-body">
+                    <!-- Add Note Form -->
+                    <form method="POST" action="{{ url_for('nurse.add_note') }}" class="mb-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="patient_id" value="{{ patient.id }}">
+                        <input type="hidden" name="redirect_to" value="{{ url_for('nurse.patient_detail', patient_id=patient.id) }}">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="content" class="form-control" placeholder="Add observation note..." required>
+                            <select name="note_type" class="form-select" style="max-width:120px;">
+                                <option value="general">General</option>
+                                <option value="observation">Observation</option>
+                                <option value="care_plan">Care Plan</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="form-check form-check-inline mt-1">
+                            <input type="checkbox" class="form-check-input" name="is_critical" id="critCheck" value="true">
+                            <label class="form-check-label small text-danger" for="critCheck">Mark as critical</label>
+                        </div>
+                    </form>
+                    {% if notes %}
+                    <div style="max-height:250px; overflow-y:auto;">
+                        {% for n in notes %}
+                        <div class="border-start border-3 {% if n.is_critical %}border-danger{% else %}border-primary{% endif %} ps-3 mb-2">
+                            <div class="fw-semibold small">
+                                {{ n.content }}
+                                {% if n.is_critical %}<span class="badge bg-danger ms-1">Critical</span>{% endif %}
+                            </div>
+                            <div class="text-muted" style="font-size:0.7rem;">{{ n.note_type }} — {{ n.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-muted text-center small py-2">No notes yet</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lab + Medications Row -->
+    <div class="row g-3 mb-4">
+        <!-- Lab Orders -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-flask me-2 text-info"></i>Lab Orders</h6></div>
+                <div class="card-body p-0">
+                    {% if lab_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light"><tr><th>Test</th><th>Status</th><th>Date</th></tr></thead>
+                            <tbody>
+                                {% for lo in lab_orders %}
+                                <tr>
+                                    <td>{{ lo.test_name }}</td>
+                                    <td>
+                                        {% if lo.status == 'COMPLETED' %}<span class="badge bg-success">Completed</span>
+                                        {% elif lo.status == 'PROCESSING' %}<span class="badge bg-primary">Processing</span>
+                                        {% elif lo.status == 'SAMPLE_COLLECTED' %}<span class="badge bg-info">Sample Collected</span>
+                                        {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+                                    </td>
+                                    <td class="small text-muted">{{ lo.created_at.strftime('%d %b') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4"><i class="fas fa-vial d-block mb-2 opacity-50"></i>No lab orders</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Medication Administration -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-pills me-2 text-purple"></i>Medication Administration</h6></div>
+                <div class="card-body p-0">
+                    {% if med_records %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light"><tr><th>Medicine</th><th>Dosage</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {% for m in med_records %}
+                                <tr>
+                                    <td>{{ m.medicine_name }}</td>
+                                    <td>{{ m.dosage or '—' }}</td>
+                                    <td>
+                                        {% if m.administration_status == 'Given' %}<span class="badge bg-success">Given</span>
+                                        {% elif m.administration_status == 'Missed' %}<span class="badge bg-danger">Missed</span>
+                                        {% elif m.administration_status == 'Delayed' %}<span class="badge bg-warning text-dark">Delayed</span>
+                                        {% else %}<span class="badge bg-secondary">Pending</span>{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4"><i class="fas fa-capsules d-block mb-2 opacity-50"></i>No medication records</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vitals History -->
+    {% if vitals_history %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Vitals History</h6></div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Date/Time</th><th>Temp</th><th>BP</th><th>HR</th><th>SpO2</th><th>Fasting Glucose</th><th>Alerts</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vitals_history %}
+                        <tr>
+                            <td class="small">{{ v.recorded_at.strftime('%d %b %H:%M') }}</td>
+                            <td class="{% if v.has_alerts and 'fever' in v.has_alerts %}text-danger fw-bold{% endif %}">{{ v.temperature }}°F</td>
+                            <td class="{% if v.has_alerts and ('high_bp' in v.has_alerts or 'low_bp' in v.has_alerts) %}text-danger fw-bold{% endif %}">{{ v.systolic_bp }}/{{ v.diastolic_bp }}</td>
+                            <td>{{ v.heart_rate }}</td>
+                            <td class="{% if v.has_alerts and 'low_oxygen' in v.has_alerts %}text-danger fw-bold{% endif %}">{{ v.oxygen_level }}%</td>
+                            <td>{{ v.blood_sugar or '—' }}</td>
+                            <td>
+                                {% for a in v.has_alerts %}
+                                <span class="badge bg-danger">{{ a }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Handovers -->
+    {% if handovers %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-2"><h6 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Recent Handovers</h6></div>
+        <div class="card-body">
+            {% for h in handovers %}
+            <div class="border-start border-3 border-info ps-3 mb-3">
+                <div class="fw-semibold">{{ h.summary }}</div>
+                {% if h.pending_tasks %}<div class="small text-warning"><strong>Pending:</strong> {{ h.pending_tasks }}</div>{% endif %}
+                {% if h.urgent_concerns %}<div class="small text-danger"><strong>Urgent:</strong> {{ h.urgent_concerns }}</div>{% endif %}
+                <div class="text-muted" style="font-size:0.7rem;">{{ h.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

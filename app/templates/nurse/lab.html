@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Lab Coordination — Nurse Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="fas fa-flask text-info me-2"></i>Lab Coordination</h2>
+            <p class="text-muted mb-0">Track lab orders and sample collection for your patients</p>
+        </div>
+    </div>
+
+    {% if lab_orders %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient</th>
+                            <th>Test Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Ordered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lo in lab_orders %}
+                        <tr>
+                            <td>
+                                {% if lo.patient %}
+                                <a href="{{ url_for('nurse.patient_detail', patient_id=lo.patient.id) }}" class="fw-bold text-decoration-none">
+                                    {{ lo.patient.first_name }} {{ lo.patient.last_name }}
+                                </a>
+                                <br><small class="text-muted">{{ lo.patient.uhid or '' }}</small>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="fw-semibold">{{ lo.test_name }}</td>
+                            <td><span class="badge bg-light text-dark">{{ lo.test_category or 'General' }}</span></td>
+                            <td>
+                                {% if lo.status == 'COMPLETED' %}
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i>Completed</span>
+                                {% elif lo.status == 'PROCESSING' %}
+                                <span class="badge bg-primary"><i class="fas fa-spinner me-1"></i>Processing</span>
+                                {% elif lo.status == 'SAMPLE_COLLECTED' %}
+                                <span class="badge bg-info"><i class="fas fa-vial me-1"></i>Sample Collected</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Pending Sample</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">{{ lo.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5 text-muted">
+            <i class="fas fa-vials fa-3x mb-3 opacity-25"></i>
+            <h5>No Lab Orders</h5>
+            <p class="mb-0">No lab tests have been ordered for your assigned patients.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

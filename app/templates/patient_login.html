@@ -677,7 +677,7 @@
             </form>
             <div class="pg-div"><span>OR</span></div>
             <div class="pg-social">
-                <button type="button"><i class="fab fa-google"></i>Google</button>
+                <a href="{{ url_for('auth.google_login', role='PATIENT') }}" style="text-decoration:none;"><button type="button"><i class="fab fa-google"></i>Google</button></a>
                 <button type="button"><i class="fas fa-qrcode"></i>QR Code</button>
             </div>
             <div class="pg-foot">

@@ -250,7 +250,8 @@ class SystemSettings(db.Model):
     ai_enabled = db.Column(db.Boolean, default=True)
     disclaimer_text = db.Column(db.Text)
     ai_daily_limit = db.Column(db.Integer, default=1000)
-    
+    whatsapp_number = db.Column(db.String(20), default='919443966329')
+
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
@@ -1021,37 +1022,149 @@ class VideoProgress(db.Model):
 class PatientVitals(db.Model):
     """Patient vital signs recorded by nurses"""
     __tablename__ = 'patient_vitals'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
-    nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # User who recorded (nurse)
-    
+    nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
     # Vital signs
-    temperature = db.Column(db.Float, nullable=False)  # in Celsius or Fahrenheit
-    systolic_bp = db.Column(db.Integer, nullable=False)  # Blood Pressure systolic
-    diastolic_bp = db.Column(db.Integer, nullable=False)  # Blood Pressure diastolic
-    heart_rate = db.Column(db.Integer, nullable=False)  # Beats per minute
-    oxygen_level = db.Column(db.Float, nullable=False)  # SpO2 percentage
-    
+    temperature = db.Column(db.Float, nullable=False)
+    systolic_bp = db.Column(db.Integer, nullable=False)
+    diastolic_bp = db.Column(db.Integer, nullable=False)
+    heart_rate = db.Column(db.Integer, nullable=False)
+    oxygen_level = db.Column(db.Float, nullable=False)
+
     # Optional fields
-    respiratory_rate = db.Column(db.Integer)  # Breaths per minute
-    weight = db.Column(db.Float)  # in kg
-    notes = db.Column(db.Text)  # Additional observations
-    
+    respiratory_rate = db.Column(db.Integer)
+    blood_sugar = db.Column(db.Float, nullable=True)
+    weight = db.Column(db.Float)
+    notes = db.Column(db.Text)
+
     # Timestamps
     recorded_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     patient = db.relationship('Patient', backref='vitals')
     nurse = db.relationship('User', backref='recorded_vitals', foreign_keys=[nurse_id])
-    
+
     __table_args__ = (
         db.Index('idx_vitals_patient_date', 'patient_id', 'recorded_at'),
     )
-    
+
+    @property
+    def has_alerts(self):
+        alerts = []
+        if self.temperature and self.temperature > 100.4:
+            alerts.append('fever')
+        if self.systolic_bp and self.systolic_bp > 140:
+            alerts.append('high_bp')
+        if self.systolic_bp and self.systolic_bp < 90:
+            alerts.append('low_bp')
+        if self.oxygen_level and self.oxygen_level < 94:
+            alerts.append('low_oxygen')
+        if self.heart_rate and self.heart_rate > 100:
+            alerts.append('tachycardia')
+        if self.heart_rate and self.heart_rate < 60:
+            alerts.append('bradycardia')
+        if self.blood_sugar and self.blood_sugar > 200:
+            alerts.append('high_sugar')
+        return alerts
+
     def __repr__(self):
-        return f'<PatientVitals Patient:{self.patient_id} Temp:{self.temperature}°C HR:{self.heart_rate}bpm>'
+        return f'<PatientVitals Patient:{self.patient_id} Temp:{self.temperature} HR:{self.heart_rate}bpm>'
+
+
+class MedicationAdministration(db.Model):
+    """Track actual medication administration by nurses"""
+    __tablename__ = 'medication_administration'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    prescription_id = db.Column(db.Integer, db.ForeignKey('prescriptions.id'), nullable=True)
+    medicine_name = db.Column(db.String(255), nullable=False)
+    dosage = db.Column(db.String(100))
+    scheduled_time = db.Column(db.DateTime, nullable=True)
+    administered_by_nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    administration_status = db.Column(db.String(20), default='Pending')  # Pending, Given, Missed, Delayed
+    administration_time = db.Column(db.DateTime, nullable=True)
+    remarks = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref='medication_records')
+    prescription = db.relationship('Prescription', backref='administration_records')
+    administered_by = db.relationship('User', backref='administered_medications', foreign_keys=[administered_by_nurse_id])
+
+    __table_args__ = (
+        db.Index('idx_med_admin_patient', 'patient_id'),
+        db.Index('idx_med_admin_status', 'administration_status'),
+    )
+
+    def __repr__(self):
+        return f'<MedAdmin {self.medicine_name} - {self.administration_status}>'
+
+
+class NurseHandover(db.Model):
+    """Shift handover notes between nurses"""
+    __tablename__ = 'nurse_handovers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    from_nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    to_nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    summary = db.Column(db.Text, nullable=False)
+    pending_tasks = db.Column(db.Text)
+    urgent_concerns = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref='handovers')
+    from_nurse = db.relationship('User', foreign_keys=[from_nurse_id], backref='handovers_given')
+    to_nurse = db.relationship('User', foreign_keys=[to_nurse_id], backref='handovers_received')
+
+    def __repr__(self):
+        return f'<NurseHandover Patient:{self.patient_id} From:{self.from_nurse_id}>'
+
+
+class NursePatientAssignment(db.Model):
+    """Tracks which nurse has claimed/taken which patient.
+    Once a nurse claims a patient, other nurses cannot see that patient."""
+    __tablename__ = 'nurse_patient_assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nurse_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False, index=True)
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    released_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+
+    nurse = db.relationship('User', backref='patient_assignments', foreign_keys=[nurse_id])
+    patient = db.relationship('Patient', backref='nurse_assignments')
+
+    __table_args__ = (
+        db.Index('idx_npa_nurse_active', 'nurse_id', 'is_active'),
+        db.Index('idx_npa_patient_active', 'patient_id', 'is_active'),
+    )
+
+    def __repr__(self):
+        return f'<NursePatientAssignment Nurse:{self.nurse_id} Patient:{self.patient_id}>'
+
+
+class FrontpageDoctor(db.Model):
+    """Doctors displayed on the hospital homepage — managed by Host"""
+    __tablename__ = 'frontpage_doctors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    specialization = db.Column(db.String(200), nullable=False)
+    qualification = db.Column(db.String(300))
+    experience_years = db.Column(db.Integer)
+    photo_path = db.Column(db.String(500))
+    display_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<FrontpageDoctor {self.name}>'
 
 
 class SymptomLog(db.Model):

@@ -1,304 +1,541 @@
 {% extends "base.html" %}
-{% block title %}CarePoint AI — Intelligent Healthcare Platform{% endblock %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% block title %}CarePoint Hospital — Tirupattur | Quality Healthcare for Everyone{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+<style>
+:root{
+  --blue:#1a3b6e;--blue-d:#0f2549;--blue-l:#2563eb;--teal:#0e7490;
+  --white:#ffffff;--bg:#f7f9fc;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --red:#dc2626;--green:#16a34a;--gold:#b8860b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+.container{max-width:1200px;margin:0 auto;padding:0 20px;}
+
+/* ═══ TOP BAR ═══ */
+.topbar{background:var(--blue-d);padding:6px 0;font-size:.78rem;color:#94a3b8;}
+.topbar a{color:#93c5fd;transition:color .15s;}
+.topbar a:hover{color:#fff;}
+.topbar .sep{margin:0 10px;opacity:.25;}
+.amb-pill{background:var(--red);color:#fff!important;padding:2px 12px;border-radius:50px;font-weight:700;font-size:.72rem;letter-spacing:.3px;}
+
+/* ═══ NAVBAR ═══ */
+.nav-main{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:999;}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:grid;place-items:center;color:#fff;font-size:1.15rem;}
+.logo-txt{font-size:1.35rem;font-weight:800;color:var(--blue);letter-spacing:-.4px;}
+.logo-txt span{color:var(--teal);}
+.logo-sub{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-top:-2px;}
+.nav-links{display:flex;gap:0;list-style:none;position:relative;}
+.nav-item{position:relative;}
+.nav-item>a{font-size:.88rem;font-weight:600;color:var(--text);padding:24px 16px;display:flex;align-items:center;gap:4px;position:relative;transition:color .15s;cursor:pointer;}
+.nav-item>a::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2.5px;background:var(--blue-l);border-radius:2px;transform:scaleX(0);transition:transform .2s;}
+.nav-item>a:hover{color:var(--blue-l);}
+.nav-item:hover>a::after{transform:scaleX(1);}
+.nav-item>a .fa-chevron-down{font-size:.55rem;margin-left:2px;transition:transform .2s;}
+.nav-item:hover>a .fa-chevron-down{transform:rotate(180deg);}
+
+/* Mega dropdown */
+.mega-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%);background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.12);padding:28px 32px;min-width:520px;opacity:0;visibility:hidden;transition:all .25s;z-index:1000;pointer-events:none;}
+.nav-item:hover .mega-drop{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+.mega-drop h5{font-size:.95rem;font-weight:700;color:var(--blue);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--blue-l);display:inline-block;}
+.mega-list{list-style:none;padding:0;margin:0;}
+.mega-list li{margin-bottom:6px;}
+.mega-list li a{font-size:.85rem;color:var(--text);padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:8px;transition:all .15s;}
+.mega-list li a:hover{background:rgba(37,99,235,.06);color:var(--blue-l);}
+.mega-list li a i{color:var(--blue-l);width:18px;text-align:center;font-size:.8rem;}
+.mega-desc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:10px;}
+.mega-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+.nav-right{display:flex;align-items:center;gap:8px;}
+.btn-login{font-size:.85rem;font-weight:600;color:var(--blue);padding:8px 18px;border:2px solid var(--blue);border-radius:8px;transition:all .2s;}
+.btn-login:hover{background:var(--blue);color:#fff;}
+.btn-appt{font-size:.85rem;font-weight:700;color:#fff;background:var(--blue);padding:9px 22px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;transition:all .2s;border:none;}
+.btn-appt:hover{background:var(--blue-l);box-shadow:0 4px 14px rgba(37,99,235,.25);color:#fff;}
+.btn-staff{font-size:.75rem;color:var(--muted);padding:7px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;transition:all .2s;}
+.btn-staff:hover{border-color:var(--gold);color:var(--gold);}
+.mob-tog{display:none;background:none;border:none;font-size:1.3rem;color:var(--blue);cursor:pointer;}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;overflow:hidden;}
+.hero-img{width:100%;height:480px;object-fit:cover;display:block;filter:brightness(.4);}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,37,73,.92) 0%,rgba(15,37,73,.65) 45%,rgba(15,37,73,.15) 100%);}
+.hero-content{position:absolute;inset:0;display:flex;align-items:center;}
+.hero-text{max-width:540px;}
+.hero-tag{display:inline-block;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);color:#fff;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:600;letter-spacing:.5px;margin-bottom:16px;}
+.hero h1{font-size:2.6rem;font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px;letter-spacing:-.5px;}
+.hero h1 em{font-style:normal;color:#67e8f9;}
+.hero-p{font-size:.95rem;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:24px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;}
+.btn-hero{padding:12px 28px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;transition:all .25s;border:none;cursor:pointer;}
+.btn-hero.primary{background:#fff;color:var(--blue);}
+.btn-hero.primary:hover{background:#f0f4ff;box-shadow:0 6px 20px rgba(0,0,0,.15);}
+.btn-hero.outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);}
+.btn-hero.outline:hover{background:rgba(255,255,255,.1);border-color:#fff;}
+
+/* ═══ QUICK BAR ═══ */
+.qbar{background:var(--white);border-bottom:1px solid var(--border);}
+.qbar-inner{display:flex;justify-content:center;}
+.qb{display:flex;align-items:center;gap:8px;padding:14px 26px;font-size:.85rem;font-weight:600;color:var(--text);border-right:1px solid var(--border);transition:all .15s;}
+.qb:last-child{border-right:none;}
+.qb:hover{color:var(--blue-l);background:rgba(37,99,235,.03);}
+.qb i{color:var(--blue-l);font-size:.95rem;}
+
+/* ═══ SECTIONS ═══ */
+.sec{padding:60px 0;}
+.sec-bg{background:var(--white);}
+.sec-hd{text-align:center;margin-bottom:40px;}
+.sec-hd h2{font-size:1.8rem;font-weight:800;color:var(--blue);margin-bottom:6px;}
+.sec-hd h2 em{font-style:normal;color:var(--teal);}
+.sec-hd p{color:var(--muted);font-size:.9rem;}
+.sec-line{width:50px;height:3px;background:var(--blue-l);border-radius:3px;margin:10px auto 0;}
+
+/* Departments */
+.dept-g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.dc{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 14px;text-align:center;transition:all .2s;}
+.dc:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:var(--blue-l);transform:translateY(-3px);}
+.dc-ico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin:0 auto 10px;font-size:1rem;}
+.dc h4{font-size:.85rem;font-weight:700;margin-bottom:3px;}
+.dc p{font-size:.72rem;color:var(--muted);margin:0;line-height:1.4;}
+
+/* Features */
+.why-g{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.wc{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:26px 22px;transition:all .2s;}
+.wc:hover{box-shadow:0 8px 24px rgba(0,0,0,.05);transform:translateY(-2px);}
+.wc-ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:1rem;margin-bottom:12px;}
+.wc h4{font-size:.9rem;font-weight:700;margin-bottom:5px;}
+.wc p{font-size:.8rem;color:var(--muted);line-height:1.55;margin:0;}
+
+/* Stats */
+.stat-bar{background:var(--blue);padding:44px 0;}
+.stat-g{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center;}
+.sg .sn{font-size:2rem;font-weight:800;color:#fff;}
+.sg .sl{font-size:.8rem;color:rgba(255,255,255,.6);margin-top:2px;}
+
+/* Team CTA */
+.team-sec{position:relative;overflow:hidden;}
+.team-img{width:100%;height:280px;object-fit:cover;filter:brightness(.35);}
+.team-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;}
+.team-over h2{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:8px;}
+.team-over p{color:rgba(255,255,255,.7);font-size:.9rem;margin-bottom:18px;}
+.btn-team{background:#fff;color:var(--blue);padding:11px 26px;border-radius:8px;font-weight:700;font-size:.88rem;display:inline-flex;align-items:center;gap:8px;transition:all .25s;}
+.btn-team:hover{box-shadow:0 6px 20px rgba(0,0,0,.15);}
+
+/* Info section */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start;}
+.info-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;}
+.info-card h4{font-size:1rem;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.info-card h4 i{color:var(--blue-l);}
+.info-card p,.info-card li{font-size:.84rem;color:var(--muted);line-height:1.65;}
+.info-card ul{padding-left:18px;margin:0;}
+.info-card li{margin-bottom:4px;}
+
+/* Footer */
+.ft{background:#0c1525;padding:40px 0 16px;color:#94a3b8;font-size:.82rem;}
+.ft h5{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:12px;}
+.ft a{color:#94a3b8;display:block;margin-bottom:6px;font-size:.8rem;transition:color .15s;}
+.ft a:hover{color:#38bdf8;}
+.ft-bot{border-top:1px solid rgba(255,255,255,.06);margin-top:22px;padding-top:14px;text-align:center;font-size:.75rem;color:#64748b;}
+
+/* Modal */
+.mod-staff .modal-content{border-radius:12px;}
+.mod-staff .modal-header{background:var(--blue);color:#fff;border-radius:12px 12px 0 0;}
+.mod-staff .btn-close{filter:invert(1);}
+
+/* Responsive */
+@media(max-width:991px){
+  .nav-links{display:none;}.mob-tog{display:block;}
+  .mega-drop{display:none!important;}
+  .hero h1{font-size:2rem;}.hero-img{height:360px;}
+  .dept-g{grid-template-columns:repeat(2,1fr);}
+  .why-g{grid-template-columns:1fr;}
+  .stat-g{grid-template-columns:repeat(2,1fr);}
+  .info-grid{grid-template-columns:1fr;}
+  .qb{padding:10px 12px;font-size:.78rem;}
+}
+@media(max-width:576px){
+  .hero h1{font-size:1.5rem;}.hero-img{height:300px;}
+  .nav-right .btn-login,.nav-right .btn-staff{display:none;}
+  .dept-g{grid-template-columns:repeat(2,1fr);gap:8px;}
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- ═══ CINEMATIC INTRO ═══ -->
-<div id="intro-overlay">
-    <svg class="intro-ecg" viewBox="0 0 300 90">
-        <path
-            d="M0,45 L35,45 L55,45 L70,45 L85,12 L100,78 L115,6 L130,72 L145,45 L170,45 L190,45 L205,45 L220,12 L235,78 L250,6 L265,72 L280,45 L300,45" />
-    </svg>
-    <div class="intro-brand"><i class="fas fa-heartbeat"></i> <span>CarePoint</span>&nbsp;AI</div>
-    <div class="intro-tagline">Initializing Healthcare Intelligence</div>
-    <div class="intro-bar">
-        <div class="intro-bar-fill"></div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="container d-flex justify-content-between align-items-center">
+    <div><i class="fas fa-phone-alt me-1"></i><a href="tel:+919443966329">+91 94439 66329</a><span class="sep">|</span><i class="fas fa-envelope me-1"></i><a href="mailto:info@carepointhosp.com">info@carepointhosp.com</a></div>
+    <div><i class="fas fa-map-marker-alt me-1"></i> Ashok Nagar, Tirupattur<span class="sep">|</span><a href="tel:108" class="amb-pill"><i class="fas fa-plus-circle me-1"></i>AMBULANCE</a></div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<div class="nav-main">
+  <div class="container nav-inner">
+    <a href="{{ url_for('main.index') }}" class="logo">
+      <div class="logo-mark"><i class="fas fa-heartbeat"></i></div>
+      <div><div class="logo-txt">Care<span>Point</span></div><div class="logo-sub">Hospital &bull; Tirupattur</div></div>
+    </a>
+
+    <ul class="nav-links">
+      <li class="nav-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+
+      <!-- Specialities Dropdown -->
+      <li class="nav-item">
+        <a href="#">Specialities <i class="fas fa-chevron-down"></i></a>
+        <div class="mega-drop">
+          <div class="mega-cols">
+            <div>
+              <h5>Our Departments</h5>
+              <ul class="mega-list">
+                <li><a href="#departments"><i class="fas fa-stethoscope"></i>General Medicine</a></li>
+                <li><a href="#departments"><i class="fas fa-baby"></i>Pediatrics</a></li>
+                <li><a href="#departments"><i class="fas fa-heartbeat"></i>General Health Checkup</a></li>
+                <li><a href="#departments"><i class="fas fa-syringe"></i>Vaccination & Immunization</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5>Services</h5>
+              <ul class="mega-list">
+                <li><a href="#departments"><i class="fas fa-procedures"></i>Minor Procedures</a></li>
+                <li><a href="#departments"><i class="fas fa-vial"></i>Lab & Diagnostics</a></li>
+                <li><a href="#departments"><i class="fas fa-pills"></i>Pharmacy</a></li>
+                <li><a href="#departments"><i class="fas fa-user-nurse"></i>Nursing Care</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- Patient Care Dropdown -->
+      <li class="nav-item">
+        <a href="#">Patient Care <i class="fas fa-chevron-down"></i></a>
+        <div class="mega-drop" style="min-width:400px;">
+          <h5>Patient Services</h5>
+          <ul class="mega-list">
+            <li><a href="{{ url_for('auth.patient_login') }}"><i class="fas fa-file-medical"></i>View Health Records</a></li>
+            <li><a href="{{ url_for('auth.patient_login') }}"><i class="fas fa-flask"></i>Lab Reports</a></li>
+            <li><a href="{{ url_for('auth.patient_login') }}"><i class="fas fa-prescription"></i>My Prescriptions</a></li>
+            <li><a href="{{ url_for('auth.patient_register') }}"><i class="fas fa-calendar-check"></i>Book Appointment</a></li>
+            <li><a href="{{ url_for('auth.patient_login') }}"><i class="fas fa-apple-alt"></i>Diet & Nutrition Plan</a></li>
+          </ul>
+          <p class="mega-desc"><i class="fas fa-info-circle me-1"></i>Login to your patient portal to access all health records, prescriptions, and AI-powered health insights.</p>
+        </div>
+      </li>
+
+      <!-- About Dropdown -->
+      <li class="nav-item">
+        <a href="#">About <i class="fas fa-chevron-down"></i></a>
+        <div class="mega-drop" style="min-width:480px;">
+          <div class="mega-cols">
+            <div>
+              <h5>About CarePoint</h5>
+              <p class="mega-desc" style="margin-top:0;">CarePoint Hospital, located in Ashok Nagar, Tirupattur (near Housing Board area), is a community healthcare centre providing quality medical care for local residents and surrounding villages.</p>
+              <p class="mega-desc">We combine compassionate care with modern AI-powered diagnostics to deliver accurate and affordable healthcare for all ages.</p>
+            </div>
+            <div>
+              <h5>Quick Info</h5>
+              <ul class="mega-list">
+                <li><a href="#info"><i class="fas fa-map-marker-alt"></i>Ashok Nagar, Tirupattur</a></li>
+                <li><a href="#info"><i class="fas fa-clock"></i>Mon–Thu, Sat: 9 AM – 1:30 PM</a></li>
+                <li><a href="#info"><i class="fas fa-clock"></i>Sunday: 10 AM – 2 PM</a></li>
+                <li><a href="#info"><i class="fas fa-times-circle"></i>Friday: Closed</a></li>
+                <li><a href="tel:+919443966329"><i class="fas fa-phone-alt"></i>+91 94439 66329</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- Contact Dropdown -->
+      <li class="nav-item">
+        <a href="#">Contact <i class="fas fa-chevron-down"></i></a>
+        <div class="mega-drop" style="min-width:360px;">
+          <h5>Get in Touch</h5>
+          <ul class="mega-list">
+            <li><a href="tel:+919443966329"><i class="fas fa-phone-alt"></i>+91 94439 66329</a></li>
+            <li><a href="mailto:info@carepointhosp.com"><i class="fas fa-envelope"></i>info@carepointhosp.com</a></li>
+            <li><a href="#info"><i class="fas fa-map-marker-alt"></i>Ashok Nagar, Tirupattur, Tamil Nadu</a></li>
+          </ul>
+          <p class="mega-desc" style="margin-top:14px;"><strong>Hours:</strong> Mon–Thu, Sat: 9:00 AM – 1:30 PM | Sun: 10:00 AM – 2:00 PM | Fri: Closed</p>
+        </div>
+      </li>
+    </ul>
+
+    <div class="nav-right">
+      <a href="{{ url_for('auth.patient_login') }}" class="btn-login">Patient Login</a>
+      <a href="{{ url_for('auth.patient_register') }}" class="btn-appt"><i class="fas fa-calendar-check"></i> Book Appointment</a>
+      <button class="btn-staff" data-bs-toggle="modal" data-bs-target="#staffModal"><i class="fas fa-lock me-1"></i>Staff</button>
+      <button class="mob-tog" onclick="let m=document.querySelector('.nav-links');m.style.display=m.style.display==='flex'?'none':'flex';m.style.flexDirection='column';m.style.position='absolute';m.style.top='68px';m.style.left='0';m.style.right='0';m.style.background='#fff';m.style.boxShadow='0 4px 12px rgba(0,0,0,.1)';m.style.zIndex='99';m.style.padding='12px';"><i class="fas fa-bars"></i></button>
     </div>
+  </div>
 </div>
 
-<!-- ═══ BACKGROUND ═══ -->
-<div class="bg-layer">
-    <div class="bg-gradient"></div>
-    <div class="bg-rays"></div>
-    <div class="bg-stars" id="bgStars"></div>
-</div>
-<div class="bg-noise"></div>
-
-<!-- ═══ MAIN ═══ -->
-<div class="landing" id="mainLanding">
-    <div class="wrap">
-
-        <!-- ══════════════════════
-         HERO
-         ══════════════════════ -->
-        <section class="hero">
-            <!-- Social Proof Pill -->
-            <div class="social-pill">
-                <div class="social-avatars">
-                    <span>A</span><span>M</span><span>K</span>
-                </div>
-                <div class="pill-text"><strong>47,000+</strong> healthcare professionals joined</div>
-            </div>
-
-            <h1 class="hero-title">
-                The Smarter Way<br>
-                <span class="glow-text">To Manage Healthcare.</span>
-            </h1>
-
-            <p class="hero-desc">
-                CarePoint is an AI-powered medical platform built to transform
-                complex healthcare data into clear, actionable insights for patients and doctors.
-            </p>
-
-            <div class="hero-cta">
-                <a href="{{ url_for('auth.unified_login') }}" class="btn btn-primary">
-                    Get Started
-                    <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span>
-                </a>
-                <a href="#how-it-works" class="btn btn-secondary">
-                    <i class="fas fa-play-circle"></i> Watch Demo
-                </a>
-            </div>
-
-            <!-- 3D Floating Visual -->
-            <div class="hero-3d">
-                <div class="float-cards">
-                    <div class="float-card fc-1">
-                        <div class="fc-label">Heart Rate</div>
-                        <div class="fc-val" style="color:var(--teal-light)">72 <small
-                                style="font-size:.65rem;color:var(--text-muted)">bpm</small></div>
-                        <div class="fc-tag ok">● Normal</div>
-                    </div>
-                    <div class="float-card fc-2">
-                        <div class="fc-label">AI Accuracy</div>
-                        <div class="fc-val" style="color:var(--purple-light)">99.7%</div>
-                        <div class="fc-tag info">● Excellent</div>
-                    </div>
-                    <div class="float-card fc-3">
-                        <div class="fc-label">Blood Pressure</div>
-                        <div class="fc-val" style="color:var(--cyan)">120/80</div>
-                        <div class="fc-tag ok">● Optimal</div>
-                    </div>
-                    <div class="float-card fc-4">
-                        <div class="fc-label">Oxygen Level</div>
-                        <div class="fc-val" style="color:var(--emerald)">98%</div>
-                        <div class="fc-tag ok">● Healthy</div>
-                    </div>
-                </div>
-
-                <div class="diamond-glow"></div>
-                <div class="diamond-scene">
-                    <div class="diamond-wrap">
-                        <div class="diamond-face"></div>
-                        <div class="diamond-face"></div>
-                        <div class="diamond-face"></div>
-                        <div class="diamond-face"></div>
-                    </div>
-                </div>
-                <div class="diamond-platform"></div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════
-         STATS BAR
-         ══════════════════════ -->
-        <section class="stats-bar rv">
-            <div class="stats-row">
-                <div>
-                    <div class="stat-num" data-target="50000">0</div>
-                    <div class="stat-label">Patients Managed</div>
-                </div>
-                <div>
-                    <div class="stat-num" data-target="99.7">0</div>
-                    <div class="stat-label">AI Accuracy Rate</div>
-                </div>
-                <div>
-                    <div class="stat-num" data-target="1200">0</div>
-                    <div class="stat-label">Active Doctors</div>
-                </div>
-                <div>
-                    <div class="stat-num" data-target="2000">0</div>
-                    <div class="stat-label">Hospitals Connected</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════
-         TRUST BAR
-         ══════════════════════ -->
-        <section class="trust-bar rv">
-            <div class="trust-row">
-                <span class="trust-label">Trusted by</span>
-                <div class="trust-logos">
-                    <div class="trust-logo"><i class="fas fa-hospital"></i> MetroHealth</div>
-                    <div class="trust-logo"><i class="fas fa-flask"></i> BioResearch</div>
-                    <div class="trust-logo"><i class="fas fa-stethoscope"></i> MedCorp</div>
-                    <div class="trust-logo"><i class="fas fa-microscope"></i> GenomicsAI</div>
-                    <div class="trust-logo"><i class="fas fa-shield-alt"></i> SafeCare</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════
-         HOW IT WORKS
-         ══════════════════════ -->
-        <section class="how-section" id="how-it-works">
-            <div class="sec-title rv">
-                <h2>How <span>CarePoint</span> Works</h2>
-                <p>Get started in three simple steps and experience healthcare reimagined.</p>
-            </div>
-            <div class="how-grid rv">
-                <div class="how-card">
-                    <div class="how-num">1</div>
-                    <h3>Create Your Account</h3>
-                    <p>Sign up as a patient or doctor in seconds with our secure registration system.</p>
-                </div>
-                <div class="how-card">
-                    <div class="how-num">2</div>
-                    <h3>Connect with AI</h3>
-                    <p>Our neural engine analyzes your health data to provide personalized insights and alerts.</p>
-                </div>
-                <div class="how-card">
-                    <div class="how-num">3</div>
-                    <h3>Transform Your Health</h3>
-                    <p>Track vitals, manage prescriptions, consult doctors, and improve outcomes — all in one place.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════
-         FEATURES
-         ══════════════════════ -->
-        <section class="features" id="features">
-            <div class="sec-title rv">
-                <h2>Everything You Need,<br><span>All In One Platform</span></h2>
-                <p>A complete toolkit for modern healthcare — intelligent, secure, and always available.</p>
-            </div>
-            <div class="feat-grid">
-                <div class="feat-card rv" style="--fc-glow:rgba(20,184,166,.4)">
-                    <div class="fc-ico teal"><i class="fas fa-brain"></i></div>
-                    <h3>AI Diagnostics</h3>
-                    <p>Deep neural networks analyze symptoms, vitals, and history for early disease detection and
-                        personalized treatment plans.</p>
-                </div>
-                <div class="feat-card rv" style="--fc-glow:rgba(124,58,237,.4)">
-                    <div class="fc-ico purple"><i class="fas fa-chart-line"></i></div>
-                    <h3>Real-time Monitoring</h3>
-                    <p>Live dashboards tracking vitals, lab results, and health trends with intelligent threshold
-                        alerts.</p>
-                </div>
-                <div class="feat-card rv" style="--fc-glow:rgba(59,130,246,.4)">
-                    <div class="fc-ico blue"><i class="fas fa-video"></i></div>
-                    <h3>Teleconsultation</h3>
-                    <p>Secure HD video calls with doctors, automated prescriptions, and smart follow-up scheduling.</p>
-                </div>
-                <div class="feat-card rv" style="--fc-glow:rgba(236,72,153,.4)">
-                    <div class="fc-ico pink"><i class="fas fa-apple-alt"></i></div>
-                    <h3>Smart Diet Plans</h3>
-                    <p>AI-generated personalized nutrition plans based on conditions, medications, and dietary
-                        preferences.</p>
-                </div>
-                <div class="feat-card rv" style="--fc-glow:rgba(16,185,129,.4)">
-                    <div class="fc-ico emerald"><i class="fas fa-shield-alt"></i></div>
-                    <h3>Military-Grade Security</h3>
-                    <p>HIPAA-compliant encrypted records with role-based access, audit trails, and zero-knowledge
-                        architecture.</p>
-                </div>
-                <div class="feat-card rv" style="--fc-glow:rgba(245,158,11,.4)">
-                    <div class="fc-ico amber"><i class="fas fa-ambulance"></i></div>
-                    <h3>Emergency SOS</h3>
-                    <p>One-tap emergency alerts with automatic location sharing and nearest hospital routing system.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ══════════════════════
-         CTA
-         ══════════════════════ -->
-        <section class="cta-sec">
-            <div class="cta-card rv">
-                <div class="cta-glow"></div>
-                <h2>Ready to Experience<br><span>Smarter Healthcare?</span></h2>
-                <p>Join thousands of patients and doctors already transforming outcomes with CarePoint AI.</p>
-                <a href="{{ url_for('auth.patient_register') }}" class="btn btn-primary" style="position:relative">
-                    Start Free Today
-                    <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span>
-                </a>
-            </div>
-        </section>
-
-        <div style="height:60px"></div>
+<!-- HERO -->
+<section class="hero">
+  <img src="{{ url_for('static', filename='img/hero-doctor.jpg') }}" alt="CarePoint Hospital Tirupattur" class="hero-img">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="container">
+      <div class="hero-text">
+        <div class="hero-tag">TIRUPATTUR'S TRUSTED HEALTHCARE CENTRE</div>
+        <h1>Quality Healthcare<br>For <em>Every Family.</em></h1>
+        <p class="hero-p">CarePoint Hospital provides compassionate general medical care, pediatrics, diagnostics, and AI-powered health management for the community of Ashok Nagar, Tirupattur and surrounding areas.</p>
+        <div class="hero-btns">
+          <a href="{{ url_for('auth.patient_register') }}" class="btn-hero primary">Book an Appointment <i class="fas fa-arrow-right"></i></a>
+          <a href="tel:+919443966329" class="btn-hero outline"><i class="fas fa-phone-alt"></i> Call Now</a>
+          <a href="https://wa.me/{{ whatsapp_number }}?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment" target="_blank" class="btn-hero outline" style="border-color:rgba(37,211,102,.5);color:#25d366;"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i> WhatsApp</a>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- QUICK BAR -->
+<div class="qbar">
+  <div class="container qbar-inner">
+    <a href="{{ url_for('auth.patient_register') }}" class="qb"><i class="fas fa-calendar-check"></i>Book Appointment</a>
+    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-flask"></i>Lab Results</a>
+    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-file-medical"></i>Health Records</a>
+    <a href="tel:+919443966329" class="qb"><i class="fas fa-phone-alt"></i>Call Hospital</a>
+  </div>
 </div>
 
+<!-- OUR DOCTORS -->
+{% if frontpage_doctors %}
+<section class="sec sec-bg" id="find-doctor">
+  <div class="container">
+    <div class="sec-hd"><h2>Our <em>Doctors</em></h2><p>Experienced physicians dedicated to your health and well-being</p><div class="sec-line"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+      {% for doc in frontpage_doctors %}
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .25s;text-align:center;" onmouseover="this.style.boxShadow='0 12px 30px rgba(0,0,0,.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+        {% if doc.photo_path %}
+        <img src="{{ url_for('static', filename=doc.photo_path) }}" alt="{{ doc.name }}" style="width:100%;height:240px;object-fit:cover;object-position:top;">
+        {% else %}
+        <div style="width:100%;height:240px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-md" style="font-size:4rem;color:#93c5fd;"></i></div>
+        {% endif %}
+        <div style="padding:16px 14px 20px;">
+          <h4 style="font-size:.95rem;font-weight:700;color:var(--blue);margin-bottom:3px;">{{ doc.name }}</h4>
+          <div style="font-size:.82rem;color:var(--teal);font-weight:600;margin-bottom:4px;">{{ doc.specialization }}</div>
+          {% if doc.qualification %}<div style="font-size:.75rem;color:var(--muted);">{{ doc.qualification }}</div>{% endif %}
+          {% if doc.experience_years %}<div style="font-size:.73rem;color:var(--muted);margin-top:2px;">{{ doc.experience_years }} Years Experience</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══ SERVICES — Full-width alternating visual sections ═══ -->
+<section id="departments" style="padding:70px 0;background:var(--white);">
+  <div class="container">
+    <div class="sec-hd"><h2>Our <em>Services</em></h2><p>Complete healthcare for patients of all ages</p><div class="sec-line"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#dbeafe;color:#2563eb;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-stethoscope"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">General Medicine</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Consultation, diagnosis, chronic disease management and preventive care</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#fce7f3;color:#db2777;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-baby"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Pediatrics</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Child healthcare, growth monitoring, and adolescent wellness</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#ecfdf5'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#d1fae5;color:#059669;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-heartbeat"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Health Checkup</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Comprehensive screening packages for early detection</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#fef3c7;color:#d97706;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-syringe"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Vaccination</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">All-age immunization and preventive vaccination schedules</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-procedures"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Minor Procedures</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Wound care, dressing, suturing, and outpatient treatments</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#ccfbf1;color:#0d9488;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-vial"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Lab & Diagnostics</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">AI-assisted pathology, blood work, and diagnostic imaging</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-pills"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Pharmacy</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">In-house medicine dispensing with prescription tracking</p>
+      </div>
+      <div style="padding:32px 20px;text-align:center;transition:all .2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+        <div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-user-nurse"></i></div>
+        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Nursing Care</h4>
+        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Professional bedside care, vitals monitoring, and patient support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FULL-WIDTH IMAGE BANNER WITH STATS ═══ -->
+<section style="position:relative;overflow:hidden;">
+  <img src="{{ url_for('static', filename='img/hospital-building.jpg') }}" alt="CarePoint Hospital" style="width:100%;height:320px;object-fit:cover;filter:brightness(.3);">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;">
+        <div><div style="font-size:2.8rem;font-weight:800;color:#fff;">5,000+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Patients Served</div></div>
+        <div><div style="font-size:2.8rem;font-weight:800;color:#67e8f9;">10+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Experienced Doctors</div></div>
+        <div><div style="font-size:2.8rem;font-weight:800;color:#fff;">8+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Years of Trust</div></div>
+        <div><div style="font-size:2.8rem;font-weight:800;color:#67e8f9;">6</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Days a Week</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHY CAREPOINT — Side-by-side layout ═══ -->
+<section style="padding:70px 0;background:var(--bg);">
+  <div class="container">
+    <div class="row align-items-center" style="gap:0;">
+      <div class="col-lg-5" style="margin-bottom:24px;">
+        <div style="display:inline-block;background:rgba(37,99,235,.08);color:var(--blue-l);padding:5px 14px;border-radius:50px;font-size:.75rem;font-weight:600;margin-bottom:14px;">WHY CHOOSE US</div>
+        <h2 style="font-size:2rem;font-weight:800;color:var(--blue);line-height:1.2;margin-bottom:12px;">Modern Healthcare<br>for <span style="color:var(--teal);">Every Family</span></h2>
+        <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">CarePoint combines experienced physicians with AI technology to deliver accurate, affordable, and compassionate healthcare for the Tirupattur community.</p>
+        <a href="{{ url_for('auth.patient_register') }}" style="background:var(--blue);color:#fff;padding:12px 24px;border-radius:8px;font-weight:700;font-size:.88rem;display:inline-flex;align-items:center;gap:8px;">Book Appointment <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="col-lg-7">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #2563eb;">
+            <div style="font-size:1.3rem;color:#2563eb;margin-bottom:8px;"><i class="fas fa-robot"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">AI Diagnostics</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Smart symptom analysis and health insights powered by artificial intelligence</p>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #059669;">
+            <div style="font-size:1.3rem;color:#059669;margin-bottom:8px;"><i class="fas fa-hand-holding-heart"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Affordable Care</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Quality treatment at reasonable costs for every family</p>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #7c3aed;">
+            <div style="font-size:1.3rem;color:#7c3aed;margin-bottom:8px;"><i class="fas fa-chart-line"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Digital Records</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Complete digital health records, lab reports, and prescriptions online</p>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #db2777;">
+            <div style="font-size:1.3rem;color:#db2777;margin-bottom:8px;"><i class="fas fa-users"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Family Medicine</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">From newborns to elderly — care for every member of your family</p>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #d97706;">
+            <div style="font-size:1.3rem;color:#d97706;margin-bottom:8px;"><i class="fas fa-shield-alt"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Data Security</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Encrypted health data — only you and your doctor can access</p>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #dc2626;">
+            <div style="font-size:1.3rem;color:#dc2626;margin-bottom:8px;"><i class="fas fa-pills"></i></div>
+            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">In-house Pharmacy</h4>
+            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Get medicines immediately without visiting outside</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOSPITAL INFO — Clean card layout ═══ -->
+<section style="padding:70px 0;background:var(--white);" id="info">
+  <div class="container">
+    <div class="sec-hd"><h2>Visit <em>CarePoint</em></h2><p>Plan your visit — here's everything you need to know</p><div class="sec-line"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:14px;padding:30px 28px;">
+        <h4 style="font-size:1rem;font-weight:700;color:var(--blue);margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-clock" style="color:var(--blue-l);"></i> Consultation Hours</h4>
+        <div style="font-size:.88rem;color:var(--text);line-height:2;">
+          <div><strong>Mon – Thu, Sat:</strong> 9:00 AM – 1:30 PM</div>
+          <div><strong>Sunday:</strong> 10:00 AM – 2:00 PM</div>
+          <div><strong>Friday:</strong> <span style="color:var(--red);">Closed</span></div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:14px;padding:30px 28px;">
+        <h4 style="font-size:1rem;font-weight:700;color:#065f46;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-map-marker-alt" style="color:#059669;"></i> Location</h4>
+        <div style="font-size:.88rem;color:var(--text);line-height:1.7;">
+          <strong>CarePoint Hospital</strong><br>Ashok Nagar, Tirupattur<br>(Near Housing Board Area)<br>Tamil Nadu, India<br><br>
+          <a href="tel:+919443966329" style="color:#059669;font-weight:700;"><i class="fas fa-phone-alt me-1"></i> +91 94439 66329</a>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:14px;padding:30px 28px;">
+        <h4 style="font-size:1rem;font-weight:700;color:#4c1d95;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-user-md" style="color:#7c3aed;"></i> Our Approach</h4>
+        <ul style="font-size:.85rem;color:var(--text);line-height:1.9;padding-left:16px;margin:0;">
+          <li>Personal attention to every patient</li>
+          <li>AI-supported accurate diagnosis</li>
+          <li>Simple, effective treatment</li>
+          <li>Care for all age groups</li>
+        </ul>
+      </div>
+      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:14px;padding:30px 28px;">
+        <h4 style="font-size:1rem;font-weight:700;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-check-circle" style="color:#d97706;"></i> We Treat</h4>
+        <ul style="font-size:.85rem;color:var(--text);line-height:1.9;padding-left:16px;margin:0;">
+          <li>Fever, infections, general illness</li>
+          <li>Health checkups & screenings</li>
+          <li>Child healthcare & vaccinations</li>
+          <li>Lab tests, diagnostics, pharmacy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TEAM CTA ═══ -->
+<section style="position:relative;overflow:hidden;">
+  <img src="{{ url_for('static', filename='img/medical-team.jpg') }}" alt="CarePoint Team" style="width:100%;height:280px;object-fit:cover;filter:brightness(.3);">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;">
+    <div>
+      <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:8px;">Your Family's Health Partner</h2>
+      <p style="color:rgba(255,255,255,.7);font-size:.95rem;margin-bottom:20px;">Compassionate care. Accurate diagnosis. Affordable treatment.</p>
+      <a href="{{ url_for('auth.patient_register') }}" style="background:#fff;color:var(--blue);padding:12px 28px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;">Register Now <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="ft" id="contact">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="logo-mark" style="width:32px;height:32px;font-size:.85rem;"><i class="fas fa-heartbeat"></i></div>
+          <div class="logo-txt" style="font-size:1.05rem;color:#fff;">Care<span style="color:#38bdf8;">Point</span></div>
+        </div>
+        <p style="line-height:1.7;">Community healthcare centre in Ashok Nagar, Tirupattur providing quality medical care with AI-powered diagnostics for local residents and families.</p>
+      </div>
+      <div class="col-lg-2"><h5>Hospital</h5><a href="#departments">Services</a><a href="#info">Timings</a><a href="#info">Location</a><a href="#info">Our Team</a></div>
+      <div class="col-lg-3"><h5>Patient</h5><a href="{{ url_for('auth.patient_login') }}">Patient Login</a><a href="{{ url_for('auth.patient_register') }}">Register</a><a href="{{ url_for('auth.patient_login') }}">Lab Reports</a><a href="{{ url_for('auth.patient_login') }}">Prescriptions</a></div>
+      <div class="col-lg-3"><h5>Contact</h5><a href="tel:+919443966329"><i class="fas fa-phone-alt me-2"></i>+91 94439 66329</a><a href="mailto:info@carepointhosp.com"><i class="fas fa-envelope me-2"></i>info@carepointhosp.com</a><a href="#"><i class="fas fa-map-marker-alt me-2"></i>Ashok Nagar, Tirupattur, TN</a></div>
+    </div>
+    <div class="ft-bot">&copy; 2025 CarePoint Hospital, Tirupattur. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- STAFF MODAL -->
+<div class="modal fade mod-staff" id="staffModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title"><i class="fas fa-lock me-2"></i>Staff Access</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="text-muted small mb-2">Enter hospital access code</p>
+        <input type="password" class="form-control" id="sCode" placeholder="Access code" autocomplete="off">
+        <div id="sErr" class="text-danger small mt-2" style="display:none"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary btn-sm" id="sGo"><i class="fas fa-sign-in-alt me-1"></i>Enter</button></div>
+    </div>
+  </div>
+</div>
 <script>
-    (function () {
-        // ═══ Intro ═══
-        const intro = document.getElementById('intro-overlay');
-        const landing = document.getElementById('mainLanding');
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-            intro.classList.add('done');
-            landing.classList.add('active');
-            document.body.style.overflow = '';
-        }, 3800);
-
-        // ═══ Stars ═══
-        const starBox = document.getElementById('bgStars');
-        if (starBox) {
-            for (let i = 0; i < 80; i++) {
-                const s = document.createElement('div');
-                s.className = 'star';
-                s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--dur:${2 + Math.random() * 5}s;--del:${Math.random() * 5}s;--max-op:${.15 + Math.random() * .35};width:${1 + Math.random() * 2}px;height:${1 + Math.random() * 2}px`;
-                starBox.appendChild(s);
-            }
-        }
-
-        // ═══ Scroll Reveal ═══
-        const revObs = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
-        }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
-        document.querySelectorAll('.rv').forEach(el => revObs.observe(el));
-
-        // ═══ Count-Up ═══
-        const cntObs = new IntersectionObserver(entries => {
-            entries.forEach(en => {
-                if (!en.isIntersecting) return;
-                const el = en.target, target = parseFloat(el.dataset.target);
-                const isFloat = target < 100 && target % 1 !== 0;
-                const dur = 2200, start = performance.now();
-                function tick(now) {
-                    const p = Math.min((now - start) / dur, 1);
-                    const ease = 1 - Math.pow(1 - p, 4);
-                    const val = ease * target;
-                    if (target >= 1000) el.textContent = Math.floor(val).toLocaleString() + '+';
-                    else if (isFloat) el.textContent = val.toFixed(1) + '%';
-                    else el.textContent = Math.floor(val) + '+';
-                    if (p < 1) requestAnimationFrame(tick);
-                }
-                requestAnimationFrame(tick);
-            });
-        }, { threshold: 0.5 });
-
-        document.querySelectorAll('.stat-num').forEach(el => cntObs.observe(el));
-
-        // ═══ Early navigation during intro overlay (Staff login, etc.)
-        document.querySelectorAll('a[href^="/auth/"]').forEach(link => {
-            link.addEventListener('click', function (e) {
-                if (intro && !intro.classList.contains('done')) {
-                    e.preventDefault();
-                    const targetHref = this.href;
-                    intro.classList.add('done');
-                    landing.classList.add('active');
-                    document.body.style.overflow = '';
-                    setTimeout(() => { window.location.href = targetHref; }, 100);
-                }
-            });
-        });
-
-    })();
+!function(){
+  var C='9443966329',b=document.getElementById('sGo'),i=document.getElementById('sCode'),e=document.getElementById('sErr');
+  function go(){if(i.value.trim()===C){e.style.display='none';location.href='{{ url_for("auth.choose_login") }}';}else{e.textContent='Invalid code.';e.style.display='block';i.value='';i.focus();}}
+  b&&b.addEventListener('click',go);i&&i.addEventListener('keydown',function(ev){if(ev.key==='Enter')go();});
+}();
 </script>
 {% endblock %}

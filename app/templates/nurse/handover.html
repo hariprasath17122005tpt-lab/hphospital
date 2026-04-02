@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Shift Handover — Nurse Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="fas fa-exchange-alt text-info me-2"></i>Shift Handover</h2>
+            <p class="text-muted mb-0">Document patient conditions for the next shift nurse</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Create Handover -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3"><h6 class="mb-0"><i class="fas fa-plus-circle me-2 text-success"></i>New Handover Note</h6></div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('nurse.handover_save') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Patient</label>
+                            <select name="patient_id" class="form-select" required>
+                                <option value="">-- Select Patient --</option>
+                                {% for p in patients %}
+                                <option value="{{ p.id }}">{{ p.first_name }} {{ p.last_name }} ({{ p.uhid or 'No UHID' }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Current Condition Summary</label>
+                            <textarea name="summary" class="form-control" rows="4" placeholder="Patient's current condition, vitals trend, treatments given..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Pending Tasks</label>
+                            <textarea name="pending_tasks" class="form-control" rows="2" placeholder="Tasks remaining for next shift..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-danger">Urgent Concerns</label>
+                            <textarea name="urgent_concerns" class="form-control" rows="2" placeholder="Any urgent issues to watch..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info w-100 text-white"><i class="fas fa-save me-2"></i>Save Handover</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Handover History -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3"><h6 class="mb-0"><i class="fas fa-history me-2"></i>Handover History</h6></div>
+                <div class="card-body">
+                    {% if handovers %}
+                    {% for h in handovers %}
+                    <div class="card mb-3 border" style="border-left: 4px solid {% if h.urgent_concerns %}#ef4444{% else %}#0ea5e9{% endif %} !important;">
+                        <div class="card-body py-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="fw-bold">{{ h.patient.first_name if h.patient else '' }} {{ h.patient.last_name if h.patient else '' }}</span>
+                                    <span class="badge bg-light text-dark ms-2">{{ h.patient.uhid if h.patient else '' }}</span>
+                                </div>
+                                <small class="text-muted">{{ h.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">{{ h.summary }}</p>
+                            {% if h.pending_tasks %}
+                            <div class="small"><span class="text-warning fw-semibold">Pending:</span> {{ h.pending_tasks }}</div>
+                            {% endif %}
+                            {% if h.urgent_concerns %}
+                            <div class="small"><span class="text-danger fw-semibold">Urgent:</span> {{ h.urgent_concerns }}</div>
+                            {% endif %}
+                            <div class="text-muted" style="font-size:0.7rem;">
+                                By: {{ h.from_nurse.username if h.from_nurse else 'Unknown' }}
+                                {% if h.to_nurse %} → {{ h.to_nurse.username }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-exchange-alt fa-3x mb-3 opacity-25"></i>
+                        <h6>No Handover Notes</h6>
+                        <p class="mb-0 small">Create a handover summary when your shift ends.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

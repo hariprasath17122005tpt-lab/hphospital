@@ -62,6 +62,15 @@
 
                         <hr>
 
+                        <div class="mb-4">
+                            <label class="form-label"><i class="fab fa-whatsapp text-success me-1"></i> WhatsApp Number (for Homepage)</label>
+                            <input type="text" name="whatsapp_number" class="form-control" placeholder="919443966329"
+                                value="{{ settings.whatsapp_number or '919443966329' }}">
+                            <div class="form-text">Country code + number without + or spaces. E.g. <code>919443966329</code>. This number appears on the homepage WhatsApp button.</div>
+                        </div>
+
+                        <hr>
+
                         <div class="text-end">
                             <button type="submit" class="btn btn-dark px-4">
                                 <i class="fas fa-save me-2"></i> Save Changes

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for, abort, send_from_directory, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import func, case
-from app.models.models import Medicine, UserRole, LabReport, LabTestTemplate
+from app.models.models import Medicine, UserRole, LabReport, LabTestTemplate, FrontpageDoctor, SystemSettings
 from fpdf import FPDF
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -13,13 +13,25 @@ main_bp = Blueprint('main', __name__)
 def index():
     """Home page - redirects to dashboard if logged in"""
     if current_user.is_authenticated:
-        if current_user.role.value == 'PATIENT':
-            return redirect(url_for('patient.dashboard'))
-        elif current_user.role.value == 'DOCTOR':
-            return redirect(url_for('doctor.dashboard'))
-        elif current_user.role.value == 'HOST':
-            return redirect(url_for('host.dashboard'))
-    return render_template('index.html')
+        role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+        destinations = {
+            'PATIENT': 'patient.dashboard',
+            'DOCTOR': 'doctor.dashboard',
+            'HOST': 'host.dashboard',
+            'ADMIN': 'host.dashboard',
+            'NURSE': 'nurse.dashboard',
+            'LAB_STAFF': 'lab.dashboard',
+            'PHARMACIST': 'pharmacy_ops.dashboard',
+            'RECEPTIONIST': 'reception.dashboard',
+        }
+        endpoint = destinations.get(role)
+        if endpoint:
+            return redirect(url_for(endpoint))
+    frontpage_doctors = FrontpageDoctor.query.filter_by(is_active=True).order_by(
+        FrontpageDoctor.display_order.asc(), FrontpageDoctor.id.asc()).all()
+    settings = SystemSettings.query.first()
+    whatsapp = settings.whatsapp_number if settings and settings.whatsapp_number else '919443966329'
+    return render_template('index.html', frontpage_doctors=frontpage_doctors, whatsapp_number=whatsapp)
 
 @main_bp.route('/about')
 def about():

@@ -499,10 +499,11 @@
                         role="tabpanel">
 
                         <!-- Day Tabs -->
-                        <div class="day-tabs">
+                        <div class="day-tabs nav" role="tablist">
                             {% for day in data.days.keys()|sort %}
-                            <button class="day-tab {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
-                                data-bs-target="#content-{{ loop.index }}-{{ week_idx }}">
+                            <button class="day-tab nav-link {% if loop.first %}active{% endif %}" data-bs-toggle="pill"
+                                data-bs-target="#content-{{ loop.index }}-{{ week_idx }}" type="button" role="tab"
+                                aria-controls="content-{{ loop.index }}-{{ week_idx }}" aria-selected="{{ 'true' if loop.first else 'false' }}">
                                 {{ day }}
                             </button>
                             {% endfor %}
@@ -511,7 +512,7 @@
                         <div class="tab-content">
                             {% for day, exercises in data.days.items()|sort %}
                             <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
-                                id="content-{{ loop.index }}-{{ week_idx }}">
+                                id="content-{{ loop.index }}-{{ week_idx }}" role="tabpanel">
                                 <h5 class="mb-4" style="color:#f1f5f9; font-family:'Space Grotesk';">{{ exercises|length
                                     }} Scheduled Tasks</h5>
 

@@ -352,25 +352,137 @@ def reset_password(token):
 
 # ================== GOOGLE OAUTH ==================
 
+# Initialize Google OAuth
+from authlib.integrations.flask_client import OAuth as AuthlibOAuth
+import os
+
+_google_oauth = None
+
+def _get_google_oauth(app=None):
+    """Lazy-init Google OAuth client."""
+    global _google_oauth
+    if _google_oauth:
+        return _google_oauth
+
+    from flask import current_app
+    app = app or current_app._get_current_object()
+
+    client_id = os.environ.get('GOOGLE_CLIENT_ID', app.config.get('GOOGLE_CLIENT_ID', ''))
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET', app.config.get('GOOGLE_CLIENT_SECRET', ''))
+
+    if not client_id or not client_secret:
+        return None
+
+    oauth_registry = AuthlibOAuth(app)
+    _google_oauth = oauth_registry.register(
+        name='google',
+        client_id=client_id,
+        client_secret=client_secret,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'},
+    )
+    return _google_oauth
+
+
 @auth_advanced_bp.route('/google-login')
 def google_login():
     """Initiate Google OAuth login"""
-    role = request.args.get('role', 'patient')
-    session['oauth_role'] = role
-    
-    # In production, redirect to Google OAuth
-    # For now, show a placeholder message
-    flash('Google OAuth is configured. Integrate with your OAuth provider.', 'info')
-    return redirect(url_for('auth.unified_login'))
+    session['oauth_role'] = request.args.get('role', 'PATIENT')
+
+    google = _get_google_oauth()
+    if not google:
+        flash('Google Login is not configured. Please ask the hospital admin to set up Google OAuth credentials.', 'warning')
+        return redirect(url_for('auth.patient_login'))
+
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
 
 
 @auth_advanced_bp.route('/google-callback')
 def google_callback():
-    """Handle Google OAuth callback"""
-    # This would handle the OAuth callback
-    # For demo purposes, redirect to login
-    flash('Google OAuth callback received.', 'info')
-    return redirect(url_for('auth.unified_login'))
+    """Handle Google OAuth callback — create/find patient and log in."""
+    google = _get_google_oauth()
+    if not google:
+        flash('Google Login is not configured.', 'danger')
+        return redirect(url_for('auth.patient_login'))
+
+    try:
+        token = google.authorize_access_token()
+        user_info = google.parse_id_token(token, nonce=None) if hasattr(google, 'parse_id_token') else token.get('userinfo')
+
+        if not user_info:
+            resp = google.get('https://openidconnect.googleapis.com/v1/userinfo')
+            user_info = resp.json()
+
+        google_id = user_info.get('sub', '')
+        email = user_info.get('email', '')
+        name = user_info.get('name', email.split('@')[0])
+        picture = user_info.get('picture', '')
+
+        if not email:
+            flash('Could not retrieve email from Google. Please try again.', 'danger')
+            return redirect(url_for('auth.patient_login'))
+
+        role_value = session.pop('oauth_role', 'PATIENT')
+
+        # Try using AuthService if available
+        try:
+            from app.services.auth_service import AuthService
+            user, is_new = AuthService.find_or_create_oauth_user(
+                provider='google',
+                provider_user_id=google_id,
+                email=email,
+                name=name,
+                role_value=role_value
+            )
+        except Exception:
+            # Fallback: manual user creation
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                default_hospital = Hospital.query.first()
+                user = User(
+                    username=email.split('@')[0] + '_g',
+                    email=email,
+                    password_hash=generate_password_hash(secrets.token_urlsafe(16)),
+                    role=UserRole.PATIENT,
+                    is_active=True,
+                    hospital_id=default_hospital.id if default_hospital else None,
+                )
+                db.session.add(user)
+                db.session.flush()
+
+                from app.models.models import Patient
+                name_parts = name.split(' ', 1)
+                patient = Patient(
+                    user_id=user.id,
+                    first_name=name_parts[0],
+                    last_name=name_parts[1] if len(name_parts) > 1 else '',
+                    age=0,
+                    gender='Not Specified',
+                    hospital_id=default_hospital.id if default_hospital else None,
+                )
+                db.session.add(patient)
+                db.session.commit()
+                is_new = True
+            else:
+                is_new = False
+
+        session.permanent = True
+        login_user(user, remember=True)
+
+        if is_new:
+            flash(f'Welcome {name}! Your account has been created via Google.', 'success')
+        else:
+            flash(f'Welcome back, {name}!', 'success')
+
+        return redirect_to_dashboard()
+
+    except Exception as e:
+        print(f'[GOOGLE_OAUTH_ERROR] {e}')
+        import traceback
+        traceback.print_exc()
+        flash(f'Google login failed: {str(e)}', 'danger')
+        return redirect(url_for('auth.patient_login'))
 
 
 # ================== EMERGENCY ACCESS ==================
@@ -639,14 +751,64 @@ def doctor_register():
 
 @auth_advanced_bp.route('/host/login', methods=['GET', 'POST'])
 def host_login():
-    """Host admin login — uses the staff login handler."""
+    """Host admin login — dedicated host login page."""
     if current_user.is_authenticated:
         role_val = getattr(current_user.role, 'value', str(current_user.role))
         if role_val in ('HOST', 'ADMIN'):
             return redirect(url_for('host.dashboard'))
-    # Render the staff login page; the staff_login POST handler already
-    # accepts host master keys, so no separate form is needed.
-    return render_template('staff_login.html', initial_role='HOST')
+        return _redirect_authenticated_user()
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if not username or not password:
+            flash('Please enter both username and password.', 'danger')
+            return render_template('host_login.html')
+
+        username_normalized = username.lower()
+
+        # Check host master keys
+        is_host_master = (
+            username_normalized in HOST_MASTER_KEYS
+            and HOST_MASTER_KEYS[username_normalized] == password
+        )
+
+        if is_host_master:
+            try:
+                user = _get_or_create_host_user(username_normalized, password)
+                session.permanent = True
+                login_user(user, remember=True)
+                flash('ACCESS GRANTED: Host Protocol Initiated.', 'success')
+                return redirect(url_for('host.dashboard'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'System error: {e}', 'danger')
+                return render_template('host_login.html')
+
+        # Fallback: DB-based login for HOST/ADMIN users
+        user = User.query.filter(
+            db.func.lower(User.username) == username_normalized
+        ).first()
+
+        if user and check_password_hash(user.password_hash, password):
+            role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
+            if role_val in ('HOST', 'ADMIN'):
+                if not user.is_active:
+                    flash('Account deactivated.', 'danger')
+                    return render_template('host_login.html')
+                session.permanent = True
+                login_user(user, remember=True)
+                flash(f'Welcome, {user.username}!', 'success')
+                return redirect(url_for('host.dashboard'))
+            else:
+                flash('This login is for Host/Admin only.', 'danger')
+                return render_template('host_login.html')
+        else:
+            flash('Invalid username or password.', 'danger')
+            return render_template('host_login.html')
+
+    return render_template('host_login.html')
 
 
 @auth_advanced_bp.route('/doctor/login', methods=['GET', 'POST'])

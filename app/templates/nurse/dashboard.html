@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-
 {% block title %}Nurse Dashboard — CarePoint{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row mb-4 align-items-center">
+    <!-- Header -->
+    <div class="row mb-4">
         <div class="col">
             <h2 class="fw-bold"><i class="fas fa-user-nurse text-success me-2"></i> Nurse Dashboard</h2>
             <p class="text-muted mb-0">
@@ -14,132 +14,262 @@
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-warning text-dark">
-                <div class="card-body">
-                    <h6 class="text-black-50">Pending Tasks</h6>
-                    <h2 class="mb-0">{{ pending_tasks|length }}</h2>
-                    <small>Awaiting action</small>
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-6">
+            <a href="{{ url_for('nurse.patients', tab='my') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #6366f1 !important;">
+                    <div class="card-body py-3">
+                        <div class="text-muted small">My Patients</div>
+                        <h3 class="mb-0 fw-bold">{{ assigned_count }}</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <a href="{{ url_for('nurse.patients', tab='available') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #06b6d4 !important;">
+                    <div class="card-body py-3">
+                        <div class="text-muted small">Available Pool</div>
+                        <h3 class="mb-0 fw-bold">{{ available_count }}</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #f59e0b !important;">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Pending Tasks</div>
+                    <h3 class="mb-0 fw-bold">{{ pending_count }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-primary text-white">
-                <div class="card-body">
-                    <h6 class="text-white-50">In Progress</h6>
-                    <h2 class="mb-0">{{ in_progress_tasks|length }}</h2>
-                    <small>Currently working</small>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #10b981 !important;">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Vitals Today</div>
+                    <h3 class="mb-0 fw-bold">{{ vitals_today }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-success text-white">
-                <div class="card-body">
-                    <h6 class="text-white-50">Completed Today</h6>
-                    <h2 class="mb-0">{{ completed_today|length }}</h2>
-                    <small>Tasks done</small>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #8b5cf6 !important;">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Meds Due</div>
+                    <h3 class="mb-0 fw-bold">{{ meds_due }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-danger text-white">
-                <div class="card-body">
-                    <h6 class="text-white-50">Urgent</h6>
-                    <h2 class="mb-0">{{ urgent_tasks|length }}</h2>
-                    <small>Needs immediate attention</small>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0ea5e9 !important;">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Lab Pending</div>
+                    <h3 class="mb-0 fw-bold">{{ lab_pending }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ef4444 !important;">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Critical Alerts</div>
+                    <h3 class="mb-0 fw-bold text-danger">{{ critical_alerts|length }}</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Active Tasks -->
-    <div class="card shadow border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Active Tasks</h5>
+    <!-- Critical Alerts Banner -->
+    {% if critical_alerts %}
+    <div class="card border-danger shadow-sm mb-4">
+        <div class="card-header bg-danger text-white py-2">
+            <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Critical Alerts</h6>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Priority</th>
-                            <th>Task</th>
-                            <th>Patient</th>
-                            <th>Type</th>
-                            <th>Due</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+                <table class="table table-sm mb-0">
                     <tbody>
-                        {% if recent_tasks|length > 0 %}
-                        {% for task in recent_tasks %}
+                        {% for alert in critical_alerts[:8] %}
                         <tr>
-                            <td>
-                                {% if task.priority == 'urgent' %}
-                                <span class="badge bg-danger">Urgent</span>
-                                {% elif task.priority == 'high' %}
-                                <span class="badge bg-warning text-dark">High</span>
-                                {% elif task.priority == 'low' %}
-                                <span class="badge bg-secondary">Low</span>
-                                {% else %}
-                                <span class="badge bg-info">Normal</span>
-                                {% endif %}
-                            </td>
-                            <td class="fw-bold">{{ task.title }}</td>
-                            <td>
-                                {% if task.patient %}
-                                {{ task.patient.first_name }} {{ task.patient.last_name }}
-                                {% else %}
-                                —
-                                {% endif %}
-                            </td>
-                            <td><span class="text-muted">{{ task.task_type or '—' }}</span></td>
-                            <td>
-                                {% if task.due_date %}
-                                {{ task.due_date.strftime('%d %b %Y, %H:%M') }}
-                                {% else %}
-                                —
-                                {% endif %}
+                            <td class="fw-bold">
+                                <a href="{{ url_for('nurse.patient_detail', patient_id=alert.patient.id) }}">
+                                    {{ alert.patient.first_name }} {{ alert.patient.last_name }}
+                                </a>
                             </td>
                             <td>
-                                {% if task.status == 'Pending' %}
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                {% elif task.status == 'In Progress' %}
-                                <span class="badge bg-primary">In Progress</span>
-                                {% else %}
-                                <span class="badge bg-secondary">{{ task.status }}</span>
+                                {% if alert.type == 'fever' %}<span class="badge bg-danger">High Temp: {{ alert.vitals.temperature }}°F</span>
+                                {% elif alert.type == 'high_bp' %}<span class="badge bg-danger">High BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
+                                {% elif alert.type == 'low_bp' %}<span class="badge bg-warning text-dark">Low BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
+                                {% elif alert.type == 'low_oxygen' %}<span class="badge bg-danger">Low O2: {{ alert.vitals.oxygen_level }}%</span>
+                                {% elif alert.type == 'tachycardia' %}<span class="badge bg-warning text-dark">Tachycardia: {{ alert.vitals.heart_rate }} bpm</span>
+                                {% elif alert.type == 'bradycardia' %}<span class="badge bg-warning text-dark">Bradycardia: {{ alert.vitals.heart_rate }} bpm</span>
+                                {% elif alert.type == 'high_sugar' %}<span class="badge bg-danger">High Sugar: {{ alert.vitals.blood_sugar }} mg/dL</span>
+                                {% else %}<span class="badge bg-secondary">{{ alert.type }}</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if task.status == 'Pending' %}
-                                <form method="POST" action="{{ url_for('nurse.update_task', task_id=task.id) }}" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="status" value="In Progress">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Start</button>
-                                </form>
-                                {% elif task.status == 'In Progress' %}
-                                <form method="POST" action="{{ url_for('nurse.update_task', task_id=task.id) }}" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="status" value="Completed">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
-                                </form>
-                                {% endif %}
-                            </td>
+                            <td class="text-muted small">{{ alert.vitals.recorded_at.strftime('%H:%M') }}</td>
                         </tr>
                         {% endfor %}
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
-                                <i class="fas fa-check-circle fa-2x mb-2 d-block"></i>
-                                No active tasks. All caught up!
-                            </td>
-                        </tr>
-                        {% endif %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Left: Patients + Tasks -->
+        <div class="col-lg-8">
+            <!-- Today's Assigned Patients -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h6 class="mb-0"><i class="fas fa-procedures me-2 text-primary"></i>Assigned Patients</h6>
+                    <a href="{{ url_for('nurse.patients') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if assigned_patients %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>UHID</th>
+                                    <th>Age/Gender</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in assigned_patients %}
+                                <tr>
+                                    <td class="fw-semibold">{{ p.first_name }} {{ p.last_name }}</td>
+                                    <td><span class="badge bg-light text-dark">{{ p.uhid or '—' }}</span></td>
+                                    <td>{{ p.age or '—' }} / {{ p.gender or '—' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('nurse.patient_detail', patient_id=p.id) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-folder-open"></i> Open
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-bed fa-2x mb-2 d-block opacity-50"></i>
+                        No assigned patients at this time.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pending Tasks -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h6 class="mb-0"><i class="fas fa-tasks me-2 text-warning"></i>Pending Tasks</h6>
+                    <a href="{{ url_for('nurse.tasks') }}" class="btn btn-sm btn-outline-warning">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if pending_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Task</th>
+                                    <th>Patient</th>
+                                    <th>Due</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in pending_tasks %}
+                                <tr>
+                                    <td>
+                                        {% if task.priority == 'urgent' %}<span class="badge bg-danger">Urgent</span>
+                                        {% elif task.priority == 'high' %}<span class="badge bg-warning text-dark">High</span>
+                                        {% elif task.priority == 'low' %}<span class="badge bg-secondary">Low</span>
+                                        {% else %}<span class="badge bg-info">Normal</span>{% endif %}
+                                    </td>
+                                    <td class="fw-semibold">{{ task.title }}</td>
+                                    <td>{{ task.patient.first_name if task.patient else '—' }} {{ task.patient.last_name if task.patient else '' }}</td>
+                                    <td class="small text-muted">{{ task.due_date.strftime('%d %b, %H:%M') if task.due_date else '—' }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('nurse.complete_task', task_id=task.id) }}" style="display:inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            {% if task.status == 'Pending' %}
+                                            <input type="hidden" name="status" value="In Progress">
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Start</button>
+                                            {% else %}
+                                            <input type="hidden" name="status" value="Completed">
+                                            <button class="btn btn-sm btn-outline-success" type="submit">Done</button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-check-circle fa-2x mb-2 d-block opacity-50"></i>
+                        No pending tasks. All caught up!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Activity Feed -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Recent Activity</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for v in recent_vitals_log %}
+                        <li class="list-group-item py-2 px-3">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-success bg-opacity-10 text-success me-2"><i class="fas fa-heartbeat"></i></span>
+                                <div class="small">
+                                    <span class="fw-semibold">Vitals</span> for {{ v.patient.first_name if v.patient else 'Patient' }}
+                                    <br><span class="text-muted">{{ v.recorded_at.strftime('%d %b %H:%M') }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% for n in recent_notes %}
+                        <li class="list-group-item py-2 px-3">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary bg-opacity-10 text-primary me-2"><i class="fas fa-sticky-note"></i></span>
+                                <div class="small">
+                                    <span class="fw-semibold">Note</span> for {{ n.patient.first_name if n.patient else 'Patient' }}
+                                    {% if n.is_critical %}<span class="badge bg-danger ms-1">Critical</span>{% endif %}
+                                    <br><span class="text-muted">{{ n.created_at.strftime('%d %b %H:%M') }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% for t in recent_completed %}
+                        <li class="list-group-item py-2 px-3">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning bg-opacity-10 text-warning me-2"><i class="fas fa-check"></i></span>
+                                <div class="small">
+                                    <span class="fw-semibold">{{ t.title }}</span> completed
+                                    <br><span class="text-muted">{{ t.completed_at.strftime('%d %b %H:%M') if t.completed_at else '' }}</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                        {% if not recent_vitals_log and not recent_notes and not recent_completed %}
+                        <li class="list-group-item text-center text-muted py-4">
+                            <i class="fas fa-clock fa-2x mb-2 d-block opacity-50"></i>
+                            No recent activity.
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

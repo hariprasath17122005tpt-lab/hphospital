@@ -356,8 +356,45 @@ def dashboard():
         latest_vitals = PatientVitals.query.filter_by(patient_id=patient.id).order_by(
             PatientVitals.recorded_at.desc()).first()
 
-        # Choose a source for displayed vitals: prefer HealthData for AI metrics, fallback to nurse vitals
-        displayed_vitals = latest_health if latest_health else latest_vitals
+        # Choose a source for displayed vitals: whichever is MORE RECENT wins
+        # Nurse-recorded vitals should always reflect on patient dashboard when newer
+        if latest_health and latest_vitals:
+            health_time = getattr(latest_health, 'recorded_at', None) or getattr(latest_health, 'created_at', None)
+            vitals_time = latest_vitals.recorded_at
+            if health_time and vitals_time and vitals_time > health_time:
+                displayed_vitals = latest_vitals
+            else:
+                displayed_vitals = latest_health
+        elif latest_vitals:
+            displayed_vitals = latest_vitals
+        else:
+            displayed_vitals = latest_health
+
+        # If nurse vitals are the displayed source, compute statuses from them
+        use_nurse_vitals = (displayed_vitals is latest_vitals) and latest_vitals is not None
+        if use_nurse_vitals:
+            hr = latest_vitals.heart_rate or 0
+            if 60 <= hr <= 100:
+                h_status['heart'] = {'label': 'Normal', 'class': 'success'}
+            elif hr > 0:
+                h_status['heart'] = {'label': 'Attention', 'class': 'warning'}
+
+            sys_bp = latest_vitals.systolic_bp or 0
+            dia_bp = latest_vitals.diastolic_bp or 0
+            if 90 <= sys_bp <= 120 and 60 <= dia_bp <= 80:
+                h_status['bp'] = {'label': 'Optimal', 'class': 'info'}
+            elif sys_bp > 140 or dia_bp > 90:
+                h_status['bp'] = {'label': 'High', 'class': 'danger'}
+            elif sys_bp > 0:
+                h_status['bp'] = {'label': 'Normal', 'class': 'success'}
+
+            sugar = getattr(latest_vitals, 'blood_sugar', None) or 0
+            if sugar >= 200:
+                h_status['sugar'] = {'label': 'High', 'class': 'danger'}
+            elif sugar >= 125:
+                h_status['sugar'] = {'label': 'Pre-Diabetic', 'class': 'warning'}
+            elif sugar > 0:
+                h_status['sugar'] = {'label': 'Normal', 'class': 'success'}
 
         # Process Health Data if available
         if latest_health:
@@ -496,34 +533,59 @@ def dashboard():
         recent_reports = LabReport.query.filter_by(patient_id=patient.id).order_by(
             LabReport.conducted_at.desc()).limit(10).all()
     
-        # Get health data history for charts (last 7 entries)
+        # Get health data history for charts (last 7 days)
+        # Merge HealthData + nurse PatientVitals — whichever is more recent per day wins
         health_records = HealthData.query.filter_by(patient_id=patient.id).filter(
             HealthData.recorded_at >= (datetime.now() - timedelta(days=7))
         ).order_by(HealthData.recorded_at.asc()).all()
-    
+
+        nurse_vitals_7d = PatientVitals.query.filter_by(patient_id=patient.id).filter(
+            PatientVitals.recorded_at >= (datetime.now() - timedelta(days=7))
+        ).order_by(PatientVitals.recorded_at.asc()).all()
+
         # Process into Last 7 Days structure
         today = datetime.now().date()
         last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-        
-        chart_dates = [d.strftime('%a') for d in last_7_days] # e.g. "Mon", "Tue"
-        
-        # Map data by date (key: date object)
-        health_map = {h.recorded_at.date(): h for h in health_records}
-        
+
+        chart_dates = [d.strftime('%a') for d in last_7_days]
+
+        # Map HealthData by date
+        health_map = {}
+        for h in health_records:
+            health_map[h.recorded_at.date()] = {
+                'hr': h.heart_rate or 0,
+                'bp': h.systolic_bp or 0,
+                'sugar': h.fasting_sugar or 0,
+                'sleep': h.sleep_hours or 0,
+                'time': h.recorded_at
+            }
+
+        # Overlay nurse vitals — use nurse data if newer or if no HealthData for that day
+        for v in nurse_vitals_7d:
+            d = v.recorded_at.date()
+            existing = health_map.get(d)
+            if not existing or v.recorded_at > existing['time']:
+                health_map[d] = {
+                    'hr': v.heart_rate or 0,
+                    'bp': v.systolic_bp or 0,
+                    'sugar': v.blood_sugar or 0,
+                    'sleep': existing['sleep'] if existing else 0,
+                    'time': v.recorded_at
+                }
+
         chart_heart_rate = []
         chart_bp_sys = []
         chart_sugar = []
         chart_sleep = []
-        
+
         for d in last_7_days:
             if d in health_map:
-                h = health_map[d]
-                chart_heart_rate.append(h.heart_rate or 0)
-                chart_bp_sys.append(h.systolic_bp or 0)
-                chart_sugar.append(h.fasting_sugar or 0)
-                chart_sleep.append(h.sleep_hours or 0)
+                m = health_map[d]
+                chart_heart_rate.append(m['hr'])
+                chart_bp_sys.append(m['bp'])
+                chart_sugar.append(m['sugar'])
+                chart_sleep.append(m['sleep'])
             else:
-                # No data for this day -> 0 (Flat line)
                 chart_heart_rate.append(0)
                 chart_bp_sys.append(0)
                 chart_sugar.append(0)
@@ -545,6 +607,8 @@ def dashboard():
         return render_template('patient/dashboard_enhanced.html',
                              patient=patient,
                              latest_health=latest_health,
+                             latest_vitals=latest_vitals,
+                             displayed_vitals=displayed_vitals,
                              appointments=upcoming_appointments,
                              upcoming_appointments=upcoming_appointments,
                              unread_messages=unread_messages,
@@ -678,18 +742,25 @@ def enter_health_data():
         patient = current_user.patient
         
         # Get form data
-        systolic_bp = int(request.form.get('systolic_bp', 0))
-        diastolic_bp = int(request.form.get('diastolic_bp', 0))
-        fasting_sugar = float(request.form.get('fasting_sugar', 0))
-        random_sugar = float(request.form.get('random_sugar', 0))
-        heart_rate = int(request.form.get('heart_rate', 0))
+        def _int(val, default=0):
+            try: return int(val) if val not in (None, '') else default
+            except (ValueError, TypeError): return default
+        def _float(val, default=0.0):
+            try: return float(val) if val not in (None, '') else default
+            except (ValueError, TypeError): return default
+
+        systolic_bp = _int(request.form.get('systolic_bp'))
+        diastolic_bp = _int(request.form.get('diastolic_bp'))
+        fasting_sugar = _float(request.form.get('fasting_sugar'))
+        random_sugar = _float(request.form.get('random_sugar'))
+        heart_rate = _int(request.form.get('heart_rate'))
         symptoms = request.form.get('symptoms', '')
-        exercise_minutes = int(request.form.get('exercise_minutes', 0))
-        sleep_hours = float(request.form.get('sleep_hours', 0))
+        exercise_minutes = _int(request.form.get('exercise_minutes'))
+        sleep_hours = _float(request.form.get('sleep_hours'))
         stress_level = request.form.get('stress_level', 'Low')
         smoking = request.form.get('smoking') == 'on'
         alcohol = request.form.get('alcohol') == 'on'
-        temperature = float(request.form.get('temperature', 98.6))
+        temperature = _float(request.form.get('temperature'), 98.6)
         
         # Calculate BMI
         if patient.weight and patient.height:

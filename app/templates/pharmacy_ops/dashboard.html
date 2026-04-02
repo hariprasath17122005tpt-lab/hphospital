@@ -254,7 +254,7 @@
             <button class="btn px-4 py-2 rounded-3 shadow-sm" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); font-weight:600;" onclick="openQRScanner()">
                 <i class="fas fa-qrcode me-2"></i>Scan Smart Pass
             </button>
-            {% if current_user.role.value in ['DOCTOR', 'HOST', 'ADMIN'] %}
+            {% if current_user.role.value in ['DOCTOR', 'ADMIN'] %}
             <button class="btn btn-primary px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal"
                 data-bs-target="#newOrderModal" id="btnNewOrder">
                 <i class="fas fa-plus me-2"></i>New Order
@@ -492,7 +492,7 @@
                                 {% endif %}
                             </div>
 
-                            {% if order.status == 'Pending' and current_user.role.value in ['PHARMACIST', 'HOST',
+                            {% if order.status == 'Pending' and current_user.role.value in ['PHARMACIST',
                             'ADMIN'] %}
                             <button class="btn btn-sm btn-success rounded-3 w-100 mb-2"
                                 onclick="dispenseOrder({{ order.id }})">
