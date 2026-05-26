@@ -36,6 +36,8 @@ except Exception as e:
 if __name__ != "__main__":
     # For Vercel production
     application = app
+    # Also export `app` name (some WSGI/hosting environments expect `app`)
+    app = app
 else:
     # For local testing
     if __name__ == "__main__":
