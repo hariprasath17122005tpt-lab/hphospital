@@ -1,0 +1,10 @@
+{
+  "name": "arul-hospital",
+  "version": "1.0.0",
+  "description": "ARUL Hospital Management System",
+  "main": "app.py",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  }
+}
