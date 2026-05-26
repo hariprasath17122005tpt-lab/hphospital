@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% block title %}Login Activity — CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Login Activity' %}
+{% set breadcrumb_current = 'Login Activity' %}
+
+{% block content %}
+<style>
+    .activity-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .activity-header h2 {
+        font-family: var(--cp-heading-font);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--cp-text);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .activity-header p {
+        color: var(--cp-text-secondary);
+        font-size: 0.85rem;
+        margin: 4px 0 0 0;
+    }
+
+    .activity-count {
+        background: var(--cp-accent-soft);
+        color: var(--cp-accent);
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .activity-table-card {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-card-radius);
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        box-shadow: var(--cp-card-shadow);
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--cp-text-secondary);
+    }
+
+    .activity-table thead {
+        background: var(--cp-glass);
+    }
+
+    .activity-table th {
+        color: var(--cp-text-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--cp-border);
+        text-align: left;
+    }
+
+    .activity-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--cp-border);
+        font-size: 0.88rem;
+        color: var(--cp-text-secondary);
+        vertical-align: middle;
+    }
+
+    .activity-table tbody tr {
+        transition: background 0.2s;
+    }
+
+    .activity-table tbody tr:hover {
+        background: var(--cp-glass-strong);
+    }
+
+    .activity-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .user-cell {
+        font-weight: 600;
+        color: var(--cp-text);
+    }
+
+    .role-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .role-badge.doctor {
+        background: var(--cp-success-bg);
+        color: var(--cp-success);
+    }
+
+    .role-badge.patient {
+        background: var(--cp-info-bg);
+        color: var(--cp-info);
+    }
+
+    .role-badge.host {
+        background: rgba(220, 38, 38, 0.08);
+        color: var(--cp-danger);
+    }
+
+    .role-badge.nurse {
+        background: rgba(217, 119, 6, 0.08);
+        color: var(--cp-warning);
+    }
+
+    .role-badge.pharmacist {
+        background: rgba(124, 58, 237, 0.08);
+        color: var(--cp-purple);
+    }
+
+    .role-badge.default {
+        background: var(--cp-glass-strong);
+        color: var(--cp-text-muted);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-badge.success {
+        background: var(--cp-success-bg);
+        color: var(--cp-success);
+    }
+
+    .status-badge.failed {
+        background: rgba(220, 38, 38, 0.08);
+        color: var(--cp-danger);
+    }
+
+    .ip-cell {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.82rem;
+        color: var(--cp-text-muted);
+    }
+
+    .timestamp-cell {
+        font-size: 0.82rem;
+        color: var(--cp-text-muted);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--cp-text-muted);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        opacity: 0.4;
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="activity-wrap">
+    <!-- Page Header -->
+    <div class="activity-header">
+        <div>
+            <h2><i class="fas fa-shield-alt me-2" style="color: var(--cp-accent);"></i>Login Activity</h2>
+            <p>Monitor authentication events across the platform</p>
+        </div>
+        {% if activities %}
+        <span class="activity-count">{{ activities | length }} record{{ 's' if activities | length != 1 else '' }}</span>
+        {% endif %}
+    </div>
+
+    <!-- Activity Table -->
+    <div class="activity-table-card">
+        {% if activities and activities | length > 0 %}
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>IP Address</th>
+                    <th>Status</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in activities %}
+                <tr>
+                    <td class="user-cell">{{ activity.user or activity.username or 'Unknown' }}</td>
+                    <td>
+                        {% set role_lower = (activity.role or 'unknown') | lower %}
+                        {% if role_lower in ['doctor'] %}
+                            <span class="role-badge doctor">{{ activity.role }}</span>
+                        {% elif role_lower in ['patient'] %}
+                            <span class="role-badge patient">{{ activity.role }}</span>
+                        {% elif role_lower in ['host', 'admin'] %}
+                            <span class="role-badge host">{{ activity.role }}</span>
+                        {% elif role_lower in ['nurse'] %}
+                            <span class="role-badge nurse">{{ activity.role }}</span>
+                        {% elif role_lower in ['pharmacist'] %}
+                            <span class="role-badge pharmacist">{{ activity.role }}</span>
+                        {% else %}
+                            <span class="role-badge default">{{ activity.role or 'N/A' }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="ip-cell">{{ activity.ip_address or activity.ip or 'N/A' }}</td>
+                    <td>
+                        {% set status_lower = (activity.status or '') | lower %}
+                        {% if status_lower == 'success' %}
+                            <span class="status-badge success"><i class="fas fa-check-circle"></i> Success</span>
+                        {% elif status_lower == 'failed' %}
+                            <span class="status-badge failed"><i class="fas fa-times-circle"></i> Failed</span>
+                        {% else %}
+                            <span class="status-badge success">{{ activity.status or 'N/A' }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="timestamp-cell">{{ activity.timestamp or activity.created_at or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No login activity recorded yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

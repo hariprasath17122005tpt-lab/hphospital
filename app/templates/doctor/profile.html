@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Doctor Profile — CarePoint{% endblock %}
+
+{% set topbar_title = 'My Profile' %}
+{% set breadcrumb_current = 'Profile' %}
+
+{% block content %}
+<style>
+    .profile-wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .profile-header {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-card-radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(20px);
+        box-shadow: var(--cp-card-shadow);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--cp-gradient-1);
+    }
+
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: var(--cp-gradient-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem auto;
+        font-size: 2.2rem;
+        color: #fff;
+        box-shadow: 0 8px 24px var(--cp-accent-glow);
+    }
+
+    .profile-name {
+        font-family: var(--cp-heading-font);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--cp-text);
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    .profile-specialization {
+        color: var(--cp-accent);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .profile-card {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-card-radius);
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(20px);
+        box-shadow: var(--cp-card-shadow);
+        transition: all 0.3s var(--cp-ease);
+    }
+
+    .profile-card:hover {
+        border-color: var(--cp-border-active);
+        box-shadow: var(--cp-card-shadow-hover);
+    }
+
+    .profile-card-title {
+        font-family: var(--cp-heading-font);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--cp-text);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: -0.01em;
+    }
+
+    .profile-card-title i {
+        color: var(--cp-accent);
+    }
+
+    .profile-field {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--cp-border);
+    }
+
+    .profile-field:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .profile-field-label {
+        color: var(--cp-text-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .profile-field-value {
+        color: var(--cp-text);
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .profile-actions {
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+
+    .btn-edit-profile {
+        background: var(--cp-gradient-1);
+        color: #fff;
+        border: none;
+        padding: 10px 28px;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s var(--cp-ease);
+        box-shadow: 0 4px 20px var(--cp-accent-glow);
+        text-decoration: none;
+    }
+
+    .btn-edit-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px var(--cp-accent-glow);
+        color: #fff;
+    }
+</style>
+
+<div class="profile-wrap">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div class="profile-name">
+            Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+        </div>
+        <div class="profile-specialization">
+            {{ doctor.specialization or 'General Practitioner' }}
+        </div>
+    </div>
+
+    <!-- Professional Information -->
+    <div class="profile-card">
+        <div class="profile-card-title">
+            <i class="fas fa-briefcase-medical"></i> Professional Information
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">Qualification</span>
+            <span class="profile-field-value">{{ doctor.qualification or 'N/A' }}</span>
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">License Number</span>
+            <span class="profile-field-value">{{ doctor.license_number or 'N/A' }}</span>
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">Experience</span>
+            <span class="profile-field-value">
+                {% if doctor.experience_years is not none %}
+                    {{ doctor.experience_years }} year{{ 's' if doctor.experience_years != 1 else '' }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </span>
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">Consultation Fee</span>
+            <span class="profile-field-value">
+                {% if doctor.consultation_fee is not none %}
+                    &#8377; {{ doctor.consultation_fee }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="profile-card">
+        <div class="profile-card-title">
+            <i class="fas fa-address-card"></i> Contact Information
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">Phone</span>
+            <span class="profile-field-value">{{ doctor.phone or 'N/A' }}</span>
+        </div>
+        <div class="profile-field">
+            <span class="profile-field-label">Clinic Address</span>
+            <span class="profile-field-value">{{ doctor.clinic_address or 'N/A' }}</span>
+        </div>
+    </div>
+
+    <!-- Edit Profile Action -->
+    <div class="profile-actions">
+        <a href="{{ url_for('doctor.edit_profile') }}" class="btn-edit-profile">
+            <i class="fas fa-pen"></i> Edit Profile
+        </a>
+    </div>
+</div>
+{% endblock %}

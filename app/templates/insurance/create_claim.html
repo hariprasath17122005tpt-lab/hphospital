@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create Insurance Claim — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-file-medical me-2"></i>Create Insurance Claim</h1></div><a href="{{ url_for('insurance.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+    <div class="wc-card"><div class="wc-card-body">
+        <form method="POST" class="wc-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-4">
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Patient</label><select name="patient_id" class="wc-select" required id="claimPatient"><option value="">Select</option>{% for p in patients %}<option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>{% endfor %}</select></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Insurance Policy</label><select name="policy_id" class="wc-select" required><option value="">Select Policy</option>{% for p in policies %}<option value="{{ p.id }}">{{ p.provider_name }} — {{ p.policy_number }}</option>{% endfor %}</select></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Claim Type</label><select name="claim_type" class="wc-select"><option value="Cashless">Cashless</option><option value="Pre-Auth">Pre-Authorization</option><option value="Reimbursement">Reimbursement</option></select></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Claim Amount (₹)</label><input type="number" name="claim_amount" class="wc-input" required placeholder="Amount"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Treatment Type</label><input type="text" name="treatment_type" class="wc-input" placeholder="e.g., Surgery, Medical"></div></div>
+                <div class="col-12"><div class="wc-form-group"><label class="wc-label">Diagnosis</label><textarea name="diagnosis" class="wc-textarea" rows="3" placeholder="Diagnosis details..."></textarea></div></div>
+            </div>
+            <div class="wc-form-actions mt-4"><button type="submit" class="wc-btn wc-btn-primary wc-btn-lg"><i class="fas fa-paper-plane me-2"></i>Submit Claim</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}

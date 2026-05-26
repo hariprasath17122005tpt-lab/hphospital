@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Staff Management & Activity - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Staff Management' %}
+{% set breadcrumb_current = 'Staff Activity' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-users-cog me-2"></i>Staff Management & Activity</h1>
+                <p class="wc-subtitle">Overview of all hospital staff members, roles, and statuses</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <a href="{{ url_for('host.create_staff') }}" class="wc-btn wc-btn-outline wc-btn-sm">
+                    <i class="fas fa-user-plus"></i> Add Staff
+                </a>
+                <a href="{{ url_for('host.create_nurse') }}" class="wc-btn wc-btn-outline wc-btn-sm">
+                    <i class="fas fa-user-nurse"></i> Add Nurse
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-user-nurse"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ nurses|length if nurses else 0 }}</div>
+                <div class="wc-stat-label">Nurses</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-flask"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ staff_users|selectattr('role.value', 'equalto', 'LAB_STAFF')|list|length if staff_users else 0 }}</div>
+                <div class="wc-stat-label">Lab Staff</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-pills"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ staff_users|selectattr('role.value', 'equalto', 'PHARMACIST')|list|length if staff_users else 0 }}</div>
+                <div class="wc-stat-label">Pharmacists</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-concierge-bell"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ staff_users|selectattr('role.value', 'equalto', 'RECEPTIONIST')|list|length if staff_users else 0 }}</div>
+                <div class="wc-stat-label">Receptionists</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nurses Section -->
+    <div class="wc-card" style="margin-bottom:24px;">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-user-nurse me-2" style="color:var(--wc-purple);"></i>Nurses</h3>
+            <span class="wc-badge wc-badge-primary">{{ nurses|length if nurses else 0 }} Total</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Registration No.</th>
+                            <th>Specialization</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nurse in nurses %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:rgba(139,92,246,.1);color:#8b5cf6;">
+                                        {{ nurse.first_name[0]|upper if nurse.first_name else 'N' }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ nurse.first_name }} {{ nurse.last_name }}</span>
+                                </div>
+                            </td>
+                            <td><code style="color:var(--wc-primary);">{{ nurse.registration_number or '-' }}</code></td>
+                            <td style="color:var(--wc-text-muted);">{{ nurse.specialization or '-' }}</td>
+                            <td style="white-space:nowrap;">{{ nurse.phone or '-' }}</td>
+                            <td>
+                                {% if nurse.verified %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="wc-empty-state" style="padding:30px;">
+                                    <i class="fas fa-user-nurse"></i>
+                                    <h4>No Nurses Found</h4>
+                                    <p>No nurses have been added to the system.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lab Staff Section -->
+    {% set lab_staff = staff_users|selectattr('role.value', 'equalto', 'LAB_STAFF')|list if staff_users else [] %}
+    <div class="wc-card" style="margin-bottom:24px;">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-flask me-2" style="color:var(--wc-teal);"></i>Lab Staff</h3>
+            <span class="wc-badge wc-badge-info">{{ lab_staff|length }} Total</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in lab_staff %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:rgba(6,182,212,.1);color:#06b6d4;">
+                                        {{ user.username[0]|upper }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ user.username }}</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--wc-text-muted);">{{ user.email or '-' }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-danger"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="wc-empty-state" style="padding:30px;">
+                                    <i class="fas fa-flask"></i>
+                                    <h4>No Lab Staff</h4>
+                                    <p>No lab staff members have been added.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pharmacists Section -->
+    {% set pharmacists = staff_users|selectattr('role.value', 'equalto', 'PHARMACIST')|list if staff_users else [] %}
+    <div class="wc-card" style="margin-bottom:24px;">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-pills me-2" style="color:var(--wc-success);"></i>Pharmacists</h3>
+            <span class="wc-badge wc-badge-success">{{ pharmacists|length }} Total</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pharmacists %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:rgba(16,185,129,.1);color:#10b981;">
+                                        {{ user.username[0]|upper }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ user.username }}</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--wc-text-muted);">{{ user.email or '-' }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-danger"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="wc-empty-state" style="padding:30px;">
+                                    <i class="fas fa-pills"></i>
+                                    <h4>No Pharmacists</h4>
+                                    <p>No pharmacists have been added.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receptionists Section -->
+    {% set receptionists = staff_users|selectattr('role.value', 'equalto', 'RECEPTIONIST')|list if staff_users else [] %}
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-concierge-bell me-2" style="color:var(--wc-warning);"></i>Receptionists</h3>
+            <span class="wc-badge wc-badge-warning">{{ receptionists|length }} Total</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Joined Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in receptionists %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:rgba(245,158,11,.1);color:#f59e0b;">
+                                        {{ user.username[0]|upper }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ user.username }}</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--wc-text-muted);">{{ user.email or '-' }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-danger"><i class="fas fa-times-circle me-1"></i>Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="wc-empty-state" style="padding:30px;">
+                                    <i class="fas fa-concierge-bell"></i>
+                                    <h4>No Receptionists</h4>
+                                    <p>No receptionists have been added.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

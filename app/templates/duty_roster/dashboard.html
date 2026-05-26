@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% block title %}Duty Roster — CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ─── Duty Roster Styles ───────────────────────────────────────── */
+.roster-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--glass, rgba(255,255,255,.04));
+    border: 1px solid var(--border, rgba(255,255,255,.06));
+    border-radius: 14px;
+}
+.roster-week-nav {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.roster-week-nav .btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+}
+.roster-week-label {
+    font-weight: 700;
+    font-size: 1rem;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Calendar grid */
+.roster-grid {
+    overflow-x: auto;
+    margin-bottom: 2rem;
+}
+.roster-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 900px;
+}
+.roster-table th,
+.roster-table td {
+    padding: .75rem;
+    vertical-align: top;
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+}
+.roster-table thead th {
+    background: var(--glass, rgba(255,255,255,.06));
+    font-weight: 700;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.roster-table thead th:first-child {
+    width: 110px;
+    text-align: left;
+}
+.roster-table tbody td {
+    min-height: 80px;
+    min-width: 120px;
+}
+.roster-table tbody td:first-child {
+    font-weight: 700;
+    font-size: .85rem;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Shift row label styling */
+.shift-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .7rem;
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 600;
+}
+.shift-label.morning   { background: rgba(251,191,36,.15); color: #fbbf24; }
+.shift-label.afternoon { background: rgba(99,102,241,.15); color: #818cf8; }
+.shift-label.night     { background: rgba(139,92,246,.15); color: #a78bfa; }
+
+/* Staff chip in cell */
+.staff-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: var(--glass, rgba(255,255,255,.06));
+    border: 1px solid var(--border, rgba(255,255,255,.1));
+    border-radius: 8px;
+    padding: .3rem .6rem;
+    margin: .2rem;
+    font-size: .78rem;
+    transition: background .2s;
+}
+.staff-chip:hover {
+    background: rgba(99,102,241,.12);
+}
+.staff-role-badge {
+    font-size: .65rem;
+    padding: .15rem .4rem;
+    border-radius: 5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+.role-doctor    { background: rgba(16,185,129,.2);  color: #34d399; }
+.role-nurse     { background: rgba(99,102,241,.2);  color: #818cf8; }
+.role-lab       { background: rgba(245,158,11,.2);  color: #fbbf24; }
+.role-pharmacy  { background: rgba(236,72,153,.2);  color: #f472b6; }
+.role-reception { background: rgba(6,182,212,.2);   color: #22d3ee; }
+
+.empty-cell {
+    text-align: center;
+    opacity: .3;
+    font-size: .75rem;
+    padding: .5rem;
+}
+
+/* Add Assignment Form */
+.assign-form-card {
+    background: var(--glass, rgba(255,255,255,.04));
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.assign-form-card h5 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+.assign-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: .75rem;
+    align-items: end;
+}
+.assign-form-grid .form-label {
+    font-size: .78rem;
+    font-weight: 600;
+    margin-bottom: .3rem;
+}
+
+/* Filter pills */
+.filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+.filter-pills .badge {
+    cursor: pointer;
+    transition: opacity .2s, transform .2s;
+    font-weight: 500;
+}
+.filter-pills .badge:hover {
+    transform: scale(1.05);
+}
+
+/* Toast */
+.roster-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 11000;
+    display: none;
+}
+
+[data-theme="light"] .roster-toolbar,
+[data-theme="light"] .assign-form-card {
+    background: #fff;
+    border-color: #e2e8f0;
+}
+[data-theme="light"] .roster-table th {
+    background: #f1f5f9;
+}
+[data-theme="light"] .roster-table td {
+    border-color: #e2e8f0;
+}
+[data-theme="light"] .staff-chip {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-calendar-alt me-2" style="color:#818cf8;"></i>Duty Roster</h2>
+            <p class="mb-0 opacity-75 small">Staff scheduling and shift management</p>
+        </div>
+    </div>
+
+    <!-- Toolbar: Week Nav + Filters -->
+    <div class="roster-toolbar">
+        <!-- Week Navigation -->
+        <div class="roster-week-nav">
+            <a href="?week={{ week_offset - 1 }}{% if filter_ward %}&ward={{ filter_ward }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+               class="btn btn-outline-secondary btn-sm" title="Previous week">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <span class="roster-week-label">
+                {{ monday.strftime('%b %d') }} &mdash; {{ sunday.strftime('%b %d, %Y') }}
+            </span>
+            <a href="?week={{ week_offset + 1 }}{% if filter_ward %}&ward={{ filter_ward }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+               class="btn btn-outline-secondary btn-sm" title="Next week">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% if week_offset != 0 %}
+            <a href="?week=0" class="btn btn-outline-primary btn-sm ms-1">Today</a>
+            {% endif %}
+        </div>
+
+        <!-- Ward Filter -->
+        <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+            <span class="small fw-semibold opacity-65">Ward:</span>
+            <div class="filter-pills">
+                <a href="?week={{ week_offset }}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+                   class="badge {{ 'bg-primary' if not filter_ward else 'bg-secondary bg-opacity-25 text-body' }} text-decoration-none">All</a>
+                {% for w in wards %}
+                <a href="?week={{ week_offset }}&ward={{ w }}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+                   class="badge {{ 'bg-primary' if filter_ward == w else 'bg-secondary bg-opacity-25 text-body' }} text-decoration-none">{{ w }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Role Filter -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-semibold opacity-65">Role:</span>
+            <div class="filter-pills">
+                <a href="?week={{ week_offset }}{% if filter_ward %}&ward={{ filter_ward }}{% endif %}"
+                   class="badge {{ 'bg-primary' if not filter_role else 'bg-secondary bg-opacity-25 text-body' }} text-decoration-none">All</a>
+                {% for r in staff_roles %}
+                <a href="?week={{ week_offset }}{% if filter_ward %}&ward={{ filter_ward }}{% endif %}&role={{ r }}"
+                   class="badge {{ 'bg-primary' if filter_role == r else 'bg-secondary bg-opacity-25 text-body' }} text-decoration-none">{{ r }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Calendar Grid -->
+    <div class="roster-grid">
+        <table class="roster-table">
+            <thead>
+                <tr>
+                    <th>Shift</th>
+                    {% for label in day_labels %}
+                    <th>{{ label }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for shift in shifts %}
+                <tr>
+                    <td>
+                        <span class="shift-label {{ shift|lower }}">
+                            {% if shift == 'Morning' %}<i class="fas fa-sun"></i>
+                            {% elif shift == 'Afternoon' %}<i class="fas fa-cloud-sun"></i>
+                            {% else %}<i class="fas fa-moon"></i>{% endif %}
+                            {{ shift }}
+                        </span>
+                    </td>
+                    {% for i in range(7) %}
+                    <td>
+                        {% set cell_entries = grid[shift][i] %}
+                        {% if cell_entries %}
+                            {% for entry in cell_entries %}
+                            <div class="staff-chip">
+                                <span class="staff-role-badge role-{{ entry.staff_role|lower }}">{{ entry.staff_role[:3] }}</span>
+                                <span>{{ entry.staff_name }}</span>
+                                {% if entry.ward %}
+                                <small class="opacity-50">({{ entry.ward }})</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-cell"><i class="fas fa-minus"></i></div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Assignment Form -->
+    <div class="assign-form-card">
+        <h5><i class="fas fa-plus-circle me-2" style="color:#34d399;"></i>Add Shift Assignment</h5>
+        <div class="assign-form-grid" id="assignForm">
+            <div>
+                <label class="form-label">Staff Member</label>
+                <select id="formStaff" class="form-select form-select-sm">
+                    <option value="">-- Select Staff --</option>
+                    {% for u in staff_users %}
+                    <option value="{{ u.id }}">{{ u.username }} ({{ u.role.value|replace('_', ' ')|title }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Shift</label>
+                <select id="formShift" class="form-select form-select-sm">
+                    {% for s in shifts %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Date</label>
+                <input type="date" id="formDate" class="form-control form-control-sm" value="{{ monday.isoformat() }}">
+            </div>
+            <div>
+                <label class="form-label">Ward</label>
+                <select id="formWard" class="form-select form-select-sm">
+                    {% for w in wards %}
+                    <option value="{{ w }}">{{ w }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Notes <small class="opacity-50">(optional)</small></label>
+                <input type="text" id="formNotes" class="form-control form-control-sm" placeholder="e.g. covering for Dr. X">
+            </div>
+            <div>
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary btn-sm w-100" onclick="submitAssignment()">
+                    <i class="fas fa-check me-1"></i> Assign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="roster-toast" id="rosterToast">
+    <div class="alert alert-success shadow-lg border-0 d-flex align-items-center gap-2 mb-0" style="border-radius:12px;">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Assignment saved!</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showToast(msg, type) {
+    const toast = document.getElementById('rosterToast');
+    const alert = toast.querySelector('.alert');
+    const msgEl = document.getElementById('toastMessage');
+    msgEl.textContent = msg;
+    alert.className = 'alert shadow-lg border-0 d-flex align-items-center gap-2 mb-0 alert-' + (type || 'success');
+    alert.style.borderRadius = '12px';
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+
+async function submitAssignment() {
+    const staffId = document.getElementById('formStaff').value;
+    const shift = document.getElementById('formShift').value;
+    const dutyDate = document.getElementById('formDate').value;
+    const ward = document.getElementById('formWard').value;
+    const notes = document.getElementById('formNotes').value;
+
+    if (!staffId) {
+        showToast('Please select a staff member.', 'warning');
+        return;
+    }
+    if (!dutyDate) {
+        showToast('Please select a date.', 'warning');
+        return;
+    }
+
+    try {
+        const resp = await fetch("{{ url_for('duty_roster.api_assign') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                staff_id: parseInt(staffId),
+                shift: shift,
+                duty_date: dutyDate,
+                ward: ward,
+                notes: notes,
+            }),
+        });
+        const data = await resp.json();
+        if (data.success) {
+            showToast('Shift assignment saved successfully!', 'success');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            showToast(data.error || 'Failed to save assignment.', 'danger');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Network error. Please try again.', 'danger');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }} — Insurance — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-shield-alt me-2"></i>{{ patient.full_name }}'s Insurance</h1><p class="wc-subtitle">{{ patient.uhid }}</p></div><a href="{{ url_for('insurance.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+
+    <div class="wc-card mb-4">
+        <div class="wc-card-header"><h3>Active Policies</h3></div>
+        <div class="wc-card-body">
+            {% if policies %}
+            <div class="row g-3">
+                {% for p in policies %}
+                <div class="col-md-6">
+                    <div class="wc-info-card">
+                        <h4><i class="fas fa-shield-alt me-2 text-primary"></i>{{ p.provider_name }}</h4>
+                        <div class="wc-detail-grid">
+                            <div class="wc-detail-item"><span class="wc-detail-label">Policy #</span><span>{{ p.policy_number }}</span></div>
+                            <div class="wc-detail-item"><span class="wc-detail-label">Type</span><span>{{ p.policy_type }}</span></div>
+                            <div class="wc-detail-item"><span class="wc-detail-label">Sum Insured</span><span>₹{{ "%.0f"|format(p.sum_insured) }}</span></div>
+                            <div class="wc-detail-item"><span class="wc-detail-label">Balance</span><span>₹{{ "%.0f"|format(p.balance_available) }}</span></div>
+                            <div class="wc-detail-item"><span class="wc-detail-label">Valid Until</span><span>{{ p.valid_until or 'N/A' }}</span></div>
+                            <div class="wc-detail-item"><span class="wc-detail-label">Cashless</span><span>{{ 'Yes' if p.is_cashless_eligible else 'No' }}</span></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="wc-empty-state"><i class="fas fa-file-contract"></i><h4>No Policies</h4></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if claims %}
+    <div class="wc-card">
+        <div class="wc-card-header"><h3>Claims History</h3></div>
+        <div class="wc-card-body">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Claim #</th><th>Type</th><th>Amount</th><th>Approved</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for c in claims %}
+                        <tr>
+                            <td>{{ c.claim_number }}</td><td>{{ c.claim_type }}</td>
+                            <td>₹{{ "%.0f"|format(c.claim_amount) }}</td>
+                            <td>₹{{ "%.0f"|format(c.approved_amount) }}</td>
+                            <td><span class="wc-badge wc-badge-{{ 'success' if c.status in ('Approved','Settled') else 'warning' if c.status == 'Under Review' else 'danger' if c.status == 'Rejected' else 'info' }}">{{ c.status }}</span></td>
+                            <td>{{ c.created_at.strftime('%d %b %Y') if c.created_at else '' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,890 @@
+{% extends "base.html" %}
+{% set hide_navbar = false %}
+{% set hide_footer = false %}
+
+{% block title %}{{ package.name }} - CarePoint Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEALTH PACKAGES — DETAIL PAGE
+   Full package information with booking form
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --hp-primary: #1a3b6e;
+    --hp-primary-light: #2563eb;
+    --hp-teal: #0e7490;
+    --hp-bg: #f7f9fc;
+    --hp-card-bg: #ffffff;
+    --hp-text: #1e293b;
+    --hp-muted: #64748b;
+    --hp-border: #e2e8f0;
+}
+
+/* ── Hero Banner ── */
+.hpd-hero {
+    background: linear-gradient(135deg, {{ package.color }}dd 0%, {{ package.color }}88 50%, #1a3b6e 100%);
+    padding: 50px 0 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hpd-hero::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -15%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.hpd-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.hpd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .88rem;
+    color: rgba(255,255,255,.7);
+    margin-bottom: 20px;
+}
+
+.hpd-breadcrumb a {
+    color: rgba(255,255,255,.8);
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.hpd-breadcrumb a:hover {
+    color: #fff;
+}
+
+.hpd-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.hpd-hero-info {
+    flex: 1;
+}
+
+.hpd-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(6px);
+    padding: 6px 16px;
+    border-radius: 50px;
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+    margin-bottom: 14px;
+}
+
+.hpd-hero h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: -.3px;
+}
+
+.hpd-hero-desc {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,.85);
+    margin-bottom: 18px;
+    max-width: 500px;
+}
+
+.hpd-hero-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.hpd-hero-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,.9);
+    font-size: .92rem;
+    font-weight: 500;
+}
+
+.hpd-hero-meta-item i {
+    font-size: .85rem;
+    opacity: .8;
+}
+
+.hpd-hero-price {
+    text-align: right;
+    min-width: 200px;
+}
+
+.hpd-hero-price-label {
+    font-size: .8rem;
+    color: rgba(255,255,255,.7);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.hpd-hero-price-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.hpd-hero-price-value small {
+    font-size: .9rem;
+    font-weight: 500;
+    opacity: .8;
+}
+
+/* ── Main Content Layout ── */
+.hpd-main {
+    padding: 40px 0 80px;
+    background: var(--hp-bg);
+}
+
+.hpd-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+}
+
+/* ── Info Cards ── */
+.hpd-card {
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+}
+
+.hpd-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hpd-card-title i {
+    color: var(--hp-primary-light);
+    font-size: 1rem;
+}
+
+/* ── Tests Grid ── */
+.hpd-tests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.hpd-test-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    transition: all .2s ease;
+}
+
+.hpd-test-item:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateY(-1px);
+}
+
+.hpd-test-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: {{ package.color }}15;
+    color: {{ package.color }};
+    display: grid;
+    place-items: center;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+
+.hpd-test-name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--hp-text);
+}
+
+/* ── Preparation Steps ── */
+.hpd-prep-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.hpd-prep-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.hpd-prep-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.hpd-prep-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: {{ package.color }}15;
+    color: {{ package.color }};
+    display: grid;
+    place-items: center;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.hpd-prep-text {
+    font-size: .92rem;
+    color: var(--hp-text);
+    line-height: 1.5;
+    padding-top: 4px;
+}
+
+/* ── Info Badges Row ── */
+.hpd-badges {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.hpd-badge {
+    text-align: center;
+    padding: 18px 14px;
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 14px;
+    transition: all .2s ease;
+}
+
+.hpd-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+
+.hpd-badge i {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.hpd-badge-label {
+    font-size: .75rem;
+    color: var(--hp-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.hpd-badge-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--hp-text);
+}
+
+/* ── Booking Sidebar ── */
+.hpd-booking-card {
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 18px;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.06);
+}
+
+.hpd-booking-header {
+    background: linear-gradient(135deg, {{ package.color }}, {{ package.color }}cc);
+    padding: 24px;
+    text-align: center;
+    color: #fff;
+}
+
+.hpd-booking-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.hpd-booking-header p {
+    font-size: .85rem;
+    opacity: .85;
+}
+
+.hpd-booking-body {
+    padding: 24px;
+}
+
+.hpd-booking-price {
+    text-align: center;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hp-border);
+}
+
+.hpd-booking-price-old {
+    font-size: .9rem;
+    color: var(--hp-muted);
+    text-decoration: line-through;
+    margin-bottom: 2px;
+}
+
+.hpd-booking-price-now {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--hp-text);
+}
+
+.hpd-booking-price-now small {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--hp-muted);
+}
+
+.hpd-booking-savings {
+    display: inline-block;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 3px 12px;
+    border-radius: 50px;
+    font-size: .78rem;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+/* ── Form Styles ── */
+.hpd-form-group {
+    margin-bottom: 18px;
+}
+
+.hpd-form-label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--hp-text);
+    margin-bottom: 6px;
+}
+
+.hpd-form-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--hp-border);
+    border-radius: 10px;
+    font-size: .92rem;
+    color: var(--hp-text);
+    background: #fafbfc;
+    transition: all .2s ease;
+    outline: none;
+}
+
+.hpd-form-input:focus {
+    border-color: {{ package.color }};
+    box-shadow: 0 0 0 3px {{ package.color }}20;
+    background: #fff;
+}
+
+.hpd-form-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--hp-border);
+    border-radius: 10px;
+    font-size: .92rem;
+    color: var(--hp-text);
+    background: #fafbfc;
+    transition: all .2s ease;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+.hpd-form-select:focus {
+    border-color: {{ package.color }};
+    box-shadow: 0 0 0 3px {{ package.color }}20;
+}
+
+.hpd-book-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: {{ package.color }};
+    border: none;
+    cursor: pointer;
+    transition: all .25s ease;
+    box-shadow: 0 4px 14px {{ package.color }}40;
+}
+
+.hpd-book-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px {{ package.color }}50;
+}
+
+.hpd-book-btn:active {
+    transform: translateY(0);
+}
+
+.hpd-login-notice {
+    text-align: center;
+    padding: 16px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    margin-top: 12px;
+}
+
+.hpd-login-notice p {
+    font-size: .85rem;
+    color: #92400e;
+    margin-bottom: 8px;
+}
+
+.hpd-login-notice a {
+    color: var(--hp-primary-light);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.hpd-login-notice a:hover {
+    text-decoration: underline;
+}
+
+/* ── Booking Benefits ── */
+.hpd-benefits {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hp-border);
+}
+
+.hpd-benefit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: .85rem;
+    color: var(--hp-muted);
+}
+
+.hpd-benefit i {
+    color: #10b981;
+    font-size: .8rem;
+    width: 16px;
+    text-align: center;
+}
+
+/* ── Related Packages ── */
+.hpd-related {
+    padding: 50px 0;
+    background: var(--hp-card-bg);
+    border-top: 1px solid var(--hp-border);
+}
+
+.hpd-related-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.hpd-related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.hpd-related-card {
+    background: #fafbfc;
+    border: 1px solid var(--hp-border);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: all .25s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.hpd-related-card:hover {
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+    transform: translateY(-3px);
+    color: inherit;
+}
+
+.hpd-related-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.hpd-related-info h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 4px;
+}
+
+.hpd-related-info p {
+    font-size: .82rem;
+    color: var(--hp-muted);
+    margin-bottom: 4px;
+}
+
+.hpd-related-price {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--hp-primary-light);
+}
+
+/* ── Responsive ── */
+@media (max-width: 992px) {
+    .hpd-layout {
+        grid-template-columns: 1fr;
+    }
+    .hpd-booking-card {
+        position: static;
+    }
+    .hpd-hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .hpd-hero-price {
+        text-align: left;
+    }
+}
+
+@media (max-width: 768px) {
+    .hpd-hero h1 { font-size: 1.6rem; }
+    .hpd-hero-price-value { font-size: 1.8rem; }
+    .hpd-badges { grid-template-columns: 1fr; }
+    .hpd-tests-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Animations ── */
+.hpd-card { animation: hpdFadeIn .4s ease both; }
+.hpd-card:nth-child(2) { animation-delay: .1s; }
+.hpd-card:nth-child(3) { animation-delay: .2s; }
+
+@keyframes hpdFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Banner -->
+<section class="hpd-hero">
+    <div class="hpd-container">
+        <div class="hpd-breadcrumb">
+            <a href="{{ url_for('main.index') }}">Home</a>
+            <i class="fas fa-chevron-right" style="font-size:.65rem;"></i>
+            <a href="{{ url_for('health_packages.listing') }}">Health Packages</a>
+            <i class="fas fa-chevron-right" style="font-size:.65rem;"></i>
+            <span style="color:#fff;">{{ package.name }}</span>
+        </div>
+
+        <div class="hpd-hero-content">
+            <div class="hpd-hero-info">
+                <div class="hpd-hero-badge">
+                    <i class="fas {{ package.icon }}"></i>
+                    {{ package.category }} Package
+                </div>
+                <h1>{{ package.name }}</h1>
+                <p class="hpd-hero-desc">{{ package.description }}</p>
+                <div class="hpd-hero-meta">
+                    <span class="hpd-hero-meta-item">
+                        <i class="fas fa-clock"></i> {{ package.duration }}
+                    </span>
+                    <span class="hpd-hero-meta-item">
+                        <i class="fas fa-vials"></i> {{ package.tests|length }} Tests Included
+                    </span>
+                    <span class="hpd-hero-meta-item">
+                        <i class="fas fa-{% if package.fasting %}utensils{% else %}check-circle{% endif %}"></i>
+                        {% if package.fasting %}Fasting Required{% else %}No Fasting Needed{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="hpd-hero-price">
+                <span class="hpd-hero-price-label">Package Price</span>
+                <span class="hpd-hero-price-value">&#8377;{{ '{:,}'.format(package.price) }} <small>/-</small></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="hpd-main">
+    <div class="hpd-container">
+
+        <!-- Info Badges -->
+        <div class="hpd-badges">
+            <div class="hpd-badge">
+                <i class="fas fa-vials" style="color: {{ package.color }};"></i>
+                <span class="hpd-badge-label">Tests Included</span>
+                <span class="hpd-badge-value">{{ package.tests|length }} Tests</span>
+            </div>
+            <div class="hpd-badge">
+                <i class="fas fa-clock" style="color: {{ package.color }};"></i>
+                <span class="hpd-badge-label">Duration</span>
+                <span class="hpd-badge-value">{{ package.duration }}</span>
+            </div>
+            <div class="hpd-badge">
+                <i class="fas fa-file-medical" style="color: {{ package.color }};"></i>
+                <span class="hpd-badge-label">Report In</span>
+                <span class="hpd-badge-value">24 Hours</span>
+            </div>
+        </div>
+
+        <div class="hpd-layout">
+            <!-- Left Column: Package Details -->
+            <div>
+                <!-- Tests Included -->
+                <div class="hpd-card">
+                    <h3 class="hpd-card-title">
+                        <i class="fas fa-vials"></i> Tests Included
+                    </h3>
+                    <div class="hpd-tests-grid">
+                        {% for test in package.tests %}
+                        <div class="hpd-test-item">
+                            <div class="hpd-test-icon">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                            <span class="hpd-test-name">{{ test }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Preparation Instructions -->
+                <div class="hpd-card">
+                    <h3 class="hpd-card-title">
+                        <i class="fas fa-clipboard-list"></i> Preparation Instructions
+                    </h3>
+                    <ul class="hpd-prep-list">
+                        {% for step in package.preparation %}
+                        <li class="hpd-prep-item">
+                            <div class="hpd-prep-num">{{ loop.index }}</div>
+                            <span class="hpd-prep-text">{{ step }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Ideal For -->
+                <div class="hpd-card">
+                    <h3 class="hpd-card-title">
+                        <i class="fas fa-user-check"></i> Who Is This For?
+                    </h3>
+                    <p style="font-size:.95rem; color:var(--hp-text); line-height:1.7;">
+                        {{ package.ideal_for }}
+                    </p>
+                </div>
+
+                <!-- Important Notes -->
+                <div class="hpd-card">
+                    <h3 class="hpd-card-title">
+                        <i class="fas fa-info-circle"></i> Important Notes
+                    </h3>
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        <li style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:.9rem; color:var(--hp-text);">
+                            <i class="fas fa-check-circle" style="color:#10b981; margin-top:3px;"></i>
+                            Appointment confirmation will be sent via SMS and email.
+                        </li>
+                        <li style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:.9rem; color:var(--hp-text);">
+                            <i class="fas fa-check-circle" style="color:#10b981; margin-top:3px;"></i>
+                            Reports available digitally within 24 hours.
+                        </li>
+                        <li style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:.9rem; color:var(--hp-text);">
+                            <i class="fas fa-check-circle" style="color:#10b981; margin-top:3px;"></i>
+                            Free doctor consultation for report discussion.
+                        </li>
+                        <li style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:.9rem; color:var(--hp-text);">
+                            <i class="fas fa-check-circle" style="color:#10b981; margin-top:3px;"></i>
+                            Rescheduling available up to 24 hours before appointment.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right Column: Booking Form -->
+            <div>
+                <div class="hpd-booking-card">
+                    <div class="hpd-booking-header">
+                        <h3><i class="fas fa-calendar-check"></i> Book This Package</h3>
+                        <p>Secure your appointment today</p>
+                    </div>
+
+                    <div class="hpd-booking-body">
+                        <div class="hpd-booking-price">
+                            <div class="hpd-booking-price-old">&#8377;{{ '{:,}'.format((package.price * 1.3)|int) }}</div>
+                            <div class="hpd-booking-price-now">&#8377;{{ '{:,}'.format(package.price) }} <small>/-</small></div>
+                            <div class="hpd-booking-savings"><i class="fas fa-tag"></i> Save 23% — Limited offer</div>
+                        </div>
+
+                        {% if current_user.is_authenticated and (current_user.role.value if current_user.role else '') == 'PATIENT' %}
+                        <!-- Authenticated Patient: Show Booking Form -->
+                        <form method="POST" action="{{ url_for('health_packages.book') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="package_id" value="{{ package.id }}">
+
+                            <div class="hpd-form-group">
+                                <label class="hpd-form-label">Preferred Date</label>
+                                <input type="date" name="preferred_date" class="hpd-form-input" required
+                                       placeholder="Select date">
+                            </div>
+
+                            {% if doctors %}
+                            <div class="hpd-form-group">
+                                <label class="hpd-form-label">Consulting Doctor (Optional)</label>
+                                <select name="doctor_id" class="hpd-form-select">
+                                    <option value="">Auto-assign doctor</option>
+                                    {% for doc in doctors %}
+                                    <option value="{{ doc.id }}">Dr. {{ doc.first_name }} {{ doc.last_name }} — {{ doc.specialization }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <button type="submit" class="hpd-book-btn">
+                                <i class="fas fa-calendar-check"></i> Book Now — &#8377;{{ '{:,}'.format(package.price) }}
+                            </button>
+                        </form>
+                        {% elif current_user.is_authenticated %}
+                        <!-- Authenticated but not Patient -->
+                        <div class="hpd-login-notice">
+                            <p><i class="fas fa-info-circle"></i> Only patients can book health packages.</p>
+                        </div>
+                        {% else %}
+                        <!-- Not Authenticated -->
+                        <div class="hpd-login-notice">
+                            <p><i class="fas fa-lock"></i> Please log in as a patient to book this package.</p>
+                            <a href="{{ url_for('auth.patient_login') }}">
+                                <i class="fas fa-sign-in-alt"></i> Login to Book
+                            </a>
+                            &nbsp;&bull;&nbsp;
+                            <a href="{{ url_for('auth.patient_register') }}">
+                                Create Account
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <!-- Benefits -->
+                        <div class="hpd-benefits">
+                            <div class="hpd-benefit">
+                                <i class="fas fa-check"></i> Instant booking confirmation
+                            </div>
+                            <div class="hpd-benefit">
+                                <i class="fas fa-check"></i> Free doctor consultation with report
+                            </div>
+                            <div class="hpd-benefit">
+                                <i class="fas fa-check"></i> Digital reports within 24 hrs
+                            </div>
+                            <div class="hpd-benefit">
+                                <i class="fas fa-check"></i> Free rescheduling up to 24 hrs prior
+                            </div>
+                            <div class="hpd-benefit">
+                                <i class="fas fa-check"></i> NABL accredited laboratory
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Packages -->
+{% if related %}
+<section class="hpd-related">
+    <div class="hpd-container">
+        <h2 class="hpd-related-title">You May Also Like</h2>
+        <div class="hpd-related-grid">
+            {% for r in related %}
+            <a href="{{ url_for('health_packages.detail', id=r.id) }}" class="hpd-related-card">
+                <div class="hpd-related-icon" style="background: {{ r.color }};">
+                    <i class="fas {{ r.icon }}"></i>
+                </div>
+                <div class="hpd-related-info">
+                    <h4>{{ r.name }}</h4>
+                    <p>{{ r.tests|length }} tests &bull; {{ r.duration }}</p>
+                    <span class="hpd-related-price">&#8377;{{ '{:,}'.format(r.price) }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Set min date for date input via JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var dateInput = document.querySelector('input[name="preferred_date"]');
+    if (dateInput) {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        var minDate = tomorrow.toISOString().split('T')[0];
+        dateInput.setAttribute('min', minDate);
+        if (!dateInput.value) {
+            dateInput.value = minDate;
+        }
+    }
+});
+</script>
+
+{% endblock %}

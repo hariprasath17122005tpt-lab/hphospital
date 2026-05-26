@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Emergency Department — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header wc-header-emergency">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-ambulance me-2"></i>Emergency Department</h1>
+                <p class="wc-subtitle">Triage, acute care & emergency tracking</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('emergency.triage_board') }}" class="wc-btn wc-btn-outline"><i class="fas fa-tv me-1"></i>Triage Board</a>
+                <a href="{{ url_for('emergency.register') }}" class="wc-btn wc-btn-danger"><i class="fas fa-plus me-2"></i>New Emergency</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-red">
+            <div class="wc-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number">{{ stats.critical }}</div>
+                <div class="wc-stat-label">Critical Cases</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-heartbeat"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number">{{ stats.active }}</div>
+                <div class="wc-stat-label">Active Cases</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-check-double"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number">{{ stats.stabilized }}</div>
+                <div class="wc-stat-label">Stabilized</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-chart-bar"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number">{{ stats.total_today }}</div>
+                <div class="wc-stat-label">Total Today</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Cases -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-heartbeat me-2 text-danger"></i>Active Emergency Cases</h3>
+            <span class="wc-badge wc-badge-danger wc-pulse">LIVE</span>
+        </div>
+        <div class="wc-card-body">
+            {% if active_cases %}
+            <div class="row g-3">
+                {% for case in active_cases %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="wc-triage-card wc-triage-{{ case.triage_color|lower if case.triage_color else 'blue' }}">
+                        <div class="wc-triage-header">
+                            <span class="wc-triage-level">{{ case.triage_level }}</span>
+                            <span class="wc-triage-time">{{ case.wait_time_minutes }}min</span>
+                        </div>
+                        <h4>{{ case.patient.full_name if case.patient else case.patient_name or 'Unknown' }}</h4>
+                        <p class="wc-triage-complaint">{{ case.chief_complaint }}</p>
+                        <div class="wc-triage-vitals">
+                            {% if case.bp_systolic %}
+                            <span><i class="fas fa-heartbeat"></i> {{ case.bp_systolic }}/{{ case.bp_diastolic }}</span>
+                            {% endif %}
+                            {% if case.spo2 %}
+                            <span><i class="fas fa-lungs"></i> {{ case.spo2 }}%</span>
+                            {% endif %}
+                            {% if case.heart_rate %}
+                            <span><i class="fas fa-heart"></i> {{ case.heart_rate }} bpm</span>
+                            {% endif %}
+                        </div>
+                        <div class="wc-triage-footer">
+                            <span class="wc-badge wc-badge-{{ 'warning' if case.status == 'Active' else 'success' }}">{{ case.status }}</span>
+                            <div class="d-flex gap-1">
+                                {% if case.status == 'Active' %}
+                                <button class="wc-btn wc-btn-sm wc-btn-success" onclick="updateEmergency({{ case.id }}, 'Stabilized')">Stabilize</button>
+                                {% endif %}
+                                <button class="wc-btn wc-btn-sm wc-btn-primary" onclick="updateEmergency({{ case.id }}, 'Admitted')">Admit</button>
+                                <button class="wc-btn wc-btn-sm wc-btn-outline" onclick="updateEmergency({{ case.id }}, 'Discharged')">Discharge</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="wc-empty-state">
+                <i class="fas fa-shield-alt"></i>
+                <h4>No Active Emergencies</h4>
+                <p>All clear. No active emergency cases at this time.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Resolved -->
+    {% if recent_discharged %}
+    <div class="wc-card mt-4">
+        <div class="wc-card-header"><h3><i class="fas fa-history me-2"></i>Recently Resolved (24h)</h3></div>
+        <div class="wc-card-body">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Patient</th><th>Triage</th><th>Complaint</th><th>Arrival</th><th>Disposition</th></tr></thead>
+                    <tbody>
+                        {% for c in recent_discharged %}
+                        <tr>
+                            <td>{{ c.patient.full_name if c.patient else c.patient_name or 'N/A' }}</td>
+                            <td><span class="wc-badge wc-badge-{{ 'danger' if c.triage_level == 'Critical' else 'warning' if c.triage_level == 'Urgent' else 'info' }}">{{ c.triage_level }}</span></td>
+                            <td>{{ c.chief_complaint[:60] }}...</td>
+                            <td>{{ c.arrival_time.strftime('%I:%M %p') if c.arrival_time else '' }}</td>
+                            <td><span class="wc-badge wc-badge-success">{{ c.disposition or c.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updateEmergency(caseId, status) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("emergency.update_case") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({case_id: caseId, status: status})
+    })
+    .then(r => r.json())
+    .then(data => { if(data.success) location.reload(); });
+}
+</script>
+{% endblock %}

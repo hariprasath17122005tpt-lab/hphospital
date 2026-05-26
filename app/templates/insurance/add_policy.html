@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Add Insurance Policy — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-file-contract me-2"></i>Add Insurance Policy</h1></div><a href="{{ url_for('insurance.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+    <div class="wc-card"><div class="wc-card-body">
+        <form method="POST" class="wc-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-4">
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Patient</label><select name="patient_id" class="wc-select" required><option value="">Select Patient</option>{% for p in patients %}<option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>{% endfor %}</select></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Insurance Provider</label><input type="text" name="provider_name" class="wc-input" required placeholder="e.g., Star Health, ICICI Lombard"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Policy Number</label><input type="text" name="policy_number" class="wc-input" required></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Policy Type</label><select name="policy_type" class="wc-select"><option value="Individual">Individual</option><option value="Family Floater">Family Floater</option><option value="Group">Group</option><option value="Government">Government (PMJAY/Aarogyasri)</option></select></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Sum Insured (₹)</label><input type="number" name="sum_insured" class="wc-input" placeholder="500000"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">TPA Name</label><input type="text" name="tpa_name" class="wc-input" placeholder="Third Party Administrator"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">TPA ID</label><input type="text" name="tpa_id" class="wc-input"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label"><input type="checkbox" name="is_cashless" value="1" class="me-2">Cashless Eligible</label></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Valid From</label><input type="date" name="valid_from" class="wc-input"></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Valid Until</label><input type="date" name="valid_until" class="wc-input"></div></div>
+            </div>
+            <div class="wc-form-actions mt-4"><button type="submit" class="wc-btn wc-btn-primary wc-btn-lg"><i class="fas fa-save me-2"></i>Add Policy</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}

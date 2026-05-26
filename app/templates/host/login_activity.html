@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Login Activity Monitor - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Login Activity Monitor' %}
+{% set breadcrumb_current = 'Login Activity' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-shield-alt me-2"></i>Login Activity Monitor</h1>
+                <p class="wc-subtitle">Real-time authentication tracking and security audit trail</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <span class="wc-badge wc-badge-success"><i class="fas fa-circle wc-pulse" style="font-size:.5rem"></i> Live</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-sign-in-alt"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ activities|length if activities else 0 }}</div>
+                <div class="wc-stat-label">Total Logins Today</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-wifi"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ activities|selectattr('login_time')|list|length if activities else 0 }}</div>
+                <div class="wc-stat-label">Active Sessions</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-red">
+            <div class="wc-stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ login_logs|selectattr('action', 'equalto', 'LOGIN_FAILED')|list|length if login_logs else 0 }}</div>
+                <div class="wc-stat-label">Failed Attempts</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-history"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ login_logs|length if login_logs else 0 }}</div>
+                <div class="wc-stat-label">Audit Log Entries</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Activity Table -->
+    <div class="wc-card" style="margin-bottom:24px;">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-table me-2"></i>Login Sessions</h3>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Time</th>
+                            <th>IP Address</th>
+                            <th>Device / Browser</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for act in activities %}
+                        <tr>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#fff;
+                                        {% if act.user.role.value == 'DOCTOR' %}background:#10b981;
+                                        {% elif act.user.role.value == 'PATIENT' %}background:#3b82f6;
+                                        {% elif act.user.role.value == 'NURSE' %}background:#f59e0b;
+                                        {% elif act.user.role.value == 'PHARMACIST' %}background:#8b5cf6;
+                                        {% elif act.user.role.value == 'RECEPTIONIST' %}background:#06b6d4;
+                                        {% elif act.user.role.value == 'LAB_STAFF' %}background:#ec4899;
+                                        {% elif act.user.role.value == 'HOST' %}background:#ef4444;
+                                        {% else %}background:#64748b;{% endif %}">
+                                        {{ act.user.username[0]|upper }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ act.user.username }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if act.user.role.value == 'DOCTOR' %}
+                                    <span class="wc-badge wc-badge-success">Doctor</span>
+                                {% elif act.user.role.value == 'PATIENT' %}
+                                    <span class="wc-badge wc-badge-primary">Patient</span>
+                                {% elif act.user.role.value == 'NURSE' %}
+                                    <span class="wc-badge wc-badge-warning">Nurse</span>
+                                {% elif act.user.role.value == 'PHARMACIST' %}
+                                    <span class="wc-badge" style="background:rgba(139,92,246,.1);color:#8b5cf6;">Pharmacist</span>
+                                {% elif act.user.role.value == 'RECEPTIONIST' %}
+                                    <span class="wc-badge wc-badge-info">Receptionist</span>
+                                {% elif act.user.role.value == 'LAB_STAFF' %}
+                                    <span class="wc-badge" style="background:rgba(236,72,153,.1);color:#ec4899;">Lab Staff</span>
+                                {% elif act.user.role.value == 'HOST' %}
+                                    <span class="wc-badge wc-badge-danger">Admin</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-dark">{{ act.user.role.value }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <i class="far fa-clock me-1" style="color:var(--wc-text-muted);"></i>
+                                {{ act.login_time.strftime('%b %d, %Y %H:%M') if act.login_time else '-' }}
+                            </td>
+                            <td><code style="font-size:.85rem;color:var(--wc-primary);">{{ act.ip_address or '-' }}</code></td>
+                            <td>
+                                <span style="color:var(--wc-text-muted); font-size:.88rem;">
+                                    {% if act.device_type %}
+                                        <i class="fas {% if 'Mobile' in act.device_type %}fa-mobile-alt{% else %}fa-desktop{% endif %} me-1"></i>
+                                        {{ act.device_type }}
+                                    {% endif %}
+                                    {% if act.browser %} / {{ act.browser }}{% endif %}
+                                    {% if not act.device_type and not act.browser %}-{% endif %}
+                                </span>
+                            </td>
+                            <td><span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Success</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="wc-empty-state">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <h4>No Login Activity</h4>
+                                    <p>No login sessions have been recorded yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    {% if login_logs %}
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-file-alt me-2"></i>Authentication Audit Logs</h3>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>Actor</th>
+                            <th>Action</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in login_logs %}
+                        <tr>
+                            <td style="font-weight:600;">{{ log.actor_name }}</td>
+                            <td>
+                                {% if 'FAIL' in log.action %}
+                                    <span class="wc-badge wc-badge-danger">{{ log.action }}</span>
+                                {% elif 'LOGIN' in log.action %}
+                                    <span class="wc-badge wc-badge-success">{{ log.action }}</span>
+                                {% elif 'LOGOUT' in log.action %}
+                                    <span class="wc-badge wc-badge-warning">{{ log.action }}</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-dark">{{ log.action }}</span>
+                                {% endif %}
+                            </td>
+                            <td><code style="font-size:.85rem;color:var(--wc-primary);">{{ log.ip_address or '-' }}</code></td>
+                            <td style="color:var(--wc-text-muted);font-size:.88rem;">{{ (log.details or '')[:80] }}{% if log.details and log.details|length > 80 %}...{% endif %}</td>
+                            <td style="white-space:nowrap;">{{ log.timestamp.strftime('%b %d, %Y %H:%M') if log.timestamp else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

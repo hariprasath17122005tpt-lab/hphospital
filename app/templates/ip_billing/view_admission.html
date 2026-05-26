@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}IP Admission - {{ admission.ip_number }}{% endblock %}
+{% block content %}
+<style>
+.va-page{padding:20px;max-width:960px;margin:0 auto;font-family:'Inter',sans-serif}
+.va-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:14px}
+.va-title{font-size:1.1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.va-title i{color:#2563eb}
+.va-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.va-cell{padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px}
+.va-cell .lbl{font-size:0.68rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px}
+.va-cell .val{font-size:0.9rem;font-weight:600;color:#0f172a;margin-top:1px}
+.status-badge{padding:4px 12px;border-radius:12px;font-size:0.78rem;font-weight:700}
+.st-admitted{background:#dbeafe;color:#1d4ed8}.st-discharged{background:#ecfdf5;color:#059669}.st-other{background:#fef3c7;color:#92400e}
+.btn-act{padding:8px 18px;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-blue{background:#2563eb;color:#fff}.btn-green{background:#059669;color:#fff}.btn-amber{background:#d97706;color:#fff}.btn-out{background:#fff;color:#334155;border:1px solid #e2e8f0}
+</style>
+
+<div class="va-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:1.2rem;font-weight:700;margin:0;"><i class="fas fa-bed" style="color:#2563eb;"></i> IP Admission — {{ admission.ip_number }}</h2>
+        <span class="status-badge {% if admission.admission_status=='Admitted' %}st-admitted{% elif admission.admission_status=='Discharged' %}st-discharged{% else %}st-other{% endif %}">
+            {{ admission.admission_status }}
+        </span>
+    </div>
+
+    <div class="va-card">
+        <div class="va-title"><i class="fas fa-user"></i> Patient & Admission Details</div>
+        <div class="va-grid">
+            <div class="va-cell"><div class="lbl">UHID</div><div class="val">{{ admission.patient.uhid }}</div></div>
+            <div class="va-cell"><div class="lbl">Name</div><div class="val">{{ admission.patient.full_name }}</div></div>
+            <div class="va-cell"><div class="lbl">Age / Gender</div><div class="val">{{ admission.patient.age or 'N/A' }} / {{ admission.patient.gender or 'N/A' }}</div></div>
+            <div class="va-cell"><div class="lbl">Phone</div><div class="val">{{ admission.patient.phone or 'N/A' }}</div></div>
+            <div class="va-cell"><div class="lbl">IP Number</div><div class="val" style="color:#1d4ed8;font-weight:800;">{{ admission.ip_number }}</div></div>
+            <div class="va-cell"><div class="lbl">Doctor</div><div class="val">Dr. {{ admission.doctor.first_name }} {{ admission.doctor.last_name }}</div></div>
+            <div class="va-cell"><div class="lbl">Ward / Room</div><div class="val">{{ admission.ward_type or 'N/A' }}{% if admission.room_number %} / {{ admission.room_number }}{% endif %}</div></div>
+            <div class="va-cell"><div class="lbl">Admitted On</div><div class="val">{{ admission.admission_date.strftime('%d %b %Y %I:%M %p') if admission.admission_date else 'N/A' }}</div></div>
+            <div class="va-cell"><div class="lbl">Length of Stay</div><div class="val">{{ admission.length_of_stay }} days</div></div>
+            {% if admission.discharge_date %}
+            <div class="va-cell"><div class="lbl">Discharged On</div><div class="val">{{ admission.discharge_date.strftime('%d %b %Y %I:%M %p') }}</div></div>
+            {% endif %}
+        </div>
+        {% if admission.admission_reason %}
+        <div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">
+            <div style="font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;">Reason</div>
+            <div style="font-size:0.88rem;">{{ admission.admission_reason }}</div>
+        </div>
+        {% endif %}
+        {% if admission.provisional_diagnosis %}
+        <div style="margin-top:6px;padding:8px 12px;background:#f0f4ff;border:1px solid #bfdbfe;border-radius:6px;">
+            <div style="font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;">Provisional Diagnosis</div>
+            <div style="font-size:0.88rem;font-weight:600;color:#1e40af;">{{ admission.provisional_diagnosis }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bills linked to this admission -->
+    {% if bills %}
+    <div class="va-card">
+        <div class="va-title"><i class="fas fa-file-invoice-dollar"></i> Bills</div>
+        <table style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+                <th style="padding:6px 10px;background:#f1f5f9;font-size:0.72rem;text-transform:uppercase;text-align:left;">Bill #</th>
+                <th style="padding:6px 10px;background:#f1f5f9;font-size:0.72rem;text-align:right;">Amount</th>
+                <th style="padding:6px 10px;background:#f1f5f9;font-size:0.72rem;text-align:center;">Status</th>
+                <th style="padding:6px 10px;background:#f1f5f9;font-size:0.72rem;">Date</th>
+                <th style="padding:6px 10px;background:#f1f5f9;font-size:0.72rem;"></th>
+            </tr></thead>
+            <tbody>
+            {% for b in bills %}
+            <tr>
+                <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;">{{ b.bill_number or ('#' ~ b.id) }}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:700;">{{ "%.2f"|format(b.grand_total or b.amount) }}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;text-align:center;">
+                    <span class="status-badge {% if b.status=='Paid' %}st-discharged{% else %}st-other{% endif %}" style="font-size:0.72rem;">{{ b.status }}</span>
+                </td>
+                <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:0.82rem;">{{ b.created_at.strftime('%d %b %Y') if b.created_at else 'N/A' }}</td>
+                <td style="padding:6px 10px;border-bottom:1px solid #f1f5f9;">
+                    <a href="{{ url_for('ip_billing.view_bill', bill_id=b.id) }}" class="btn-act btn-out" style="padding:3px 10px;font-size:0.75rem;"><i class="fas fa-eye"></i> View</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% if admission.admission_status == 'Admitted' %}
+        <a href="{{ url_for('ip_billing.create_bill_page', billing_type='IP', patient_id=admission.patient.id) }}" class="btn-act btn-blue"><i class="fas fa-rupee-sign"></i> Create IP Bill</a>
+        <a href="{{ url_for('ip_billing.discharge_page', admission_id=admission.id) }}" class="btn-act btn-amber"><i class="fas fa-sign-out-alt"></i> Discharge</a>
+        {% endif %}
+        {% if admission.admission_status == 'Discharged' and admission.discharge_summary %}
+        <a href="{{ url_for('ip_billing.discharge_print', admission_id=admission.id) }}" class="btn-act btn-green"><i class="fas fa-print"></i> Discharge Summary</a>
+        {% endif %}
+        <a href="{{ url_for('ip_billing.dashboard') }}" class="btn-act btn-out"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+</div>
+{% endblock %}

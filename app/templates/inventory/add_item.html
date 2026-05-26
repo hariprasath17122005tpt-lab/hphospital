@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Add Inventory Item — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-box me-2"></i>Add Inventory Item</h1></div><a href="{{ url_for('inventory.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+    <div class="wc-card"><div class="wc-card-body">
+        <form method="POST" class="wc-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-4">
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Item Name</label><input type="text" name="item_name" class="wc-input" required placeholder="e.g., Surgical Gloves"></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Item Code</label><input type="text" name="item_code" class="wc-input" placeholder="Auto-generated"></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Category</label><select name="category" class="wc-select" required><option value="Consumable">Consumable</option><option value="Equipment">Equipment</option><option value="Surgical">Surgical</option><option value="PPE">PPE</option><option value="Linen">Linen</option><option value="Stationery">Stationery</option><option value="Cleaning">Cleaning</option></select></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Unit</label><select name="unit" class="wc-select"><option value="Piece">Piece</option><option value="Box">Box</option><option value="Pack">Pack</option><option value="Bottle">Bottle</option><option value="Roll">Roll</option><option value="Set">Set</option></select></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Unit Price (₹)</label><input type="number" step="0.01" name="unit_price" class="wc-input" value="0"></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Initial Stock</label><input type="number" name="current_stock" class="wc-input" value="0"></div></div>
+                <div class="col-md-3"><div class="wc-form-group"><label class="wc-label">Reorder Level</label><input type="number" name="reorder_level" class="wc-input" value="20"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Minimum Stock</label><input type="number" name="minimum_stock" class="wc-input" value="10"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Location</label><input type="text" name="location" class="wc-input" placeholder="e.g., Store Room A"></div></div>
+                <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Supplier</label><input type="text" name="supplier" class="wc-input" placeholder="Supplier name"></div></div>
+            </div>
+            <div class="wc-form-actions mt-4"><button type="submit" class="wc-btn wc-btn-primary wc-btn-lg"><i class="fas fa-save me-2"></i>Add Item</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}

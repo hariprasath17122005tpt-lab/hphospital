@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discharge Summary — {{ admission.patient.full_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:#e8ecf1;color:#0f172a;font-size:12px}
+        .sheet{max-width:830px;margin:16px auto;background:#fff;border:1px solid #cbd5e1;position:relative;overflow:hidden}
+        .sheet::before{content:'';display:block;height:5px;background:linear-gradient(90deg,#0c4a6e,#0284c7,#06b6d4,#0284c7,#0c4a6e)}
+        .hdr{padding:18px 28px 14px;display:flex;justify-content:space-between;border-bottom:3px solid #0c4a6e}
+        .hdr-left h1{font-family:'Playfair Display',serif;font-size:22px;color:#0c4a6e}.hdr-left .sub{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0284c7;margin-top:2px}
+        .hdr-left .addr{font-size:10px;color:#64748b;margin-top:4px}
+        .hdr-right{text-align:right;font-size:10.5px;color:#475569}.hdr-right strong{color:#0f172a}
+        .pt-box{margin:12px 28px;border:1.5px solid #0c4a6e;border-radius:6px;overflow:hidden}
+        .pt-box-head{background:linear-gradient(135deg,#0c4a6e,#0369a1);padding:5px 14px;color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between}
+        .pt-box-body{padding:8px 14px}
+        .pt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 16px}
+        .pt-row{font-size:11px}.pt-row .lbl{color:#64748b;font-weight:600}.pt-row .val{font-weight:700;color:#0f172a}
+        .content{padding:6px 28px}
+        .sec{margin-bottom:8px}
+        .sec-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#0c4a6e;margin-bottom:3px;padding-bottom:2px;border-bottom:1px solid #e2e8f0}
+        .sec-body{font-size:12px;color:#334155;line-height:1.6;white-space:pre-wrap;min-height:16px}
+        .sec-body.empty{color:#cbd5e1;font-style:italic}
+        .condition-badge{display:inline-block;padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;margin-top:4px}
+        .cond-stable{background:#ecfdf5;color:#059669}.cond-improved{background:#dbeafe;color:#1d4ed8}.cond-critical{background:#fef2f2;color:#dc2626}.cond-other{background:#fef3c7;color:#92400e}
+        .followup-box{padding:8px 14px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:6px;margin-top:6px;font-size:11px}
+        .followup-box strong{color:#0369a1}
+        .sig-area{margin:18px 28px 0;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end}
+        .sig-left{font-size:10px;color:#94a3b8}
+        .sig-right{text-align:right}.sig-right .line{border-top:1px solid #334155;width:180px;margin-left:auto;margin-bottom:3px}
+        .sig-right .name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700}.sig-right .spec{font-size:10px;color:#64748b}
+        .bottom-bar{margin-top:12px;padding:8px 28px;background:linear-gradient(135deg,#0c4a6e,#0369a1);text-align:center;color:rgba(255,255,255,.8);font-size:9px;line-height:1.5}
+        .bottom-bar strong{color:#fff;font-size:10px}
+        .actions{max-width:830px;margin:0 auto 10px;display:flex;gap:8px}
+        .btn{padding:7px 16px;border-radius:7px;font-weight:600;font-size:12px;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+        .btn-dark{background:#0c4a6e;color:#fff}.btn-out{background:#fff;color:#334155;border:1px solid #cbd5e1}
+        @media print{body{background:#fff}.sheet{margin:0;border:none}.actions{display:none!important}}
+    </style>
+</head>
+<body>
+<div class="actions" style="margin-top:16px;">
+    <button class="btn btn-dark" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+    <a href="/ip-billing/admission/{{ admission.id }}" class="btn btn-out"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="sheet">
+    <div class="hdr">
+        <div class="hdr-left">
+            <h1>{{ admission.doctor.hospital.name if admission.doctor and admission.doctor.hospital else 'CarePoint Hospital' }}</h1>
+            <div class="sub">Discharge Summary</div>
+            <div class="addr">
+                {% if admission.doctor and admission.doctor.hospital and admission.doctor.hospital.address %}{{ admission.doctor.hospital.address }}{% else %}123 Health Avenue, Medical District{% endif %}
+            </div>
+        </div>
+        <div class="hdr-right">
+            <div>IP Number: <strong>{{ admission.ip_number }}</strong></div>
+            <div>Admission: <strong>{{ admission.admission_date.strftime('%d %b %Y %I:%M %p') if admission.admission_date else 'N/A' }}</strong></div>
+            <div>Discharge: <strong>{{ admission.discharge_date.strftime('%d %b %Y %I:%M %p') if admission.discharge_date else 'N/A' }}</strong></div>
+            <div>Stay: <strong>{{ admission.length_of_stay }} days</strong></div>
+        </div>
+    </div>
+
+    <div class="pt-box">
+        <div class="pt-box-head"><span>Patient Information</span><span>UHID: {{ admission.patient.uhid }}</span></div>
+        <div class="pt-box-body">
+            <div class="pt-grid">
+                <div class="pt-row"><span class="lbl">Name: </span><span class="val">{{ admission.patient.full_name }}</span></div>
+                <div class="pt-row"><span class="lbl">Age/Sex: </span><span class="val">{{ admission.patient.age or 'N/A' }} / {{ admission.patient.gender or 'N/A' }}</span></div>
+                <div class="pt-row"><span class="lbl">Phone: </span><span class="val">{{ admission.patient.phone or 'N/A' }}</span></div>
+                <div class="pt-row"><span class="lbl">Address: </span><span class="val">{{ admission.patient.address or 'N/A' }}</span></div>
+                <div class="pt-row"><span class="lbl">Doctor: </span><span class="val">Dr. {{ admission.doctor.first_name }} {{ admission.doctor.last_name }}</span></div>
+                <div class="pt-row"><span class="lbl">Ward: </span><span class="val">{{ admission.ward_type or 'N/A' }}{% if admission.room_number %} / {{ admission.room_number }}{% endif %}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        {% if summary.presenting_complaints %}
+        <div class="sec"><div class="sec-title">Presenting Complaints</div><div class="sec-body">{{ summary.presenting_complaints }}</div></div>
+        {% endif %}
+
+        {% if summary.history_of_illness %}
+        <div class="sec"><div class="sec-title">History of Present Illness</div><div class="sec-body">{{ summary.history_of_illness }}</div></div>
+        {% endif %}
+
+        {% if summary.past_history %}
+        <div class="sec"><div class="sec-title">Past History</div><div class="sec-body">{{ summary.past_history }}</div></div>
+        {% endif %}
+
+        {% if summary.examination_findings %}
+        <div class="sec"><div class="sec-title">Examination Findings</div><div class="sec-body">{{ summary.examination_findings }}</div></div>
+        {% endif %}
+
+        {% if summary.diagnosis %}
+        <div class="sec"><div class="sec-title">Diagnosis</div><div class="sec-body" style="font-weight:700;color:#0c4a6e;">{{ summary.diagnosis }}</div></div>
+        {% endif %}
+
+        {% if summary.investigations %}
+        <div class="sec"><div class="sec-title">Investigations</div><div class="sec-body">{{ summary.investigations }}</div></div>
+        {% endif %}
+
+        {% if summary.course_in_hospital %}
+        <div class="sec"><div class="sec-title">Course in Hospital</div><div class="sec-body">{{ summary.course_in_hospital }}</div></div>
+        {% endif %}
+
+        {% if summary.treatment_given %}
+        <div class="sec"><div class="sec-title">Treatment Given</div><div class="sec-body">{{ summary.treatment_given }}</div></div>
+        {% endif %}
+
+        {% if summary.procedures_done %}
+        <div class="sec"><div class="sec-title">Procedures Done</div><div class="sec-body">{{ summary.procedures_done }}</div></div>
+        {% endif %}
+
+        {% if summary.condition_at_discharge %}
+        <div class="sec">
+            <div class="sec-title">Condition at Discharge</div>
+            <span class="condition-badge {% if summary.condition_at_discharge == 'Stable' %}cond-stable{% elif summary.condition_at_discharge == 'Improved' %}cond-improved{% elif summary.condition_at_discharge == 'Critical' %}cond-critical{% else %}cond-other{% endif %}">
+                {{ summary.condition_at_discharge }}
+            </span>
+        </div>
+        {% endif %}
+
+        {% if summary.medicines_at_discharge %}
+        <div class="sec"><div class="sec-title">Medicines at Discharge</div><div class="sec-body">{{ summary.medicines_at_discharge }}</div></div>
+        {% endif %}
+
+        {% if summary.discharge_advice %}
+        <div class="sec"><div class="sec-title">Discharge Advice</div><div class="sec-body">{{ summary.discharge_advice }}</div></div>
+        {% endif %}
+
+        {% if summary.diet_advice %}
+        <div class="sec"><div class="sec-title">Diet Advice</div><div class="sec-body">{{ summary.diet_advice }}</div></div>
+        {% endif %}
+
+        {% if summary.follow_up_instructions or summary.follow_up_date %}
+        <div class="sec">
+            <div class="sec-title">Follow-up</div>
+            {% if summary.follow_up_instructions %}<div class="sec-body">{{ summary.follow_up_instructions }}</div>{% endif %}
+            {% if summary.follow_up_date %}
+            <div class="followup-box"><i class="fas fa-calendar-check"></i> <strong>Follow-up Date: {{ summary.follow_up_date.strftime('%A, %d %B %Y') }}</strong></div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="sig-area">
+        <div class="sig-left">
+            <div>IP: {{ admission.ip_number }} | UHID: {{ admission.patient.uhid }}</div>
+            <div>Generated: {{ summary.created_at.strftime('%d %b %Y %I:%M %p') if summary.created_at else 'N/A' }}</div>
+        </div>
+        <div class="sig-right">
+            <div class="line"></div>
+            <div class="name">Dr. {{ admission.doctor.first_name }} {{ admission.doctor.last_name }}</div>
+            <div class="spec">{{ admission.doctor.specialization or '' }}{% if admission.doctor.license_number %} | Reg: {{ admission.doctor.license_number }}{% endif %}</div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <strong>{{ admission.doctor.hospital.name if admission.doctor and admission.doctor.hospital else 'CarePoint Hospital' }}</strong><br>
+        {% if admission.doctor and admission.doctor.hospital and admission.doctor.hospital.address %}{{ admission.doctor.hospital.address }}{% else %}123 Health Avenue, Medical District{% endif %}
+    </div>
+</div>
+</body>
+</html>

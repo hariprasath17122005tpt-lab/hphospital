@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% block title %}BMI Calculator & Health Tools — CarePoint{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+body{background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;font-family:'Inter',system-ui,sans-serif;}
+[data-theme="light"] body{background:#f1f5f9 !important;}
+.calc-container{max-width:900px;margin:0 auto;padding:30px 20px 60px;}
+.calc-header{text-align:center;margin-bottom:30px;padding-top:20px;}
+.calc-header h1{font-size:2rem;font-weight:800;color:#fff;margin-bottom:8px;}
+[data-theme="light"] .calc-header h1{color:#0f172a;}
+.calc-header p{color:rgba(255,255,255,.5);}
+[data-theme="light"] .calc-header p{color:#64748b;}
+.calc-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;margin-bottom:24px;}
+[data-theme="light"] .calc-card{background:#fff;border-color:#e2e8f0;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.calc-card h2{font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+[data-theme="light"] .calc-card h2{color:#0f172a;}
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.calc-input{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:1rem;outline:none;transition:all .2s;}
+[data-theme="light"] .calc-input{background:#f8fafc;border-color:#cbd5e1;color:#0f172a;}
+.calc-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.2);}
+.calc-label{display:block;font-size:.88rem;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:6px;}
+[data-theme="light"] .calc-label{color:#475569;}
+.calc-btn{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.calc-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,.4);}
+.calc-result{text-align:center;padding:24px;border-radius:16px;margin-top:20px;display:none;}
+.calc-result.show{display:block;animation:fadeIn .3s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.bmi-value{font-size:3.5rem;font-weight:800;line-height:1;}
+.bmi-cat{font-size:1.2rem;font-weight:700;margin-top:6px;}
+.bmi-advice{font-size:.95rem;color:rgba(255,255,255,.6);margin-top:10px;}
+[data-theme="light"] .bmi-advice{color:#475569;}
+.bmi-meter{height:10px;background:rgba(255,255,255,.1);border-radius:5px;margin-top:16px;overflow:hidden;position:relative;}
+[data-theme="light"] .bmi-meter{background:#e2e8f0;}
+.bmi-meter-fill{height:100%;border-radius:5px;transition:width .5s;}
+.bmi-meter-labels{display:flex;justify-content:space-between;font-size:.7rem;color:rgba(255,255,255,.4);margin-top:4px;}
+[data-theme="light"] .bmi-meter-labels{color:#94a3b8;}
+.chk-group{display:flex;align-items:center;gap:8px;padding:8px 0;}
+.chk-group input[type="checkbox"]{width:18px;height:18px;accent-color:#6366f1;}
+.chk-group label{color:rgba(255,255,255,.7);font-size:.92rem;}
+[data-theme="light"] .chk-group label{color:#475569;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calc-container">
+    <div style="margin-bottom:16px;"><a href="{{ url_for('health_tools.index') }}" style="color:#60a5fa;font-weight:600;text-decoration:none;font-size:.9rem;"><i class="fas fa-arrow-left me-2"></i>All Health Tools</a></div>
+
+    <div class="calc-header">
+        <h1><i class="fas fa-heartbeat me-2" style="color:#ef4444;"></i>Health Assessment Tools</h1>
+        <p>Free health calculators powered by CarePoint</p>
+    </div>
+
+    <!-- BMI Calculator -->
+    <div class="calc-card" id="bmi">
+        <h2><i class="fas fa-weight" style="color:#60a5fa;"></i>BMI Calculator</h2>
+        <div class="calc-row">
+            <div><label class="calc-label">Weight (kg)</label><input type="number" class="calc-input" id="bmiWeight" placeholder="e.g. 70" step="0.1"></div>
+            <div><label class="calc-label">Height (cm)</label><input type="number" class="calc-input" id="bmiHeight" placeholder="e.g. 170" step="0.1"></div>
+        </div>
+        <button class="calc-btn" onclick="calculateBMI()"><i class="fas fa-calculator me-2"></i>Calculate BMI</button>
+        <div class="calc-result" id="bmiResult">
+            <div class="bmi-value" id="bmiValue">--</div>
+            <div class="bmi-cat" id="bmiCat">--</div>
+            <div class="bmi-meter"><div class="bmi-meter-fill" id="bmiFill"></div></div>
+            <div class="bmi-meter-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>
+            <div class="bmi-advice" id="bmiAdvice"></div>
+            <div class="bmi-advice" id="bmiIdeal" style="margin-top:8px;font-weight:600;"></div>
+        </div>
+    </div>
+
+    <!-- Heart Risk -->
+    <div class="calc-card" id="heart">
+        <h2><i class="fas fa-heart" style="color:#ef4444;"></i>Heart Risk Assessment</h2>
+        <div class="calc-row">
+            <div><label class="calc-label">Age</label><input type="number" class="calc-input" id="hrAge" placeholder="e.g. 45"></div>
+            <div><label class="calc-label">Systolic BP (mmHg)</label><input type="number" class="calc-input" id="hrBP" placeholder="e.g. 130"></div>
+        </div>
+        <div class="calc-row">
+            <div><label class="calc-label">Total Cholesterol (mg/dL)</label><input type="number" class="calc-input" id="hrChol" placeholder="e.g. 200"></div>
+            <div>
+                <div class="chk-group"><input type="checkbox" id="hrSmoker"><label for="hrSmoker">Smoker</label></div>
+                <div class="chk-group"><input type="checkbox" id="hrDiabetic"><label for="hrDiabetic">Diabetic</label></div>
+            </div>
+        </div>
+        <button class="calc-btn" onclick="calcHeartRisk()" style="background:linear-gradient(135deg,#ef4444,#dc2626);"><i class="fas fa-heartbeat me-2"></i>Assess Risk</button>
+        <div class="calc-result" id="heartResult">
+            <div class="bmi-value" id="hrScore">--</div>
+            <div class="bmi-cat" id="hrLevel">--</div>
+            <div class="bmi-meter"><div class="bmi-meter-fill" id="hrFill"></div></div>
+            <div class="bmi-meter-labels"><span>Low</span><span>Moderate</span><span>High</span><span>Very High</span></div>
+        </div>
+    </div>
+
+    <!-- BP Category -->
+    <div class="calc-card" id="bp">
+        <h2><i class="fas fa-stethoscope" style="color:#a78bfa;"></i>Blood Pressure Category</h2>
+        <div class="calc-row">
+            <div><label class="calc-label">Systolic (top number)</label><input type="number" class="calc-input" id="bpSys" placeholder="e.g. 120"></div>
+            <div><label class="calc-label">Diastolic (bottom number)</label><input type="number" class="calc-input" id="bpDia" placeholder="e.g. 80"></div>
+        </div>
+        <button class="calc-btn" onclick="checkBP()" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);"><i class="fas fa-stethoscope me-2"></i>Check Category</button>
+        <div class="calc-result" id="bpResult">
+            <div class="bmi-cat" id="bpCat" style="font-size:1.5rem;">--</div>
+            <div class="bmi-advice" id="bpAdvice" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <div style="text-align:center;margin-top:30px;">
+        <p style="color:rgba(255,255,255,.4);font-size:.85rem;">These tools are for educational purposes only. Always consult a qualified medical professional for health decisions.</p>
+        <a href="{{ url_for('auth.patient_register') }}" class="calc-btn" style="max-width:300px;display:inline-block;margin-top:12px;background:linear-gradient(135deg,#10b981,#059669);">
+            <i class="fas fa-calendar-check me-2"></i>Book a Health Checkup
+        </a>
+    </div>
+</div>
+
+<script>
+function calculateBMI(){
+    var w=+document.getElementById('bmiWeight').value,h=+document.getElementById('bmiHeight').value;
+    if(!w||!h){alert('Please enter weight and height');return;}
+    fetch('{{ url_for("health_tools.calculate_bmi") }}',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({weight:w,height:h})
+    }).then(r=>r.json()).then(d=>{
+        if(!d.success)return;
+        document.getElementById('bmiResult').classList.add('show');
+        document.getElementById('bmiValue').textContent=d.bmi;
+        document.getElementById('bmiValue').style.color=d.color;
+        document.getElementById('bmiCat').textContent=d.category;
+        document.getElementById('bmiCat').style.color=d.color;
+        document.getElementById('bmiAdvice').textContent=d.advice;
+        document.getElementById('bmiIdeal').textContent='Ideal weight range: '+d.ideal_weight_range;
+        var pct=Math.min(Math.max((d.bmi-15)/25*100,5),95);
+        var fill=document.getElementById('bmiFill');
+        fill.style.width=pct+'%';
+        fill.style.background=d.color;
+    });
+}
+function calcHeartRisk(){
+    var age=+document.getElementById('hrAge').value,bp=+document.getElementById('hrBP').value,
+        chol=+document.getElementById('hrChol').value;
+    if(!age){alert('Please enter your age');return;}
+    fetch('{{ url_for("health_tools.heart_risk") }}',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({age:age,systolic:bp||120,cholesterol:chol||200,
+            smoker:document.getElementById('hrSmoker').checked,
+            diabetic:document.getElementById('hrDiabetic').checked})
+    }).then(r=>r.json()).then(d=>{
+        if(!d.success)return;
+        document.getElementById('heartResult').classList.add('show');
+        document.getElementById('hrScore').textContent=d.risk_score+'/'+d.max_score;
+        document.getElementById('hrScore').style.color=d.color;
+        document.getElementById('hrLevel').textContent=d.risk_level+' Risk';
+        document.getElementById('hrLevel').style.color=d.color;
+        var fill=document.getElementById('hrFill');
+        fill.style.width=(d.risk_score/d.max_score*100)+'%';
+        fill.style.background=d.color;
+    });
+}
+function checkBP(){
+    var sys=+document.getElementById('bpSys').value,dia=+document.getElementById('bpDia').value;
+    if(!sys||!dia){alert('Please enter both values');return;}
+    var cat,color,advice;
+    if(sys<120&&dia<80){cat='Normal';color='#10b981';advice='Your blood pressure is in the healthy range. Keep up the good work!';}
+    else if(sys<130&&dia<80){cat='Elevated';color='#f59e0b';advice='Your BP is slightly elevated. Consider lifestyle changes to prevent hypertension.';}
+    else if(sys<140||dia<90){cat='Hypertension Stage 1';color='#ef4444';advice='Consult your doctor about lifestyle changes and possible medication.';}
+    else if(sys>=140||dia>=90){cat='Hypertension Stage 2';color='#991b1b';advice='Please see a doctor promptly. This level requires medical attention.';}
+    else if(sys>180||dia>120){cat='Hypertensive Crisis';color='#7f1d1d';advice='SEEK IMMEDIATE MEDICAL ATTENTION. This is an emergency level.';}
+    document.getElementById('bpResult').classList.add('show');
+    document.getElementById('bpCat').textContent=cat;
+    document.getElementById('bpCat').style.color=color;
+    document.getElementById('bpAdvice').textContent=advice;
+}
+</script>
+{% endblock %}

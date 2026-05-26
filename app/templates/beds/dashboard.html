@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+{% block title %}Bed Management — CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ─── Bed Dashboard Styles ─────────────────────────────────────── */
+.bed-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.bed-stat-card {
+    background: var(--glass, rgba(255,255,255,.06));
+    border: 1px solid var(--border, rgba(255,255,255,.08));
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform .2s, box-shadow .2s;
+}
+.bed-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+}
+.bed-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.bed-stat-icon.total   { background: rgba(99,102,241,.15);  color: #818cf8; }
+.bed-stat-icon.occupied { background: rgba(239,68,68,.15);   color: #f87171; }
+.bed-stat-icon.avail   { background: rgba(16,185,129,.15);  color: #34d399; }
+.bed-stat-icon.rate    { background: rgba(245,158,11,.15);  color: #fbbf24; }
+.bed-stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
+.bed-stat-label { font-size: .8rem; opacity: .65; margin-top: 2px; }
+
+/* Ward sections */
+.ward-section {
+    margin-bottom: 2.5rem;
+}
+.ward-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border, rgba(255,255,255,.08));
+}
+.ward-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.ward-badge {
+    font-size: .75rem;
+    padding: .25rem .65rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Bed grid */
+.bed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 1rem;
+}
+.bed-card {
+    border-radius: 14px;
+    padding: 1.15rem;
+    cursor: pointer;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+.bed-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+}
+.bed-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(0,0,0,.15);
+}
+
+/* Status-based colors */
+.bed-card.available {
+    background: rgba(16,185,129,.08);
+    border-color: rgba(16,185,129,.25);
+}
+.bed-card.available::before { background: #10b981; }
+.bed-card.available .bed-status-dot { background: #10b981; }
+
+.bed-card.occupied {
+    background: rgba(239,68,68,.08);
+    border-color: rgba(239,68,68,.25);
+}
+.bed-card.occupied::before { background: #ef4444; }
+.bed-card.occupied .bed-status-dot { background: #ef4444; }
+
+.bed-card.reserved {
+    background: rgba(245,158,11,.08);
+    border-color: rgba(245,158,11,.25);
+}
+.bed-card.reserved::before { background: #f59e0b; }
+.bed-card.reserved .bed-status-dot { background: #f59e0b; }
+
+.bed-card.maintenance {
+    background: rgba(107,114,128,.08);
+    border-color: rgba(107,114,128,.25);
+}
+.bed-card.maintenance::before { background: #6b7280; }
+.bed-card.maintenance .bed-status-dot { background: #6b7280; }
+
+.bed-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .6rem;
+}
+.bed-number {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.bed-status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+.bed-status-label {
+    font-size: .78rem;
+    font-weight: 600;
+    opacity: .8;
+    margin-bottom: .35rem;
+}
+.bed-patient-name {
+    font-size: .8rem;
+    opacity: .65;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bed-icon {
+    font-size: 1.8rem;
+    opacity: .15;
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+}
+
+/* Modal */
+.bed-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(6px);
+    z-index: 10000;
+    place-items: center;
+}
+.bed-modal-overlay.active {
+    display: grid;
+}
+.bed-modal {
+    background: var(--card-bg, #1e293b);
+    border: 1px solid var(--border, rgba(255,255,255,.1));
+    border-radius: 20px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.3);
+}
+.bed-modal h4 {
+    margin: 0 0 1.25rem 0;
+    font-weight: 700;
+}
+.bed-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: 1.25rem;
+}
+.bed-modal-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Legend */
+.bed-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding: .75rem 1rem;
+    background: var(--glass, rgba(255,255,255,.04));
+    border-radius: 12px;
+    border: 1px solid var(--border, rgba(255,255,255,.06));
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .82rem;
+    font-weight: 500;
+}
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+.legend-dot.green  { background: #10b981; }
+.legend-dot.red    { background: #ef4444; }
+.legend-dot.yellow { background: #f59e0b; }
+.legend-dot.gray   { background: #6b7280; }
+
+[data-theme="light"] .bed-stat-card {
+    background: #fff;
+    border-color: #e2e8f0;
+}
+[data-theme="light"] .bed-modal {
+    background: #fff;
+    border-color: #e2e8f0;
+}
+[data-theme="light"] .bed-card.available { background: rgba(16,185,129,.06); }
+[data-theme="light"] .bed-card.occupied  { background: rgba(239,68,68,.06); }
+[data-theme="light"] .bed-card.reserved  { background: rgba(245,158,11,.06); }
+[data-theme="light"] .bed-card.maintenance { background: rgba(107,114,128,.06); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fas fa-bed me-2" style="color:#818cf8;"></i>Bed Management</h2>
+            <p class="mb-0 opacity-75 small">Real-time ward map and bed allocation dashboard</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="refreshStats()">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="bed-stats-bar">
+        <div class="bed-stat-card">
+            <div class="bed-stat-icon total"><i class="fas fa-bed"></i></div>
+            <div>
+                <div class="bed-stat-value" id="statTotal">{{ total }}</div>
+                <div class="bed-stat-label">Total Beds</div>
+            </div>
+        </div>
+        <div class="bed-stat-card">
+            <div class="bed-stat-icon occupied"><i class="fas fa-user-injured"></i></div>
+            <div>
+                <div class="bed-stat-value" id="statOccupied">{{ occupied }}</div>
+                <div class="bed-stat-label">Occupied</div>
+            </div>
+        </div>
+        <div class="bed-stat-card">
+            <div class="bed-stat-icon avail"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="bed-stat-value" id="statAvailable">{{ available }}</div>
+                <div class="bed-stat-label">Available</div>
+            </div>
+        </div>
+        <div class="bed-stat-card">
+            <div class="bed-stat-icon rate"><i class="fas fa-chart-pie"></i></div>
+            <div>
+                <div class="bed-stat-value" id="statRate">{{ occupancy_rate }}%</div>
+                <div class="bed-stat-label">Occupancy Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="bed-legend">
+        <div class="legend-item"><div class="legend-dot green"></div> Available</div>
+        <div class="legend-item"><div class="legend-dot red"></div> Occupied</div>
+        <div class="legend-item"><div class="legend-dot yellow"></div> Reserved</div>
+        <div class="legend-item"><div class="legend-dot gray"></div> Maintenance</div>
+    </div>
+
+    <!-- Ward Map -->
+    {% if wards %}
+        {% for ward_name, beds in wards.items() %}
+        <div class="ward-section">
+            <div class="ward-header">
+                <i class="fas fa-hospital-alt" style="color:#818cf8; font-size:1.1rem;"></i>
+                <h3>{{ ward_name }}</h3>
+                <span class="ward-badge bg-primary bg-opacity-15 text-primary">{{ beds|length }} bed{{ 's' if beds|length != 1 }}</span>
+            </div>
+            <div class="bed-grid">
+                {% for bed in beds %}
+                <div class="bed-card {{ bed.status|lower }}"
+                     onclick="openBedModal({{ bed|tojson }})"
+                     title="{{ bed.bed_number }} — {{ bed.status }}">
+                    <div class="bed-card-header">
+                        <span class="bed-number">{{ bed.bed_number }}</span>
+                        <span class="bed-status-dot"></span>
+                    </div>
+                    <div class="bed-status-label">{{ bed.status }}</div>
+                    {% if bed.patient %}
+                    <div class="bed-patient-name">
+                        <i class="fas fa-user me-1"></i>{{ bed.patient.name }}
+                    </div>
+                    {% else %}
+                    <div class="bed-patient-name opacity-50">No patient</div>
+                    {% endif %}
+                    <i class="fas fa-bed bed-icon"></i>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5 opacity-50">
+            <i class="fas fa-bed fa-3x mb-3"></i>
+            <p class="fs-5">No beds have been configured yet.</p>
+            <p class="small">Ask the hospital administrator to add beds to the system.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Bed Action Modal -->
+<div class="bed-modal-overlay" id="bedModalOverlay" onclick="if(event.target===this)closeBedModal()">
+    <div class="bed-modal">
+        <h4><i class="fas fa-bed me-2"></i><span id="modalBedTitle">Bed</span></h4>
+        <div class="mb-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="fw-semibold">Ward:</span>
+                <span id="modalWard"></span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="fw-semibold">Status:</span>
+                <span id="modalStatus" class="badge"></span>
+            </div>
+            <div id="modalPatientInfo" class="d-flex align-items-center gap-2 mb-2" style="display:none !important;">
+                <span class="fw-semibold">Patient:</span>
+                <span id="modalPatient"></span>
+            </div>
+        </div>
+
+        <!-- Assign Patient -->
+        <div id="assignSection" class="mb-3" style="display:none;">
+            <label class="form-label fw-semibold small">Assign Patient</label>
+            <select id="assignPatientSelect" class="form-select form-select-sm">
+                <option value="">-- Select Patient --</option>
+                {% for p in patients %}
+                <option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="bed-modal-actions">
+            <button class="btn btn-success btn-sm" id="btnAssign" onclick="assignPatient()" style="display:none;">
+                <i class="fas fa-user-plus me-1"></i> Assign
+            </button>
+            <button class="btn btn-danger btn-sm" id="btnRelease" onclick="releaseBed()" style="display:none;">
+                <i class="fas fa-sign-out-alt me-1"></i> Release
+            </button>
+            <button class="btn btn-warning btn-sm" id="btnReserve" onclick="updateStatus('Reserved')">
+                <i class="fas fa-bookmark me-1"></i> Reserve
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnMaintenance" onclick="updateStatus('Maintenance')">
+                <i class="fas fa-tools me-1"></i> Maintenance
+            </button>
+            <button class="btn btn-outline-success btn-sm" id="btnMarkAvail" onclick="updateStatus('Available')">
+                <i class="fas fa-check me-1"></i> Mark Available
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="closeBedModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentBed = null;
+
+function openBedModal(bed) {
+    currentBed = bed;
+    document.getElementById('modalBedTitle').textContent = bed.bed_number;
+    document.getElementById('modalWard').textContent = bed.ward_type;
+
+    const statusEl = document.getElementById('modalStatus');
+    statusEl.textContent = bed.status;
+    statusEl.className = 'badge';
+    const statusColors = {
+        'Available': 'bg-success',
+        'Occupied': 'bg-danger',
+        'Reserved': 'bg-warning text-dark',
+        'Maintenance': 'bg-secondary',
+    };
+    statusEl.classList.add(statusColors[bed.status] || 'bg-info');
+
+    const patientInfo = document.getElementById('modalPatientInfo');
+    if (bed.patient) {
+        patientInfo.style.display = 'flex';
+        document.getElementById('modalPatient').textContent = bed.patient.name + ' (' + bed.patient.uhid + ')';
+    } else {
+        patientInfo.style.display = 'none';
+    }
+
+    // Toggle buttons based on status
+    const isOccupied = bed.status === 'Occupied';
+    const isAvail = bed.status === 'Available';
+    document.getElementById('btnAssign').style.display = (isOccupied ? 'none' : 'block');
+    document.getElementById('assignSection').style.display = (isOccupied ? 'none' : 'block');
+    document.getElementById('btnRelease').style.display = (isOccupied ? 'block' : 'none');
+    document.getElementById('btnReserve').style.display = (bed.status === 'Reserved' ? 'none' : 'inline-block');
+    document.getElementById('btnMaintenance').style.display = (bed.status === 'Maintenance' ? 'none' : 'inline-block');
+    document.getElementById('btnMarkAvail').style.display = (isAvail ? 'none' : 'inline-block');
+
+    document.getElementById('bedModalOverlay').classList.add('active');
+}
+
+function closeBedModal() {
+    document.getElementById('bedModalOverlay').classList.remove('active');
+    currentBed = null;
+}
+
+async function apiCall(url, body) {
+    const resp = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body),
+    });
+    return await resp.json();
+}
+
+async function assignPatient() {
+    if (!currentBed) return;
+    const patientId = document.getElementById('assignPatientSelect').value;
+    if (!patientId) {
+        alert('Please select a patient to assign.');
+        return;
+    }
+    const result = await apiCall("{{ url_for('bed_management.api_assign') }}", {
+        bed_id: currentBed.id,
+        patient_id: parseInt(patientId),
+    });
+    if (result.success) {
+        closeBedModal();
+        location.reload();
+    } else {
+        alert(result.error || 'Failed to assign patient.');
+    }
+}
+
+async function releaseBed() {
+    if (!currentBed) return;
+    if (!confirm('Release this bed and remove patient assignment?')) return;
+    const result = await apiCall("{{ url_for('bed_management.api_release') }}", {
+        bed_id: currentBed.id,
+    });
+    if (result.success) {
+        closeBedModal();
+        location.reload();
+    } else {
+        alert(result.error || 'Failed to release bed.');
+    }
+}
+
+async function updateStatus(status) {
+    if (!currentBed) return;
+    const result = await apiCall("{{ url_for('bed_management.api_update') }}", {
+        bed_id: currentBed.id,
+        status: status,
+    });
+    if (result.success) {
+        closeBedModal();
+        location.reload();
+    } else {
+        alert(result.error || 'Failed to update bed status.');
+    }
+}
+
+async function refreshStats() {
+    try {
+        const resp = await fetch("{{ url_for('bed_management.api_stats') }}");
+        const data = await resp.json();
+        if (data.success) {
+            document.getElementById('statTotal').textContent = data.total;
+            document.getElementById('statOccupied').textContent = data.occupied;
+            document.getElementById('statAvailable').textContent = data.available;
+            document.getElementById('statRate').textContent = data.occupancy_rate + '%';
+        }
+    } catch (e) {
+        console.error('Failed to refresh stats:', e);
+    }
+}
+
+// Keyboard shortcut: Escape to close modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBedModal();
+});
+</script>
+{% endblock %}

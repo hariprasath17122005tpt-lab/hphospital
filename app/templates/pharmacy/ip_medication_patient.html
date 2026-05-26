@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Dispense — {{ patient.first_name }} {{ patient.last_name }} | Pharmacy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Back + Patient Header -->
+    <a href="{{ url_for('pharmacy_ops.ip_medication_requests') }}" class="btn btn-sm btn-outline-secondary mb-3">
+        <i class="fas fa-arrow-left me-1"></i> Back to Patients
+    </a>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                     style="width:56px;height:56px;min-width:56px;font-size:1.3rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                    {{ patient.first_name[0]|upper }}
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1">{{ patient.first_name }} {{ patient.last_name }}</h4>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-primary">{{ patient.uhid }}</span>
+                        <span class="badge bg-info">{{ admission.ip_number }}</span>
+                        {% if admission.ward_type %}
+                        <span class="badge bg-secondary">{{ admission.ward_type }}{% if admission.room_number %} R-{{ admission.room_number }}{% endif %}</span>
+                        {% endif %}
+                        <span class="badge bg-success">Admitted</span>
+                    </div>
+                </div>
+                <div class="ms-auto text-end">
+                    <div class="small text-muted">Treating Doctor</div>
+                    <div class="fw-semibold">Dr. {{ doctor.first_name }} {{ doctor.last_name if doctor else '' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medicines Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-pills text-primary me-2"></i>Prescribed Medicines</h5>
+            <span class="badge bg-primary">{{ items|length }} medicine(s)</span>
+        </div>
+        <div class="card-body p-0">
+            {% if items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="medTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px;"></th>
+                            <th>Medicine</th>
+                            <th>Dose / Route / Freq</th>
+                            <th>Instructions</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th style="width:90px;">Qty</th>
+                            <th style="width:100px;">Unit Price (₹)</th>
+                            <th style="width:100px;">Total (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        {% set rec = item.record %}
+                        {% set ip_med = item.ip_med %}
+                        <tr class="med-row" data-disp-id="{{ rec.id }}" data-status="{{ rec.dispensing_status }}">
+                            <td>
+                                {% if rec.dispensing_status == 'Pending' %}
+                                <input type="checkbox" class="form-check-input med-check" checked>
+                                {% else %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ rec.medicine_name }}</td>
+                            <td class="small">
+                                {{ ip_med.dosage or '—' }} / {{ ip_med.route or '—' }} / {{ ip_med.frequency or '—' }}
+                            </td>
+                            <td class="small text-muted">
+                                {{ ip_med.special_instruction or '' }}
+                                {% if ip_med.food_relation %}<em>{{ ip_med.food_relation }}</em>{% endif %}
+                            </td>
+                            <td>
+                                {% if item.stock > 50 %}
+                                <span class="badge bg-success">{{ item.stock }}</span>
+                                {% elif item.stock > 0 %}
+                                <span class="badge bg-warning text-dark">{{ item.stock }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rec.dispensing_status == 'Dispensed' %}
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i>Dispensed</span>
+                                <div class="small text-muted">{{ rec.dispensed_at.strftime('%d %b %H:%M') if rec.dispensed_at else '' }}</div>
+                                {% elif rec.dispensing_status == 'Cancelled' %}
+                                <span class="badge bg-secondary">Cancelled</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rec.dispensing_status == 'Pending' %}
+                                <input type="number" class="form-control form-control-sm med-qty" value="1" min="0" step="1"
+                                       onchange="calcRow(this)">
+                                {% else %}
+                                <span class="text-muted">{{ rec.dispensed_quantity or '—' }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rec.dispensing_status == 'Pending' %}
+                                <input type="number" class="form-control form-control-sm med-price" value="{{ item.price }}" min="0" step="0.5"
+                                       onchange="calcRow(this)">
+                                {% else %}
+                                <span class="text-muted">{{ '%.2f'|format(rec.unit_price or 0) }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rec.dispensing_status == 'Pending' %}
+                                <span class="med-line-total fw-bold text-primary">{{ '%.2f'|format(item.price) }}</span>
+                                {% else %}
+                                <span class="fw-bold text-success">{{ '%.2f'|format(rec.total_price or 0) }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals + Dispense Button -->
+            <div class="card-body border-top">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <textarea id="dispRemarks" class="form-control" rows="2" placeholder="Pharmacy remarks (optional)..." style="max-width:400px;font-size:.85rem;"></textarea>
+                    </div>
+                    <div class="text-end">
+                        <div class="mb-2">
+                            <span class="text-muted">Grand Total:</span>
+                            <span class="fs-4 fw-bold text-primary ms-2" id="grandTotal">₹0.00</span>
+                        </div>
+                        <button class="btn btn-success btn-lg px-4" id="btnDispense" onclick="dispenseAll()">
+                            <i class="fas fa-check-circle me-2"></i>Dispense & Generate Bill
+                        </button>
+                        <div class="small text-muted mt-1">Bill will be sent to Reception for payment</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card-body text-center py-5 text-muted">
+                <i class="fas fa-check-circle fa-3x mb-3 text-success opacity-50"></i>
+                <h5>No medicines to dispense</h5>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+var ADM_ID = {{ admission.id }};
+
+function calcRow(el) {
+    var row = el.closest('tr');
+    var qty = parseFloat(row.querySelector('.med-qty').value) || 0;
+    var price = parseFloat(row.querySelector('.med-price').value) || 0;
+    row.querySelector('.med-line-total').textContent = (qty * price).toFixed(2);
+    calcGrand();
+}
+
+function calcGrand() {
+    var total = 0;
+    document.querySelectorAll('.med-row').forEach(function(row) {
+        if (row.dataset.status !== 'Pending') return;
+        var chk = row.querySelector('.med-check');
+        if (chk && !chk.checked) return;
+        var t = parseFloat(row.querySelector('.med-line-total').textContent) || 0;
+        total += t;
+    });
+    document.getElementById('grandTotal').textContent = '₹' + total.toFixed(2);
+}
+
+function dispenseAll() {
+    var btn = document.getElementById('btnDispense');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+    var medicines = [];
+    document.querySelectorAll('.med-row').forEach(function(row) {
+        if (row.dataset.status !== 'Pending') return;
+        var chk = row.querySelector('.med-check');
+        if (chk && !chk.checked) return;
+        var qty = row.querySelector('.med-qty') ? parseInt(row.querySelector('.med-qty').value) || 0 : 0;
+        var price = row.querySelector('.med-price') ? parseFloat(row.querySelector('.med-price').value) || 0 : 0;
+        medicines.push({
+            dispensing_id: parseInt(row.dataset.dispId),
+            quantity: qty,
+            unit_price: price,
+            remarks: document.getElementById('dispRemarks').value.trim()
+        });
+    });
+
+    if (medicines.length === 0) {
+        alert('No medicines selected to dispense');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Dispense & Generate Bill';
+        return;
+    }
+
+    fetch('/pharmacy-ops/ip-medication/dispense/' + ADM_ID, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicines: medicines })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            alert(d.message);
+            location.reload();
+        } else {
+            alert('Error: ' + (d.error || 'Unknown'));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Dispense & Generate Bill';
+        }
+    })
+    .catch(function(err) {
+        alert('Network error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Dispense & Generate Bill';
+    });
+}
+
+// Initial calculation
+document.addEventListener('DOMContentLoaded', calcGrand);
+</script>
+{% endblock %}

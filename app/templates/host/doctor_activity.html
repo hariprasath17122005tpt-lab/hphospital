@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Doctor Performance & Activity - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Doctor Performance' %}
+{% set breadcrumb_current = 'Doctor Activity' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-user-md me-2"></i>Doctor Performance & Activity</h1>
+                <p class="wc-subtitle">Comprehensive performance metrics for all physicians</p>
+            </div>
+            <div>
+                <span class="wc-badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.9rem;padding:8px 18px;">
+                    <i class="fas fa-stethoscope me-1"></i> {{ doctor_data|length }} Doctors
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-user-md"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ doctor_data|length }}</div>
+                <div class="wc-stat-label">Total Doctors</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-check"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ doctor_data|sum(attribute='appointments') }}</div>
+                <div class="wc-stat-label">Total Appointments</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-prescription"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ doctor_data|sum(attribute='prescriptions') }}</div>
+                <div class="wc-stat-label">Total Prescriptions</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ "%.0f"|format(doctor_data|sum(attribute='revenue')) }}</div>
+                <div class="wc-stat-label">Total Revenue (₹)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Cards Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+        {% for data in doctor_data|sort(attribute='revenue', reverse=True) %}
+        <div class="wc-card wc-hover-lift">
+            <div class="wc-card-body">
+                <!-- Doctor Header -->
+                <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+                    <div style="width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#10b981,#059669);color:#fff;">
+                        {{ data.doctor.first_name[0]|upper if data.doctor.first_name else 'D' }}
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;font-size:1.05rem;color:var(--wc-text);">
+                            Dr. {{ data.doctor.first_name }} {{ data.doctor.last_name }}
+                        </div>
+                        <div style="font-size:.85rem;color:var(--wc-text-muted);">
+                            <i class="fas fa-stethoscope me-1"></i>{{ data.doctor.specialization or 'General' }}
+                        </div>
+                    </div>
+                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Active</span>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="wc-info-card" style="text-align:center;padding:14px;">
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-primary);">{{ data.appointments }}</div>
+                        <div style="font-size:.78rem;color:var(--wc-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Appointments</div>
+                    </div>
+                    <div class="wc-info-card" style="text-align:center;padding:14px;">
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-purple);">{{ data.prescriptions }}</div>
+                        <div style="font-size:.78rem;color:var(--wc-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Prescriptions</div>
+                    </div>
+                    <div class="wc-info-card" style="text-align:center;padding:14px;">
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-success);">
+                            <i class="fas fa-rupee-sign" style="font-size:1rem;"></i>{{ "%.0f"|format(data.revenue) }}
+                        </div>
+                        <div style="font-size:.78rem;color:var(--wc-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Revenue</div>
+                    </div>
+                    <div class="wc-info-card" style="text-align:center;padding:14px;">
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-danger);">{{ data.ip_patients }}</div>
+                        <div style="font-size:.78rem;color:var(--wc-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">IP Patients</div>
+                    </div>
+                </div>
+
+                <!-- Revenue Bar -->
+                {% set max_rev = doctor_data|map(attribute='revenue')|max if doctor_data else 1 %}
+                {% set rev_pct = ((data.revenue / max_rev) * 100) if max_rev > 0 else 0 %}
+                <div style="margin-top:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <span style="font-size:.78rem;color:var(--wc-text-muted);font-weight:600;">Revenue Share</span>
+                        <span style="font-size:.78rem;font-weight:700;color:var(--wc-success);">{{ "%.1f"|format(rev_pct) }}%</span>
+                    </div>
+                    <div style="height:6px;background:var(--wc-border);border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;width:{{ rev_pct }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:3px;transition:width .6s ease;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="wc-card" style="grid-column:1/-1;">
+            <div class="wc-empty-state">
+                <i class="fas fa-user-md"></i>
+                <h4>No Doctor Data</h4>
+                <p>No doctor performance data is available yet.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

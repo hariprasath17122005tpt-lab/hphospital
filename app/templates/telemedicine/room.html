@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Teleconsultation Room — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+.tele-room{min-height:80vh;background:#0f172a;border-radius:20px;overflow:hidden;position:relative;}
+.tele-video-area{display:grid;grid-template-columns:1fr 300px;height:70vh;gap:16px;padding:16px;}
+.tele-main-video{background:#1e293b;border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;}
+.tele-main-video .placeholder{text-align:center;color:rgba(255,255,255,.5);}
+.tele-main-video .placeholder i{font-size:4rem;margin-bottom:16px;display:block;}
+.tele-sidebar{display:flex;flex-direction:column;gap:12px;}
+.tele-self-video{background:#1e293b;border-radius:16px;height:200px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);}
+.tele-chat{flex:1;background:#1e293b;border-radius:16px;padding:16px;display:flex;flex-direction:column;}
+.tele-chat h4{color:#fff;font-size:.9rem;margin-bottom:12px;}
+.tele-chat-messages{flex:1;overflow-y:auto;margin-bottom:10px;}
+.tele-chat-input{display:flex;gap:8px;}
+.tele-chat-input input{flex:1;background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;outline:none;}
+.tele-chat-input button{background:#2563eb;border:none;border-radius:8px;color:#fff;padding:8px 16px;cursor:pointer;}
+.tele-controls{display:flex;justify-content:center;gap:16px;padding:20px;background:rgba(0,0,0,.3);}
+.tele-ctrl-btn{width:56px;height:56px;border-radius:50%;border:none;font-size:1.2rem;cursor:pointer;transition:all .2s;display:grid;place-items:center;}
+.tele-ctrl-btn.primary{background:#2563eb;color:#fff;}.tele-ctrl-btn.primary:hover{background:#1d4ed8;}
+.tele-ctrl-btn.danger{background:#dc2626;color:#fff;}.tele-ctrl-btn.danger:hover{background:#b91c1c;}
+.tele-ctrl-btn.muted{background:rgba(255,255,255,.15);color:#fff;}.tele-ctrl-btn.muted:hover{background:rgba(255,255,255,.25);}
+.tele-info-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(0,0,0,.2);color:#fff;}
+.tele-info-bar .participants{display:flex;gap:8px;align-items:center;}
+.tele-timer{font-variant-numeric:tabular-nums;font-weight:700;color:#10b981;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="tele-room">
+        <div class="tele-info-bar">
+            <div class="participants">
+                <span class="wc-badge wc-badge-success wc-pulse">LIVE</span>
+                <span>{{ session.patient.full_name if session.patient else 'Patient' }} &bull; Dr. {{ session.doctor.first_name if session.doctor else 'Doctor' }}</span>
+            </div>
+            <div class="tele-timer" id="teleTimer">00:00:00</div>
+        </div>
+
+        <div class="tele-video-area">
+            <div class="tele-main-video">
+                <div class="placeholder">
+                    <i class="fas fa-user-md"></i>
+                    <h3>Teleconsultation Room</h3>
+                    <p>Room ID: {{ session.room_id }}</p>
+                    <p class="mt-2">{{ session.session_type }} Consultation</p>
+                    <button class="wc-btn wc-btn-primary mt-3" onclick="startSession()"><i class="fas fa-video me-2"></i>Start Session</button>
+                </div>
+            </div>
+            <div class="tele-sidebar">
+                <div class="tele-self-video"><i class="fas fa-user" style="font-size:2rem;"></i></div>
+                <div class="tele-chat">
+                    <h4><i class="fas fa-comment-dots me-1"></i>Session Chat</h4>
+                    <div class="tele-chat-messages" id="chatMessages"></div>
+                    <div class="tele-chat-input">
+                        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendChat()">
+                        <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tele-controls">
+            <button class="tele-ctrl-btn muted" title="Microphone"><i class="fas fa-microphone"></i></button>
+            <button class="tele-ctrl-btn muted" title="Camera"><i class="fas fa-video"></i></button>
+            <button class="tele-ctrl-btn muted" title="Screen Share"><i class="fas fa-desktop"></i></button>
+            <button class="tele-ctrl-btn muted" title="Record"><i class="fas fa-record-vinyl"></i></button>
+            <button class="tele-ctrl-btn primary" title="Notes" onclick="document.getElementById('chatInput').focus()"><i class="fas fa-sticky-note"></i></button>
+            <button class="tele-ctrl-btn danger" title="End Call" onclick="endSession()"><i class="fas fa-phone-slash"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+let seconds = 0, timerInterval = null;
+function startSession() {
+    timerInterval = setInterval(() => {
+        seconds++;
+        const h = String(Math.floor(seconds/3600)).padStart(2,'0');
+        const m = String(Math.floor((seconds%3600)/60)).padStart(2,'0');
+        const s = String(seconds%60).padStart(2,'0');
+        document.getElementById('teleTimer').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("telemedicine.update_status") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({session_id: {{ session.id }}, status: 'In Progress'})
+    });
+}
+function endSession() {
+    clearInterval(timerInterval);
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("telemedicine.update_status") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({session_id: {{ session.id }}, status: 'Completed'})
+    }).then(() => { window.location.href = '{{ url_for("telemedicine.dashboard") }}'; });
+}
+function sendChat() {
+    const input = document.getElementById('chatInput');
+    if(!input.value.trim()) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'background:#2563eb;color:#fff;padding:6px 12px;border-radius:8px;margin-bottom:6px;font-size:.85rem;max-width:80%;margin-left:auto;';
+    div.textContent = input.value;
+    document.getElementById('chatMessages').appendChild(div);
+    input.value = '';
+    document.getElementById('chatMessages').scrollTop = 99999;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1076 @@
+{% extends "base.html" %}
+{% block title %}IP Patient - {{ patient.full_name }} | CarePoint{% endblock %}
+{% block content %}
+<style>
+.ip-page { padding:20px; max-width:1200px; margin:0 auto; font-family:'Inter',sans-serif; }
+.ip-header { background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%); border-radius:14px; padding:24px 28px; color:#fff; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+.ip-header .name { font-size:1.3rem; font-weight:800; }
+.ip-header .badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.ip-header .badge { padding:3px 10px; border-radius:6px; font-size:.72rem; font-weight:700; }
+.ip-header .b-uhid { background:#dbeafe; color:#2563eb; }
+.ip-header .b-ip { background:#cffafe; color:#0891b2; }
+.ip-header .b-ward { background:#fef3c7; color:#b45309; }
+.ip-header .b-day { background:#fee2e2; color:#dc2626; }
+.ip-back { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:8px; color:#fff; text-decoration:none; font-weight:600; font-size:.85rem; }
+.ip-back:hover { background:rgba(255,255,255,.2); color:#fff; }
+.ip-tabs { display:flex; gap:0; border-bottom:2px solid #e2e8f0; margin-bottom:20px; overflow-x:auto; }
+.ip-tab { padding:10px 18px; font-weight:600; font-size:.85rem; cursor:pointer; border:none; background:none; color:#64748b; border-bottom:2px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+.ip-tab.active { color:#06b6d4; border-bottom-color:#06b6d4; }
+.ip-panel { display:none; }
+.ip-panel.active { display:block; }
+.ip-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin-bottom:16px; }
+.ip-card-title { font-size:.92rem; font-weight:700; color:#0f172a; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.ip-card-title i { color:#06b6d4; }
+.ip-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.ip-field { margin-bottom:8px; }
+.ip-field label { font-size:.72rem; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.3px; display:block; }
+.ip-field .val { font-size:.88rem; color:#0f172a; font-weight:500; }
+.ip-vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }
+.ip-vital { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; text-align:center; }
+.ip-vital .v-label { font-size:.72rem; color:#64748b; font-weight:600; text-transform:uppercase; }
+.ip-vital .v-val { font-size:1.2rem; font-weight:800; color:#0f172a; margin-top:4px; }
+.note-timeline { position:relative; }
+.note-item { padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; margin-bottom:12px; }
+.note-item .note-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.note-item .note-date { font-size:.78rem; color:#06b6d4; font-weight:700; }
+.note-item .note-doctor { font-size:.78rem; color:#64748b; }
+.soap-section { margin-bottom:6px; }
+.soap-section .soap-label { font-size:.72rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; }
+.soap-section .soap-text { font-size:.85rem; color:#334155; margin-top:2px; }
+.med-table { width:100%; font-size:.82rem; border-collapse:collapse; }
+.med-table th { padding:10px; text-align:left; background:#f8fafc; border-bottom:2px solid #e2e8f0; font-weight:700; color:#334155; }
+.med-table td { padding:10px; border-bottom:1px solid #f1f5f9; }
+.btn-primary-ip { padding:8px 20px; background:#06b6d4; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:.85rem; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary-ip:hover { background:#0891b2; }
+.btn-green-ip { padding:8px 20px; background:#059669; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:.85rem; display:inline-flex; align-items:center; gap:6px; }
+.btn-ghost-ip { padding:8px 20px; background:#f1f5f9; color:#334155; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:.85rem; }
+.nurse-note { padding:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; margin-bottom:8px; }
+@media (max-width:768px) { .ip-grid2 { grid-template-columns:1fr; } .ip-header { flex-direction:column; } }
+</style>
+
+<div class="ip-page">
+  <!-- Header -->
+  <div class="ip-header">
+    <div>
+      <div class="name">{{ patient.full_name }}</div>
+      <div class="badges">
+        <span class="badge b-uhid">{{ patient.uhid }}</span>
+        <span class="badge b-ip">{{ admission.ip_number }}</span>
+        <span class="badge b-ward"><i class="fas fa-bed"></i> {{ admission.ward_type or 'General' }} {% if admission.room_number %}R-{{ admission.room_number }}{% endif %}</span>
+        <span class="badge b-day">Day {{ admission.length_of_stay }}</span>
+      </div>
+      <div style="font-size:.8rem;color:#94a3b8;margin-top:8px;">
+        {{ patient.age or 'N/A' }}y | {{ patient.gender or 'N/A' }} | Ph: {{ patient.phone or 'N/A' }}
+        {% if patient.blood_type %} | Blood: {{ patient.blood_type }}{% endif %}
+        | Admitted: {{ admission.admission_date.strftime('%d %b %Y %H:%M') if admission.admission_date else 'N/A' }}
+        | Doctor: Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+      </div>
+    </div>
+    <a href="{{ url_for('doctor.portal') }}?mode=ip" class="ip-back"><i class="fas fa-arrow-left"></i> Back to IP List</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="ip-tabs">
+    <button class="ip-tab active" onclick="ipTab('overview')">Overview</button>
+    <button class="ip-tab" onclick="ipTab('vitals')">Vitals</button>
+    <button class="ip-tab" onclick="ipTab('medicines')">Medicines</button>
+    <button class="ip-tab" onclick="ipTab('labs')">Lab Reports</button>
+    <button class="ip-tab" onclick="ipTab('notes')">Progress Notes</button>
+    <button class="ip-tab" onclick="ipTab('nurse')">Nurse Notes</button>
+    <button class="ip-tab" onclick="ipTab('treatment')">Treatment Plan</button>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="ipDetailLoading" style="text-align:center;padding:40px;color:#94a3b8;">
+    <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
+    <div style="margin-top:8px;">Loading patient data...</div>
+  </div>
+
+  <!-- ═══ OVERVIEW TAB ═══ -->
+  <div class="ip-panel active" id="panel-overview">
+    <div class="ip-grid2">
+      <div class="ip-card">
+        <div class="ip-card-title"><i class="fas fa-user"></i> Patient Summary</div>
+        <div id="ipOverviewSummary"></div>
+      </div>
+      <div class="ip-card">
+        <div class="ip-card-title"><i class="fas fa-heartbeat"></i> Latest Vitals</div>
+        <div id="ipOverviewVitals"></div>
+      </div>
+    </div>
+    <div class="ip-grid2">
+      <div class="ip-card">
+        <div class="ip-card-title"><i class="fas fa-notes-medical"></i> Current Admission</div>
+        <div id="ipOverviewAdmission"></div>
+      </div>
+      <div class="ip-card">
+        <div class="ip-card-title"><i class="fas fa-history"></i> Medical Background</div>
+        <div id="ipOverviewMedBg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VITALS TAB ═══ -->
+  <div class="ip-panel" id="panel-vitals">
+    <div class="ip-card">
+      <div class="ip-card-title"><i class="fas fa-heartbeat"></i> Vitals History</div>
+      <div id="ipVitalsHistory"></div>
+    </div>
+  </div>
+
+  <!-- ═══ MEDICINES TAB ═══ -->
+  <!-- Custom autocomplete dropdown for medicine names -->
+  <style>
+  #globalMedAcDrop {
+    display: none;
+    position: absolute;
+    z-index: 99999;
+    background: #fff;
+    border: 2px solid #8b5cf6;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.22);
+    max-height: 260px;
+    overflow-y: auto;
+    min-width: 280px;
+  }
+  #globalMedAcDrop.open { display: block; }
+  .med-ac-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: .88rem;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .med-ac-item:last-child { border-bottom: none; }
+  .med-ac-item:hover, .med-ac-item.active { background: #ede9fe; color: #6d28d9; }
+  .med-ac-item i { color: #8b5cf6; font-size: .8rem; }
+  .med-ac-match { font-weight: 800; color: #6d28d9; }
+  .med-ac-empty { padding: 14px 16px; color: #94a3b8; font-size: .85rem; text-align: center; }
+  </style>
+  <div class="ip-panel" id="panel-medicines">
+    <div class="ip-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="ip-card-title" style="margin-bottom:0;"><i class="fas fa-pills"></i> IP Medications</div>
+        <button class="btn-green-ip" id="btnAddMeds" onclick="try{openIPMedAddForm()}catch(e){alert('Error: '+e.message)}"><i class="fas fa-plus"></i> Add Medicines</button>
+      </div>
+      <div id="ipMedicinesTable"></div>
+    </div>
+
+    <!-- Add Medicine Form (multi-medicine with voice + autocomplete) -->
+    <div class="ip-card" id="ipMedAddForm" style="display:none;border:2px solid #059669;border-left:5px solid #059669;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="ip-card-title" style="margin-bottom:0;"><i class="fas fa-plus-circle" style="color:#059669;"></i> Add IP Medications</div>
+        <button id="voiceMedBtn" onclick="startVoiceMedicine()" style="padding:8px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fas fa-microphone"></i> Voice Prescribe
+        </button>
+      </div>
+      <div id="voiceMedStatus" style="display:none;padding:10px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;margin-bottom:12px;font-size:.82rem;color:#6d28d9;">
+        <i class="fas fa-spinner fa-spin"></i> <span id="voiceMedStatusText">Listening...</span>
+      </div>
+
+      <!-- Medicine queue table -->
+      <div style="overflow-x:auto;">
+        <table id="medQueueTable" style="width:100%;font-size:.82rem;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+              <th style="padding:8px;text-align:left;min-width:180px;">Medicine Name *</th>
+              <th style="padding:8px;text-align:left;min-width:100px;">Dosage</th>
+              <th style="padding:8px;text-align:left;min-width:90px;">Route</th>
+              <th style="padding:8px;text-align:left;min-width:90px;">Frequency</th>
+              <th style="padding:8px;text-align:left;min-width:90px;">Duration</th>
+              <th style="padding:8px;text-align:left;min-width:90px;">Food</th>
+              <th style="padding:8px;text-align:left;min-width:120px;">Instructions</th>
+              <th style="padding:8px;text-align:center;width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="medQueueBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="addMedRow()" style="padding:7px 16px;background:#dbeafe;color:#2563eb;border:1px solid #bfdbfe;border-radius:7px;font-weight:600;cursor:pointer;font-size:.82rem;">
+          <i class="fas fa-plus me-1"></i>Add Another Medicine
+        </button>
+        <div style="flex:1;"></div>
+        <button class="btn-green-ip" onclick="submitAllMeds()"><i class="fas fa-save"></i> Save All Medicines</button>
+        <button class="btn-ghost-ip" onclick="document.getElementById('ipMedAddForm').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB REPORTS TAB ═══ -->
+  <div class="ip-panel" id="panel-labs">
+    <!-- Request Lab Test Button + Form -->
+    <div class="ip-card" style="border:2px solid #8b5cf6; border-left:5px solid #8b5cf6;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="ip-card-title" style="margin-bottom:0;"><i class="fas fa-flask" style="color:#8b5cf6;"></i> Request Lab Test</div>
+        <button class="btn-primary-ip" style="background:#8b5cf6;" onclick="document.getElementById('ipLabRequestForm').style.display=document.getElementById('ipLabRequestForm').style.display==='none'?'block':'none'">
+          <i class="fas fa-plus"></i> New Lab Request
+        </button>
+      </div>
+      <div id="ipLabRequestForm" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:.75rem;font-weight:700;color:#8b5cf6;display:block;margin-bottom:4px;">Test Name *</label>
+            <select id="ipLabTestName" style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:.85rem;background:#fff;color:#0f172a;">
+              <option value="">Select Test</option>
+              <optgroup label="Haematology">
+                <option value="CBC (Complete Blood Count)">CBC (Complete Blood Count)</option>
+                <option value="ESR">ESR</option>
+                <option value="Peripheral Smear">Peripheral Smear</option>
+                <option value="Blood Group & Rh Typing">Blood Group & Rh Typing</option>
+                <option value="Coagulation Profile">Coagulation Profile (PT/INR/APTT)</option>
+              </optgroup>
+              <optgroup label="Biochemistry">
+                <option value="Blood Sugar (Fasting)">Blood Sugar (Fasting)</option>
+                <option value="Blood Sugar (PP)">Blood Sugar (Post-Prandial)</option>
+                <option value="Random Blood Sugar">Random Blood Sugar</option>
+                <option value="HbA1c">HbA1c</option>
+                <option value="Renal Function Test (RFT)">Renal Function Test (RFT)</option>
+                <option value="Liver Function Test (LFT)">Liver Function Test (LFT)</option>
+                <option value="Lipid Profile">Lipid Profile</option>
+                <option value="Serum Electrolytes">Serum Electrolytes (Na/K/Cl)</option>
+                <option value="Thyroid Profile (T3/T4/TSH)">Thyroid Profile (T3/T4/TSH)</option>
+                <option value="Serum Creatinine">Serum Creatinine</option>
+                <option value="Blood Urea">Blood Urea</option>
+                <option value="Uric Acid">Uric Acid</option>
+                <option value="Calcium">Calcium</option>
+                <option value="Vitamin D">Vitamin D (25-OH)</option>
+                <option value="Vitamin B12">Vitamin B12</option>
+                <option value="Iron Studies">Iron Studies</option>
+                <option value="CRP (C-Reactive Protein)">CRP (C-Reactive Protein)</option>
+              </optgroup>
+              <optgroup label="Cardiac Markers">
+                <option value="Troponin I">Troponin I</option>
+                <option value="CPK-MB">CPK-MB</option>
+                <option value="BNP / NT-proBNP">BNP / NT-proBNP</option>
+              </optgroup>
+              <optgroup label="Microbiology">
+                <option value="Blood Culture & Sensitivity">Blood Culture & Sensitivity</option>
+                <option value="Urine Culture & Sensitivity">Urine Culture & Sensitivity</option>
+                <option value="Dengue NS1 / IgM / IgG">Dengue NS1 / IgM / IgG</option>
+                <option value="Malaria (Smear / Antigen)">Malaria (Smear / Antigen)</option>
+                <option value="Typhoid (Widal Test)">Typhoid (Widal Test)</option>
+              </optgroup>
+              <optgroup label="Urine & Stool">
+                <option value="Urine Routine">Urine Routine</option>
+                <option value="Urine Microalbumin">Urine Microalbumin</option>
+                <option value="Stool Routine">Stool Routine</option>
+                <option value="Stool Occult Blood">Stool Occult Blood</option>
+              </optgroup>
+              <optgroup label="Radiology / Imaging">
+                <option value="X-Ray Chest PA">X-Ray Chest PA</option>
+                <option value="X-Ray Abdomen">X-Ray Abdomen</option>
+                <option value="USG Abdomen">USG Abdomen</option>
+                <option value="ECG">ECG (12-Lead)</option>
+                <option value="ECHO">ECHO (Echocardiogram)</option>
+                <option value="CT Scan">CT Scan</option>
+                <option value="MRI">MRI</option>
+              </optgroup>
+              <optgroup label="Special">
+                <option value="ABG (Arterial Blood Gas)">ABG (Arterial Blood Gas)</option>
+                <option value="D-Dimer">D-Dimer</option>
+                <option value="Procalcitonin">Procalcitonin</option>
+                <option value="Lactate">Lactate</option>
+                <option value="Ammonia">Ammonia</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:.75rem;font-weight:700;color:#8b5cf6;display:block;margin-bottom:4px;">Or Type Custom Test</label>
+            <input type="text" id="ipLabCustomTest" style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:.85rem;color:#0f172a;" placeholder="e.g., HLA Typing, Procalcitonin...">
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:.75rem;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">Clinical Notes / Reason</label>
+          <textarea id="ipLabNotes" rows="2" style="width:100%;padding:9px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:.85rem;color:#0f172a;" placeholder="Reason for ordering this test (e.g., rule out sepsis, monitor renal function)..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-primary-ip" style="background:#8b5cf6;" onclick="submitIPLabRequest()">
+            <i class="fas fa-paper-plane"></i> Submit Lab Request
+          </button>
+          <button class="btn-ghost-ip" onclick="document.getElementById('ipLabRequestForm').style.display='none'">Cancel</button>
+          <span id="ipLabRequestMsg" style="font-size:.82rem;margin-left:8px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lab Orders Table -->
+    <div class="ip-card">
+      <div class="ip-card-title"><i class="fas fa-list-check"></i> Lab Orders & Results</div>
+      <div id="ipLabOrders"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PROGRESS NOTES TAB ═══ -->
+  <div class="ip-panel" id="panel-notes">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:1rem;font-weight:700;color:#0f172a;"><i class="fas fa-notes-medical" style="color:#06b6d4;"></i> Daily Progress Notes</div>
+      <button class="btn-primary-ip" onclick="openDetailNoteForm()"><i class="fas fa-plus"></i> New Note</button>
+    </div>
+    <!-- New note form (hidden) -->
+    <div class="ip-card" id="detNoteForm" style="display:none;">
+      <div class="ip-card-title"><i class="fas fa-edit" style="color:#8b5cf6;"></i> Write Progress Note (SOAP)</div>
+      <div style="display:grid;gap:10px;">
+        <div><label style="font-size:.75rem;font-weight:700;color:#8b5cf6;">S - Subjective</label>
+          <textarea id="detNoteS" rows="2" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Patient complaints..."></textarea></div>
+        <div><label style="font-size:.75rem;font-weight:700;color:#06b6d4;">O - Objective</label>
+          <textarea id="detNoteO" rows="2" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Examination findings..."></textarea></div>
+        <div><label style="font-size:.75rem;font-weight:700;color:#059669;">A - Assessment</label>
+          <textarea id="detNoteA" rows="2" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Diagnosis / assessment..."></textarea></div>
+        <div><label style="font-size:.75rem;font-weight:700;color:#f59e0b;">P - Plan</label>
+          <textarea id="detNoteP" rows="2" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Treatment plan..."></textarea></div>
+        <div><label style="font-size:.75rem;font-weight:600;color:#334155;">Instructions to Nurse</label>
+          <textarea id="detNoteNurse" rows="1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Nursing orders..."></textarea></div>
+        <div><label style="font-size:.75rem;font-weight:600;color:#334155;">Procedure Notes</label>
+          <textarea id="detNoteProcedure" rows="1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:7px;font-size:.85rem;" placeholder="Procedures done..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn-primary-ip" onclick="submitDetailNote()"><i class="fas fa-save"></i> Save Note</button>
+        <button class="btn-ghost-ip" onclick="document.getElementById('detNoteForm').style.display='none'">Cancel</button>
+      </div>
+    </div>
+    <div class="note-timeline" id="ipNotesTimeline"></div>
+  </div>
+
+  <!-- ═══ NURSE NOTES TAB ═══ -->
+  <div class="ip-panel" id="panel-nurse">
+    <div class="ip-card">
+      <div class="ip-card-title"><i class="fas fa-user-nurse"></i> Nurse Notes & Observations</div>
+      <div id="ipNurseNotes"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TREATMENT PLAN TAB ═══ -->
+  <div class="ip-panel" id="panel-treatment">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:1rem;font-weight:700;color:#0f172a;"><i class="fas fa-clipboard-list" style="color:#8b5cf6;"></i> Treatment Plan & Reviews</div>
+      <button class="btn-primary-ip" onclick="openDetailNoteForm()"><i class="fas fa-plus"></i> Add Entry</button>
+    </div>
+    <div id="ipTreatmentPlan"></div>
+  </div>
+</div>
+
+<script>
+var ADM_ID = {{ admission.id }};
+var PAT_ID = {{ patient.id }};
+var _detailData = null;
+
+function ipTab(tab) {
+  document.querySelectorAll('.ip-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.ip-panel').forEach(function(p) { p.classList.remove('active'); });
+  var panel = document.getElementById('panel-' + tab);
+  if (panel) panel.classList.add('active');
+  // Highlight the clicked tab
+  event.target.classList.add('active');
+}
+
+function loadIPDetail() {
+  fetch('/doctor/api/ip/admission/' + ADM_ID)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      document.getElementById('ipDetailLoading').style.display = 'none';
+      if (!d.success) { alert(d.error || 'Failed to load'); return; }
+      _detailData = d;
+      renderOverview(d);
+      renderVitalsTab(d);
+      renderMedicinesTab(d);
+      renderLabsTab(d);
+      renderNotesTab(d);
+      renderNurseTab(d);
+      renderTreatmentTab(d);
+    })
+    .catch(function(e) {
+      document.getElementById('ipDetailLoading').style.display = 'none';
+      console.error(e);
+    });
+}
+
+function renderOverview(d) {
+  var p = d.patient;
+  var a = d.admission;
+  document.getElementById('ipOverviewSummary').innerHTML =
+    field('Name', p.name) + field('UHID', p.uhid) + field('IP Number', a.ip_number) +
+    field('Age / Gender', (p.age||'N/A') + ' / ' + (p.gender||'N/A')) +
+    field('Phone', p.phone||'N/A') + field('Blood Type', p.blood_type||'N/A') +
+    field('Address', p.address||'N/A');
+
+  var v = d.latest_vitals;
+  if (v) {
+    document.getElementById('ipOverviewVitals').innerHTML =
+      '<div class="ip-vitals-grid">' +
+      vital('BP', v.bp) + vital('Pulse', v.pulse ? v.pulse+' bpm' : 'N/A') +
+      vital('Temp', v.temperature ? v.temperature+'°F' : 'N/A') +
+      vital('SpO2', v.spo2 ? v.spo2+'%' : 'N/A') +
+      vital('RR', v.respiratory_rate || 'N/A') +
+      vital('GRBS', v.grbs || 'N/A') +
+      '</div><div style="font-size:.72rem;color:#94a3b8;margin-top:8px;">Recorded: '+v.recorded_at+'</div>';
+  } else {
+    document.getElementById('ipOverviewVitals').innerHTML = '<div style="color:#94a3b8;font-size:.85rem;">No vitals recorded yet</div>';
+  }
+
+  document.getElementById('ipOverviewAdmission').innerHTML =
+    field('Diagnosis', a.provisional_diagnosis||'N/A') +
+    field('Admission Reason', a.admission_reason||'N/A') +
+    field('Ward / Room', (a.ward_type||'') + (a.room_number ? ' R-'+a.room_number : '')) +
+    field('Days Admitted', a.days_admitted) +
+    field('Notes', a.notes||'None');
+
+  var bg = d.medical_background;
+  document.getElementById('ipOverviewMedBg').innerHTML =
+    field('Medical History', bg.medical_history||'None recorded') +
+    field('Allergies', bg.allergy_history||'None') +
+    field('Chronic Conditions', bg.chronic_conditions||'None') +
+    field('Family History', bg.family_history||'None') +
+    field('Current Medications', bg.current_medications||'None');
+}
+
+function field(label, val) {
+  return '<div class="ip-field"><label>'+label+'</label><div class="val">'+(val||'N/A')+'</div></div>';
+}
+function vital(label, val) {
+  return '<div class="ip-vital"><div class="v-label">'+label+'</div><div class="v-val">'+(val||'N/A')+'</div></div>';
+}
+
+function renderVitalsTab(d) {
+  fetch('/doctor/api/ip/vitals/' + PAT_ID)
+    .then(function(r) { return r.json(); })
+    .then(function(vd) {
+      var c = document.getElementById('ipVitalsHistory');
+      if (!vd.success || !vd.vitals || vd.vitals.length === 0) {
+        c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;">No vitals recorded</div>';
+        return;
+      }
+      var h = '<table class="med-table"><thead><tr><th>Date/Time</th><th>BP</th><th>Pulse</th><th>Temp</th><th>SpO2</th><th>RR</th><th>GRBS</th><th>Notes</th></tr></thead><tbody>';
+      vd.vitals.forEach(function(v) {
+        h += '<tr><td>'+v.recorded_at+'</td><td>'+v.bp+'</td><td>'+(v.pulse||'-')+'</td>' +
+          '<td>'+(v.temperature?v.temperature+'°F':'-')+'</td><td>'+(v.spo2?v.spo2+'%':'-')+'</td>' +
+          '<td>'+(v.respiratory_rate||'-')+'</td><td>'+(v.grbs||'-')+'</td>' +
+          '<td style="font-size:.78rem;color:#64748b;">'+(v.notes||'')+'</td></tr>';
+      });
+      h += '</tbody></table>';
+      c.innerHTML = h;
+    });
+}
+
+function _statusBadge(status) {
+  var map = {
+    'Pending':   'background:#fef3c7;color:#b45309;border:1px solid #fde68a',
+    'Given':     'background:#d1fae5;color:#065f46;border:1px solid #a7f3d0',
+    'Dispensed': 'background:#d1fae5;color:#065f46;border:1px solid #a7f3d0',
+    'Partially Dispensed': 'background:#ffedd5;color:#c2410c;border:1px solid #fed7aa',
+    'Available': 'background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe',
+    'Partial':   'background:#ffedd5;color:#c2410c;border:1px solid #fed7aa',
+    'Out of Stock':'background:#fee2e2;color:#dc2626;border:1px solid #fecaca',
+    'Not Available':'background:#fee2e2;color:#dc2626;border:1px solid #fecaca',
+    'Missed':    'background:#fee2e2;color:#dc2626;border:1px solid #fecaca',
+    'Delayed':   'background:#ffedd5;color:#c2410c;border:1px solid #fed7aa',
+    'Cancelled': 'background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0',
+  };
+  var s = map[status] || 'background:#f1f5f9;color:#334155;border:1px solid #e2e8f0';
+  return '<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:.72rem;font-weight:700;'+s+'">'+status+'</span>';
+}
+
+function renderMedicinesTab(d) {
+  var c = document.getElementById('ipMedicinesTable');
+  var meds = d.medications || [];
+  if (meds.length === 0) {
+    c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;">No medications prescribed yet</div>';
+    return;
+  }
+
+  // Group medicines by order_batch
+  var batches = {};
+  var batchOrder = [];
+  meds.forEach(function(m) {
+    var key = m.order_batch || ('single_' + m.id);
+    if (!batches[key]) {
+      batches[key] = { batch: m.order_batch, time: m.order_time || m.created_at, timeShort: m.order_time_short || '', meds: [] };
+      batchOrder.push(key);
+    }
+    batches[key].meds.push(m);
+  });
+
+  var h = '';
+  batchOrder.forEach(function(key, bIdx) {
+    var batch = batches[key];
+    var batchLabel = batch.batch || 'Prescription';
+    var batchTime = batch.time || '';
+
+    // Batch header card
+    h += '<div style="border:1px solid #e2e8f0;border-radius:10px;margin-bottom:14px;overflow:hidden;">';
+    h += '<div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;">';
+    h += '<div style="display:flex;align-items:center;gap:10px;">';
+    h += '<i class="fas fa-prescription" style="color:#6366f1;font-size:1rem;"></i>';
+    h += '<span style="font-weight:700;color:#1e293b;font-size:.88rem;">'+batchLabel+'</span>';
+    h += '<span style="font-size:.78rem;color:#64748b;"><i class="fas fa-clock" style="margin-right:4px;"></i>'+batchTime+'</span>';
+    h += '</div>';
+    h += '<span style="font-size:.75rem;padding:3px 10px;background:#ede9fe;color:#6d28d9;border-radius:20px;font-weight:600;">'+batch.meds.length+' medicine'+(batch.meds.length>1?'s':'')+'</span>';
+    h += '</div>';
+
+    // Medicines table inside this batch
+    h += '<table class="med-table" style="margin:0;"><thead><tr>' +
+      '<th>Medicine</th><th>Dose</th><th>Freq</th><th>Route</th><th>Duration</th><th>Instructions</th>' +
+      '<th style="text-align:center;">Pharmacy</th><th style="text-align:center;">Nurse</th><th>Action</th>' +
+      '</tr></thead><tbody>';
+
+    batch.meds.forEach(function(m) {
+      var sc = m.status==='Active'?'#059669': m.status==='Stopped'?'#ef4444':'#6b7280';
+      var btn = '';
+      if (m.status==='Active') btn='<button onclick="detStopMed('+m.id+')" style="padding:3px 10px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:5px;cursor:pointer;font-size:.75rem;font-weight:600;">Stop</button>';
+      else if (m.status==='Stopped') btn='<button onclick="detRestartMed('+m.id+')" style="padding:3px 10px;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:5px;cursor:pointer;font-size:.75rem;font-weight:600;">Restart</button>';
+
+      var pharmStatus = m.pharmacy_status || 'Pending';
+      var nurseStatus = m.nurse_status || 'Pending';
+      var statusIcon = m.status==='Active'?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#059669;margin-right:4px;"></span>':
+                        m.status==='Stopped'?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-right:4px;"></span>':'';
+
+      h += '<tr><td style="font-weight:600;">'+statusIcon+m.medicine_name+'</td><td>'+(m.dosage||'-')+'</td>' +
+        '<td>'+(m.frequency||'-')+'</td><td>'+(m.route||'-')+'</td><td>'+(m.duration||'-')+'</td>' +
+        '<td style="font-size:.78rem;">'+(m.special_instruction||'')+(m.food_relation?' <em>('+m.food_relation+')</em>':'')+'</td>' +
+        '<td style="text-align:center;">'+_statusBadge(pharmStatus)+'</td>' +
+        '<td style="text-align:center;">'+_statusBadge(nurseStatus)+'</td>' +
+        '<td>'+btn+'</td></tr>';
+    });
+
+    h += '</tbody></table></div>';
+  });
+
+  c.innerHTML = h;
+}
+
+function renderLabsTab(d) {
+  var c = document.getElementById('ipLabOrders');
+  var labs = d.lab_orders || [];
+  if (labs.length === 0) {
+    c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;">No lab orders</div>';
+    return;
+  }
+  var h = '<table class="med-table"><thead><tr><th>Test</th><th>Category</th><th>Status</th><th>Result</th><th>Date</th></tr></thead><tbody>';
+  labs.forEach(function(l) {
+    var sc = l.status==='COMPLETED'?'#059669':l.status==='PENDING'?'#f59e0b':'#3b82f6';
+    h += '<tr><td style="font-weight:600;">'+l.test_name+'</td><td>'+(l.category||'-')+'</td>' +
+      '<td><span style="color:'+sc+';font-weight:600;">'+l.status+'</span></td>' +
+      '<td style="font-size:.78rem;">'+(l.result_preview||'-')+'</td>' +
+      '<td>'+l.created_at+'</td></tr>';
+  });
+  h += '</tbody></table>';
+  c.innerHTML = h;
+}
+
+function renderNotesTab(d) {
+  var c = document.getElementById('ipNotesTimeline');
+  var notes = d.progress_notes || [];
+  if (notes.length === 0) {
+    c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:30px;">No progress notes yet. Click "New Note" to add one.</div>';
+    return;
+  }
+  c.innerHTML = notes.map(function(n) {
+    var html = '<div class="note-item"><div class="note-header">' +
+      '<div class="note-date"><i class="fas fa-clock"></i> '+n.note_time+'</div>' +
+      '<div class="note-doctor">'+n.doctor_name+'</div></div>';
+    if (n.subjective) html += '<div class="soap-section"><div class="soap-label">S - Subjective</div><div class="soap-text">'+n.subjective+'</div></div>';
+    if (n.objective) html += '<div class="soap-section"><div class="soap-label">O - Objective</div><div class="soap-text">'+n.objective+'</div></div>';
+    if (n.assessment) html += '<div class="soap-section"><div class="soap-label">A - Assessment</div><div class="soap-text">'+n.assessment+'</div></div>';
+    if (n.plan) html += '<div class="soap-section"><div class="soap-label">P - Plan</div><div class="soap-text">'+n.plan+'</div></div>';
+    if (n.instructions_to_nurse) html += '<div class="soap-section"><div class="soap-label">Nurse Instructions</div><div class="soap-text">'+n.instructions_to_nurse+'</div></div>';
+    if (n.procedure_notes) html += '<div class="soap-section"><div class="soap-label">Procedures</div><div class="soap-text">'+n.procedure_notes+'</div></div>';
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+function renderNurseTab(d) {
+  var c = document.getElementById('ipNurseNotes');
+  var notes = d.nurse_notes || [];
+  if (notes.length === 0) {
+    c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;">No nurse notes recorded</div>';
+    return;
+  }
+  c.innerHTML = notes.map(function(n) {
+    return '<div class="nurse-note"><div style="display:flex;justify-content:space-between;"><strong style="font-size:.82rem;color:#92400e;">'+n.nurse+'</strong>' +
+      '<span style="font-size:.75rem;color:#94a3b8;">'+n.recorded_at+'</span></div>' +
+      '<div style="font-size:.85rem;color:#334155;margin-top:4px;">'+n.note+'</div></div>';
+  }).join('');
+}
+
+function renderTreatmentTab(d) {
+  var c = document.getElementById('ipTreatmentPlan');
+  var notes = (d.progress_notes || []).filter(function(n) { return n.plan || n.procedure_notes; });
+  if (notes.length === 0) {
+    c.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:30px;">No treatment plan entries. Add progress notes with Plan section.</div>';
+    return;
+  }
+  c.innerHTML = notes.map(function(n) {
+    var html = '<div class="ip-card"><div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+      '<span style="font-size:.82rem;font-weight:700;color:#06b6d4;">'+n.note_time+'</span>' +
+      '<span style="font-size:.78rem;color:#64748b;">'+n.doctor_name+'</span></div>';
+    if (n.plan) html += '<div style="margin-bottom:6px;"><strong style="font-size:.78rem;color:#f59e0b;">Plan:</strong> <span style="font-size:.85rem;">'+n.plan+'</span></div>';
+    if (n.procedure_notes) html += '<div><strong style="font-size:.78rem;color:#8b5cf6;">Procedures:</strong> <span style="font-size:.85rem;">'+n.procedure_notes+'</span></div>';
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+/* ── Detail page actions ── */
+function openDetailNoteForm() { document.getElementById('detNoteForm').style.display = 'block'; }
+
+/* ── Lab Request from IP Patient Detail ── */
+function submitIPLabRequest() {
+    var selectEl = document.getElementById('ipLabTestName');
+    var customEl = document.getElementById('ipLabCustomTest');
+    var notesEl = document.getElementById('ipLabNotes');
+    var msgEl = document.getElementById('ipLabRequestMsg');
+
+    var testName = customEl.value.trim() || selectEl.value;
+    if (!testName) {
+        msgEl.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Please select or type a test name</span>';
+        return;
+    }
+
+    msgEl.innerHTML = '<span style="color:#8b5cf6;"><i class="fas fa-spinner fa-spin"></i> Submitting...</span>';
+
+    fetch('{{ url_for("doctor.api_request_lab_test") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            patient_id: {{ patient.id }},
+            test_name: testName,
+            notes: notesEl.value.trim()
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            msgEl.innerHTML = '<span style="color:#059669;"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+            selectEl.value = '';
+            customEl.value = '';
+            notesEl.value = '';
+            // Refresh the labs tab after 1 second
+            setTimeout(function() {
+                loadIPDetail();
+                msgEl.innerHTML = '';
+            }, 1500);
+        } else {
+            msgEl.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-times-circle"></i> ' + (data.error || 'Failed to submit') + '</span>';
+        }
+    })
+    .catch(function(err) {
+        msgEl.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-times-circle"></i> Network error: ' + err.message + '</span>';
+    });
+}
+
+/* ═══ Multi-medicine form with autocomplete + voice ═══ */
+
+var _medRowCounter = 0;
+
+function openIPMedAddForm() {
+  var form = document.getElementById('ipMedAddForm');
+  form.style.display = 'block';
+  var body = document.getElementById('medQueueBody');
+  if (body.children.length === 0) addMedRow();
+  // Scroll the form into view
+  setTimeout(function() { form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  console.log('[IP] Add medicine form opened');
+}
+
+function _escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function _escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function addMedRow(prefill) {
+  var p = prefill || {};
+  var idx = _medRowCounter++;
+  var is = 'style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:.82rem;"';
+  var row = document.createElement('tr');
+  row.id = 'medRow' + idx;
+  var nm = _escAttr(p.medicine_name);
+  var ds = _escAttr(p.dosage);
+  var dr = _escAttr(p.duration);
+  var si = _escAttr(p.special_instruction);
+  row.innerHTML =
+    '<td><input '+is+' placeholder="Type medicine..." value="'+nm+'" class="mq-name" autocomplete="off" data-row="'+idx+'" oninput="medAcSearch(this)" onfocus="medAcSearch(this)" onkeydown="medAcKey(event,this)" onblur="setTimeout(function(){medAcClose()},200)"></td>' +
+    '<td><input '+is+' placeholder="500mg" value="'+ds+'" class="mq-dosage"></td>' +
+    '<td><select '+is+' class="mq-route"><option value="Oral"'+(p.route==='Oral'?' selected':'')+'>Oral</option><option value="IV"'+(p.route==='IV'?' selected':'')+'>IV</option><option value="IM"'+(p.route==='IM'?' selected':'')+'>IM</option><option value="SC"'+(p.route==='SC'?' selected':'')+'>SC</option><option value="Topical"'+(p.route==='Topical'?' selected':'')+'>Topical</option><option value="Nebulization"'+(p.route==='Nebulization'?' selected':'')+'>Nebulization</option><option value="Sublingual"'+(p.route==='Sublingual'?' selected':'')+'>Sublingual</option></select></td>' +
+    '<td><select '+is+' class="mq-freq"><option value="">--</option><option value="OD"'+(p.frequency==='OD'?' selected':'')+'>OD</option><option value="BD"'+(p.frequency==='BD'?' selected':'')+'>BD</option><option value="TDS"'+(p.frequency==='TDS'?' selected':'')+'>TDS</option><option value="QID"'+(p.frequency==='QID'?' selected':'')+'>QID</option><option value="HS"'+(p.frequency==='HS'?' selected':'')+'>HS</option><option value="SOS"'+(p.frequency==='SOS'?' selected':'')+'>SOS</option><option value="STAT"'+(p.frequency==='STAT'?' selected':'')+'>STAT</option><option value="Q4H"'+(p.frequency==='Q4H'?' selected':'')+'>Q4H</option><option value="Q6H"'+(p.frequency==='Q6H'?' selected':'')+'>Q6H</option><option value="Q8H"'+(p.frequency==='Q8H'?' selected':'')+'>Q8H</option><option value="Q12H"'+(p.frequency==='Q12H'?' selected':'')+'>Q12H</option></select></td>' +
+    '<td><input '+is+' placeholder="5 days" value="'+dr+'" class="mq-duration"></td>' +
+    '<td><select '+is+' class="mq-food"><option value="">N/A</option><option value="Before Food"'+(p.food_relation==='Before Food'?' selected':'')+'>BF</option><option value="After Food"'+(p.food_relation==='After Food'?' selected':'')+'>AF</option><option value="With Food"'+(p.food_relation==='With Food'?' selected':'')+'>WF</option></select></td>' +
+    '<td><input '+is+' placeholder="Notes..." value="'+si+'" class="mq-instr"></td>' +
+    '<td style="text-align:center;"><button onclick="this.closest(\'tr\').remove()" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;" title="Remove"><i class="fas fa-trash-alt"></i></button></td>';
+  document.getElementById('medQueueBody').appendChild(row);
+}
+
+/* ═══ Medicine Autocomplete (appended to body) ═══ */
+var _acTimer = null;
+var _acActiveIdx = -1;
+var _acDrop = null;
+var _acInput = null;
+
+// Create a single dropdown element appended to body (avoids all overflow/clipping issues)
+(function() {
+  _acDrop = document.createElement('div');
+  _acDrop.id = 'globalMedAcDrop';
+  _acDrop.className = 'med-ac-drop';
+  document.body.appendChild(_acDrop);
+})();
+
+function medAcClose() {
+  if (_acDrop) _acDrop.classList.remove('open');
+  _acInput = null;
+}
+
+function medAcSearch(input) {
+  clearTimeout(_acTimer);
+  _acInput = input;
+  var q = input.value.trim();
+  if (q.length < 1) { medAcClose(); return; }
+  _acTimer = setTimeout(function() {
+    fetch('/doctor/api/search-medicine?q=' + encodeURIComponent(q) + '&limit=20')
+      .then(function(r) { return r.json(); })
+      .then(function(names) {
+        if (_acInput !== input) return; // stale response
+        _acActiveIdx = -1;
+        if (!names || names.length === 0) {
+          _acDrop.innerHTML = '<div class="med-ac-empty"><i class="fas fa-pills"></i> No match for "' + _escHtml(q) + '"</div>';
+        } else {
+          var html = '';
+          var qLower = q.toLowerCase();
+          names.forEach(function(name, i) {
+            var nameLower = name.toLowerCase();
+            var matchIdx = nameLower.indexOf(qLower);
+            var display;
+            if (matchIdx >= 0) {
+              display = _escHtml(name.substring(0, matchIdx)) +
+                '<span class="med-ac-match">' + _escHtml(name.substring(matchIdx, matchIdx + q.length)) + '</span>' +
+                _escHtml(name.substring(matchIdx + q.length));
+            } else {
+              display = _escHtml(name);
+            }
+            html += '<div class="med-ac-item" data-value="'+_escAttr(name)+'" onmousedown="medAcPick(\''+_escAttr(name).replace(/'/g,"\\'")+'\')">' +
+              '<i class="fas fa-capsules"></i> ' + display + '</div>';
+          });
+          _acDrop.innerHTML = html;
+        }
+        // Position below the input
+        var rect = input.getBoundingClientRect();
+        _acDrop.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+        _acDrop.style.left = (rect.left + window.scrollX) + 'px';
+        _acDrop.style.width = Math.max(rect.width, 280) + 'px';
+        _acDrop.classList.add('open');
+      })
+      .catch(function(err) { console.error('[MedAC]', err); });
+  }, 150);
+}
+
+function medAcPick(value) {
+  if (_acInput) {
+    _acInput.value = value;
+    // Move focus to dosage
+    var nextInput = _acInput.closest('tr').querySelector('.mq-dosage');
+    if (nextInput) nextInput.focus();
+  }
+  medAcClose();
+}
+
+function medAcKey(e, input) {
+  if (!_acDrop || !_acDrop.classList.contains('open')) return;
+  var items = _acDrop.querySelectorAll('.med-ac-item');
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _acActiveIdx = Math.min(_acActiveIdx + 1, items.length - 1);
+    items.forEach(function(it, i) { it.classList.toggle('active', i === _acActiveIdx); });
+    items[_acActiveIdx].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _acActiveIdx = Math.max(_acActiveIdx - 1, 0);
+    items.forEach(function(it, i) { it.classList.toggle('active', i === _acActiveIdx); });
+    items[_acActiveIdx].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    var sel = (_acActiveIdx >= 0 && _acActiveIdx < items.length) ? items[_acActiveIdx] : items[0];
+    if (sel) medAcPick(sel.getAttribute('data-value'));
+  } else if (e.key === 'Escape') {
+    medAcClose();
+  }
+}
+
+// Close on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('mq-name') && !e.target.closest('#globalMedAcDrop')) {
+    medAcClose();
+  }
+});
+
+function submitAllMeds() {
+  var rows = document.querySelectorAll('#medQueueBody tr');
+  var meds = [];
+  rows.forEach(function(row) {
+    var name = row.querySelector('.mq-name').value.trim();
+    if (!name) return;
+    meds.push({
+      medicine_name: name,
+      dosage: row.querySelector('.mq-dosage').value.trim(),
+      route: row.querySelector('.mq-route').value,
+      frequency: row.querySelector('.mq-freq').value,
+      duration: row.querySelector('.mq-duration').value.trim(),
+      food_relation: row.querySelector('.mq-food').value,
+      special_instruction: row.querySelector('.mq-instr').value.trim()
+    });
+  });
+  if (meds.length === 0) { alert('Add at least one medicine'); return; }
+
+  var btn = document.querySelector('#ipMedAddForm .btn-green-ip');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+  fetch('/doctor/api/ip/medication/add', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ admission_id: ADM_ID, medicines: meds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      document.getElementById('ipMedAddForm').style.display = 'none';
+      document.getElementById('medQueueBody').innerHTML = '';
+      _medRowCounter = 0;
+      alert(d.message || 'Medicines saved');
+      loadIPDetail();
+    } else {
+      alert('Error: ' + (d.error || 'Failed to save'));
+    }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All Medicines'; }
+  })
+  .catch(function(err) {
+    console.error('[IP Med] Save error:', err);
+    alert('Network error — check console');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All Medicines'; }
+  });
+}
+
+/* ═══ Voice Prescription ═══ */
+var _voiceRecording = false;
+var _voiceMediaRec = null;
+
+function startVoiceMedicine() {
+  var btn = document.getElementById('voiceMedBtn');
+  var status = document.getElementById('voiceMedStatus');
+  var statusText = document.getElementById('voiceMedStatusText');
+
+  if (_voiceRecording) { stopVoiceRecording(); return; }
+
+  // Try browser Web Speech API first (faster, no server round-trip)
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var rec = new SpeechRec();
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.lang = 'en-IN';
+
+    _voiceRecording = true;
+    btn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+    btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+    status.style.display = 'block';
+    statusText.innerHTML = '<i class="fas fa-circle" style="color:#ef4444;animation:pulse 1s infinite;"></i> Listening... speak medicine names';
+
+    rec.onresult = function(e) {
+      var text = e.results[0][0].transcript;
+      statusText.textContent = 'Processing: "' + text + '"';
+      processVoiceText(text);
+    };
+    rec.onerror = function(e) {
+      console.error('Speech error:', e.error);
+      statusText.textContent = 'Speech error: ' + e.error;
+      resetVoiceBtn();
+    };
+    rec.onend = function() { resetVoiceBtn(); };
+    rec.start();
+    window._speechRec = rec;
+    return;
+  }
+
+  // Fallback: record audio and send to /voice/transcribe
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    _voiceRecording = true;
+    btn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+    btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+    status.style.display = 'block';
+    statusText.innerHTML = '<i class="fas fa-circle" style="color:#ef4444;"></i> Recording... speak medicine names';
+
+    var chunks = [];
+    _voiceMediaRec = new MediaRecorder(stream);
+    _voiceMediaRec.ondataavailable = function(e) { chunks.push(e.data); };
+    _voiceMediaRec.onstop = function() {
+      stream.getTracks().forEach(function(t) { t.stop(); });
+      statusText.textContent = 'Transcribing...';
+      var blob = new Blob(chunks, { type: 'audio/webm' });
+      var fd = new FormData();
+      fd.append('audio', blob, 'voice.webm');
+      fetch('/voice/transcribe', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.success && d.text) processVoiceText(d.text);
+          else { statusText.textContent = 'No speech detected'; setTimeout(function(){status.style.display='none';},2000); }
+        })
+        .catch(function() { statusText.textContent = 'Transcription failed'; });
+    };
+    _voiceMediaRec.start();
+  }).catch(function(e) {
+    alert('Microphone access denied: ' + e.message);
+  });
+}
+
+function stopVoiceRecording() {
+  if (window._speechRec) { window._speechRec.stop(); window._speechRec = null; }
+  if (_voiceMediaRec && _voiceMediaRec.state === 'recording') { _voiceMediaRec.stop(); }
+  resetVoiceBtn();
+}
+
+function resetVoiceBtn() {
+  _voiceRecording = false;
+  var btn = document.getElementById('voiceMedBtn');
+  btn.innerHTML = '<i class="fas fa-microphone"></i> Voice Prescribe';
+  btn.style.background = 'linear-gradient(135deg,#8b5cf6,#6d28d9)';
+}
+
+function _mapVoiceMedicine(m) {
+  // Map voice service fields -> addMedRow() fields
+  var medName = m.name || m.medicine_name || '';
+  var inst = m.instructions || m.special_instruction || '';
+  var foodRel = m.food_relation || '';
+  var freq = m.frequency || '';
+
+  // Normalize frequency codes (voice service may return TID, frontend uses TDS)
+  var freqMap = {'TID':'TDS', 'tid':'TDS', 'BID':'BD', 'bid':'BD', 'QD':'OD', 'qd':'OD'};
+  if (freqMap[freq]) freq = freqMap[freq];
+
+  // Voice service puts food relation in "instructions" field — extract it
+  if (!foodRel && inst) {
+    var instLower = inst.toLowerCase();
+    if (instLower.indexOf('after food') !== -1 || instLower.indexOf('after meal') !== -1 || instLower.indexOf('post meal') !== -1) {
+      foodRel = 'After Food';
+      inst = '';
+    } else if (instLower.indexOf('before food') !== -1 || instLower.indexOf('before meal') !== -1 || instLower.indexOf('pre meal') !== -1) {
+      foodRel = 'Before Food';
+      inst = '';
+    } else if (instLower.indexOf('with food') !== -1 || instLower.indexOf('with meal') !== -1 || instLower.indexOf('during meal') !== -1) {
+      foodRel = 'With Food';
+      inst = '';
+    } else if (instLower.indexOf('empty stomach') !== -1) {
+      foodRel = 'Before Food';
+      inst = '';
+    }
+  }
+
+  return {
+    medicine_name: medName,
+    dosage: m.dosage || '',
+    frequency: freq,
+    route: m.route || 'Oral',
+    duration: m.duration || '',
+    food_relation: foodRel,
+    special_instruction: inst
+  };
+}
+
+function processVoiceText(text) {
+  var statusText = document.getElementById('voiceMedStatusText');
+  statusText.textContent = 'Parsing: "' + text + '"';
+
+  // Try server-side parsing first
+  fetch('/voice/browser-speech-correct', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ text: text })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('API returned ' + r.status);
+    return r.json();
+  })
+  .then(function(d) {
+    console.log('[VoiceRx] API response:', JSON.stringify(d));
+    var medicines = [];
+    if (d.medicines && d.medicines.length > 0) {
+      medicines = d.medicines.map(_mapVoiceMedicine);
+    } else if (d.corrected_text) {
+      // API succeeded but no structured medicines — use corrected text as fallback
+      var parts = (d.corrected_text || text).split(/,|\band\b|\bwith\b/i);
+      parts.forEach(function(p) {
+        var t = p.trim();
+        if (t.length > 1) medicines.push({ medicine_name: t, dosage:'', frequency:'', route:'Oral', duration:'', food_relation:'', special_instruction:'' });
+      });
+    } else {
+      // Fallback: split raw text by comma/and and create basic entries
+      var parts = text.split(/,|\band\b/i);
+      parts.forEach(function(p) {
+        var t = p.trim();
+        if (t.length > 1) medicines.push({ medicine_name: t, dosage:'', frequency:'', route:'Oral', duration:'', food_relation:'', special_instruction:'' });
+      });
+    }
+
+    // Filter out entries with empty medicine name
+    medicines = medicines.filter(function(m) { return m.medicine_name && m.medicine_name.length > 0; });
+
+    if (medicines.length > 0) {
+      medicines.forEach(function(m) {
+        console.log('[VoiceRx] Adding row:', JSON.stringify(m));
+        addMedRow(m);
+      });
+      statusText.textContent = medicines.length + ' medicine(s) added from voice';
+    } else {
+      // Last resort: put the raw text in a single row
+      console.log('[VoiceRx] No parsed medicines, adding raw text:', text);
+      addMedRow({ medicine_name: text });
+      statusText.textContent = 'Added raw text as medicine entry';
+    }
+    setTimeout(function() { document.getElementById('voiceMedStatus').style.display = 'none'; }, 2500);
+  })
+  .catch(function(err) {
+    console.error('[VoiceRx] Error:', err);
+    // Fallback: just add raw text
+    addMedRow({ medicine_name: text });
+    statusText.textContent = 'Added as text (no parsing available)';
+    setTimeout(function() { document.getElementById('voiceMedStatus').style.display = 'none'; }, 2000);
+  });
+}
+
+function submitDetailNote() {
+  fetch('/doctor/api/ip/progress-note/save', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      admission_id: ADM_ID,
+      subjective: document.getElementById('detNoteS').value,
+      objective: document.getElementById('detNoteO').value,
+      assessment: document.getElementById('detNoteA').value,
+      plan: document.getElementById('detNoteP').value,
+      instructions_to_nurse: document.getElementById('detNoteNurse').value,
+      procedure_notes: document.getElementById('detNoteProcedure').value
+    })
+  }).then(function(r){return r.json();}).then(function(d){
+    if (d.success) { document.getElementById('detNoteForm').style.display='none'; loadIPDetail(); }
+    else alert(d.error||'Failed');
+  });
+}
+
+function detStopMed(medId) {
+  if (!confirm('Stop this medication?')) return;
+  var reason = prompt('Reason:') || '';
+  fetch('/doctor/api/ip/medication/'+medId+'/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason:reason})})
+  .then(function(r){return r.json();}).then(function(d){ if(d.success) loadIPDetail(); else alert(d.error); });
+}
+function detRestartMed(medId) {
+  if (!confirm('Restart?')) return;
+  fetch('/doctor/api/ip/medication/'+medId+'/restart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
+  .then(function(r){return r.json();}).then(function(d){ if(d.success) loadIPDetail(); else alert(d.error); });
+}
+
+// Load on page ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadIPDetail);
+} else {
+  loadIPDetail();
+}
+</script>
+{% endblock %}

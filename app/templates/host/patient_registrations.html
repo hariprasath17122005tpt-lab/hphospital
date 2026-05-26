@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Patient Registrations - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Patient Registrations' %}
+{% set breadcrumb_current = 'Patient Registrations' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-user-plus me-2"></i>Patient Registrations</h1>
+                <p class="wc-subtitle">Chronological view of all patient registrations</p>
+            </div>
+            <div>
+                <span class="wc-badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.9rem;padding:8px 18px;">
+                    <i class="fas fa-users me-1"></i> {{ total }} Total Patients
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ total }}</div>
+                <div class="wc-stat-label">Total Registrations</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-user-check"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ patients|rejectattr('is_walk_in')|list|length }}</div>
+                <div class="wc-stat-label">Registered Patients</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-walking"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ patients|selectattr('is_walk_in')|list|length }}</div>
+                <div class="wc-stat-label">Walk-in Patients</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-file-medical"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ per_page }}</div>
+                <div class="wc-stat-label">Per Page</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registrations Table -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-clipboard-list me-2"></i>All Registrations</h3>
+            <span style="color:var(--wc-text-muted);font-size:.88rem;">Page {{ page }} of {{ ((total - 1) // per_page + 1) if total > 0 else 1 }}</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>UHID</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Type</th>
+                            <th>Registered Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ (page - 1) * per_page + loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;background:rgba(37,99,235,.1);color:var(--wc-primary);">
+                                        {{ patient.full_name[0]|upper if patient.full_name else '?' }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ patient.full_name }}</span>
+                                </div>
+                            </td>
+                            <td><code style="color:var(--wc-primary);font-weight:600;">{{ patient.uhid or '-' }}</code></td>
+                            <td style="white-space:nowrap;">
+                                <i class="fas fa-phone me-1" style="color:var(--wc-text-muted);font-size:.75rem;"></i>
+                                {{ patient.phone or '-' }}
+                            </td>
+                            <td>{{ patient.age or '-' }}</td>
+                            <td>
+                                {% if patient.gender %}
+                                    {% if patient.gender|lower == 'male' %}
+                                        <span class="wc-badge wc-badge-primary"><i class="fas fa-mars me-1"></i>Male</span>
+                                    {% elif patient.gender|lower == 'female' %}
+                                        <span class="wc-badge" style="background:rgba(236,72,153,.1);color:#ec4899;"><i class="fas fa-venus me-1"></i>Female</span>
+                                    {% else %}
+                                        <span class="wc-badge wc-badge-dark">{{ patient.gender }}</span>
+                                    {% endif %}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td>
+                                {% if patient.is_walk_in %}
+                                    <span class="wc-badge wc-badge-warning"><i class="fas fa-walking me-1"></i>Walk-in</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-user-check me-1"></i>Registered</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                <i class="far fa-calendar me-1"></i>
+                                {{ patient.created_at.strftime('%b %d, %Y %H:%M') if patient.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="wc-empty-state">
+                                    <i class="fas fa-user-plus"></i>
+                                    <h4>No Patient Registrations</h4>
+                                    <p>No patients have been registered yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% set total_pages = ((total - 1) // per_page + 1) if total > 0 else 1 %}
+    {% if total_pages > 1 %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:24px;">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="wc-btn wc-btn-sm wc-btn-primary">{{ p }}</span>
+            {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                <a href="?page={{ p }}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">{{ p }}</a>
+            {% elif p == 4 or p == total_pages - 3 %}
+                <span style="color:var(--wc-text-muted);">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

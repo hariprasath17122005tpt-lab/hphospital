@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Discharge Summary - {{ admission.ip_number }}{% endblock %}
+{% block content %}
+<style>
+.ds-page{padding:16px 20px;max-width:960px;margin:0 auto;font-family:'Inter',sans-serif}
+.ds-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:14px}
+.ds-title{font-size:0.92rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;color:#0c4a6e}
+.ds-title i{font-size:0.85rem}
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:0.78rem;font-weight:600;color:#334155;margin-bottom:2px}
+.fg textarea,.fg input,.fg select{width:100%;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.88rem}
+.fg textarea:focus,.fg input:focus,.fg select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pt-strip{padding:10px 14px;background:#f0f4ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:16px;font-size:0.85rem}
+.pt-strip strong{color:#1e40af}
+.btn-save{background:#059669;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem}
+.btn-discharge{background:#dc2626;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem}
+.btn-out{background:#fff;color:#334155;border:1px solid #e2e8f0;padding:10px 24px;border-radius:8px;font-weight:600;cursor:pointer;text-decoration:none;font-size:0.9rem}
+.toast{position:fixed;top:16px;right:16px;z-index:10000;padding:10px 20px;border-radius:8px;font-weight:600;font-size:0.85rem;display:none}
+.toast-ok{background:#059669;color:#fff}.toast-err{background:#dc2626;color:#fff}
+</style>
+
+<div class="ds-page">
+    <div id="toast" class="toast"></div>
+
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:14px;"><i class="fas fa-file-medical" style="color:#0c4a6e;"></i> Discharge Summary — {{ admission.ip_number }}</h2>
+
+    <div class="pt-strip">
+        <span><strong>Patient:</strong> {{ admission.patient.full_name }}</span>
+        <span><strong>UHID:</strong> {{ admission.patient.uhid }}</span>
+        <span><strong>Age/Gender:</strong> {{ admission.patient.age or 'N/A' }} / {{ admission.patient.gender or 'N/A' }}</span>
+        <span><strong>IP:</strong> {{ admission.ip_number }}</span>
+        <span><strong>Admitted:</strong> {{ admission.admission_date.strftime('%d %b %Y') if admission.admission_date else 'N/A' }}</span>
+        <span><strong>Doctor:</strong> Dr. {{ admission.doctor.first_name }} {{ admission.doctor.last_name }}</span>
+    </div>
+
+    <div class="ds-card">
+        <div class="ds-title"><i class="fas fa-notes-medical"></i> Clinical Details</div>
+        <div class="row2">
+            <div class="fg"><label>Presenting Complaints</label><textarea id="fComplaints" rows="2">{{ summary.presenting_complaints or '' if summary else '' }}</textarea></div>
+            <div class="fg"><label>History of Present Illness</label><textarea id="fHPI" rows="2">{{ summary.history_of_illness or '' if summary else '' }}</textarea></div>
+        </div>
+        <div class="row2">
+            <div class="fg"><label>Past History</label><textarea id="fPastHx" rows="2">{{ summary.past_history or '' if summary else '' }}</textarea></div>
+            <div class="fg"><label>Examination Findings</label><textarea id="fExam" rows="2">{{ summary.examination_findings or '' if summary else '' }}</textarea></div>
+        </div>
+        <div class="fg"><label>Diagnosis</label><textarea id="fDiag" rows="2">{{ summary.diagnosis or admission.provisional_diagnosis or '' if summary else admission.provisional_diagnosis or '' }}</textarea></div>
+        <div class="fg"><label>Investigations</label><textarea id="fInvest" rows="2">{{ summary.investigations or '' if summary else '' }}</textarea></div>
+        <div class="fg"><label>Course in Hospital</label><textarea id="fCourse" rows="3">{{ summary.course_in_hospital or '' if summary else '' }}</textarea></div>
+    </div>
+
+    <div class="ds-card">
+        <div class="ds-title"><i class="fas fa-prescription-bottle-alt"></i> Treatment & Discharge</div>
+        <div class="row2">
+            <div class="fg"><label>Treatment Given</label><textarea id="fTreatment" rows="2">{{ summary.treatment_given or '' if summary else '' }}</textarea></div>
+            <div class="fg"><label>Procedures Done</label><textarea id="fProc" rows="2">{{ summary.procedures_done or '' if summary else '' }}</textarea></div>
+        </div>
+        <div class="row2">
+            <div class="fg">
+                <label>Condition at Discharge</label>
+                <select id="fCondition">
+                    {% for c in ['Stable', 'Improved', 'Unchanged', 'Critical', 'LAMA'] %}
+                    <option value="{{ c }}" {% if summary and summary.condition_at_discharge == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="fg"><label>Follow-up Date</label><input type="date" id="fFollowup" value="{{ summary.follow_up_date.strftime('%Y-%m-%d') if summary and summary.follow_up_date else '' }}"></div>
+        </div>
+        <div class="fg"><label>Medicines at Discharge</label><textarea id="fMeds" rows="2" placeholder="List medicines with dosage...">{{ summary.medicines_at_discharge or '' if summary else '' }}</textarea></div>
+        <div class="row2">
+            <div class="fg"><label>Discharge Advice</label><textarea id="fAdvice" rows="2">{{ summary.discharge_advice or '' if summary else '' }}</textarea></div>
+            <div class="fg"><label>Diet Advice</label><textarea id="fDiet" rows="2">{{ summary.diet_advice or '' if summary else '' }}</textarea></div>
+        </div>
+        <div class="fg"><label>Follow-up Instructions</label><textarea id="fFollowInstr" rows="2">{{ summary.follow_up_instructions or '' if summary else '' }}</textarea></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;">
+        <button class="btn-save" onclick="saveSummary(false)"><i class="fas fa-save"></i> Save Summary (Draft)</button>
+        {% if admission.admission_status == 'Admitted' %}
+        <button class="btn-discharge" onclick="if(confirm('Discharge this patient? This will free the bed and close the admission.'))saveSummary(true)">
+            <i class="fas fa-sign-out-alt"></i> Save & Discharge Patient
+        </button>
+        {% endif %}
+        <a href="{{ url_for('ip_billing.view_admission', admission_id=admission.id) }}" class="btn-out"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <div id="saveResult" style="display:none;padding:14px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;margin-bottom:20px;">
+        <strong style="color:#059669;" id="saveMsg"></strong>
+        <div style="margin-top:8px;" id="saveActions"></div>
+    </div>
+</div>
+
+<script>
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+function toast(msg,ok){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(ok?'toast-ok':'toast-err');t.style.display='block';setTimeout(()=>t.style.display='none',3000);}
+
+async function saveSummary(markDischarged) {
+    const payload = {
+        admission_id: {{ admission.id }},
+        presenting_complaints: document.getElementById('fComplaints').value,
+        history_of_illness: document.getElementById('fHPI').value,
+        past_history: document.getElementById('fPastHx').value,
+        examination_findings: document.getElementById('fExam').value,
+        diagnosis: document.getElementById('fDiag').value,
+        investigations: document.getElementById('fInvest').value,
+        course_in_hospital: document.getElementById('fCourse').value,
+        treatment_given: document.getElementById('fTreatment').value,
+        procedures_done: document.getElementById('fProc').value,
+        condition_at_discharge: document.getElementById('fCondition').value,
+        medicines_at_discharge: document.getElementById('fMeds').value,
+        discharge_advice: document.getElementById('fAdvice').value,
+        diet_advice: document.getElementById('fDiet').value,
+        follow_up_instructions: document.getElementById('fFollowInstr').value,
+        follow_up_date: document.getElementById('fFollowup').value,
+        mark_discharged: markDischarged,
+    };
+
+    const r = await fetch('/ip-billing/api/discharge/save', {
+        method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+        body:JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if(d.success){
+        toast(markDischarged?'Patient discharged successfully':'Summary saved',true);
+        document.getElementById('saveMsg').textContent = markDischarged ? 'Patient discharged!' : 'Summary saved';
+        document.getElementById('saveActions').innerHTML = `
+            <a href="/ip-billing/discharge/{{ admission.id }}/print" style="padding:6px 14px;background:#0c4a6e;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.85rem;"><i class="fas fa-print"></i> Print Summary</a>
+            <a href="/ip-billing/admission/{{ admission.id }}" style="padding:6px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.85rem;">View Admission</a>
+        `;
+        document.getElementById('saveResult').style.display='block';
+        document.getElementById('saveResult').scrollIntoView({behavior:'smooth'});
+    }else toast(d.error||'Failed',false);
+}
+</script>
+{% endblock %}

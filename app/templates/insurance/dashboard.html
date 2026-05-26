@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Insurance & TPA — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-shield-alt me-2"></i>Insurance & TPA</h1>
+                <p class="wc-subtitle">Policy management, claim processing & TPA coordination</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('insurance.add_policy') }}" class="wc-btn wc-btn-outline"><i class="fas fa-plus me-1"></i>Add Policy</a>
+                <a href="{{ url_for('insurance.create_claim') }}" class="wc-btn wc-btn-primary"><i class="fas fa-file-alt me-2"></i>New Claim</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue"><div class="wc-stat-icon"><i class="fas fa-file-contract"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.active_policies }}</div><div class="wc-stat-label">Active Policies</div></div></div>
+        <div class="wc-stat-card wc-stat-orange"><div class="wc-stat-icon"><i class="fas fa-clock"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.pending_claims }}</div><div class="wc-stat-label">Pending Claims</div></div></div>
+        <div class="wc-stat-card wc-stat-green"><div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ "%.0f"|format(stats.total_approved) }}</div><div class="wc-stat-label">Total Approved (₹)</div></div></div>
+        <div class="wc-stat-card wc-stat-purple"><div class="wc-stat-icon"><i class="fas fa-search"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.under_review }}</div><div class="wc-stat-label">Under Review</div></div></div>
+    </div>
+
+    <div class="wc-card">
+        <div class="wc-card-header"><h3><i class="fas fa-list me-2"></i>Recent Claims</h3></div>
+        <div class="wc-card-body">
+            {% if claims %}
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Claim #</th><th>Patient</th><th>Provider</th><th>Type</th><th>Amount (₹)</th><th>Approved (₹)</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for c in claims %}
+                        <tr>
+                            <td><strong>{{ c.claim_number or 'N/A' }}</strong></td>
+                            <td>{{ c.patient.full_name if c.patient else 'N/A' }}</td>
+                            <td>{{ c.policy.provider_name if c.policy else 'N/A' }}</td>
+                            <td>{{ c.claim_type }}</td>
+                            <td>₹{{ "%.0f"|format(c.claim_amount) }}</td>
+                            <td>₹{{ "%.0f"|format(c.approved_amount) }}</td>
+                            <td>
+                                {% if c.status == 'Approved' or c.status == 'Settled' %}
+                                <span class="wc-badge wc-badge-success">{{ c.status }}</span>
+                                {% elif c.status == 'Rejected' %}
+                                <span class="wc-badge wc-badge-danger">Rejected</span>
+                                {% elif c.status == 'Under Review' %}
+                                <span class="wc-badge wc-badge-warning">Under Review</span>
+                                {% else %}
+                                <span class="wc-badge wc-badge-info">{{ c.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if c.status in ('Initiated', 'Submitted') %}
+                                <button class="wc-btn wc-btn-sm wc-btn-success" onclick="updateClaim({{ c.id }}, 'Approved', {{ c.claim_amount }})">Approve</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="wc-empty-state"><i class="fas fa-shield-alt"></i><h4>No Claims Yet</h4><p>Start by adding insurance policies for patients.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updateClaim(claimId, status, amount) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("insurance.update_claim") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({claim_id: claimId, status: status, approved_amount: amount})
+    }).then(r => r.json()).then(data => { if(data.success) location.reload(); });
+}
+</script>
+{% endblock %}

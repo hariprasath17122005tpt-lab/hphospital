@@ -1,0 +1,881 @@
+{% extends "base.html" %}
+{% block title %}Consultation - {{ patient.full_name }} - CarePoint{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   HOSPITAL CONSULTATION PAGE — PROFESSIONAL THEME
+   ═══════════════════════════════════════════════════ */
+:root {
+  --cp-bg: #f0f4f8; --cp-card: #ffffff; --cp-border: #e2e8f0;
+  --cp-primary: #2563eb; --cp-primary-light: #dbeafe;
+  --cp-danger: #dc2626; --cp-danger-light: #fef2f2; --cp-danger-bg: #fee2e2;
+  --cp-warning: #d97706; --cp-warning-light: #fffbeb; --cp-warning-bg: #fef3c7;
+  --cp-success: #059669; --cp-success-light: #ecfdf5;
+  --cp-purple: #7c3aed; --cp-purple-light: #f5f3ff;
+  --cp-teal: #0d9488; --cp-teal-light: #f0fdfa;
+  --cp-text: #1e293b; --cp-muted: #64748b; --cp-radius: 10px;
+}
+.cp-page { padding: 16px 20px; font-family: 'Inter', sans-serif; background: var(--cp-bg); min-height: 100vh; max-width: 1200px; margin: 0 auto; }
+
+/* Header bar */
+.cp-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--cp-card); padding: 12px 20px; border-radius: var(--cp-radius);
+  border: 1px solid var(--cp-border); margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.cp-topbar h2 { margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--cp-text); }
+.cp-topbar h2 i { color: var(--cp-primary); }
+.cp-badge { background: var(--cp-primary-light); color: var(--cp-primary); padding: 5px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: 600; }
+
+/* Section card */
+.cp-section {
+  background: var(--cp-card); border: 1px solid var(--cp-border);
+  border-radius: var(--cp-radius); margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden;
+}
+.cp-section-hdr {
+  padding: 10px 16px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--cp-border); background: #f8fafc;
+}
+.cp-section-hdr h5 { margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--cp-text); display: flex; align-items: center; gap: 8px; }
+.cp-section-hdr .icon-box {
+  width: 28px; height: 28px; border-radius: 7px; display: flex;
+  align-items: center; justify-content: center; font-size: 0.78rem;
+}
+.cp-section-body { padding: 16px; }
+
+/* Alert badges */
+.cp-alert {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; margin: 2px 3px;
+}
+.cp-alert-danger { background: var(--cp-danger-bg); color: var(--cp-danger); }
+.cp-alert-warning { background: var(--cp-warning-bg); color: var(--cp-warning); }
+.cp-alert-purple { background: #ede9fe; color: var(--cp-purple); }
+.cp-alert-info { background: var(--cp-primary-light); color: var(--cp-primary); }
+
+/* Info grid */
+.cp-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.cp-info-cell { text-align: center; padding: 8px 6px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--cp-border); }
+.cp-info-cell .lbl { font-size: 0.65rem; color: var(--cp-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+.cp-info-cell .val { font-size: 0.92rem; font-weight: 700; color: var(--cp-text); margin-top: 1px; }
+
+/* History fields */
+.cp-hist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cp-hist-item label { font-size: 0.72rem; font-weight: 700; color: var(--cp-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; display: block; }
+.cp-hist-val { font-size: 0.85rem; color: var(--cp-text); padding: 6px 10px; background: #f8fafc; border: 1px solid var(--cp-border); border-radius: 6px; min-height: 32px; }
+.cp-hist-edit { width: 100%; font-size: 0.85rem; padding: 6px 10px; border: 1px solid var(--cp-border); border-radius: 6px; resize: vertical; display: none; }
+.cp-hist-item.editing .cp-hist-val { display: none; }
+.cp-hist-item.editing .cp-hist-edit { display: block; }
+
+/* Form */
+.cp-fg { margin-bottom: 12px; }
+.cp-fg label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--cp-text); margin-bottom: 3px; }
+.cp-fg input, .cp-fg textarea, .cp-fg select {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--cp-border);
+  border-radius: 7px; font-size: 0.88rem; color: var(--cp-text); transition: border-color 0.2s;
+}
+.cp-fg input:focus, .cp-fg textarea:focus, .cp-fg select:focus {
+  outline: none; border-color: var(--cp-primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.12);
+}
+.cp-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cp-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.cp-row4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+/* Rx table */
+.cp-rx-wrap { overflow-x: auto; }
+.cp-rx-tbl { width: 100%; border-collapse: collapse; min-width: 900px; }
+.cp-rx-tbl th { background: #f1f5f9; padding: 8px 8px; font-size: 0.72rem; font-weight: 700; color: var(--cp-muted); text-transform: uppercase; text-align: left; border-bottom: 2px solid var(--cp-border); white-space: nowrap; }
+.cp-rx-tbl td { padding: 6px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.cp-rx-tbl input, .cp-rx-tbl select { width: 100%; padding: 5px 6px; border: 1px solid var(--cp-border); border-radius: 5px; font-size: 0.82rem; }
+.cp-rx-tbl .rx-del { background: var(--cp-danger-light); color: var(--cp-danger); border: none; border-radius: 5px; padding: 4px 8px; cursor: pointer; font-size: 0.85rem; }
+.cp-rx-tbl .rx-del:hover { background: var(--cp-danger); color: #fff; }
+.cp-rx-tbl .rx-num { font-size: 0.78rem; font-weight: 700; color: var(--cp-muted); width: 28px; text-align: center; }
+
+/* Buttons */
+.cp-btn { padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.cp-btn-primary { background: var(--cp-primary); color: #fff; }
+.cp-btn-primary:hover { background: #1d4ed8; }
+.cp-btn-success { background: var(--cp-success); color: #fff; }
+.cp-btn-success:hover { background: #047857; }
+.cp-btn-outline { background: transparent; color: var(--cp-primary); border: 1px solid var(--cp-border); }
+.cp-btn-outline:hover { background: var(--cp-primary-light); border-color: var(--cp-primary); }
+.cp-btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
+.cp-btn-lg { padding: 12px 28px; font-size: 0.95rem; border-radius: 10px; }
+
+/* Past consultations */
+.cp-past-row { padding: 10px 14px; border: 1px solid var(--cp-border); border-radius: 7px; margin-bottom: 6px; }
+.cp-past-row:hover { border-color: var(--cp-primary); background: #fafbff; }
+.cp-past-date { font-size: 0.75rem; color: var(--cp-muted); font-weight: 600; }
+.cp-past-diag { font-size: 0.88rem; font-weight: 600; color: var(--cp-text); }
+.cp-past-detail { font-size: 0.8rem; color: var(--cp-muted); }
+
+/* Toast */
+.cp-toast { position: fixed; top: 16px; right: 16px; z-index: 10000; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 0.88rem; display: none; animation: cpSlide 0.3s ease; }
+.cp-toast-ok { background: var(--cp-success); color: #fff; }
+.cp-toast-err { background: var(--cp-danger); color: #fff; }
+@keyframes cpSlide { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Structured tags */
+.cp-tag { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: 600; margin: 2px; }
+.cp-tag .tag-del { cursor: pointer; margin-left: 3px; opacity: 0.4; display: none; }
+.cp-tag .tag-del:hover { opacity: 1; }
+.hist-editing .cp-tag .tag-del { display: inline; }
+
+@media (max-width: 768px) {
+  .cp-hist-grid, .cp-row2, .cp-row3 { grid-template-columns: 1fr; }
+  .cp-row4 { grid-template-columns: 1fr 1fr; }
+  .cp-info-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+
+<div class="cp-page">
+  <div id="cpToast" class="cp-toast"></div>
+  <!-- Hidden alias for voice script fallback (writes unrecognized speech here) -->
+  <textarea id="valNotes" style="display:none;"></textarea>
+
+  <!-- ── TOP BAR ─────────────────────────────────────────── -->
+  <div class="cp-topbar">
+    <h2><i class="fas fa-stethoscope"></i> Doctor Consultation</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="cp-badge"><i class="fas fa-user"></i> {{ patient.full_name }} &middot; {{ patient.uhid }}</span>
+      <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="cp-btn cp-btn-outline cp-btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+  </div>
+
+  <!-- ── VOICE ASSISTANT BAR ─────────────────────────────── -->
+  <div class="cp-section" style="margin-bottom:12px;">
+    <div class="cp-section-body" style="padding:12px 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button class="cp-btn" id="btnVoice" onclick="toggleVoiceRecording()"
+            style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;padding:8px 18px;">
+            <i class="fas fa-microphone"></i> Start Voice Dictation
+          </button>
+          <span class="voice-feedback" id="voiceFeedback" style="font-size:0.82rem;color:var(--cp-muted);">
+            Click and speak prescription. Voice assistant is enabled.
+          </span>
+        </div>
+        <button class="cp-btn cp-btn-outline cp-btn-sm" onclick="window.print()"><i class="fas fa-eye"></i> Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice guide -->
+  <div id="voiceGuide" class="cp-section" style="margin-bottom:12px; border-left:3px solid #8b5cf6;">
+    <div class="cp-section-body" style="padding:10px 16px;">
+      <div style="font-weight:700;color:#7c3aed;font-size:0.82rem;margin-bottom:4px;"><i class="fas fa-robot"></i> Voice Format</div>
+      <div style="font-size:0.82rem;color:var(--cp-muted);">
+        Example: <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;">medicine paracetamol dose 500 mg frequency twice daily duration 5 days instruction after food</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice transcript panel (hidden until recording) -->
+  <div class="voice-transcript-panel" id="voiceTranscriptPanel" style="display:none;background:var(--cp-card);border:1px solid var(--cp-border);border-radius:var(--cp-radius);padding:14px 16px;margin-bottom:12px;">
+    <div class="transcript-header" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;"></div>
+      <span style="font-weight:600;font-size:0.85rem;">Live Dictation</span>
+    </div>
+    <div class="transcript-text" id="transcriptText" style="font-size:0.9rem;color:var(--cp-text);min-height:22px;">Listening...</div>
+    <div class="parsed-pills" id="parsedPills" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION A: PATIENT SUMMARY (PERMANENT DATA)
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section" id="sectionA">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:var(--cp-primary-light);color:var(--cp-primary);"><i class="fas fa-id-card"></i></span> Section A: Patient Summary</h5>
+      <button class="cp-btn cp-btn-outline cp-btn-sm" id="btnEditHist" onclick="toggleHistEdit()"><i class="fas fa-pen"></i> Edit History</button>
+    </div>
+    <div class="cp-section-body">
+      <!-- Demographics -->
+      <div class="cp-info-grid">
+        <div class="cp-info-cell"><div class="lbl">UHID</div><div class="val">{{ patient.uhid }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Name</div><div class="val">{{ patient.full_name }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Age</div><div class="val">{{ patient.age or 'N/A' }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Gender</div><div class="val">{{ patient.gender or 'N/A' }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Phone</div><div class="val">{{ patient.phone or 'N/A' }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Blood Group</div><div class="val">{{ patient.blood_type or 'N/A' }}</div></div>
+        <div class="cp-info-cell"><div class="lbl">Weight</div><div class="val">{{ patient.weight or 'N/A' }}{% if patient.weight %} kg{% endif %}</div></div>
+      </div>
+
+      <!-- Warning Badges -->
+      <div id="warningBadges" style="margin-bottom:10px;">
+        {% if patient.allergies or patient.allergy_history %}
+          <span class="cp-alert cp-alert-danger"><i class="fas fa-exclamation-triangle"></i> Allergy: {{ patient.allergy_history or patient.allergies }}</span>
+        {% endif %}
+        {% if patient.chronic_conditions %}
+          <span class="cp-alert cp-alert-warning"><i class="fas fa-heartbeat"></i> Chronic: {{ patient.chronic_conditions }}</span>
+        {% endif %}
+        {% if patient.family_history %}
+          <span class="cp-alert cp-alert-purple"><i class="fas fa-users"></i> Family: {{ patient.family_history }}</span>
+        {% endif %}
+        {% for e in history_entries %}
+          {% if e.type == 'allergy' %}
+            <span class="cp-alert cp-alert-danger"><i class="fas fa-exclamation-triangle"></i> Allergy: {{ e.condition }}</span>
+          {% elif e.type == 'chronic' %}
+            <span class="cp-alert cp-alert-warning"><i class="fas fa-heartbeat"></i> Chronic: {{ e.condition }}</span>
+          {% elif e.type == 'family' %}
+            <span class="cp-alert cp-alert-purple"><i class="fas fa-users"></i> Family: {{ e.condition }}</span>
+          {% elif e.type == 'medical' %}
+            <span class="cp-alert cp-alert-info"><i class="fas fa-notes-medical"></i> {{ e.condition }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- History text fields -->
+      <div class="cp-hist-grid" id="histFields">
+        <div class="cp-hist-item" data-f="medical_history">
+          <label>Medical History</label>
+          <div class="cp-hist-val">{{ patient.medical_history or 'No records' }}</div>
+          <textarea class="cp-hist-edit" rows="2" name="medical_history">{{ patient.medical_history or '' }}</textarea>
+        </div>
+        <div class="cp-hist-item" data-f="allergy_history">
+          <label>Allergy History</label>
+          <div class="cp-hist-val">{{ patient.allergy_history or patient.allergies or 'None reported' }}</div>
+          <textarea class="cp-hist-edit" rows="2" name="allergy_history">{{ patient.allergy_history or patient.allergies or '' }}</textarea>
+        </div>
+        <div class="cp-hist-item" data-f="chronic_conditions">
+          <label>Chronic Conditions</label>
+          <div class="cp-hist-val">{{ patient.chronic_conditions or 'None reported' }}</div>
+          <textarea class="cp-hist-edit" rows="2" name="chronic_conditions">{{ patient.chronic_conditions or '' }}</textarea>
+        </div>
+        <div class="cp-hist-item" data-f="family_history">
+          <label>Family History</label>
+          <div class="cp-hist-val">{{ patient.family_history or 'None reported' }}</div>
+          <textarea class="cp-hist-edit" rows="2" name="family_history">{{ patient.family_history or '' }}</textarea>
+        </div>
+      </div>
+
+      <!-- Structured entries (edit mode) -->
+      <div id="structPanel" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--cp-border);">
+        <strong style="font-size:0.8rem;">Structured Entries</strong>
+        <div id="structTags" class="mt-1">
+          {% for e in history_entries %}
+          <span class="cp-tag cp-alert-{% if e.type=='allergy' %}danger{% elif e.type=='chronic' %}warning{% elif e.type=='family' %}purple{% else %}info{% endif %}" data-id="{{ e.id }}">
+            {{ e.condition }} <i class="fas fa-times tag-del" onclick="delHistEntry({{ patient.id }}, {{ e.id }}, this)"></i>
+          </span>
+          {% endfor %}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          <select id="newType" style="padding:5px 8px;border:1px solid var(--cp-border);border-radius:5px;font-size:0.82rem;">
+            <option value="medical">Medical</option><option value="allergy">Allergy</option><option value="chronic">Chronic</option><option value="family">Family</option>
+          </select>
+          <input type="text" id="newCond" placeholder="Condition..." style="flex:1;padding:5px 8px;border:1px solid var(--cp-border);border-radius:5px;font-size:0.82rem;min-width:140px;">
+          <button class="cp-btn cp-btn-primary cp-btn-sm" onclick="addStructEntry()"><i class="fas fa-plus"></i> Add</button>
+        </div>
+        <div style="margin-top:10px;text-align:right;">
+          <button class="cp-btn cp-btn-success cp-btn-sm" onclick="saveHistory()"><i class="fas fa-save"></i> Save History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION B: CURRENT VISIT / CONSULTATION
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:var(--cp-success-light);color:var(--cp-success);"><i class="fas fa-notes-medical"></i></span> Section B: Current Consultation</h5>
+      <span style="font-size:0.78rem;color:var(--cp-muted);"><i class="fas fa-calendar"></i> {{ now().strftime('%B %d, %Y %I:%M %p') if now is defined else '' }}</span>
+    </div>
+    <div class="cp-section-body">
+      <div class="cp-fg">
+        <label><i class="fas fa-comment-medical" style="color:var(--cp-primary);"></i> Chief Complaint</label>
+        <textarea id="fChiefComplaint" rows="2" placeholder="Patient's primary complaint..."></textarea>
+      </div>
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label>History of Present Illness / Present Condition</label>
+          <textarea id="fPresentCondition" rows="3" placeholder="Onset, duration, severity, progression..."></textarea>
+        </div>
+        <div class="cp-fg">
+          <label>Past Medication Relevant to This Visit</label>
+          <textarea id="fPastMedication" rows="3" placeholder="Current medicines, past treatments..."></textarea>
+        </div>
+      </div>
+      <div class="cp-fg">
+        <label>Examination Notes</label>
+        <textarea id="fExamNotes" rows="3" placeholder="Physical examination findings, system-wise examination..."></textarea>
+      </div>
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label><i class="fas fa-search" style="color:var(--cp-warning);"></i> Provisional Diagnosis</label>
+          <textarea id="fProvDiag" rows="2" placeholder="Working / provisional diagnosis..."></textarea>
+        </div>
+        <div class="cp-fg">
+          <label><i class="fas fa-check-circle" style="color:var(--cp-success);"></i> Final Diagnosis</label>
+          <textarea id="fFinalDiag" rows="2" placeholder="Confirmed diagnosis (if available)..."></textarea>
+        </div>
+      </div>
+      <div class="cp-fg" style="margin-top:4px;">
+        <label><i class="fas fa-file-alt" style="color:var(--cp-teal);"></i> Clinical Notes</label>
+        <textarea id="fClinicalNotes" rows="2" placeholder="Additional clinical observations, differential diagnosis notes..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION C: VITALS
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:var(--cp-danger-light);color:var(--cp-danger);"><i class="fas fa-heartbeat"></i></span> Section C: Vitals</h5>
+      {% if latest_vitals %}
+      <span style="font-size:0.72rem;color:var(--cp-muted);"><i class="fas fa-info-circle"></i> Pre-filled from nurse vitals ({{ latest_vitals.recorded_at.strftime('%Y-%m-%d %H:%M') if latest_vitals.recorded_at else 'N/A' }})</span>
+      {% endif %}
+    </div>
+    <div class="cp-section-body">
+      <div class="cp-row4">
+        <div class="cp-fg">
+          <label>BP Systolic (mmHg)</label>
+          <input type="number" id="vBpSys" placeholder="120" value="{{ latest_vitals.systolic_bp if latest_vitals and latest_vitals.systolic_bp else '' }}">
+        </div>
+        <div class="cp-fg">
+          <label>BP Diastolic (mmHg)</label>
+          <input type="number" id="vBpDia" placeholder="80" value="{{ latest_vitals.diastolic_bp if latest_vitals and latest_vitals.diastolic_bp else '' }}">
+        </div>
+        <div class="cp-fg">
+          <label>Pulse (bpm)</label>
+          <input type="number" id="vPulse" placeholder="72" value="{{ latest_vitals.heart_rate if latest_vitals and latest_vitals.heart_rate else '' }}">
+        </div>
+        <div class="cp-fg">
+          <label>SpO2 (%)</label>
+          <input type="number" id="vSpo2" placeholder="98" value="{{ latest_vitals.oxygen_level if latest_vitals and latest_vitals.oxygen_level else '' }}">
+        </div>
+      </div>
+      <div class="cp-row4">
+        <div class="cp-fg">
+          <label>Temperature (F)</label>
+          <input type="number" step="0.1" id="vTemp" placeholder="98.6" value="{{ latest_vitals.temperature if latest_vitals and latest_vitals.temperature else '' }}">
+        </div>
+        <div class="cp-fg">
+          <label>Respiratory Rate</label>
+          <input type="number" id="vRR" placeholder="16" value="{{ latest_vitals.respiratory_rate if latest_vitals and latest_vitals.respiratory_rate else '' }}">
+        </div>
+        <div class="cp-fg">
+          <label>GRBS (mg/dL)</label>
+          <input type="number" id="vGrbs" placeholder="110" value="">
+        </div>
+        <div class="cp-fg">
+          <label>Weight (kg)</label>
+          <input type="number" step="0.1" id="vWeight" placeholder="70" value="{{ patient.weight or '' }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION D: PRESCRIPTION MEDICINES
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section" id="prescriptionSheet">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:var(--cp-warning-light);color:var(--cp-warning);"><i class="fas fa-prescription-bottle-alt"></i></span> Section D: Prescription</h5>
+      <button class="cp-btn cp-btn-primary cp-btn-sm" onclick="addRxRow()"><i class="fas fa-plus"></i> Add Medicine</button>
+    </div>
+    <div class="cp-section-body">
+      <div class="cp-rx-wrap">
+        <table class="cp-rx-tbl" id="rxTable">
+          <thead>
+            <tr>
+              <th style="width:3%;">#</th>
+              <th style="width:18%;">Medicine Name</th>
+              <th style="width:9%;">Dose / Strength</th>
+              <th style="width:9%;">Route</th>
+              <th style="width:11%;">Frequency</th>
+              <th style="width:8%;">Duration</th>
+              <th style="width:11%;">Food Instruction</th>
+              <th style="width:14%;">Special Instruction</th>
+              <th style="width:12%;">Notes</th>
+              <th style="width:5%;"></th>
+            </tr>
+          </thead>
+          <tbody id="rxBody"></tbody>
+        </table>
+      </div>
+      <div id="rxEmpty" style="text-align:center;padding:18px;color:var(--cp-muted);font-size:0.88rem;">
+        <i class="fas fa-pills" style="font-size:1.2rem;opacity:0.3;margin-bottom:4px;display:block;"></i>
+        Click "Add Medicine" to begin prescription
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION E: TREATMENT PLAN / ADVICE
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:var(--cp-teal-light);color:var(--cp-teal);"><i class="fas fa-clipboard-list"></i></span> Section E: Treatment Plan & Advice</h5>
+    </div>
+    <div class="cp-section-body">
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label>Investigations Advised</label>
+          <textarea id="fInvestigations" rows="2" placeholder="CBC, LFT, RFT, X-Ray, USG..."></textarea>
+        </div>
+        <div class="cp-fg">
+          <label>Treatment Plan</label>
+          <textarea id="fTreatmentPlan" rows="2" placeholder="Overall treatment strategy..."></textarea>
+        </div>
+      </div>
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label>Procedures Advised</label>
+          <textarea id="fProcedures" rows="2" placeholder="Any procedures / interventions planned..."></textarea>
+        </div>
+        <div class="cp-fg">
+          <label>General Advice</label>
+          <textarea id="fAdvice" rows="2" placeholder="Rest, hydration, precautions..."></textarea>
+        </div>
+      </div>
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label>Diet Advice</label>
+          <textarea id="fDietAdvice" rows="2" placeholder="Low salt, high protein, avoid oily..."></textarea>
+        </div>
+        <div class="cp-fg">
+          <label>Rest / Activity Advice</label>
+          <textarea id="fRestAdvice" rows="2" placeholder="Bed rest for 3 days, light walking..."></textarea>
+        </div>
+      </div>
+      <div class="cp-row2">
+        <div class="cp-fg">
+          <label>Follow-Up Date</label>
+          <input type="date" id="fFollowup">
+        </div>
+        <div class="cp-fg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION F: INTERNAL NOTES (DOCTOR ONLY)
+  ═══════════════════════════════════════════════════════ -->
+  <div class="cp-section">
+    <div class="cp-section-hdr">
+      <h5><span class="icon-box" style="background:#fef3c7;color:#92400e;"><i class="fas fa-lock"></i></span> Section F: Internal Notes (Doctor Only)</h5>
+      <span style="font-size:0.72rem;color:var(--cp-muted);"><i class="fas fa-eye-slash"></i> Not visible to patient</span>
+    </div>
+    <div class="cp-section-body">
+      <div class="cp-fg">
+        <label>Internal Notes / Observations</label>
+        <textarea id="fInternalNotes" rows="3" placeholder="Private clinical observations, differential thinking, notes for next visit..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACTION BAR ──────────────────────────────────────── -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 8px;">
+    <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="cp-btn cp-btn-outline"><i class="fas fa-arrow-left"></i> Cancel</a>
+    <button class="cp-btn cp-btn-success cp-btn-lg" id="btnSave" onclick="saveConsultation()">
+      <i class="fas fa-check-circle"></i> Save Consultation
+    </button>
+  </div>
+
+  <!-- Post-save action buttons (hidden until save succeeds) -->
+  <div id="postSaveActions" style="display:none; margin-bottom:16px; border-radius:10px; overflow:hidden; border:1px solid #a7f3d0;">
+
+    <!-- Success header -->
+    <div style="padding:14px 18px; background:#ecfdf5;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <i class="fas fa-check-circle" style="color:var(--cp-success);font-size:1.2rem;"></i>
+        <strong style="color:var(--cp-success);font-size:0.95rem;">Consultation Saved Successfully!</strong>
+      </div>
+    </div>
+
+    <!-- Status badges — shows where prescription was sent -->
+    <div id="deliveryStatus" style="padding:10px 18px; background:#f0fdf4; display:flex; flex-wrap:wrap; gap:10px; border-top:1px solid #bbf7d0;">
+      <span id="badgePatient" style="display:none; padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#dbeafe; color:#1d4ed8;">
+        <i class="fas fa-user"></i> Prescription sent to Patient
+      </span>
+      <span id="badgePharmacy" style="display:none; padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#fef3c7; color:#92400e;">
+        <i class="fas fa-pills"></i> <span id="pharmacyCount">0</span> medicine(s) sent to Pharmacy
+      </span>
+      <span id="badgeLab" style="display:none; padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#f3e8ff; color:#6b21a8;">
+        <i class="fas fa-flask"></i> <span id="labCount">0</span> lab test(s) ordered
+      </span>
+      <span id="badgeFollowup" style="display:none; padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#ecfdf5; color:#065f46;">
+        <i class="fas fa-calendar-check"></i> Follow-up scheduled
+      </span>
+      <span id="badgeNoRx" style="display:none; padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700; background:#f1f5f9; color:#64748b;">
+        <i class="fas fa-info-circle"></i> Consultation only — no medicines prescribed
+      </span>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="padding:12px 18px; background:#fff; display:flex; gap:10px; flex-wrap:wrap;">
+      <a id="linkDetail" href="#" class="cp-btn cp-btn-primary" style="background:#1e40af;">
+        <i class="fas fa-file-medical-alt"></i> Detailed Record
+      </a>
+      <a id="linkPrescription" href="#" class="cp-btn" style="background:#0d9488;color:#fff;">
+        <i class="fas fa-prescription"></i> View Prescription
+      </a>
+      <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="cp-btn cp-btn-outline">
+        <i class="fas fa-arrow-left"></i> Back to Patient
+      </a>
+      <a href="{{ url_for('doctor.consultation_page', patient_id=patient.id) }}" class="cp-btn cp-btn-outline">
+        <i class="fas fa-plus"></i> New Consultation
+      </a>
+    </div>
+  </div>
+
+  <!-- ── PAST CONSULTATIONS ──────────────────────────────── -->
+  {% if past_consultations %}
+  <div class="cp-section" style="margin-bottom:30px;">
+    <div class="cp-section-hdr" style="cursor:pointer;" onclick="document.getElementById('pastBody').style.display = document.getElementById('pastBody').style.display==='none'?'block':'none';">
+      <h5><span class="icon-box" style="background:#f1f5f9;color:var(--cp-muted);"><i class="fas fa-history"></i></span> Past Consultations ({{ past_consultations|length }})</h5>
+      <i class="fas fa-chevron-down" style="color:var(--cp-muted);"></i>
+    </div>
+    <div class="cp-section-body" id="pastBody" style="display:none;">
+      {% for c in past_consultations %}
+      <div class="cp-past-row">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div class="cp-past-date">{{ c.created_at.strftime('%B %d, %Y %H:%M') if c.created_at else 'N/A' }} &mdash; Dr. {{ c.doctor.first_name }} {{ c.doctor.last_name }}</div>
+            <div class="cp-past-diag">{{ c.final_diagnosis or c.provisional_diagnosis or 'No diagnosis' }}</div>
+            <div class="cp-past-detail">
+              {% if c.chief_complaint %}Complaint: {{ c.chief_complaint }}{% endif %}
+              {% if c.treatment_plan %} | Plan: {{ c.treatment_plan }}{% endif %}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <a href="{{ url_for('doctor.consultation_detail', consultation_id=c.id) }}" class="cp-btn cp-btn-outline cp-btn-sm" style="font-size:0.72rem;" title="Full Record"><i class="fas fa-file-medical-alt"></i></a>
+            <a href="{{ url_for('doctor.consultation_prescription', consultation_id=c.id) }}" class="cp-btn cp-btn-outline cp-btn-sm" style="font-size:0.72rem;" title="Prescription"><i class="fas fa-prescription"></i></a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+const PID = {{ patient.id }};
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+function toast(msg, ok) {
+  const t = document.getElementById('cpToast');
+  t.textContent = msg;
+  t.className = 'cp-toast ' + (ok ? 'cp-toast-ok' : 'cp-toast-err');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3200);
+}
+
+/* ── SECTION A: History edit ────────────────────── */
+let histMode = false;
+function toggleHistEdit() {
+  histMode = !histMode;
+  document.querySelectorAll('.cp-hist-item').forEach(i => histMode ? i.classList.add('editing') : i.classList.remove('editing'));
+  document.getElementById('structPanel').style.display = histMode ? 'block' : 'none';
+  document.getElementById('btnEditHist').innerHTML = histMode ? '<i class="fas fa-times"></i> Cancel' : '<i class="fas fa-pen"></i> Edit History';
+  document.getElementById('sectionA').classList.toggle('hist-editing', histMode);
+}
+
+let pendingEntries = [];
+function addStructEntry() {
+  const type = document.getElementById('newType').value;
+  const cond = document.getElementById('newCond').value.trim();
+  if (!cond) return;
+  pendingEntries.push({ type, condition: cond });
+  const s = document.createElement('span');
+  const cls = type === 'allergy' ? 'danger' : type === 'chronic' ? 'warning' : type === 'family' ? 'purple' : 'info';
+  s.className = 'cp-tag cp-alert-' + cls;
+  s.textContent = cond;
+  document.getElementById('structTags').appendChild(s);
+  document.getElementById('newCond').value = '';
+}
+
+async function delHistEntry(pid, eid, el) {
+  if (!confirm('Delete entry?')) return;
+  const r = await fetch(`/doctor/api/patient/${pid}/history/${eid}`, { method: 'DELETE', headers: { 'X-CSRFToken': CSRF } });
+  const d = await r.json();
+  if (d.success) { el.closest('.cp-tag').remove(); toast('Deleted', true); }
+}
+
+async function saveHistory() {
+  const body = {
+    medical_history: document.querySelector('[name="medical_history"]').value,
+    allergy_history: document.querySelector('[name="allergy_history"]').value,
+    chronic_conditions: document.querySelector('[name="chronic_conditions"]').value,
+    family_history: document.querySelector('[name="family_history"]').value,
+    new_entries: pendingEntries,
+  };
+  const r = await fetch(`/doctor/api/patient/${PID}/history`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF }, body: JSON.stringify(body),
+  });
+  const d = await r.json();
+  if (d.success) { toast('History saved', true); pendingEntries = []; setTimeout(() => location.reload(), 800); }
+  else toast(d.error || 'Failed', false);
+}
+
+/* ── SECTION D: Prescription rows ───────────────── */
+let rxN = 0;
+function addRxRow() {
+  document.getElementById('rxEmpty').style.display = 'none';
+  rxN++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="rx-num">${rxN}</td>
+    <td><input type="text" class="rx-name med-name" placeholder="Medicine name" list="medList" autocomplete="off"></td>
+    <td><input type="text" class="rx-dose med-dosage" placeholder="500mg"></td>
+    <td><select class="rx-route"><option value="">Select</option><option value="Oral">Oral</option><option value="IV">IV</option><option value="IM">IM</option><option value="SC">SC</option><option value="Topical">Topical</option><option value="Inhalation">Inhalation</option><option value="Sublingual">Sublingual</option><option value="Rectal">Rectal</option><option value="Nasal">Nasal</option><option value="Ophthalmic">Ophthalmic</option><option value="Otic">Otic</option></select></td>
+    <td><select class="rx-freq med-freq"><option value="">Select</option><option value="OD">OD (Once daily)</option><option value="BD">BD (Twice daily)</option><option value="TDS">TDS (Thrice daily)</option><option value="QID">QID (4 times)</option><option value="SOS">SOS (As needed)</option><option value="HS">HS (Bedtime)</option><option value="STAT">STAT (Immediately)</option><option value="Weekly">Weekly</option></select></td>
+    <td><input type="text" class="rx-dur med-duration" placeholder="5 days"></td>
+    <td><select class="rx-food"><option value="">Select</option><option value="Before Food">Before Food</option><option value="After Food">After Food</option><option value="With Food">With Food</option><option value="Empty Stomach">Empty Stomach</option><option value="Any Time">Any Time</option></select></td>
+    <td><input type="text" class="rx-special" placeholder="Special instruction"></td>
+    <td><input type="text" class="rx-notes med-inst" placeholder="Notes"></td>
+    <td><button class="rx-del" onclick="this.closest('tr').remove();chkRxEmpty();">&times;</button></td>
+  `;
+  document.getElementById('rxBody').appendChild(tr);
+}
+function chkRxEmpty() {
+  document.getElementById('rxEmpty').style.display = document.querySelectorAll('#rxBody tr').length === 0 ? 'block' : 'none';
+}
+
+/* ── SAVE CONSULTATION ──────────────────────────── */
+async function saveConsultation() {
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+  const meds = [];
+  document.querySelectorAll('#rxBody tr').forEach(r => {
+    const name = r.querySelector('.rx-name')?.value?.trim();
+    if (name) meds.push({
+      medicine_name: name,
+      dosage: r.querySelector('.rx-dose')?.value?.trim() || '',
+      route: r.querySelector('.rx-route')?.value || '',
+      frequency: r.querySelector('.rx-freq')?.value || '',
+      duration: r.querySelector('.rx-dur')?.value?.trim() || '',
+      food_relation: r.querySelector('.rx-food')?.value || '',
+      special_instruction: r.querySelector('.rx-special')?.value?.trim() || '',
+      instruction: r.querySelector('.rx-notes')?.value?.trim() || '',
+    });
+  });
+
+  const invText = (document.getElementById('fInvestigations').value || '').trim();
+  const labTests = invText ? invText.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean) : [];
+
+  const payload = {
+    patient_id: PID,
+    chief_complaint: document.getElementById('fChiefComplaint').value,
+    present_condition: document.getElementById('fPresentCondition').value,
+    past_medication: document.getElementById('fPastMedication').value,
+    examination_notes: document.getElementById('fExamNotes').value,
+    provisional_diagnosis: document.getElementById('fProvDiag').value,
+    final_diagnosis: document.getElementById('fFinalDiag').value,
+    clinical_notes: document.getElementById('fClinicalNotes').value,
+    treatment_plan: document.getElementById('fTreatmentPlan').value,
+    procedures_advised: document.getElementById('fProcedures').value,
+    advice: document.getElementById('fAdvice').value,
+    diet_advice: document.getElementById('fDietAdvice').value,
+    rest_activity_advice: document.getElementById('fRestAdvice').value,
+    investigation_suggested: invText,
+    followup_date: document.getElementById('fFollowup').value,
+    doctor_internal_notes: document.getElementById('fInternalNotes').value,
+    vitals: {
+      bp_systolic: document.getElementById('vBpSys').value || null,
+      bp_diastolic: document.getElementById('vBpDia').value || null,
+      pulse: document.getElementById('vPulse').value || null,
+      spo2: document.getElementById('vSpo2').value || null,
+      temperature: document.getElementById('vTemp').value || null,
+      respiratory_rate: document.getElementById('vRR').value || null,
+      grbs: document.getElementById('vGrbs').value || null,
+      weight: document.getElementById('vWeight').value || null,
+    },
+    medicines: meds,
+    lab_tests: labTests,
+  };
+
+  try {
+    const r = await fetch('/doctor/api/consultation/full-save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF }, body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('Consultation saved!', true);
+      const cid = d.created && d.created.consultation_id;
+      const rxId = d.created && d.created.prescription_id;
+      const pharmIds = (d.created && d.created.pharmacy_order_ids) || [];
+      const labIds = (d.created && d.created.lab_order_ids) || [];
+      const fupId = d.created && d.created.followup_appointment_id;
+
+      // Show post-save action panel
+      const panel = document.getElementById('postSaveActions');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Set links using consultation_id
+      if (cid) {
+        document.getElementById('linkDetail').href = `/doctor/consultation/${cid}/detail`;
+        document.getElementById('linkPrescription').href = `/doctor/consultation/${cid}/prescription`;
+      }
+
+      // Show status badges based on what was created
+      if (rxId) {
+        document.getElementById('badgePatient').style.display = 'inline-flex';
+      }
+      if (pharmIds.length > 0) {
+        document.getElementById('badgePharmacy').style.display = 'inline-flex';
+        document.getElementById('pharmacyCount').textContent = pharmIds.length;
+      }
+      if (labIds.length > 0) {
+        document.getElementById('badgeLab').style.display = 'inline-flex';
+        document.getElementById('labCount').textContent = labIds.length;
+      }
+      if (fupId) {
+        document.getElementById('badgeFollowup').style.display = 'inline-flex';
+      }
+      if (!rxId && pharmIds.length === 0) {
+        document.getElementById('badgeNoRx').style.display = 'inline-flex';
+      }
+
+      // Disable save button to prevent duplicate saves
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-check"></i> Saved';
+      btn.style.opacity = '0.6';
+    } else toast(d.error || 'Save failed', false);
+  } catch (e) { toast('Network error: ' + e.message, false); }
+  finally { if (!btn.disabled) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i> Save Consultation'; } }
+}
+
+/* Medicine autocomplete datalist */
+document.addEventListener('DOMContentLoaded', function() {
+  const dl = document.createElement('datalist');
+  dl.id = 'medList';
+  {% for med in medicines %}
+  {const o=document.createElement('option');o.value="{{ med.name }}";dl.appendChild(o);}
+  {% endfor %}
+  document.body.appendChild(dl);
+
+  // Also create medSuggestions datalist for voice script compatibility
+  const dl2 = document.createElement('datalist');
+  dl2.id = 'medSuggestions';
+  {% for med in medicines %}
+  {const o2=document.createElement('option');o2.value="{{ med.name }}";dl2.appendChild(o2);}
+  {% endfor %}
+  document.body.appendChild(dl2);
+});
+
+/* ═══════════════════════════════════════════════════
+   VOICE ASSISTANT COMPATIBILITY BRIDGE
+   Maps old prescription page IDs/functions to new consultation page
+   ═══════════════════════════════════════════════════ */
+
+// The voice script expects 'medTableBody' element
+const medTableBody = document.getElementById('rxBody');
+
+// Known medicines list for voice matching
+const KNOWN_MEDICINES = [{% for med in medicines %}"{{ med.name|replace('"', '\\"') }}"{% if not loop.last %},{% endif %}{% endfor %}];
+
+// Levenshtein distance for fuzzy matching
+function levenshtein(a, b) {
+  const an = a.length, bn = b.length;
+  const matrix = Array.from({ length: an + 1 }, (_, i) => Array.from({ length: bn + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+  for (let i = 1; i <= an; i++) for (let j = 1; j <= bn; j++) {
+    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+    matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+  }
+  return matrix[an][bn];
+}
+
+function matchMedicineName(spoken) {
+  const sp = (spoken || '').toLowerCase().trim();
+  if (!sp || sp.length < 2) return { name: spoken, corrected: false, confidence: 'none' };
+  let best = null, bestS = Infinity;
+  for (const m of KNOWN_MEDICINES) {
+    const ml = m.toLowerCase();
+    if (sp === ml) return { name: m, corrected: false, confidence: 'exact' };
+    const d = levenshtein(sp, ml);
+    if (d < bestS) { bestS = d; best = m; }
+  }
+  const thr = Math.max(2, Math.floor(sp.length * 0.4));
+  if (best && bestS <= thr) return { name: best, corrected: bestS > 0, confidence: bestS <= 1 ? 'high' : 'medium' };
+  return { name: spoken.trim(), corrected: false, confidence: 'unknown' };
+}
+
+function parseFrequency(text) {
+  const t = (text || '').toLowerCase();
+  if (/\b(twice|two times|bd)\b/.test(t)) return 'BD';
+  if (/\b(thrice|three times|tid)\b/.test(t)) return 'TID';
+  if (/\b(four times|qid)\b/.test(t)) return 'QID';
+  if (/\b(sos|prn|as needed|when needed)\b/.test(t)) return 'SOS';
+  if (/\b(at night|bedtime|hs)\b/.test(t)) return 'HS';
+  return 'OD';
+}
+
+function parseInstruction(text) {
+  const t = (text || '').toLowerCase();
+  if (/\bafter (food|meal|eating)\b/.test(t)) return 'After food';
+  if (/\bbefore (food|meal|eating)\b/.test(t)) return 'Before food';
+  if (/\bwith (food|meal)\b/.test(t)) return 'With food';
+  if (/\bempty stomach\b/.test(t)) return 'On empty stomach';
+  return '';
+}
+
+function addPill(name, type, label) {
+  const el = document.getElementById('parsedPills');
+  if (!el) return;
+  const pill = document.createElement('span');
+  pill.style.cssText = 'padding:4px 12px;border-radius:16px;font-size:0.78rem;font-weight:600;border:1px solid;margin:2px;display:inline-block;';
+  if (type === 'added') { pill.style.background = 'rgba(16,185,129,0.1)'; pill.style.color = '#059669'; pill.style.borderColor = 'rgba(16,185,129,0.25)'; }
+  else if (type === 'corrected') { pill.style.background = 'rgba(99,102,241,0.1)'; pill.style.color = '#4f46e5'; pill.style.borderColor = 'rgba(99,102,241,0.25)'; }
+  else if (type === 'duplicate') { pill.style.background = 'rgba(245,158,11,0.1)'; pill.style.color = '#b45309'; pill.style.borderColor = 'rgba(245,158,11,0.25)'; }
+  pill.textContent = label || name;
+  el.appendChild(pill);
+}
+
+function getExistingMedicines() {
+  const names = new Set();
+  document.querySelectorAll('#rxBody tr').forEach(row => {
+    const inp = row.querySelector('.rx-name');
+    if (inp && inp.value.trim()) names.add(inp.value.trim().toLowerCase());
+  });
+  return names;
+}
+
+// createRowElement compatible with voice script — creates new consultation Rx row
+function createRowElement(name='', dose='', freq='OD', dur='', inst='') {
+  rxN++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="rx-num">${rxN}</td>
+    <td><input type="text" class="rx-name med-name" placeholder="Medicine name" list="medList" value="${name}"></td>
+    <td><input type="text" class="rx-dose med-dosage" placeholder="500mg" value="${dose}"></td>
+    <td><select class="rx-route"><option value="">Select</option><option value="Oral">Oral</option><option value="IV">IV</option><option value="IM">IM</option><option value="SC">SC</option><option value="Topical">Topical</option><option value="Inhalation">Inhalation</option><option value="Sublingual">Sublingual</option></select></td>
+    <td><select class="rx-freq med-freq"><option value="OD" ${freq==='OD'?'selected':''}>OD</option><option value="BD" ${freq==='BD'?'selected':''}>BD</option><option value="TDS" ${freq==='TDS'||freq==='TID'?'selected':''}>TDS</option><option value="QID" ${freq==='QID'?'selected':''}>QID</option><option value="SOS" ${freq==='SOS'?'selected':''}>SOS</option><option value="HS" ${freq==='HS'?'selected':''}>HS</option><option value="STAT">STAT</option></select></td>
+    <td><input type="text" class="rx-dur med-duration" placeholder="5 days" value="${dur}"></td>
+    <td><select class="rx-food"><option value="">Select</option><option value="Before Food" ${inst.toLowerCase().includes('before')?'selected':''}>Before Food</option><option value="After Food" ${inst.toLowerCase().includes('after')?'selected':''}>After Food</option><option value="With Food" ${inst.toLowerCase().includes('with')?'selected':''}>With Food</option><option value="Empty Stomach" ${inst.toLowerCase().includes('empty')?'selected':''}>Empty Stomach</option><option value="Any Time">Any Time</option></select></td>
+    <td><input type="text" class="rx-special" placeholder="Special instruction"></td>
+    <td><input type="text" class="rx-notes med-inst" placeholder="Notes" value="${inst && !inst.toLowerCase().match(/before|after|with|empty/) ? inst : ''}"></td>
+    <td><button class="rx-del" onclick="this.closest('tr').remove();chkRxEmpty();">&times;</button></td>
+  `;
+  document.getElementById('rxEmpty').style.display = 'none';
+  return tr;
+}
+
+function removeEmptyRows() {
+  document.querySelectorAll('#rxBody tr').forEach(r => {
+    const name = r.querySelector('.rx-name')?.value?.trim() || '';
+    if (!name) r.remove();
+  });
+}
+
+function previewPrescription() { window.print(); }
+
+// ═══════════════════════════════════════════════════
+//  VOICE WHISPER ENGINE (full script include)
+// ═══════════════════════════════════════════════════
+{% include 'doctor/_voice_whisper.js' %}
+</script>
+{% endblock %}

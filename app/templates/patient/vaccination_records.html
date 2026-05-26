@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Vaccination Records — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-syringe me-2"></i>Vaccination Records</h1><p class="wc-subtitle">Your immunization history and upcoming vaccines</p></div></div></div>
+
+    <!-- Vaccination Schedule -->
+    <div class="wc-card mb-4">
+        <div class="wc-card-header"><h3><i class="fas fa-calendar-check me-2"></i>Recommended Vaccines</h3></div>
+        <div class="wc-card-body">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Vaccine</th><th>Purpose</th><th>Recommended Age</th><th>Doses</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% set vaccines = [
+                            ('COVID-19', 'Protection against coronavirus', 'All adults', '2 + booster', 'info'),
+                            ('Influenza (Flu)', 'Seasonal flu protection', 'Annually', '1 per year', 'warning'),
+                            ('Hepatitis B', 'Liver infection prevention', 'Birth / Adult', '3 doses', 'success'),
+                            ('Tetanus (Td/Tdap)', 'Wound infection prevention', 'Every 10 years', 'Booster', 'warning'),
+                            ('Typhoid', 'Food/water-borne disease', 'Every 3 years', '1 dose', 'info'),
+                            ('Pneumococcal', 'Pneumonia prevention', '65+ or high risk', '1-2 doses', 'primary'),
+                            ('HPV', 'Cancer prevention', '9-26 years', '2-3 doses', 'info'),
+                            ('MMR', 'Measles, Mumps, Rubella', 'Childhood', '2 doses', 'success'),
+                            ('Varicella', 'Chickenpox prevention', 'Childhood / Adult', '2 doses', 'success'),
+                            ('Hepatitis A', 'Liver infection prevention', 'Childhood / Travel', '2 doses', 'info'),
+                        ] %}
+                        {% for name, purpose, age, doses, status in vaccines %}
+                        <tr>
+                            <td><strong><i class="fas fa-syringe me-2" style="color:#8b5cf6;"></i>{{ name }}</strong></td>
+                            <td>{{ purpose }}</td>
+                            <td>{{ age }}</td>
+                            <td>{{ doses }}</td>
+                            <td>
+                                <button class="wc-btn wc-btn-sm wc-btn-outline" onclick="this.innerHTML=this.innerHTML.includes('Mark')?'<i class=\'fas fa-check\'></i> Done':'<i class=\'fas fa-circle\'></i> Mark Done';this.classList.toggle('wc-btn-success')">
+                                    <i class="fas fa-circle"></i> Mark Done
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="wc-card">
+        <div class="wc-card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div style="padding:20px;background:rgba(139,92,246,.08);border-radius:14px;">
+                        <h5><i class="fas fa-info-circle me-2" style="color:#8b5cf6;"></i>Why Vaccinate?</h5>
+                        <ul style="font-size:.9rem;line-height:2;padding-left:16px;margin:0;">
+                            <li>Prevents serious diseases and complications</li>
+                            <li>Protects vulnerable family members</li>
+                            <li>Required for travel to certain countries</li>
+                            <li>Reduces healthcare costs long-term</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div style="padding:20px;background:rgba(16,185,129,.08);border-radius:14px;">
+                        <h5><i class="fas fa-phone-alt me-2" style="color:#10b981;"></i>Need a Vaccine?</h5>
+                        <p style="font-size:.9rem;">Contact CarePoint Hospital to schedule your vaccination appointment.</p>
+                        <a href="{{ url_for('patient.book_appointment') }}" class="wc-btn wc-btn-success"><i class="fas fa-calendar-check me-2"></i>Book Vaccination</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Medication Tracker — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-pills me-2"></i>Medication Tracker</h1><p class="wc-subtitle">Track your medication adherence and schedule</p></div></div></div>
+
+    {% if prescriptions %}
+    {% for rx in prescriptions %}
+    <div class="wc-card mb-3">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-prescription me-2"></i>Prescription #{{ rx.id }} — Dr. {{ rx.doctor.first_name if rx.doctor else 'N/A' }}</h3>
+            <span class="wc-badge wc-badge-info">{{ rx.prescribed_at.strftime('%d %b %Y') if rx.prescribed_at else '' }}</span>
+        </div>
+        <div class="wc-card-body">
+            {% if rx.diagnosis %}<p style="font-size:.9rem;margin-bottom:12px;"><strong>Diagnosis:</strong> {{ rx.diagnosis }}</p>{% endif %}
+            {% set meds = rx.medicines if rx.medicines is string %}
+            {% if rx.medicines %}
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Medicine</th><th>Dosage</th><th>Today</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>{{ rx.medicines[:80] if rx.medicines else 'As prescribed' }}</strong></td>
+                            <td>{{ rx.dosage or rx.frequency or 'As directed' }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="wc-btn wc-btn-sm wc-btn-success med-check-btn" onclick="this.style.opacity=this.style.opacity==='0.4'?'1':'0.4'" title="Morning"><i class="fas fa-sun"></i> AM</button>
+                                    <button class="wc-btn wc-btn-sm wc-btn-primary med-check-btn" onclick="this.style.opacity=this.style.opacity==='0.4'?'1':'0.4'" title="Afternoon"><i class="fas fa-cloud-sun"></i> PM</button>
+                                    <button class="wc-btn wc-btn-sm wc-btn-info med-check-btn" style="opacity:.4;" onclick="this.style.opacity=this.style.opacity==='0.4'?'1':'0.4'" title="Night"><i class="fas fa-moon"></i> Night</button>
+                                </div>
+                            </td>
+                            <td><span class="wc-badge wc-badge-success"><i class="fas fa-check"></i> Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No medicine details available.</p>
+            {% endif %}
+            {% if rx.instructions %}<div class="mt-2" style="font-size:.85rem;color:var(--wc-text-muted);"><i class="fas fa-info-circle me-1"></i> {{ rx.instructions }}</div>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="wc-card"><div class="wc-card-body"><div class="wc-empty-state"><i class="fas fa-pills"></i><h4>No Active Prescriptions</h4><p>Your medication list will appear here once prescribed by your doctor.</p></div></div></div>
+    {% endif %}
+
+    <div class="wc-card">
+        <div class="wc-card-header"><h3><i class="fas fa-lightbulb me-2"></i>Medication Tips</h3></div>
+        <div class="wc-card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><div style="padding:16px;background:rgba(16,185,129,.08);border-radius:12px;"><i class="fas fa-clock" style="color:#10b981;font-size:1.2rem;"></i><h5 style="margin:8px 0 4px;">Take on Time</h5><p style="font-size:.85rem;margin:0;">Set phone alarms for each dose to maintain consistency.</p></div></div>
+                <div class="col-md-4"><div style="padding:16px;background:rgba(37,99,235,.08);border-radius:12px;"><i class="fas fa-utensils" style="color:#2563eb;font-size:1.2rem;"></i><h5 style="margin:8px 0 4px;">With Food</h5><p style="font-size:.85rem;margin:0;">Take medicines with food unless your doctor says otherwise.</p></div></div>
+                <div class="col-md-4"><div style="padding:16px;background:rgba(239,68,68,.08);border-radius:12px;"><i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:1.2rem;"></i><h5 style="margin:8px 0 4px;">Don't Skip</h5><p style="font-size:.85rem;margin:0;">Never skip doses. If you miss one, take it as soon as you remember.</p></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

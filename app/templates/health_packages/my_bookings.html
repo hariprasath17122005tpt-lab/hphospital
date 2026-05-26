@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}My Health Package Bookings - CarePoint Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEALTH PACKAGES — MY BOOKINGS PAGE
+   Patient's booked health checkup packages
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --hp-primary: #1a3b6e;
+    --hp-primary-light: #2563eb;
+    --hp-bg: #f7f9fc;
+    --hp-card-bg: #ffffff;
+    --hp-text: #1e293b;
+    --hp-muted: #64748b;
+    --hp-border: #e2e8f0;
+}
+
+/* ── Page Header ── */
+.myb-header {
+    background: linear-gradient(135deg, #1a3b6e 0%, #2563eb 100%);
+    padding: 32px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.myb-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -15%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,.06) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.myb-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.myb-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.myb-header h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+}
+
+.myb-header p {
+    font-size: .92rem;
+    color: rgba(255,255,255,.7);
+    margin: 4px 0 0;
+}
+
+.myb-header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: .9rem;
+    font-weight: 700;
+    color: #1a3b6e;
+    background: #fff;
+    text-decoration: none;
+    transition: all .25s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.myb-header-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    color: #1a3b6e;
+}
+
+/* ── Main Section ── */
+.myb-main {
+    padding: 40px 0 80px;
+    background: var(--hp-bg);
+    min-height: 60vh;
+}
+
+/* ── Booking Stats ── */
+.myb-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.myb-stat {
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: all .2s ease;
+}
+
+.myb-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+
+.myb-stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--hp-primary-light);
+    display: block;
+}
+
+.myb-stat-label {
+    font-size: .82rem;
+    color: var(--hp-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* ── Booking Cards ── */
+.myb-booking {
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    transition: all .3s ease;
+}
+
+.myb-booking:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.07);
+    transform: translateY(-2px);
+}
+
+.myb-booking-accent {
+    height: 4px;
+}
+
+.myb-booking-body {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.myb-booking-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.myb-booking-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.myb-booking-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 4px;
+}
+
+.myb-booking-desc {
+    font-size: .85rem;
+    color: var(--hp-muted);
+    margin-bottom: 10px;
+}
+
+.myb-booking-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.myb-booking-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    color: var(--hp-muted);
+}
+
+.myb-booking-meta-item i {
+    font-size: .78rem;
+    opacity: .7;
+}
+
+.myb-booking-right {
+    text-align: right;
+    flex-shrink: 0;
+    min-width: 140px;
+}
+
+.myb-booking-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--hp-text);
+    margin-bottom: 6px;
+}
+
+.myb-booking-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    border-radius: 50px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.myb-status-confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.myb-status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.myb-status-completed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.myb-status-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ── Empty State ── */
+.myb-empty {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--hp-card-bg);
+    border: 1px solid var(--hp-border);
+    border-radius: 18px;
+}
+
+.myb-empty-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 24px;
+    font-size: 2.5rem;
+    color: #cbd5e1;
+}
+
+.myb-empty h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 8px;
+}
+
+.myb-empty p {
+    font-size: .95rem;
+    color: var(--hp-muted);
+    max-width: 400px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+}
+
+.myb-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--hp-primary-light);
+    text-decoration: none;
+    transition: all .25s ease;
+    box-shadow: 0 4px 14px rgba(37,99,235,.25);
+}
+
+.myb-empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37,99,235,.35);
+    color: #fff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .myb-header-content {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    .myb-stats {
+        grid-template-columns: 1fr;
+    }
+    .myb-booking-body {
+        flex-direction: column;
+        text-align: center;
+    }
+    .myb-booking-right {
+        text-align: center;
+    }
+    .myb-booking-meta {
+        justify-content: center;
+    }
+}
+
+/* ── Animations ── */
+.myb-booking {
+    animation: mybFadeIn .4s ease both;
+}
+
+.myb-booking:nth-child(1) { animation-delay: .05s; }
+.myb-booking:nth-child(2) { animation-delay: .1s; }
+.myb-booking:nth-child(3) { animation-delay: .15s; }
+.myb-booking:nth-child(4) { animation-delay: .2s; }
+.myb-booking:nth-child(5) { animation-delay: .25s; }
+
+@keyframes mybFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<section class="myb-header">
+    <div class="myb-container">
+        <div class="myb-header-content">
+            <div>
+                <h1><i class="fas fa-box-open" style="margin-right:10px;"></i> My Health Package Bookings</h1>
+                <p>Track and manage your booked health checkup packages</p>
+            </div>
+            <a href="{{ url_for('health_packages.listing') }}" class="myb-header-btn">
+                <i class="fas fa-plus"></i> Browse Packages
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="myb-main">
+    <div class="myb-container">
+
+        {% if bookings %}
+        <!-- Stats Row -->
+        {% set total_bookings = bookings|length %}
+        {% set confirmed_count = bookings|selectattr('appointment.status', 'equalto', 'confirmed')|list|length %}
+        {% set completed_count = bookings|selectattr('appointment.status', 'equalto', 'completed')|list|length %}
+        <div class="myb-stats">
+            <div class="myb-stat">
+                <span class="myb-stat-value">{{ total_bookings }}</span>
+                <span class="myb-stat-label">Total Bookings</span>
+            </div>
+            <div class="myb-stat">
+                <span class="myb-stat-value" style="color:#059669;">{{ confirmed_count }}</span>
+                <span class="myb-stat-label">Upcoming</span>
+            </div>
+            <div class="myb-stat">
+                <span class="myb-stat-value" style="color:#7c3aed;">{{ completed_count }}</span>
+                <span class="myb-stat-label">Completed</span>
+            </div>
+        </div>
+
+        <!-- Booking Cards -->
+        {% for b in bookings %}
+        {% set pkg = b.package %}
+        {% set appt = b.appointment %}
+        <div class="myb-booking">
+            <div class="myb-booking-accent" style="background: linear-gradient(90deg, {{ pkg.color if pkg else '#2563eb' }}, {{ (pkg.color if pkg else '#2563eb') }}88);"></div>
+            <div class="myb-booking-body">
+                <div class="myb-booking-icon" style="background: {{ pkg.color if pkg else '#2563eb' }};">
+                    <i class="fas {{ pkg.icon if pkg else 'fa-box' }}"></i>
+                </div>
+
+                <div class="myb-booking-info">
+                    <div class="myb-booking-name">{{ b.package_name }}</div>
+                    <div class="myb-booking-desc">
+                        {% if pkg %}{{ pkg.description }}{% else %}Health checkup package{% endif %}
+                    </div>
+                    <div class="myb-booking-meta">
+                        <span class="myb-booking-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            {{ appt.appointment_date.strftime('%d %b %Y') if appt.appointment_date else 'TBD' }}
+                        </span>
+                        <span class="myb-booking-meta-item">
+                            <i class="fas fa-clock"></i>
+                            8:00 AM
+                        </span>
+                        {% if pkg %}
+                        <span class="myb-booking-meta-item">
+                            <i class="fas fa-vials"></i>
+                            {{ pkg.tests|length }} tests
+                        </span>
+                        <span class="myb-booking-meta-item">
+                            <i class="fas fa-hourglass-half"></i>
+                            {{ pkg.duration }}
+                        </span>
+                        {% endif %}
+                        {% if appt.doctor %}
+                        <span class="myb-booking-meta-item">
+                            <i class="fas fa-user-md"></i>
+                            Dr. {{ appt.doctor.first_name }} {{ appt.doctor.last_name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="myb-booking-right">
+                    {% if pkg %}
+                    <div class="myb-booking-price">&#8377;{{ '{:,}'.format(pkg.price) }}</div>
+                    {% endif %}
+                    <span class="myb-booking-status myb-status-{{ appt.status|lower if appt.status else 'pending' }}">
+                        <i class="fas fa-{% if appt.status == 'confirmed' %}check-circle{% elif appt.status == 'completed' %}flag-checkered{% elif appt.status == 'cancelled' %}times-circle{% else %}clock{% endif %}"></i>
+                        {{ appt.status|capitalize if appt.status else 'Pending' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="myb-empty">
+            <div class="myb-empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <h3>No Bookings Yet</h3>
+            <p>You have not booked any health checkup packages yet. Browse our packages and book one for preventive health screening.</p>
+            <a href="{{ url_for('health_packages.listing') }}" class="myb-empty-btn">
+                <i class="fas fa-search"></i> Explore Health Packages
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

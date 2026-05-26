@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Emergency Case #{{ case.id }} — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-ambulance me-2"></i>Emergency Case #{{ case.id }}</h1>
+                <p class="wc-subtitle">{{ case.patient.full_name if case.patient else case.patient_name or 'Unknown' }}</p>
+            </div>
+            <a href="{{ url_for('emergency.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="wc-card">
+                <div class="wc-card-header"><h3>Case Details</h3></div>
+                <div class="wc-card-body">
+                    <div class="wc-detail-grid">
+                        <div class="wc-detail-item"><span class="wc-detail-label">Triage Level</span><span class="wc-badge wc-badge-{{ 'danger' if case.triage_level == 'Critical' else 'warning' if case.triage_level == 'Urgent' else 'info' }}">{{ case.triage_level }}</span></div>
+                        <div class="wc-detail-item"><span class="wc-detail-label">Arrival Mode</span><span>{{ case.arrival_mode or 'Walk-in' }}</span></div>
+                        <div class="wc-detail-item"><span class="wc-detail-label">Arrival Time</span><span>{{ case.arrival_time.strftime('%d %b %Y, %I:%M %p') if case.arrival_time else 'N/A' }}</span></div>
+                        <div class="wc-detail-item"><span class="wc-detail-label">Wait Time</span><span>{{ case.wait_time_minutes }} minutes</span></div>
+                        <div class="wc-detail-item"><span class="wc-detail-label">GCS Score</span><span>{{ case.gcs_score or 'N/A' }}/15</span></div>
+                        <div class="wc-detail-item"><span class="wc-detail-label">Disposition</span><span>{{ case.disposition or 'Pending' }}</span></div>
+                    </div>
+                    <div class="mt-4"><h5>Chief Complaint</h5><p>{{ case.chief_complaint }}</p></div>
+                    {% if case.treatment_given %}<div class="mt-3"><h5>Treatment Given</h5><p>{{ case.treatment_given }}</p></div>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="wc-card">
+                <div class="wc-card-header"><h3>Vitals</h3></div>
+                <div class="wc-card-body">
+                    <div class="wc-vitals-list">
+                        <div class="wc-vital-item"><i class="fas fa-heartbeat text-danger"></i><span>BP</span><strong>{{ case.bp_systolic or '--' }}/{{ case.bp_diastolic or '--' }} mmHg</strong></div>
+                        <div class="wc-vital-item"><i class="fas fa-heart text-danger"></i><span>HR</span><strong>{{ case.heart_rate or '--' }} bpm</strong></div>
+                        <div class="wc-vital-item"><i class="fas fa-lungs text-info"></i><span>SpO2</span><strong>{{ case.spo2 or '--' }}%</strong></div>
+                        <div class="wc-vital-item"><i class="fas fa-thermometer-half text-warning"></i><span>Temp</span><strong>{{ case.temperature or '--' }}°F</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

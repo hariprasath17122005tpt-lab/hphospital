@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Financial Report - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Financial Report' %}
+{% set breadcrumb_current = 'Billing Report' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-file-invoice-dollar me-2"></i>Financial Report</h1>
+                <p class="wc-subtitle">Complete revenue analytics, billing overview, and payment tracking</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <span class="wc-badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.9rem;padding:8px 18px;">
+                    <i class="fas fa-receipt me-1"></i> {{ total_bills }} Bills
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div>
+            <div>
+                <div class="wc-stat-number" style="font-size:1.5rem;">₹{{ "%.2f"|format(total_revenue) }}</div>
+                <div class="wc-stat-label">Total Revenue</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div>
+                <div class="wc-stat-number" style="font-size:1.5rem;">₹{{ "%.2f"|format(revenue_today) }}</div>
+                <div class="wc-stat-label">Today's Revenue</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div>
+                <div class="wc-stat-number" style="font-size:1.5rem;">₹{{ "%.2f"|format(revenue_month) }}</div>
+                <div class="wc-stat-label">This Month</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-red">
+            <div class="wc-stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div>
+                <div class="wc-stat-number" style="font-size:1.5rem;">₹{{ "%.2f"|format(outstanding) }}</div>
+                <div class="wc-stat-label">Outstanding</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OP vs IP Revenue + Bill Summary -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:24px;">
+        <!-- OP Revenue Card -->
+        <div class="wc-card wc-hover-lift">
+            <div class="wc-card-body" style="text-align:center;">
+                <div style="width:60px;height:60px;border-radius:16px;display:grid;place-items:center;margin:0 auto 14px;background:rgba(37,99,235,.1);color:var(--wc-primary);font-size:1.4rem;">
+                    <i class="fas fa-hospital-user"></i>
+                </div>
+                <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--wc-text-muted);margin-bottom:6px;">Outpatient Revenue</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--wc-primary);">₹{{ "%.2f"|format(op_revenue) }}</div>
+            </div>
+        </div>
+
+        <!-- IP Revenue Card -->
+        <div class="wc-card wc-hover-lift">
+            <div class="wc-card-body" style="text-align:center;">
+                <div style="width:60px;height:60px;border-radius:16px;display:grid;place-items:center;margin:0 auto 14px;background:rgba(139,92,246,.1);color:var(--wc-purple);font-size:1.4rem;">
+                    <i class="fas fa-procedures"></i>
+                </div>
+                <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--wc-text-muted);margin-bottom:6px;">Inpatient Revenue</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--wc-purple);">₹{{ "%.2f"|format(ip_revenue) }}</div>
+            </div>
+        </div>
+
+        <!-- Bills Summary Card -->
+        <div class="wc-card wc-hover-lift">
+            <div class="wc-card-body" style="text-align:center;">
+                <div style="display:flex;justify-content:space-around;margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-success);">{{ paid_bills }}</div>
+                        <div style="font-size:.75rem;color:var(--wc-text-muted);font-weight:600;">PAID</div>
+                    </div>
+                    <div style="width:1px;background:var(--wc-border);"></div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-danger);">{{ unpaid_bills }}</div>
+                        <div style="font-size:.75rem;color:var(--wc-text-muted);font-weight:600;">UNPAID</div>
+                    </div>
+                    <div style="width:1px;background:var(--wc-border);"></div>
+                    <div>
+                        <div style="font-size:1.4rem;font-weight:800;color:var(--wc-text);">{{ total_bills }}</div>
+                        <div style="font-size:.75rem;color:var(--wc-text-muted);font-weight:600;">TOTAL</div>
+                    </div>
+                </div>
+                <!-- Paid percentage bar -->
+                {% set paid_pct = ((paid_bills / total_bills) * 100) if total_bills > 0 else 0 %}
+                <div style="height:8px;background:var(--wc-border);border-radius:4px;overflow:hidden;">
+                    <div style="height:100%;width:{{ paid_pct }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:4px;transition:width .8s ease;"></div>
+                </div>
+                <div style="font-size:.78rem;color:var(--wc-text-muted);margin-top:6px;">{{ "%.1f"|format(paid_pct) }}% Collection Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bills Table -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-receipt me-2"></i>All Bills</h3>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Patient</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment Method</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in bills %}
+                        <tr>
+                            <td><code style="font-weight:700;color:var(--wc-primary);">{{ bill.bill_number }}</code></td>
+                            <td style="font-weight:600;">{{ bill.patient.full_name if bill.patient else '-' }}</td>
+                            <td>
+                                {% if bill.billing_type and 'IP' in bill.billing_type|upper %}
+                                    <span class="wc-badge" style="background:rgba(139,92,246,.1);color:#8b5cf6;">
+                                        <i class="fas fa-procedures me-1"></i>IP
+                                    </span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-primary">
+                                        <i class="fas fa-hospital-user me-1"></i>OP
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="color:var(--wc-text-muted);font-size:.88rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ bill.description or '-' }}
+                            </td>
+                            <td style="font-weight:700;white-space:nowrap;">
+                                <i class="fas fa-rupee-sign" style="font-size:.8rem;"></i>
+                                {{ "%.2f"|format(bill.grand_total) }}
+                            </td>
+                            <td>
+                                {% set status = bill.status|upper if bill.status else '' %}
+                                {% if status == 'PAID' %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Paid</span>
+                                {% elif status == 'UNPAID' or status == 'PENDING' %}
+                                    <span class="wc-badge wc-badge-danger"><i class="fas fa-times-circle me-1"></i>Unpaid</span>
+                                {% elif status == 'PARTIAL' %}
+                                    <span class="wc-badge wc-badge-warning"><i class="fas fa-clock me-1"></i>Partial</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-dark">{{ bill.status or '-' }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="color:var(--wc-text-muted);">
+                                {% if bill.payment_method %}
+                                    <i class="fas {% if 'cash' in bill.payment_method|lower %}fa-money-bill-wave{% elif 'card' in bill.payment_method|lower %}fa-credit-card{% elif 'upi' in bill.payment_method|lower %}fa-mobile-alt{% else %}fa-wallet{% endif %} me-1"></i>
+                                    {{ bill.payment_method }}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                {{ bill.created_at.strftime('%b %d, %Y') if bill.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="wc-empty-state">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <h4>No Bills Found</h4>
+                                    <p>No billing records are available yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

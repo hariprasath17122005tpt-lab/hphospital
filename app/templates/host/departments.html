@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Department Management{% endblock %}
+
+{% set topbar_title = 'Department Management' %}
+{% set breadcrumb_current = 'Departments' %}
+
+{% block content %}
+<style>
+    .dept-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+    .dept-card {
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .dept-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+    }
+    .dept-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--cp-border-active);
+    }
+    .dept-card.active-dept::before {
+        background: var(--dept-color, #3b82f6);
+    }
+    .dept-card.inactive-dept::before {
+        background: #94a3b8;
+    }
+    .dept-card.inactive-dept {
+        opacity: 0.65;
+    }
+    .dept-icon-lg {
+        width: 56px; height: 56px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .dept-stat {
+        text-align: center;
+        padding: 0.5rem 0;
+    }
+    .dept-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--cp-text);
+    }
+    .dept-stat-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--cp-text-muted);
+        margin-top: 0.25rem;
+    }
+    .dept-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .dept-status-active {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+    }
+    .dept-status-inactive {
+        background: rgba(148, 163, 184, 0.15);
+        color: #94a3b8;
+    }
+
+    /* Summary stats bar */
+    .summary-bar {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .summary-icon {
+        width: 42px; height: 42px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .summary-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--cp-text);
+        line-height: 1.1;
+    }
+    .summary-label {
+        font-size: 0.75rem;
+        color: var(--cp-text-muted);
+    }
+
+    /* Override card hover for this page */
+    .card { background: var(--cp-surface) !important; border: 1px solid var(--cp-border) !important; }
+    h1, h5 { color: var(--cp-text) !important; }
+    p, .text-muted { color: var(--cp-text-secondary) !important; }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h1 class="fw-bold mb-1">Department Management</h1>
+            <p class="text-secondary mb-0">Overview of all hospital departments, specialties, and staffing.</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Bar -->
+    {% set active_count = departments|selectattr('active')|list|length %}
+    {% set total_docs = departments|sum(attribute='doctor_count') %}
+    {% set total_pts = departments|sum(attribute='patient_count') %}
+    {% set total_ip = departments|sum(attribute='ip_active') %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body py-3">
+            <div class="summary-bar">
+                <div class="summary-item">
+                    <div class="summary-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <div>
+                        <div class="summary-value">{{ departments|length }}</div>
+                        <div class="summary-label">Total Departments</div>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon" style="background:rgba(16,185,129,0.1);color:#10b981;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="summary-value">{{ active_count }}</div>
+                        <div class="summary-label">Active (with doctors)</div>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div>
+                        <div class="summary-value">{{ total_docs }}</div>
+                        <div class="summary-label">Total Doctors</div>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="summary-value">{{ total_pts }}</div>
+                        <div class="summary-label">Patients Served</div>
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-icon" style="background:rgba(220,38,38,0.1);color:#dc2626;">
+                        <i class="fas fa-procedures"></i>
+                    </div>
+                    <div>
+                        <div class="summary-value">{{ total_ip }}</div>
+                        <div class="summary-label">Active IP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Cards Grid -->
+    <div class="dept-grid">
+        {% for dept in departments %}
+        <div class="dept-card {{ 'active-dept' if dept.active else 'inactive-dept' }}" style="--dept-color: {{ dept.color }};">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="dept-icon-lg" style="background: {{ dept.color }}15; color: {{ dept.color }};">
+                        <i class="fas {{ dept.icon }}"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0" style="font-size: 1.05rem;">{{ dept.name }}</h5>
+                        <span class="dept-status-badge {{ 'dept-status-active' if dept.active else 'dept-status-inactive' }} mt-1">
+                            <i class="fas {{ 'fa-circle' if dept.active else 'fa-circle' }}" style="font-size: 0.5rem;"></i>
+                            {{ 'Active' if dept.active else 'No Staff' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-around pt-2" style="border-top: 1px solid var(--cp-border);">
+                <div class="dept-stat">
+                    <div class="dept-stat-value" style="color: {{ dept.color }};">{{ dept.doctor_count }}</div>
+                    <div class="dept-stat-label">Doctors</div>
+                </div>
+                <div class="dept-stat">
+                    <div class="dept-stat-value">{{ dept.patient_count }}</div>
+                    <div class="dept-stat-label">Patients</div>
+                </div>
+                <div class="dept-stat">
+                    <div class="dept-stat-value">{{ dept.ip_active }}</div>
+                    <div class="dept-stat-label">IP Active</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

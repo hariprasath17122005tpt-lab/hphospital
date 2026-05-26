@@ -1,0 +1,644 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Image Analysis - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Medical Image Analysis' %}
+{% set breadcrumb_current = 'Image Analysis' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ============ Image Analysis Styles ============ */
+.ia-hero {
+    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #8b5cf6 100%);
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    color: #fff;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+.ia-hero::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -15%;
+    width: 50%;
+    height: 180%;
+    background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+.ia-hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.ia-hero p {
+    opacity: 0.85;
+    font-size: 1rem;
+    max-width: 600px;
+}
+
+/* Layout */
+.ia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 992px) {
+    .ia-grid { grid-template-columns: 1fr; }
+}
+
+/* Upload Card */
+.ia-upload-card {
+    background: var(--cp-surface, #fff);
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.ia-upload-card h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--cp-text, #1f2937);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.ia-upload-card h2 i {
+    color: #7c3aed;
+}
+
+/* Drop Zone */
+.ia-dropzone {
+    border: 2.5px dashed #c4b5fd;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #faf5ff;
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.ia-dropzone:hover {
+    border-color: #8b5cf6;
+    background: #f3e8ff;
+    transform: scale(1.01);
+}
+.ia-dropzone.dragover {
+    border-color: #7c3aed;
+    background: #ede9fe;
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.1);
+    transform: scale(1.02);
+}
+.ia-dropzone-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+}
+.ia-dropzone h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--cp-text, #1f2937);
+    margin-bottom: 0.5rem;
+}
+.ia-dropzone p {
+    font-size: 0.85rem;
+    color: var(--cp-text-muted, #6b7280);
+    margin: 0;
+}
+.ia-dropzone .browse-link {
+    color: #7c3aed;
+    font-weight: 600;
+    text-decoration: underline;
+}
+.ia-file-preview {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.75rem;
+}
+.ia-file-preview.show {
+    display: flex;
+}
+.ia-file-preview i {
+    color: #16a34a;
+    font-size: 1.2rem;
+}
+.ia-file-preview .file-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #15803d;
+    word-break: break-all;
+}
+.ia-file-preview .remove-file {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Form Fields */
+.ia-form-group {
+    margin-bottom: 1.25rem;
+}
+.ia-form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--cp-text, #374151);
+    margin-bottom: 0.5rem;
+}
+.ia-form-group select,
+.ia-form-group textarea {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1.5px solid var(--cp-border, #d1d5db);
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    background: var(--cp-surface, #fff);
+    color: var(--cp-text, #1f2937);
+    transition: border-color 0.2s;
+}
+.ia-form-group select:focus,
+.ia-form-group textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+.ia-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Image Type Icons */
+.ia-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+@media (max-width: 576px) {
+    .ia-type-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.ia-type-option {
+    padding: 0.75rem 0.5rem;
+    border: 2px solid var(--cp-border, #e2e8f0);
+    border-radius: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--cp-surface, #fff);
+}
+.ia-type-option:hover {
+    border-color: #8b5cf6;
+    background: #faf5ff;
+}
+.ia-type-option.selected {
+    border-color: #7c3aed;
+    background: #7c3aed;
+    color: #fff;
+}
+.ia-type-option.selected i {
+    color: #fff;
+}
+.ia-type-option i {
+    display: block;
+    font-size: 1.3rem;
+    margin-bottom: 0.35rem;
+    color: #7c3aed;
+}
+.ia-type-option span {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Submit button */
+.ia-submit-btn {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+}
+.ia-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(124,58,237,0.4);
+}
+.ia-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+.ia-submit-btn i {
+    margin-right: 0.5rem;
+}
+
+/* History Card */
+.ia-history-card {
+    background: var(--cp-surface, #fff);
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.ia-history-card h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--cp-text, #1f2937);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.ia-history-card h2 i {
+    color: #7c3aed;
+}
+
+/* Image grid */
+.ia-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.ia-image-item {
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: var(--cp-surface, #fff);
+}
+.ia-image-item:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+.ia-image-thumb {
+    height: 140px;
+    background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: #8b5cf6;
+}
+.ia-image-info {
+    padding: 1rem;
+}
+.ia-image-info .type-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #7c3aed;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.ia-image-info .date-label {
+    font-size: 0.8rem;
+    color: var(--cp-text-muted, #6b7280);
+    margin-bottom: 0.5rem;
+}
+.ia-image-info .notes-text {
+    font-size: 0.82rem;
+    color: var(--cp-text, #374151);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.ia-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.ia-status-uploaded { background: #dbeafe; color: #1e40af; }
+.ia-status-review { background: #fef3c7; color: #92400e; }
+.ia-status-analyzed { background: #d1fae5; color: #065f46; }
+.ia-status-pending { background: #f3f4f6; color: #6b7280; }
+
+/* Empty state */
+.ia-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--cp-text-muted, #9ca3af);
+}
+.ia-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #c4b5fd;
+}
+.ia-empty h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cp-text, #6b7280);
+    margin-bottom: 0.5rem;
+}
+.ia-empty p {
+    font-size: 0.85rem;
+}
+
+/* Type icons mapping */
+.type-icon-xray::before { content: '\f497'; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="ia-hero">
+    <h1><i class="fas fa-x-ray"></i> Medical Image Analysis</h1>
+    <p>Upload your medical images (X-Rays, CT Scans, MRIs, etc.) for review by our medical team. Get expert analysis and recommendations.</p>
+</div>
+
+<div class="ia-grid">
+    <!-- Upload Form -->
+    <div class="ia-upload-card">
+        <h2><i class="fas fa-cloud-upload-alt"></i> Upload Medical Image</h2>
+
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- Drop Zone -->
+            <div class="ia-dropzone" id="dropZone" onclick="document.getElementById('fileInput').click();">
+                <div class="ia-dropzone-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Drag & Drop your image here</h3>
+                <p>or <span class="browse-link">browse files</span> to upload</p>
+                <p style="margin-top: 0.5rem; font-size: 0.78rem; color: #9ca3af;">Supported: JPG, PNG, DICOM, PDF (max 20MB)</p>
+            </div>
+            <input type="file" name="image" id="fileInput" accept=".jpg,.jpeg,.png,.dcm,.pdf,.bmp,.tiff" hidden>
+
+            <!-- File Preview -->
+            <div class="ia-file-preview" id="filePreview">
+                <i class="fas fa-check-circle"></i>
+                <span class="file-name" id="fileName"></span>
+                <button type="button" class="remove-file" onclick="removeFile()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Image Type -->
+            <div class="ia-form-group" style="margin-top: 1.5rem;">
+                <label><i class="fas fa-tags" style="color:#7c3aed; margin-right:0.3rem;"></i> Image Type</label>
+                <div class="ia-type-grid">
+                    <div class="ia-type-option" data-type="X-Ray" onclick="selectType(this)">
+                        <i class="fas fa-x-ray"></i>
+                        <span>X-Ray</span>
+                    </div>
+                    <div class="ia-type-option" data-type="CT Scan" onclick="selectType(this)">
+                        <i class="fas fa-circle-notch"></i>
+                        <span>CT Scan</span>
+                    </div>
+                    <div class="ia-type-option" data-type="MRI" onclick="selectType(this)">
+                        <i class="fas fa-magnet"></i>
+                        <span>MRI</span>
+                    </div>
+                    <div class="ia-type-option" data-type="Ultrasound" onclick="selectType(this)">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <span>Ultrasound</span>
+                    </div>
+                    <div class="ia-type-option" data-type="ECG" onclick="selectType(this)">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>ECG</span>
+                    </div>
+                    <div class="ia-type-option" data-type="Skin Photo" onclick="selectType(this)">
+                        <i class="fas fa-camera"></i>
+                        <span>Skin Photo</span>
+                    </div>
+                    <div class="ia-type-option" data-type="Wound Photo" onclick="selectType(this)">
+                        <i class="fas fa-band-aid"></i>
+                        <span>Wound Photo</span>
+                    </div>
+                    <div class="ia-type-option" data-type="Other" onclick="selectType(this)">
+                        <i class="fas fa-file-medical"></i>
+                        <span>Other</span>
+                    </div>
+                </div>
+                <input type="hidden" name="image_type" id="imageTypeInput" value="Other">
+            </div>
+
+            <!-- Notes -->
+            <div class="ia-form-group">
+                <label><i class="fas fa-sticky-note" style="color:#7c3aed; margin-right:0.3rem;"></i> Clinical Notes (Optional)</label>
+                <textarea name="notes" placeholder="Describe relevant symptoms, body area, or reason for imaging..."></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="ia-submit-btn" id="submitBtn" disabled>
+                <i class="fas fa-upload"></i> Upload Image for Analysis
+            </button>
+        </form>
+    </div>
+
+    <!-- History -->
+    <div class="ia-history-card">
+        <h2><i class="fas fa-history"></i> Your Uploaded Images <span style="font-size: 0.8rem; font-weight: 400; color: #6b7280;">({{ images|length }})</span></h2>
+
+        {% if images %}
+        <div class="ia-images-grid">
+            {% for img in images %}
+            <div class="ia-image-item">
+                <div class="ia-image-thumb">
+                    {% if img.image_type == 'X-Ray' %}
+                        <i class="fas fa-x-ray"></i>
+                    {% elif img.image_type == 'CT Scan' %}
+                        <i class="fas fa-circle-notch"></i>
+                    {% elif img.image_type == 'MRI' %}
+                        <i class="fas fa-magnet"></i>
+                    {% elif img.image_type == 'Ultrasound' %}
+                        <i class="fas fa-broadcast-tower"></i>
+                    {% elif img.image_type == 'ECG' %}
+                        <i class="fas fa-heartbeat"></i>
+                    {% elif img.image_type == 'Skin Photo' or img.image_type == 'Wound Photo' %}
+                        <i class="fas fa-camera"></i>
+                    {% else %}
+                        <i class="fas fa-file-medical"></i>
+                    {% endif %}
+                </div>
+                <div class="ia-image-info">
+                    <div class="type-label">{{ img.image_type }}</div>
+                    <div class="date-label">
+                        <i class="fas fa-calendar-alt" style="margin-right:0.2rem;"></i>
+                        {{ img.uploaded_at.strftime('%b %d, %Y %I:%M %p') if img.uploaded_at else 'N/A' }}
+                    </div>
+                    {% if img.clinical_context %}
+                    <div class="notes-text">{{ img.clinical_context }}</div>
+                    {% endif %}
+                    {% if img.risk_level == 'Pending' %}
+                        <span class="ia-status-badge ia-status-uploaded"><i class="fas fa-clock"></i> Uploaded</span>
+                    {% elif img.risk_level == 'Low' %}
+                        <span class="ia-status-badge ia-status-analyzed"><i class="fas fa-check-circle"></i> Analyzed - Low Risk</span>
+                    {% elif img.risk_level == 'Medium' %}
+                        <span class="ia-status-badge ia-status-review"><i class="fas fa-exclamation-circle"></i> Analyzed - Medium Risk</span>
+                    {% elif img.risk_level == 'High' %}
+                        <span class="ia-status-badge" style="background:#fecaca;color:#991b1b;"><i class="fas fa-exclamation-triangle"></i> Analyzed - High Risk</span>
+                    {% elif img.analyzed_at %}
+                        <span class="ia-status-badge ia-status-analyzed"><i class="fas fa-check-circle"></i> Analyzed</span>
+                    {% else %}
+                        <span class="ia-status-badge ia-status-pending"><i class="fas fa-hourglass-half"></i> Under Review</span>
+                    {% endif %}
+                    {% if img.detected_conditions %}
+                    <div style="margin-top:0.5rem;font-size:0.8rem;color:#374151;">
+                        <strong>Findings:</strong> {{ img.detected_conditions }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="ia-empty">
+            <i class="fas fa-images"></i>
+            <h4>No images uploaded yet</h4>
+            <p>Upload your first medical image using the form on the left to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Info Section -->
+<div style="background: var(--cp-surface, #fff); border: 1px solid var(--cp-border, #e5e7eb); border-radius: 1rem; padding: 1.5rem 2rem; margin-bottom: 2rem;">
+    <h3 style="font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; color: var(--cp-text, #1f2937);">
+        <i class="fas fa-info-circle" style="color: #7c3aed;"></i> How It Works
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div style="text-align: center; padding: 1rem;">
+            <div style="width:50px;height:50px;margin:0 auto 0.75rem;background:#ede9fe;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-upload" style="color:#7c3aed;font-size:1.2rem;"></i>
+            </div>
+            <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.25rem;">1. Upload</h4>
+            <p style="font-size:0.8rem;color:#6b7280;">Upload your medical image with relevant details</p>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="width:50px;height:50px;margin:0 auto 0.75rem;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-search" style="color:#d97706;font-size:1.2rem;"></i>
+            </div>
+            <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.25rem;">2. Review</h4>
+            <p style="font-size:0.8rem;color:#6b7280;">Our medical team reviews your uploaded images</p>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="width:50px;height:50px;margin:0 auto 0.75rem;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-file-medical-alt" style="color:#059669;font-size:1.2rem;"></i>
+            </div>
+            <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.25rem;">3. Results</h4>
+            <p style="font-size:0.8rem;color:#6b7280;">Get analysis results and recommended next steps</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================================
+// Drag and Drop
+// ============================================================
+var dropZone = document.getElementById('dropZone');
+var fileInput = document.getElementById('fileInput');
+var filePreview = document.getElementById('filePreview');
+var fileName = document.getElementById('fileName');
+var submitBtn = document.getElementById('submitBtn');
+
+['dragenter', 'dragover'].forEach(function(evt) {
+    dropZone.addEventListener(evt, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('dragover');
+    });
+});
+
+['dragleave', 'drop'].forEach(function(evt) {
+    dropZone.addEventListener(evt, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('dragover');
+    });
+});
+
+dropZone.addEventListener('drop', function(e) {
+    var files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        showFilePreview(files[0]);
+    }
+});
+
+fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        showFilePreview(this.files[0]);
+    }
+});
+
+function showFilePreview(file) {
+    fileName.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+    filePreview.classList.add('show');
+    submitBtn.disabled = false;
+}
+
+function removeFile() {
+    fileInput.value = '';
+    filePreview.classList.remove('show');
+    submitBtn.disabled = true;
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    var k = 1024;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// ============================================================
+// Image Type Selector
+// ============================================================
+function selectType(el) {
+    document.querySelectorAll('.ia-type-option').forEach(function(opt) {
+        opt.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    document.getElementById('imageTypeInput').value = el.dataset.type;
+}
+
+// Pre-select "Other"
+document.querySelector('.ia-type-option[data-type="Other"]').classList.add('selected');
+
+// ============================================================
+// Prevent submit without file
+// ============================================================
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    if (!fileInput.files || fileInput.files.length === 0) {
+        e.preventDefault();
+        alert('Please select an image to upload.');
+        return false;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+});
+</script>
+{% endblock %}

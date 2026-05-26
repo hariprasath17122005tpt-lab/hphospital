@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Laboratory Report - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Laboratory Report' %}
+{% set breadcrumb_current = 'Lab Report' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-flask me-2"></i>Laboratory Report</h1>
+                <p class="wc-subtitle">Lab test orders, completion analytics, and diagnostic revenue</p>
+            </div>
+            <div>
+                <span class="wc-badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.9rem;padding:8px 18px;">
+                    <i class="fas fa-vial me-1"></i> {{ total_orders }} Total Tests
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="wc-stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-vials"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ total_orders }}</div>
+                <div class="wc-stat-label">Total Orders</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ completed }}</div>
+                <div class="wc-stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ pending }}</div>
+                <div class="wc-stat-label">Pending</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wc-stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ today_orders }}</div>
+                <div class="wc-stat-label">Today's Orders</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ month_orders }}</div>
+                <div class="wc-stat-label">This Month</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div>
+            <div>
+                <div class="wc-stat-number" style="font-size:1.5rem;">₹{{ "%.2f"|format(lab_revenue) }}</div>
+                <div class="wc-stat-label">Lab Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Tests + Completion Rate -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;">
+
+        <!-- Top Tests -->
+        <div class="wc-card">
+            <div class="wc-card-header">
+                <h3><i class="fas fa-trophy me-2" style="color:var(--wc-warning);"></i>Top Tests Ordered</h3>
+            </div>
+            <div class="wc-card-body">
+                {% if top_tests %}
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    {% for name, count in top_tests[:10] %}
+                    {% set max_count = top_tests[0][1] if top_tests else 1 %}
+                    {% set bar_pct = ((count / max_count) * 100) if max_count > 0 else 0 %}
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:.7rem;font-weight:800;
+                                    {% if loop.index <= 3 %}background:rgba(6,182,212,.1);color:#06b6d4;{% else %}background:rgba(100,116,139,.1);color:#64748b;{% endif %}">
+                                    {{ loop.index }}
+                                </span>
+                                <span style="font-weight:600;font-size:.9rem;color:var(--wc-text);">{{ name }}</span>
+                            </div>
+                            <span class="wc-badge wc-badge-info" style="font-size:.75rem;">{{ count }} orders</span>
+                        </div>
+                        <div style="height:4px;background:var(--wc-border);border-radius:2px;overflow:hidden;">
+                            <div style="height:100%;width:{{ bar_pct }}%;background:var(--wc-teal);border-radius:2px;transition:width .6s ease;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="wc-empty-state" style="padding:30px;">
+                    <i class="fas fa-vials"></i>
+                    <h4>No Test Data</h4>
+                    <p>Test order data will appear here.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Completion Overview -->
+        <div class="wc-card">
+            <div class="wc-card-header">
+                <h3><i class="fas fa-chart-bar me-2"></i>Completion Overview</h3>
+            </div>
+            <div class="wc-card-body">
+                {% set comp_pct = ((completed / total_orders) * 100) if total_orders > 0 else 0 %}
+                {% set pend_pct = ((pending / total_orders) * 100) if total_orders > 0 else 0 %}
+                {% set proc_pct = 100 - comp_pct - pend_pct %}
+
+                <!-- Big completion number -->
+                <div style="text-align:center;margin-bottom:24px;">
+                    <div style="font-size:3rem;font-weight:800;color:var(--wc-success);line-height:1;">{{ "%.0f"|format(comp_pct) }}%</div>
+                    <div style="font-size:.88rem;color:var(--wc-text-muted);margin-top:4px;">Completion Rate</div>
+                </div>
+
+                <!-- Stacked bar -->
+                <div style="height:12px;background:var(--wc-border);border-radius:6px;overflow:hidden;display:flex;margin-bottom:18px;">
+                    <div style="height:100%;width:{{ comp_pct }}%;background:#10b981;"></div>
+                    {% if proc_pct > 0 %}
+                    <div style="height:100%;width:{{ proc_pct }}%;background:#3b82f6;"></div>
+                    {% endif %}
+                    <div style="height:100%;width:{{ pend_pct }}%;background:#f59e0b;"></div>
+                </div>
+
+                <!-- Legend -->
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:12px;height:12px;border-radius:3px;background:#10b981;"></div>
+                            <span style="font-size:.88rem;color:var(--wc-text);">Completed</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--wc-success);">{{ completed }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:12px;height:12px;border-radius:3px;background:#3b82f6;"></div>
+                            <span style="font-size:.88rem;color:var(--wc-text);">Processing</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--wc-primary);">{{ total_orders - completed - pending }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:12px;height:12px;border-radius:3px;background:#f59e0b;"></div>
+                            <span style="font-size:.88rem;color:var(--wc-text);">Pending</span>
+                        </div>
+                        <span style="font-weight:700;color:var(--wc-warning);">{{ pending }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-table me-2"></i>All Lab Orders</h3>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Test</th>
+                            <th>Patient</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:.85rem;background:rgba(6,182,212,.1);color:#06b6d4;">
+                                        <i class="fas fa-vial"></i>
+                                    </div>
+                                    <span style="font-weight:600;">{{ order.test_name }}</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--wc-text-muted);">{{ order.patient.full_name if order.patient else '-' }}</td>
+                            <td>
+                                {% set st = order.status|upper if order.status else '' %}
+                                {% if st == 'COMPLETED' %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-check-circle me-1"></i>Completed</span>
+                                {% elif st == 'PENDING' %}
+                                    <span class="wc-badge wc-badge-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                {% elif st == 'PROCESSING' or st == 'IN_PROGRESS' %}
+                                    <span class="wc-badge wc-badge-primary"><i class="fas fa-spinner fa-spin me-1"></i>Processing</span>
+                                {% elif st == 'CANCELLED' %}
+                                    <span class="wc-badge wc-badge-danger"><i class="fas fa-times-circle me-1"></i>Cancelled</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-dark">{{ order.status or '-' }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                {{ order.created_at.strftime('%b %d, %Y %H:%M') if order.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="wc-empty-state">
+                                    <i class="fas fa-flask"></i>
+                                    <h4>No Lab Orders</h4>
+                                    <p>No laboratory orders have been placed yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% block title %}Dr. {{ doctor.first_name }} {{ doctor.last_name }} - CarePoint Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+:root{
+  --blue:#1a3b6e;--blue-d:#0f2549;--blue-l:#2563eb;--teal:#0e7490;
+  --white:#ffffff;--bg:#f7f9fc;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --green:#16a34a;--gold:#f59e0b;
+}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);}
+
+/* ── Nav ── */
+.dp-topbar{background:var(--blue-d);padding:8px 0;font-size:.88rem;color:#94a3b8;}
+.dp-topbar a{color:#93c5fd;transition:color .15s;}
+.dp-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:999;}
+.dp-nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1400px;margin:0 auto;padding:0 40px;}
+.dp-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.dp-logo-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:grid;place-items:center;color:#fff;font-size:1.15rem;}
+.dp-logo-txt{font-size:1.4rem;font-weight:800;color:var(--blue);}
+.dp-logo-txt span{color:var(--teal);}
+.dp-nav-links{display:flex;align-items:center;gap:6px;}
+.dp-nav-links a{font-size:.95rem;font-weight:600;color:var(--text);padding:8px 16px;border-radius:8px;transition:all .15s;text-decoration:none;}
+.dp-nav-links a:hover{background:rgba(37,99,235,.06);color:var(--blue-l);}
+
+/* ── Profile ── */
+.dp-hero{background:linear-gradient(135deg,var(--blue-d) 0%,var(--blue) 60%,var(--teal) 100%);padding:48px 0 0;color:#fff;}
+.dp-profile-card{max-width:1000px;margin:0 auto;padding:0 40px;}
+.dp-profile-top{display:flex;gap:28px;align-items:flex-start;padding-bottom:40px;}
+.dp-avatar{width:100px;height:100px;border-radius:20px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);display:grid;place-items:center;font-size:2.5rem;font-weight:800;color:#fff;flex-shrink:0;border:3px solid rgba(255,255,255,.2);}
+.dp-profile-info h1{font-size:2rem;font-weight:800;margin:0 0 6px;}
+.dp-profile-info .spec-line{font-size:1.1rem;opacity:.85;margin-bottom:4px;}
+.dp-profile-info .qual-line{font-size:.95rem;opacity:.65;}
+.dp-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.dp-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;font-size:.82rem;font-weight:600;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);}
+.dp-badge i{font-size:.75rem;}
+
+/* ── Content ── */
+.dp-content{max-width:1000px;margin:-24px auto 0;padding:0 40px 40px;position:relative;z-index:1;}
+.dp-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;}
+.dp-main-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04);}
+.dp-side-card{background:var(--white);border-radius:16px;border:1px solid var(--border);padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.04);height:fit-content;}
+
+.dp-section-title{font-size:1.1rem;font-weight:700;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.dp-section-title i{color:var(--blue-l);}
+
+.dp-info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+.dp-info-row:last-child{border-bottom:none;}
+.dp-info-label{font-size:.9rem;color:var(--muted);font-weight:500;}
+.dp-info-value{font-size:.95rem;font-weight:600;color:var(--text);}
+
+/* Stars */
+.dp-stars{display:flex;align-items:center;gap:3px;}
+.dp-stars i{font-size:1.1rem;}
+.dp-stars .filled{color:var(--gold);}
+.dp-stars .empty{color:#e2e8f0;}
+.dp-rating-big{font-size:2.2rem;font-weight:800;color:var(--text);margin-right:8px;}
+.dp-rating-sub{font-size:.9rem;color:var(--muted);}
+
+/* CTA */
+.dp-cta{background:linear-gradient(135deg,var(--blue),var(--blue-l));border-radius:14px;padding:24px;text-align:center;color:#fff;margin-top:20px;}
+.dp-cta h4{font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+.dp-cta p{font-size:.88rem;opacity:.8;margin-bottom:14px;}
+.dp-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;background:#fff;color:var(--blue);font-weight:700;font-size:1rem;text-decoration:none;transition:all .2s;border:none;cursor:pointer;}
+.dp-cta-btn:hover{box-shadow:0 6px 20px rgba(0,0,0,.2);transform:translateY(-2px);color:var(--blue);}
+
+/* Reviews */
+.dp-review{padding:16px 0;border-bottom:1px solid var(--border);}
+.dp-review:last-child{border-bottom:none;}
+.dp-review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.dp-review-stars{display:flex;gap:2px;}
+.dp-review-stars i{font-size:.8rem;color:var(--gold);}
+.dp-review-date{font-size:.8rem;color:var(--muted);}
+.dp-review-text{font-size:.9rem;color:var(--text);line-height:1.6;}
+
+/* Footer */
+.dp-footer{background:#0c1525;padding:32px 0;color:#94a3b8;text-align:center;font-size:.9rem;margin-top:40px;}
+
+/* Responsive */
+@media(max-width:768px){
+  .dp-nav-inner{padding:0 16px;}
+  .dp-profile-card{padding:0 16px;}
+  .dp-profile-top{flex-direction:column;gap:16px;}
+  .dp-content{padding:0 16px 24px;}
+  .dp-grid{grid-template-columns:1fr;}
+  .dp-avatar{width:72px;height:72px;font-size:1.8rem;}
+  .dp-profile-info h1{font-size:1.5rem;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top bar -->
+<div class="dp-topbar">
+  <div style="max-width:1400px;margin:0 auto;padding:0 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div><i class="fas fa-phone-alt me-1"></i><a href="tel:+919443966329">+91 94439 66329</a></div>
+    <div><i class="fas fa-map-marker-alt me-1"></i> CarePoint Hospital</div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<div class="dp-nav">
+  <div class="dp-nav-inner">
+    <a href="{{ url_for('main.index') }}" class="dp-logo">
+      <div class="dp-logo-mark"><i class="fas fa-heartbeat"></i></div>
+      <div class="dp-logo-txt">Care<span>Point</span></div>
+    </a>
+    <div class="dp-nav-links">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <a href="{{ url_for('doctor_search.listing') }}"><i class="fas fa-arrow-left me-1"></i>All Doctors</a>
+      <a href="{{ url_for('auth.patient_register') }}" style="background:var(--blue);color:#fff;border-radius:8px;padding:10px 22px;">Book Appointment</a>
+    </div>
+  </div>
+</div>
+
+<!-- Hero / Profile Header -->
+<div class="dp-hero">
+  <div class="dp-profile-card">
+    <div class="dp-profile-top">
+      <div class="dp-avatar">{{ doctor.first_name[0] }}{{ doctor.last_name[0] }}</div>
+      <div class="dp-profile-info">
+        <h1>Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h1>
+        <div class="spec-line"><i class="fas fa-stethoscope me-1"></i>{{ doctor.specialization or 'General Medicine' }}</div>
+        {% if doctor.qualification %}
+        <div class="qual-line">{{ doctor.qualification }}</div>
+        {% endif %}
+        <div class="dp-badges">
+          <span class="dp-badge"><i class="fas fa-check-circle"></i> Verified</span>
+          {% if doctor.experience_years %}
+          <span class="dp-badge"><i class="fas fa-briefcase"></i> {{ doctor.experience_years }} Years Experience</span>
+          {% endif %}
+          {% if doctor.license_number %}
+          <span class="dp-badge"><i class="fas fa-id-card"></i> Lic: {{ doctor.license_number }}</span>
+          {% endif %}
+          {% if appt_count > 0 %}
+          <span class="dp-badge"><i class="fas fa-calendar-check"></i> {{ appt_count }}+ Consultations</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="dp-content">
+  <div class="dp-grid">
+    <!-- Main Column -->
+    <div>
+      <!-- About -->
+      <div class="dp-main-card" style="margin-bottom:24px;">
+        <div class="dp-section-title"><i class="fas fa-user-md"></i> Doctor Information</div>
+        <div class="dp-info-row">
+          <span class="dp-info-label">Specialization</span>
+          <span class="dp-info-value">{{ doctor.specialization or 'General Medicine' }}</span>
+        </div>
+        {% if doctor.qualification %}
+        <div class="dp-info-row">
+          <span class="dp-info-label">Qualification</span>
+          <span class="dp-info-value">{{ doctor.qualification }}</span>
+        </div>
+        {% endif %}
+        {% if doctor.experience_years %}
+        <div class="dp-info-row">
+          <span class="dp-info-label">Experience</span>
+          <span class="dp-info-value">{{ doctor.experience_years }} years</span>
+        </div>
+        {% endif %}
+        {% if doctor.consultation_fee %}
+        <div class="dp-info-row">
+          <span class="dp-info-label">Consultation Fee</span>
+          <span class="dp-info-value" style="color:var(--green);font-size:1.1rem;">&#8377;{{ doctor.consultation_fee | int }}</span>
+        </div>
+        {% endif %}
+        {% if doctor.availability_hours %}
+        <div class="dp-info-row">
+          <span class="dp-info-label">Availability</span>
+          <span class="dp-info-value">{{ doctor.availability_hours }}</span>
+        </div>
+        {% endif %}
+        {% if doctor.phone %}
+        <div class="dp-info-row">
+          <span class="dp-info-label">Contact</span>
+          <span class="dp-info-value"><i class="fas fa-phone-alt me-1" style="color:var(--blue-l);font-size:.8rem;"></i>{{ doctor.phone }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="dp-main-card">
+        <div class="dp-section-title"><i class="fas fa-star"></i> Patient Reviews ({{ review_count }})</div>
+        {% if reviews %}
+          {% for review in reviews %}
+          <div class="dp-review">
+            <div class="dp-review-header">
+              <div class="dp-review-stars">
+                {% for i in range(1, 6) %}
+                  {% if i <= (review.doctor_rating or review.rating or 0) %}
+                  <i class="fas fa-star"></i>
+                  {% else %}
+                  <i class="far fa-star" style="color:#e2e8f0;"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <span class="dp-review-date">{{ review.created_at.strftime('%b %d, %Y') if review.created_at else '' }}</span>
+            </div>
+            {% if review.review_text %}
+            <div class="dp-review-text">{{ review.review_text }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--muted);font-size:.9rem;text-align:center;padding:24px 0;">No reviews yet. Be the first to leave a review after your consultation.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Side Column -->
+    <div>
+      <!-- Rating Card -->
+      <div class="dp-side-card" style="margin-bottom:20px;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;">
+            <span class="dp-rating-big">{{ avg_rating }}</span>
+            <div>
+              <div class="dp-stars">
+                {% for i in range(1, 6) %}
+                  {% if i <= (avg_rating | round(0, 'floor') | int) %}
+                  <i class="fas fa-star filled"></i>
+                  {% elif i - 0.5 <= avg_rating %}
+                  <i class="fas fa-star-half-alt filled"></i>
+                  {% else %}
+                  <i class="far fa-star empty"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <div class="dp-rating-sub">{{ review_count }} review{{ 's' if review_count != 1 else '' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fee Card -->
+      {% if doctor.consultation_fee %}
+      <div class="dp-side-card" style="margin-bottom:20px;">
+        <div style="text-align:center;">
+          <div style="font-size:.85rem;color:var(--muted);margin-bottom:4px;">Consultation Fee</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--green);">&#8377;{{ doctor.consultation_fee | int }}</div>
+          <div style="font-size:.8rem;color:var(--muted);">per visit</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- CTA Card -->
+      <div class="dp-cta">
+        <h4>Ready to book?</h4>
+        <p>Schedule an appointment with Dr. {{ doctor.first_name }} {{ doctor.last_name }}</p>
+        <a href="{{ url_for('auth.patient_register') }}" class="dp-cta-btn">
+          <i class="fas fa-calendar-plus"></i> Book Appointment
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="dp-footer">
+  <p>&copy; 2025 CarePoint AI Healthcare. All rights reserved.</p>
+</div>
+{% endblock %}

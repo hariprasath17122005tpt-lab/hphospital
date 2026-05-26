@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Notifications — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-bell me-2"></i>Notification Center</h1><p class="wc-subtitle">{{ unread }} unread of {{ total }} total notifications</p></div>
+        {% if unread > 0 %}<button class="wc-btn wc-btn-outline" onclick="markAllRead()"><i class="fas fa-check-double me-2"></i>Mark All Read</button>{% endif %}
+    </div></div>
+
+    <div class="wc-card">
+        <div class="wc-card-body">
+            {% if notifications %}
+            <div class="wc-notification-list">
+                {% for n in notifications %}
+                <div class="wc-notification-item {{ 'wc-notif-unread' if not n.is_read }}" id="notif-{{ n.id }}">
+                    <div class="wc-notif-icon wc-notif-{{ n.notification_type or 'system' }}">
+                        <i class="fas {{ n.icon or 'fa-bell' }}"></i>
+                    </div>
+                    <div class="wc-notif-content">
+                        <div class="wc-notif-title">{{ n.title }}</div>
+                        <div class="wc-notif-message">{{ n.message }}</div>
+                        <div class="wc-notif-time"><i class="fas fa-clock me-1"></i>{{ n.created_at.strftime('%d %b %Y, %I:%M %p') if n.created_at else '' }}</div>
+                    </div>
+                    <div class="wc-notif-actions">
+                        {% if n.action_url %}<a href="{{ n.action_url }}" class="wc-btn wc-btn-sm wc-btn-primary">View</a>{% endif %}
+                        {% if not n.is_read %}<button class="wc-btn wc-btn-sm wc-btn-outline" onclick="markRead({{ n.id }})"><i class="fas fa-check"></i></button>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if total > per_page %}
+            <div class="d-flex justify-content-center gap-2 mt-4">
+                {% if page > 1 %}<a href="?page={{ page-1 }}" class="wc-btn wc-btn-outline">Previous</a>{% endif %}
+                <span class="wc-btn wc-btn-outline" style="cursor:default;">Page {{ page }}</span>
+                {% if page * per_page < total %}<a href="?page={{ page+1 }}" class="wc-btn wc-btn-outline">Next</a>{% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="wc-empty-state"><i class="fas fa-bell-slash"></i><h4>No Notifications</h4><p>You're all caught up! No notifications at this time.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function markRead(id) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("notifications.mark_read") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({notification_id: id})
+    }).then(r => r.json()).then(data => {
+        if(data.success) { var el=document.getElementById('notif-'+id); if(el) el.classList.remove('wc-notif-unread'); }
+    });
+}
+function markAllRead() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("notifications.mark_read") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({notification_id: 'all'})
+    }).then(() => location.reload());
+}
+</script>
+{% endblock %}

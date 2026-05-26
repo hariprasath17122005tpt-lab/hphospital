@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}Patient Directory - CarePoint Admin{% endblock %}
+
+{% set topbar_title = 'Patient Directory' %}
+{% set breadcrumb_current = 'All Patients' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+
+    <!-- Page Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-address-book me-2"></i>Patient Directory</h1>
+                <p class="wc-subtitle">Complete patient registry with payment tracking and search</p>
+            </div>
+            <div>
+                <span class="wc-badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:.9rem;padding:8px 18px;">
+                    <i class="fas fa-users me-1"></i> {{ total }} Patients
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="wc-card" style="margin-bottom:24px;">
+        <div class="wc-card-body" style="padding:16px 24px;">
+            <form method="GET" action="" style="display:flex;gap:12px;align-items:center;">
+                <div style="flex:1;position:relative;">
+                    <i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--wc-text-muted);"></i>
+                    <input type="text" name="q" value="{{ search or '' }}" placeholder="Search by name, UHID, phone, or blood type..."
+                           class="wc-input" style="padding-left:40px;">
+                </div>
+                <button type="submit" class="wc-btn wc-btn-primary">
+                    <i class="fas fa-search me-1"></i> Search
+                </button>
+                {% if search %}
+                <a href="?" class="wc-btn wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">
+                    <i class="fas fa-times me-1"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+            {% if search %}
+            <div style="margin-top:10px;font-size:.88rem;color:var(--wc-text-muted);">
+                <i class="fas fa-info-circle me-1"></i> Showing results for "<strong style="color:var(--wc-text);">{{ search }}</strong>" -- {{ total }} match{{ 'es' if total != 1 }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ total }}</div>
+                <div class="wc-stat-label">Total Patients</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-user-check"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ patients|rejectattr('is_walk_in')|list|length }}</div>
+                <div class="wc-stat-label">Registered</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-walking"></i></div>
+            <div>
+                <div class="wc-stat-number">{{ patients|selectattr('is_walk_in')|list|length }}</div>
+                <div class="wc-stat-label">Walk-in</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div>
+            <div>
+                <div class="wc-stat-number">₹{{ "%.0f"|format(patient_payments.values()|sum) if patient_payments else '0' }}</div>
+                <div class="wc-stat-label">Total Collected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-table me-2"></i>Patient Records</h3>
+            <span style="color:var(--wc-text-muted);font-size:.88rem;">Page {{ page }} of {{ ((total - 1) // per_page + 1) if total > 0 else 1 }}</span>
+        </div>
+        <div class="wc-card-body" style="padding:0;">
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>UHID</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Blood Type</th>
+                            <th>Walk-in?</th>
+                            <th>Total Paid</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td style="color:var(--wc-text-muted);font-weight:600;">{{ (page - 1) * per_page + loop.index }}</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:.85rem;
+                                        {% if patient.gender and patient.gender|lower == 'male' %}background:rgba(37,99,235,.1);color:var(--wc-primary);
+                                        {% elif patient.gender and patient.gender|lower == 'female' %}background:rgba(236,72,153,.1);color:#ec4899;
+                                        {% else %}background:rgba(100,116,139,.1);color:#64748b;{% endif %}">
+                                        {{ patient.full_name[0]|upper if patient.full_name else '?' }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ patient.full_name }}</span>
+                                </div>
+                            </td>
+                            <td><code style="font-weight:700;color:var(--wc-primary);">{{ patient.uhid or '-' }}</code></td>
+                            <td style="white-space:nowrap;">
+                                <i class="fas fa-phone me-1" style="color:var(--wc-text-muted);font-size:.75rem;"></i>
+                                {{ patient.phone or '-' }}
+                            </td>
+                            <td>{{ patient.age or '-' }}</td>
+                            <td>
+                                {% if patient.gender %}
+                                    {% if patient.gender|lower == 'male' %}
+                                        <span class="wc-badge wc-badge-primary"><i class="fas fa-mars me-1"></i>M</span>
+                                    {% elif patient.gender|lower == 'female' %}
+                                        <span class="wc-badge" style="background:rgba(236,72,153,.1);color:#ec4899;"><i class="fas fa-venus me-1"></i>F</span>
+                                    {% else %}
+                                        <span class="wc-badge wc-badge-dark">{{ patient.gender }}</span>
+                                    {% endif %}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td>
+                                {% if patient.blood_type %}
+                                    <span class="wc-badge wc-badge-danger" style="font-weight:800;">
+                                        <i class="fas fa-tint me-1"></i>{{ patient.blood_type }}
+                                    </span>
+                                {% else %}
+                                    <span style="color:var(--wc-text-muted);">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if patient.is_walk_in %}
+                                    <span class="wc-badge wc-badge-warning"><i class="fas fa-walking me-1"></i>Yes</span>
+                                {% else %}
+                                    <span class="wc-badge wc-badge-success"><i class="fas fa-user-check me-1"></i>No</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-weight:700;white-space:nowrap;">
+                                {% set paid = patient_payments.get(patient.id, 0) if patient_payments else 0 %}
+                                {% if paid > 0 %}
+                                    <span style="color:var(--wc-success);">
+                                        <i class="fas fa-rupee-sign" style="font-size:.8rem;"></i>{{ "%.2f"|format(paid) }}
+                                    </span>
+                                {% else %}
+                                    <span style="color:var(--wc-text-muted);">₹0.00</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;color:var(--wc-text-muted);">
+                                <i class="far fa-calendar me-1"></i>
+                                {{ patient.created_at.strftime('%b %d, %Y') if patient.created_at else '-' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="10">
+                                <div class="wc-empty-state">
+                                    <i class="fas fa-address-book"></i>
+                                    <h4>No Patients Found</h4>
+                                    {% if search %}
+                                    <p>No patients match your search criteria. Try a different query.</p>
+                                    {% else %}
+                                    <p>No patients have been registered yet.</p>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% set total_pages = ((total - 1) // per_page + 1) if total > 0 else 1 %}
+    {% if total_pages > 1 %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:24px;">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}{% if search %}&q={{ search }}{% endif %}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <span class="wc-btn wc-btn-sm wc-btn-primary">{{ p }}</span>
+            {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                <a href="?page={{ p }}{% if search %}&q={{ search }}{% endif %}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">{{ p }}</a>
+            {% elif p == 4 or p == total_pages - 3 %}
+                <span style="color:var(--wc-text-muted);">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}{% if search %}&q={{ search }}{% endif %}" class="wc-btn wc-btn-sm wc-btn-outline" style="color:var(--wc-text-muted);border:2px solid var(--wc-border);">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

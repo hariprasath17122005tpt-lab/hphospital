@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Operation Theatre — CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <!-- Header -->
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-procedures me-2"></i>Operation Theatre</h1>
+                <p class="wc-subtitle">Surgical scheduling, OT room status & live tracking</p>
+            </div>
+            <a href="{{ url_for('ot.schedule') }}" class="wc-btn wc-btn-primary">
+                <i class="fas fa-plus me-2"></i>Schedule Surgery
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number" data-count="{{ stats.total_today }}">{{ stats.total_today }}</div>
+                <div class="wc-stat-label">Today's Surgeries</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-green">
+            <div class="wc-stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number" data-count="{{ stats.completed_today }}">{{ stats.completed_today }}</div>
+                <div class="wc-stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-orange">
+            <div class="wc-stat-icon"><i class="fas fa-spinner fa-pulse"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number" data-count="{{ stats.in_progress }}">{{ stats.in_progress }}</div>
+                <div class="wc-stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="wc-stat-card wc-stat-purple">
+            <div class="wc-stat-icon"><i class="fas fa-calendar-week"></i></div>
+            <div class="wc-stat-info">
+                <div class="wc-stat-number" data-count="{{ stats.upcoming_week }}">{{ stats.upcoming_week }}</div>
+                <div class="wc-stat-label">This Week</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OT Room Status -->
+    <div class="wc-card mb-4">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-door-open me-2"></i>OT Room Status</h3>
+            <span class="wc-badge wc-badge-info">Live</span>
+        </div>
+        <div class="wc-card-body">
+            <div class="row g-3">
+                {% for room, info in room_status.items() %}
+                <div class="col-md-3">
+                    <div class="wc-room-card {{ 'wc-room-occupied' if info.status == 'Occupied' else 'wc-room-available' }}">
+                        <div class="wc-room-indicator"></div>
+                        <h4>{{ room }}</h4>
+                        <span class="wc-room-status">{{ info.status }}</span>
+                        {% if info.booking %}
+                        <div class="wc-room-detail">
+                            <small>{{ info.booking.surgery_name }}</small><br>
+                            <small class="text-muted">Dr. {{ info.booking.doctor.first_name if info.booking.doctor else 'N/A' }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Schedule -->
+    <div class="wc-card">
+        <div class="wc-card-header">
+            <h3><i class="fas fa-list-alt me-2"></i>Today's Schedule</h3>
+        </div>
+        <div class="wc-card-body">
+            {% if todays_surgeries %}
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Patient</th>
+                            <th>Surgery</th>
+                            <th>Surgeon</th>
+                            <th>OT Room</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in todays_surgeries %}
+                        <tr>
+                            <td><strong>{{ s.scheduled_date.strftime('%I:%M %p') }}</strong></td>
+                            <td>{{ s.patient.full_name if s.patient else 'N/A' }}</td>
+                            <td>{{ s.surgery_name }}</td>
+                            <td>Dr. {{ s.doctor.first_name if s.doctor else 'N/A' }} {{ s.doctor.last_name if s.doctor else '' }}</td>
+                            <td><span class="wc-badge wc-badge-info">{{ s.ot_room or 'TBD' }}</span></td>
+                            <td>{{ s.surgery_type or 'Elective' }}</td>
+                            <td>
+                                {% if s.status == 'Completed' %}
+                                <span class="wc-badge wc-badge-success">Completed</span>
+                                {% elif s.status == 'In Progress' %}
+                                <span class="wc-badge wc-badge-warning wc-pulse">In Progress</span>
+                                {% elif s.status == 'Cancelled' %}
+                                <span class="wc-badge wc-badge-danger">Cancelled</span>
+                                {% else %}
+                                <span class="wc-badge wc-badge-primary">Scheduled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if s.status == 'Scheduled' %}
+                                <button class="wc-btn wc-btn-sm wc-btn-success" onclick="updateOTStatus({{ s.id }}, 'In Progress')">
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                {% elif s.status == 'In Progress' %}
+                                <button class="wc-btn wc-btn-sm wc-btn-primary" onclick="updateOTStatus({{ s.id }}, 'Completed')">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                                {% endif %}
+                                <a href="{{ url_for('ot.view_booking', booking_id=s.id) }}" class="wc-btn wc-btn-sm wc-btn-outline">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="wc-empty-state">
+                <i class="fas fa-calendar-check"></i>
+                <h4>No Surgeries Today</h4>
+                <p>Schedule a new surgery to get started.</p>
+                <a href="{{ url_for('ot.schedule') }}" class="wc-btn wc-btn-primary">Schedule Surgery</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updateOTStatus(bookingId, status) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("ot.update_status") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({booking_id: bookingId, status: status})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) location.reload();
+        else alert(data.error || 'Error updating status');
+    });
+}
+</script>
+{% endblock %}

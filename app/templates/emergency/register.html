@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Register Emergency — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header wc-header-emergency">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-ambulance me-2"></i>Register Emergency Case</h1>
+                <p class="wc-subtitle">Quick triage and emergency registration</p>
+            </div>
+            <a href="{{ url_for('emergency.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a>
+        </div>
+    </div>
+
+    <div class="wc-card">
+        <div class="wc-card-body">
+            <form method="POST" class="wc-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Triage Level Selection -->
+                <div class="wc-triage-selector mb-4">
+                    <label class="wc-label fw-bold fs-5 mb-3">Triage Level</label>
+                    <div class="row g-3">
+                        <div class="col-3"><label class="wc-triage-option"><input type="radio" name="triage_level" value="Critical" required><span class="wc-triage-btn wc-triage-red"><i class="fas fa-exclamation-triangle"></i><br>Critical</span></label></div>
+                        <div class="col-3"><label class="wc-triage-option"><input type="radio" name="triage_level" value="Urgent" checked><span class="wc-triage-btn wc-triage-orange"><i class="fas fa-bolt"></i><br>Urgent</span></label></div>
+                        <div class="col-3"><label class="wc-triage-option"><input type="radio" name="triage_level" value="Semi-Urgent"><span class="wc-triage-btn wc-triage-yellow"><i class="fas fa-clock"></i><br>Semi-Urgent</span></label></div>
+                        <div class="col-3"><label class="wc-triage-option"><input type="radio" name="triage_level" value="Non-Urgent"><span class="wc-triage-btn wc-triage-green"><i class="fas fa-check"></i><br>Non-Urgent</span></label></div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Existing Patient</label>
+                            <select name="patient_id" class="wc-select">
+                                <option value="">New / Unregistered Patient</option>
+                                {% for p in patients %}
+                                <option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Arrival Mode</label>
+                            <select name="arrival_mode" class="wc-select">
+                                <option value="Walk-in">Walk-in</option>
+                                <option value="Ambulance">Ambulance</option>
+                                <option value="Referred">Referred</option>
+                                <option value="Police">Police</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Patient Name</label><input type="text" name="patient_name" class="wc-input" placeholder="Full name"></div></div>
+                    <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Age</label><input type="number" name="patient_age" class="wc-input" placeholder="Age"></div></div>
+                    <div class="col-md-4"><div class="wc-form-group"><label class="wc-label">Gender</label><select name="patient_gender" class="wc-select"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div></div>
+                    <div class="col-12"><div class="wc-form-group"><label class="wc-label fw-bold">Chief Complaint *</label><textarea name="chief_complaint" class="wc-textarea" rows="3" required placeholder="Describe the patient's chief complaint..."></textarea></div></div>
+
+                    <div class="col-12"><h5 class="wc-section-title"><i class="fas fa-heartbeat me-2"></i>Vitals on Arrival</h5></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">BP Systolic</label><input type="number" name="bp_systolic" class="wc-input" placeholder="120"></div></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">BP Diastolic</label><input type="number" name="bp_diastolic" class="wc-input" placeholder="80"></div></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">Heart Rate</label><input type="number" name="heart_rate" class="wc-input" placeholder="72"></div></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">SpO2 %</label><input type="number" name="spo2" class="wc-input" placeholder="98"></div></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">Temp (°F)</label><input type="number" step="0.1" name="temperature" class="wc-input" placeholder="98.6"></div></div>
+                    <div class="col-md-2"><div class="wc-form-group"><label class="wc-label">GCS (3-15)</label><input type="number" name="gcs_score" class="wc-input" value="15" min="3" max="15"></div></div>
+
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Attending Doctor</label>
+                            <select name="attending_doctor_id" class="wc-select">
+                                <option value="">Assign Later</option>
+                                {% for d in doctors %}
+                                <option value="{{ d.id }}">Dr. {{ d.first_name }} {{ d.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Phone</label><input type="text" name="patient_phone" class="wc-input" placeholder="Emergency contact"></div></div>
+                </div>
+
+                <div class="wc-form-actions mt-4">
+                    <button type="submit" class="wc-btn wc-btn-danger wc-btn-lg"><i class="fas fa-ambulance me-2"></i>Register Emergency</button>
+                    <a href="{{ url_for('emergency.dashboard') }}" class="wc-btn wc-btn-outline wc-btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

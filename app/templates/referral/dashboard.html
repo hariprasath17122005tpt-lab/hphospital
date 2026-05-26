@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% block title %}Referral Management - CarePoint{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ── Referral Dashboard Styles ── */
+.ref-container{max-width:1200px;margin:0 auto;}
+
+/* Tabs */
+.ref-tabs{display:flex;gap:4px;background:rgba(0,0,0,.04);border-radius:12px;padding:4px;margin-bottom:24px;width:fit-content;}
+.ref-tab{padding:10px 24px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;background:transparent;color:var(--text-secondary,#64748b);}
+.ref-tab.active{background:var(--primary,#2563eb);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+.ref-tab .badge{font-size:.72rem;padding:2px 7px;border-radius:50px;margin-left:6px;vertical-align:middle;}
+.ref-tab.active .badge{background:rgba(255,255,255,.25);color:#fff;}
+.ref-tab:not(.active) .badge{background:rgba(0,0,0,.08);color:var(--text-secondary,#64748b);}
+
+/* Panels */
+.ref-panel{display:none;}
+.ref-panel.active{display:block;}
+
+/* Cards */
+.ref-card{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:14px;padding:20px 24px;margin-bottom:14px;transition:all .2s;}
+.ref-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06);border-color:var(--primary,#2563eb);}
+.ref-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.ref-card-title{font-size:1.05rem;font-weight:700;color:var(--text-primary,#1e293b);}
+.ref-card-sub{font-size:.85rem;color:var(--text-secondary,#64748b);margin-top:2px;}
+.ref-card-body{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:12px;}
+.ref-info{display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--text-secondary,#64748b);}
+.ref-info i{color:var(--primary,#2563eb);width:16px;text-align:center;font-size:.8rem;}
+.ref-card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border-color,#e2e8f0);}
+
+/* Badges */
+.ref-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:50px;font-size:.78rem;font-weight:700;letter-spacing:.3px;}
+.ref-badge-pending{background:rgba(251,191,36,.12);color:#b45309;}
+.ref-badge-accepted{background:rgba(34,197,94,.12);color:#15803d;}
+.ref-badge-completed{background:rgba(59,130,246,.12);color:#1d4ed8;}
+.ref-badge-declined{background:rgba(239,68,68,.12);color:#dc2626;}
+.ref-badge-routine{background:rgba(148,163,184,.1);color:#64748b;}
+.ref-badge-urgent{background:rgba(251,146,60,.12);color:#c2410c;}
+.ref-badge-emergency{background:rgba(239,68,68,.15);color:#dc2626;}
+
+/* Arrows */
+.ref-arrow{display:flex;align-items:center;gap:10px;font-size:.88rem;}
+.ref-arrow .from{color:var(--primary,#2563eb);font-weight:600;}
+.ref-arrow .to{color:#0e7490;font-weight:600;}
+.ref-arrow i{color:var(--text-secondary,#64748b);font-size:.7rem;}
+
+/* Action buttons */
+.ref-action-btn{padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;}
+.ref-action-accept{background:#22c55e;color:#fff;}
+.ref-action-accept:hover{background:#16a34a;}
+.ref-action-decline{background:transparent;color:#ef4444;border:1px solid #fca5a5;}
+.ref-action-decline:hover{background:#ef4444;color:#fff;}
+.ref-action-complete{background:var(--primary,#2563eb);color:#fff;}
+.ref-action-complete:hover{background:#1d4ed8;}
+
+/* Create Form */
+.ref-form-card{background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:16px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.04);}
+.ref-form-title{font-size:1.15rem;font-weight:700;color:var(--text-primary,#1e293b);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.ref-form-title i{color:var(--primary,#2563eb);}
+.ref-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.ref-form-full{margin-bottom:16px;}
+.ref-form-label{display:block;font-size:.85rem;font-weight:600;color:var(--text-primary,#1e293b);margin-bottom:6px;}
+.ref-form-input,.ref-form-select,.ref-form-textarea{width:100%;padding:10px 14px;border:1px solid var(--border-color,#e2e8f0);border-radius:10px;font-size:.9rem;background:var(--card-bg,#fff);color:var(--text-primary,#1e293b);transition:border-color .2s;}
+.ref-form-input:focus,.ref-form-select:focus,.ref-form-textarea:focus{outline:none;border-color:var(--primary,#2563eb);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+.ref-form-textarea{min-height:80px;resize:vertical;}
+.ref-form-submit{padding:12px 32px;border-radius:10px;font-size:.95rem;font-weight:700;border:none;cursor:pointer;background:var(--primary,#2563eb);color:#fff;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.ref-form-submit:hover{background:#1d4ed8;box-shadow:0 4px 14px rgba(37,99,235,.25);}
+
+/* Empty */
+.ref-empty{text-align:center;padding:48px 20px;color:var(--text-secondary,#64748b);}
+.ref-empty i{font-size:2.5rem;margin-bottom:12px;color:var(--border-color,#e2e8f0);}
+.ref-empty h4{font-size:1.1rem;font-weight:700;color:var(--text-primary,#1e293b);margin-bottom:6px;}
+
+/* Layout */
+.ref-layout{display:grid;grid-template-columns:1fr 400px;gap:28px;}
+@media(max-width:992px){
+  .ref-layout{grid-template-columns:1fr;}
+  .ref-form-row{grid-template-columns:1fr;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ref-container">
+  <!-- Header -->
+  <div style="margin-bottom:28px;">
+    <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;"><i class="fas fa-share-alt me-2" style="color:var(--primary,#2563eb);"></i>Referral Management</h2>
+    <p style="color:var(--text-secondary,#64748b);font-size:.95rem;">Manage patient referrals to other doctors and departments</p>
+  </div>
+
+  <div class="ref-layout">
+    <!-- Left: Referral Lists -->
+    <div>
+      <!-- Tabs -->
+      <div class="ref-tabs">
+        <button class="ref-tab active" onclick="switchRefTab('outgoing', this)">
+          <i class="fas fa-paper-plane me-1"></i>Outgoing
+          <span class="badge">{{ outgoing|length }}</span>
+        </button>
+        <button class="ref-tab" onclick="switchRefTab('incoming', this)">
+          <i class="fas fa-inbox me-1"></i>Incoming
+          <span class="badge">{{ incoming|length }}</span>
+        </button>
+      </div>
+
+      <!-- Outgoing Panel -->
+      <div id="panel-outgoing" class="ref-panel active">
+        {% if outgoing %}
+          {% for ref in outgoing %}
+          <div class="ref-card" id="ref-card-{{ ref.id }}">
+            <div class="ref-card-header">
+              <div>
+                <div class="ref-card-title">{{ ref.patient.full_name if ref.patient else 'Unknown Patient' }}</div>
+                <div class="ref-card-sub">{{ ref.referral_type or 'Internal' }} Referral &middot; {{ ref.created_at.strftime('%b %d, %Y') if ref.created_at else '' }}</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <span class="ref-badge ref-badge-{{ ref.urgency|lower if ref.urgency else 'routine' }}">{{ ref.urgency or 'Routine' }}</span>
+                <span class="ref-badge ref-badge-{{ ref.status|lower if ref.status else 'pending' }}">{{ ref.status or 'Pending' }}</span>
+              </div>
+            </div>
+            <div class="ref-card-body">
+              <div class="ref-arrow">
+                <span class="from">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</span>
+                <i class="fas fa-long-arrow-alt-right"></i>
+                {% if ref.referred_doctor %}
+                <span class="to">Dr. {{ ref.referred_doctor.first_name }} {{ ref.referred_doctor.last_name }}</span>
+                {% elif ref.referred_to_department %}
+                <span class="to">{{ ref.referred_to_department }}</span>
+                {% elif ref.referred_to_external %}
+                <span class="to">{{ ref.referred_to_external }} (External)</span>
+                {% else %}
+                <span class="to">Unassigned</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="ref-info" style="margin-bottom:8px;"><i class="fas fa-comment-medical"></i> {{ ref.reason }}</div>
+            {% if ref.clinical_notes %}
+            <div class="ref-info" style="margin-bottom:4px;"><i class="fas fa-notes-medical"></i> {{ ref.clinical_notes }}</div>
+            {% endif %}
+            {% if ref.status == 'Pending' %}
+            <div class="ref-card-footer">
+              <span style="font-size:.82rem;color:var(--text-secondary,#64748b);">Awaiting response</span>
+              <button class="ref-action-btn ref-action-decline" onclick="updateReferralStatus({{ ref.id }}, 'Declined')">Cancel</button>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="ref-empty">
+            <i class="fas fa-paper-plane"></i>
+            <h4>No outgoing referrals</h4>
+            <p>Create a referral using the form on the right.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Incoming Panel -->
+      <div id="panel-incoming" class="ref-panel">
+        {% if incoming %}
+          {% for ref in incoming %}
+          <div class="ref-card" id="ref-card-{{ ref.id }}">
+            <div class="ref-card-header">
+              <div>
+                <div class="ref-card-title">{{ ref.patient.full_name if ref.patient else 'Unknown Patient' }}</div>
+                <div class="ref-card-sub">From Dr. {{ ref.referring_doctor.first_name }} {{ ref.referring_doctor.last_name }} &middot; {{ ref.created_at.strftime('%b %d, %Y') if ref.created_at else '' }}</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <span class="ref-badge ref-badge-{{ ref.urgency|lower if ref.urgency else 'routine' }}">{{ ref.urgency or 'Routine' }}</span>
+                <span class="ref-badge ref-badge-{{ ref.status|lower if ref.status else 'pending' }}" id="status-badge-{{ ref.id }}">{{ ref.status or 'Pending' }}</span>
+              </div>
+            </div>
+            <div class="ref-card-body">
+              <div class="ref-arrow">
+                <span class="from">Dr. {{ ref.referring_doctor.first_name }} {{ ref.referring_doctor.last_name }}</span>
+                <i class="fas fa-long-arrow-alt-right"></i>
+                <span class="to">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</span>
+              </div>
+              {% if ref.referred_to_department %}
+              <div class="ref-info"><i class="fas fa-hospital"></i> {{ ref.referred_to_department }}</div>
+              {% endif %}
+            </div>
+            <div class="ref-info" style="margin-bottom:8px;"><i class="fas fa-comment-medical"></i> {{ ref.reason }}</div>
+            {% if ref.clinical_notes %}
+            <div class="ref-info" style="margin-bottom:4px;"><i class="fas fa-notes-medical"></i> {{ ref.clinical_notes }}</div>
+            {% endif %}
+            {% if ref.status == 'Pending' %}
+            <div class="ref-card-footer">
+              <span style="font-size:.82rem;color:var(--text-secondary,#64748b);">Action required</span>
+              <div style="display:flex;gap:8px;">
+                <button class="ref-action-btn ref-action-accept" onclick="updateReferralStatus({{ ref.id }}, 'Accepted')"><i class="fas fa-check me-1"></i>Accept</button>
+                <button class="ref-action-btn ref-action-decline" onclick="updateReferralStatus({{ ref.id }}, 'Declined')"><i class="fas fa-times me-1"></i>Decline</button>
+              </div>
+            </div>
+            {% elif ref.status == 'Accepted' %}
+            <div class="ref-card-footer">
+              <span style="font-size:.82rem;color:#22c55e;font-weight:600;">Accepted</span>
+              <button class="ref-action-btn ref-action-complete" onclick="updateReferralStatus({{ ref.id }}, 'Completed')"><i class="fas fa-check-double me-1"></i>Mark Complete</button>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="ref-empty">
+            <i class="fas fa-inbox"></i>
+            <h4>No incoming referrals</h4>
+            <p>Referrals from other doctors will appear here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Create Referral Form -->
+    <div>
+      <div class="ref-form-card">
+        <div class="ref-form-title"><i class="fas fa-plus-circle"></i> New Referral</div>
+        <form id="referralForm" onsubmit="submitReferral(event)">
+          <div class="ref-form-full">
+            <label class="ref-form-label">Patient *</label>
+            <select name="patient_id" class="ref-form-select" required>
+              <option value="">Select patient...</option>
+              {% for p in patients %}
+              <option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="ref-form-row">
+            <div>
+              <label class="ref-form-label">Referral Type</label>
+              <select name="referral_type" class="ref-form-select" id="referralType" onchange="toggleReferralFields()">
+                <option value="Internal">Internal</option>
+                <option value="External">External</option>
+                <option value="Second Opinion">Second Opinion</option>
+              </select>
+            </div>
+            <div>
+              <label class="ref-form-label">Urgency</label>
+              <select name="urgency" class="ref-form-select">
+                <option value="Routine">Routine</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Emergency">Emergency</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Internal fields -->
+          <div id="internalFields">
+            <div class="ref-form-full">
+              <label class="ref-form-label">Refer to Doctor</label>
+              <select name="referred_to_doctor_id" class="ref-form-select">
+                <option value="">Select doctor (optional)...</option>
+                {% for d in doctors %}
+                <option value="{{ d.id }}">Dr. {{ d.first_name }} {{ d.last_name }} - {{ d.specialization }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="ref-form-full">
+              <label class="ref-form-label">Department</label>
+              <select name="referred_to_department" class="ref-form-select">
+                <option value="">Select department (optional)...</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Dermatology">Dermatology</option>
+                <option value="ENT">ENT</option>
+                <option value="Gynecology">Gynecology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Ophthalmology">Ophthalmology</option>
+                <option value="Psychiatry">Psychiatry</option>
+                <option value="Urology">Urology</option>
+                <option value="Oncology">Oncology</option>
+                <option value="Pulmonology">Pulmonology</option>
+                <option value="Nephrology">Nephrology</option>
+                <option value="Gastroenterology">Gastroenterology</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- External fields -->
+          <div id="externalFields" style="display:none;">
+            <div class="ref-form-full">
+              <label class="ref-form-label">External Hospital / Facility</label>
+              <input type="text" name="referred_to_external" class="ref-form-input" placeholder="Hospital or clinic name...">
+            </div>
+          </div>
+
+          <div class="ref-form-full">
+            <label class="ref-form-label">Reason for Referral *</label>
+            <textarea name="reason" class="ref-form-textarea" placeholder="Describe why this referral is needed..." required></textarea>
+          </div>
+
+          <div class="ref-form-full">
+            <label class="ref-form-label">Clinical Notes</label>
+            <textarea name="clinical_notes" class="ref-form-textarea" placeholder="Additional clinical observations, findings..." style="min-height:60px;"></textarea>
+          </div>
+
+          <button type="submit" class="ref-form-submit"><i class="fas fa-paper-plane"></i> Create Referral</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchRefTab(panel, btn) {
+  document.querySelectorAll('.ref-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.ref-panel').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('panel-' + panel).classList.add('active');
+}
+
+function toggleReferralFields() {
+  var type = document.getElementById('referralType').value;
+  document.getElementById('internalFields').style.display = (type === 'External') ? 'none' : 'block';
+  document.getElementById('externalFields').style.display = (type === 'External') ? 'block' : 'none';
+}
+
+function submitReferral(e) {
+  e.preventDefault();
+  var form = document.getElementById('referralForm');
+  var formData = new FormData(form);
+  var data = {};
+  formData.forEach(function(v, k){ data[k] = v; });
+
+  fetch("{{ url_for('referral.create') }}", {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(resp){
+    if(resp.success){
+      window.location.reload();
+    } else {
+      alert('Error: ' + (resp.error || 'Failed to create referral'));
+    }
+  })
+  .catch(function(err){
+    alert('Network error: ' + err.message);
+  });
+}
+
+function updateReferralStatus(refId, status) {
+  if(!confirm('Update referral status to "' + status + '"?')) return;
+
+  fetch("{{ url_for('referral.api_update') }}", {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({referral_id: refId, status: status})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(resp){
+    if(resp.success){
+      window.location.reload();
+    } else {
+      alert('Error: ' + (resp.error || 'Failed to update'));
+    }
+  })
+  .catch(function(err){
+    alert('Network error: ' + err.message);
+  });
+}
+</script>
+{% endblock %}

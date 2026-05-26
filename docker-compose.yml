@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: hospital-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: hospital_db
+      MYSQL_USER: hospital_user
+      MYSQL_PASSWORD: Mysql
+    ports:
+      - "3309:3306"
+    volumes:
+      - hospital_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  web:
+    build: .
+    container_name: hospital-web-container
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=carepoint-hospital-fixed-secret-key-do-not-change-2024
+      - DB_USER=hospital_user
+      - DB_PASSWORD=Mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=hospital_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - doctor_photos:/app/app/static/img/doctors
+      - reports:/app/app/static/reports
+
+volumes:
+  hospital_db_data:
+  doctor_photos:
+  reports:

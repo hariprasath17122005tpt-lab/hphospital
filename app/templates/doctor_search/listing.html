@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% block title %}Find a Doctor - CarePoint Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+:root{
+  --blue:#1a3b6e;--blue-d:#0f2549;--blue-l:#2563eb;--teal:#0e7490;
+  --white:#ffffff;--bg:#f7f9fc;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --green:#16a34a;--gold:#f59e0b;
+}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);}
+
+/* ── Nav (reuse index.html pattern) ── */
+.ds-topbar{background:var(--blue-d);padding:8px 0;font-size:.88rem;color:#94a3b8;}
+.ds-topbar a{color:#93c5fd;transition:color .15s;}
+.ds-topbar a:hover{color:#fff;}
+.ds-nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:999;}
+.ds-nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;max-width:1400px;margin:0 auto;padding:0 40px;}
+.ds-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.ds-logo-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:grid;place-items:center;color:#fff;font-size:1.15rem;}
+.ds-logo-txt{font-size:1.4rem;font-weight:800;color:var(--blue);letter-spacing:-.4px;}
+.ds-logo-txt span{color:var(--teal);}
+.ds-nav-links{display:flex;align-items:center;gap:6px;}
+.ds-nav-links a{font-size:.95rem;font-weight:600;color:var(--text);padding:8px 16px;border-radius:8px;transition:all .15s;}
+.ds-nav-links a:hover{background:rgba(37,99,235,.06);color:var(--blue-l);}
+.ds-nav-links .btn-primary{color:#fff;background:var(--blue);padding:10px 22px;}
+.ds-nav-links .btn-primary:hover{background:var(--blue-l);}
+
+/* ── Hero ── */
+.ds-hero{background:linear-gradient(135deg,var(--blue-d) 0%,var(--blue) 50%,var(--teal) 100%);padding:48px 0 40px;color:#fff;}
+.ds-hero h1{font-size:2.4rem;font-weight:800;margin-bottom:8px;}
+.ds-hero p{font-size:1.1rem;opacity:.8;margin-bottom:24px;}
+
+/* ── Search ── */
+.ds-search-box{max-width:700px;position:relative;}
+.ds-search-box input{width:100%;padding:16px 20px 16px 52px;border:none;border-radius:12px;font-size:1.05rem;box-shadow:0 8px 32px rgba(0,0,0,.15);outline:none;transition:box-shadow .2s;}
+.ds-search-box input:focus{box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.ds-search-box i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1.1rem;}
+
+/* ── Filters ── */
+.ds-filters{padding:20px 0;border-bottom:1px solid var(--border);background:var(--white);}
+.ds-filter-pills{display:flex;flex-wrap:wrap;gap:8px;max-width:1400px;margin:0 auto;padding:0 40px;}
+.ds-pill{padding:8px 18px;border-radius:50px;font-size:.88rem;font-weight:600;border:1px solid var(--border);color:var(--text);background:var(--white);cursor:pointer;transition:all .2s;text-decoration:none;}
+.ds-pill:hover,.ds-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ── Grid ── */
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:32px 0;}
+.ds-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .25s;position:relative;overflow:hidden;}
+.ds-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.08);transform:translateY(-4px);border-color:var(--blue-l);}
+.ds-card-top{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;}
+.ds-avatar{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:grid;place-items:center;color:#fff;font-size:1.4rem;font-weight:800;flex-shrink:0;}
+.ds-card-info h3{font-size:1.15rem;font-weight:700;margin:0 0 4px;color:var(--text);}
+.ds-card-info .spec{font-size:.9rem;color:var(--teal);font-weight:600;margin-bottom:2px;}
+.ds-card-info .qual{font-size:.82rem;color:var(--muted);}
+.ds-card-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.ds-meta-item{display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--muted);}
+.ds-meta-item i{color:var(--blue-l);font-size:.8rem;width:16px;text-align:center;}
+.ds-stars{display:flex;align-items:center;gap:3px;}
+.ds-stars i{font-size:.85rem;}
+.ds-stars .filled{color:var(--gold);}
+.ds-stars .empty{color:#e2e8f0;}
+.ds-stars .rating-num{font-size:.85rem;font-weight:700;color:var(--text);margin-left:4px;}
+.ds-stars .review-count{font-size:.8rem;color:var(--muted);margin-left:2px;}
+.ds-card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border);}
+.ds-fee{font-size:1.1rem;font-weight:800;color:var(--green);}
+.ds-fee small{font-size:.75rem;font-weight:400;color:var(--muted);}
+.ds-btn{padding:10px 22px;border-radius:10px;font-size:.9rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.ds-btn-primary{background:var(--blue);color:#fff;}
+.ds-btn-primary:hover{background:var(--blue-l);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.25);}
+.ds-btn-outline{background:transparent;color:var(--blue);border:2px solid var(--blue);}
+.ds-btn-outline:hover{background:var(--blue);color:#fff;}
+
+/* ── Empty state ── */
+.ds-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.ds-empty i{font-size:3rem;margin-bottom:16px;color:var(--border);}
+.ds-empty h3{font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:8px;}
+
+/* ── Footer ── */
+.ds-footer{background:#0c1525;padding:32px 0;color:#94a3b8;text-align:center;font-size:.9rem;}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .ds-nav-inner{padding:0 16px;}
+  .ds-hero{padding:32px 0 28px;}
+  .ds-hero h1{font-size:1.8rem;}
+  .ds-filter-pills{padding:0 16px;}
+  .ds-grid{grid-template-columns:1fr;padding:20px 0;}
+  .ds-card{padding:20px;}
+  .ds-nav-links .hide-mobile{display:none;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top bar -->
+<div class="ds-topbar">
+  <div style="max-width:1400px;margin:0 auto;padding:0 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div><i class="fas fa-phone-alt me-1"></i><a href="tel:+919443966329">+91 94439 66329</a></div>
+    <div><i class="fas fa-map-marker-alt me-1"></i> CarePoint Hospital</div>
+  </div>
+</div>
+
+<!-- Navbar -->
+<div class="ds-nav">
+  <div class="ds-nav-inner">
+    <a href="{{ url_for('main.index') }}" class="ds-logo">
+      <div class="ds-logo-mark"><i class="fas fa-heartbeat"></i></div>
+      <div class="ds-logo-txt">Care<span>Point</span></div>
+    </a>
+    <div class="ds-nav-links">
+      <a href="{{ url_for('main.index') }}" class="hide-mobile">Home</a>
+      <a href="{{ url_for('doctor_search.listing') }}" style="color:var(--blue-l);">Find a Doctor</a>
+      <a href="{{ url_for('auth.patient_login') }}" class="hide-mobile">Login</a>
+      <a href="{{ url_for('auth.patient_register') }}" class="btn-primary" style="border-radius:8px;">Book Appointment</a>
+    </div>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="ds-hero">
+  <div style="max-width:1400px;margin:0 auto;padding:0 40px;">
+    <h1><i class="fas fa-search me-2"></i>Find Your Doctor</h1>
+    <p>Search by name, specialty, or qualification. All doctors are verified professionals.</p>
+    <form method="GET" action="{{ url_for('doctor_search.listing') }}" class="ds-search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" name="q" value="{{ q }}" placeholder="Search doctors by name, specialty, qualification..." autocomplete="off" id="doctorSearchInput">
+      {% if selected_specialty %}
+      <input type="hidden" name="specialty" value="{{ selected_specialty }}">
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Filter Pills -->
+<div class="ds-filters">
+  <div class="ds-filter-pills">
+    <a href="{{ url_for('doctor_search.listing', q=q) }}" class="ds-pill {% if not selected_specialty %}active{% endif %}">All Specialties</a>
+    {% for spec in specializations %}
+    <a href="{{ url_for('doctor_search.listing', q=q, specialty=spec) }}" class="ds-pill {% if selected_specialty == spec %}active{% endif %}">{{ spec }}</a>
+    {% endfor %}
+    {% if specializations|length == 0 %}
+    <a href="#" class="ds-pill">General Medicine</a>
+    <a href="#" class="ds-pill">Pediatrics</a>
+    <a href="#" class="ds-pill">Cardiology</a>
+    <a href="#" class="ds-pill">Orthopedics</a>
+    <a href="#" class="ds-pill">Dermatology</a>
+    <a href="#" class="ds-pill">ENT</a>
+    <a href="#" class="ds-pill">Gynecology</a>
+    <a href="#" class="ds-pill">Neurology</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Doctor Grid -->
+<div style="max-width:1400px;margin:0 auto;padding:0 40px;">
+  {% if doctors %}
+  <div style="padding:12px 0 0;color:var(--muted);font-size:.9rem;"><strong>{{ doctors|length }}</strong> doctor{{ 's' if doctors|length != 1 else '' }} found</div>
+  <div class="ds-grid">
+    {% for doc in doctors %}
+    {% set r = ratings.get(doc.id, {'avg': 0, 'count': 0}) %}
+    <div class="ds-card">
+      <div class="ds-card-top">
+        <div class="ds-avatar">{{ doc.first_name[0] }}{{ doc.last_name[0] }}</div>
+        <div class="ds-card-info">
+          <h3>Dr. {{ doc.first_name }} {{ doc.last_name }}</h3>
+          <div class="spec">{{ doc.specialization or 'General Medicine' }}</div>
+          <div class="qual">{{ doc.qualification or '' }}</div>
+        </div>
+      </div>
+      <div class="ds-card-meta">
+        {% if doc.experience_years %}
+        <div class="ds-meta-item"><i class="fas fa-briefcase"></i> {{ doc.experience_years }} yrs exp</div>
+        {% endif %}
+        <div class="ds-meta-item"><i class="fas fa-id-badge"></i> Verified</div>
+        <div class="ds-meta-item">
+          <div class="ds-stars">
+            {% for i in range(1, 6) %}
+              {% if i <= (r.avg | round(0, 'floor') | int) %}
+              <i class="fas fa-star filled"></i>
+              {% elif i - 0.5 <= r.avg %}
+              <i class="fas fa-star-half-alt filled"></i>
+              {% else %}
+              <i class="far fa-star empty"></i>
+              {% endif %}
+            {% endfor %}
+            <span class="rating-num">{{ r.avg }}</span>
+            <span class="review-count">({{ r.count }})</span>
+          </div>
+        </div>
+      </div>
+      <div class="ds-card-footer">
+        <div class="ds-fee">
+          {% if doc.consultation_fee %}
+            &#8377;{{ doc.consultation_fee | int }}
+            <small>/ visit</small>
+          {% else %}
+            <small style="color:var(--muted);">Fee not set</small>
+          {% endif %}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <a href="{{ url_for('doctor_search.detail', doctor_id=doc.id) }}" class="ds-btn ds-btn-outline" style="padding:8px 14px;font-size:.82rem;">View Profile</a>
+          <a href="{{ url_for('auth.patient_register') }}" class="ds-btn ds-btn-primary" style="padding:8px 14px;font-size:.82rem;"><i class="fas fa-calendar-plus"></i> Book</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="ds-empty">
+    <i class="fas fa-user-md"></i>
+    <h3>No doctors found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+    <a href="{{ url_for('doctor_search.listing') }}" class="ds-btn ds-btn-primary" style="margin-top:12px;">View All Doctors</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Footer -->
+<div class="ds-footer">
+  <p>&copy; 2025 CarePoint AI Healthcare. All rights reserved.</p>
+</div>
+
+<script>
+// Live search with debounce
+(function(){
+  var input = document.getElementById('doctorSearchInput');
+  if(!input) return;
+  var timer = null;
+  input.addEventListener('input', function(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      input.closest('form').submit();
+    }, 600);
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% set hide_footer = true %}
+{% block title %}Health Tools — CarePoint{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+body{background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;font-family:'Inter',system-ui,sans-serif;}
+[data-theme="light"] body{background:linear-gradient(135deg,#f1f5f9,#e2e8f0) !important;}
+.ht-hero{text-align:center;padding:60px 20px 40px;}
+.ht-hero h1{font-size:2.8rem;font-weight:800;color:#fff;margin-bottom:10px;}
+[data-theme="light"] .ht-hero h1{color:#0f172a;}
+.ht-hero p{color:rgba(255,255,255,.6);font-size:1.1rem;}
+[data-theme="light"] .ht-hero p{color:#64748b;}
+.ht-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;max-width:1200px;margin:0 auto;padding:0 20px 60px;}
+.ht-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;transition:all .3s;cursor:pointer;text-decoration:none;}
+.ht-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,.3);background:rgba(255,255,255,.1);}
+[data-theme="light"] .ht-card{background:#fff;border-color:#e2e8f0;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+[data-theme="light"] .ht-card:hover{box-shadow:0 12px 30px rgba(0,0,0,.1);}
+.ht-icon{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:1.5rem;margin-bottom:18px;}
+.ht-card h3{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:8px;}
+[data-theme="light"] .ht-card h3{color:#0f172a;}
+.ht-card p{color:rgba(255,255,255,.5);font-size:.92rem;line-height:1.6;margin:0;}
+[data-theme="light"] .ht-card p{color:#64748b;}
+.ht-back{position:fixed;top:20px;left:20px;z-index:100;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ht-back">
+    <a href="{{ url_for('main.index') }}" class="wc-btn wc-btn-outline" style="border-color:rgba(255,255,255,.2);"><i class="fas fa-arrow-left me-2"></i>Home</a>
+</div>
+
+<div class="ht-hero">
+    <div style="display:inline-block;background:rgba(16,185,129,.15);color:#34d399;padding:6px 18px;border-radius:50px;font-size:.85rem;font-weight:700;margin-bottom:14px;">FREE HEALTH TOOLS</div>
+    <h1>Health <span style="background:linear-gradient(135deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Assessment</span> Tools</h1>
+    <p>Quick health calculators and risk assessments for your wellness</p>
+</div>
+
+<div class="ht-grid">
+    <a href="{{ url_for('health_tools.bmi_calculator') }}" class="ht-card">
+        <div class="ht-icon" style="background:rgba(37,99,235,.15);color:#60a5fa;"><i class="fas fa-weight"></i></div>
+        <h3>BMI Calculator</h3>
+        <p>Calculate your Body Mass Index and get personalized weight recommendations</p>
+    </a>
+    <a href="{{ url_for('health_tools.bmi_calculator') }}#heart" class="ht-card">
+        <div class="ht-icon" style="background:rgba(239,68,68,.15);color:#f87171;"><i class="fas fa-heartbeat"></i></div>
+        <h3>Heart Risk Assessment</h3>
+        <p>Evaluate your cardiovascular risk based on age, BP, cholesterol, and lifestyle</p>
+    </a>
+    <a href="{{ url_for('health_tools.bmi_calculator') }}#diabetes" class="ht-card">
+        <div class="ht-icon" style="background:rgba(245,158,11,.15);color:#fbbf24;"><i class="fas fa-tint"></i></div>
+        <h3>Diabetes Risk Check</h3>
+        <p>Quick assessment of your diabetes risk based on key health indicators</p>
+    </a>
+    <a href="{{ url_for('health_tools.bmi_calculator') }}#bp" class="ht-card">
+        <div class="ht-icon" style="background:rgba(139,92,246,.15);color:#a78bfa;"><i class="fas fa-stethoscope"></i></div>
+        <h3>BP Category Checker</h3>
+        <p>Understand your blood pressure reading and what category it falls into</p>
+    </a>
+    <a href="{{ url_for('auth.patient_register') }}" class="ht-card">
+        <div class="ht-icon" style="background:rgba(6,182,212,.15);color:#22d3ee;"><i class="fas fa-robot"></i></div>
+        <h3>AI Health Assistant</h3>
+        <p>Chat with our AI for symptom analysis, health advice, and clinical guidance</p>
+    </a>
+    <a href="{{ url_for('auth.patient_register') }}" class="ht-card">
+        <div class="ht-icon" style="background:rgba(236,72,153,.15);color:#f472b6;"><i class="fas fa-apple-alt"></i></div>
+        <h3>Diet & Nutrition Plan</h3>
+        <p>Get AI-generated personalized diet plans based on your health data</p>
+    </a>
+</div>
+{% endblock %}

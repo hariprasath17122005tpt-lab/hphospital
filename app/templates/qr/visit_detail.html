@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Details — {{ patient.name if patient else 'Patient' }} | CarePoint</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #1a1f36;
+            line-height: 1.6;
+        }
+        .qr-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #fff;
+            padding: 24px 20px;
+            text-align: center;
+        }
+        .qr-header h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+        .qr-header .subtitle { font-size: 0.85rem; color: #94a3b8; }
+        .qr-header .hospital-name { font-size: 1rem; font-weight: 600; color: #67e8f9; margin-bottom: 8px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 16px; }
+
+        .visit-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-op { background: #dbeafe; color: #1d4ed8; }
+        .badge-ip { background: #fce7f3; color: #be185d; }
+        .badge-lab { background: #d1fae5; color: #059669; }
+        .badge-active { background: #d1fae5; color: #059669; }
+        .badge-completed { background: #e2e8f0; color: #475569; }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            user-select: none;
+        }
+        .card-header i { color: #6366f1; font-size: 1rem; }
+        .card-header .toggle-icon { margin-left: auto; color: #94a3b8; transition: transform 0.2s; }
+        .card-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .card-body { padding: 16px 20px; }
+        .card-body.collapsed { display: none; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .info-item label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .info-item .value {
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th { text-align: left; padding: 10px 12px; background: #f8fafc; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        tr:last-child td { border-bottom: none; }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .vital-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .vital-chip .vital-label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .vital-chip .vital-value { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-top: 2px; }
+        .vital-chip.alert { border-color: #fca5a5; background: #fef2f2; }
+        .vital-chip.alert .vital-value { color: #dc2626; }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .empty-state i { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+
+        .qr-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .qr-actions .btn {
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .btn-print { background: #6366f1; }
+        .btn-download { background: #059669; }
+        .btn-whatsapp { background: #25D366; }
+
+        .print-header { display: none; }
+
+        @media print {
+            body { background: #fff; }
+            .qr-header, .qr-actions, .no-print { display: none !important; }
+            .print-header { display: block; text-align: center; padding: 20px 0; border-bottom: 2px solid #1e293b; margin-bottom: 20px; }
+            .print-header h1 { font-size: 1.4rem; }
+            .print-header .print-meta { font-size: 0.85rem; color: #475569; margin-top: 4px; }
+            .print-header .print-qr { margin-top: 12px; }
+            .print-header .print-qr img { width: 120px; height: 120px; }
+            .card { break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
+        }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr 1fr; }
+            .vitals-grid { grid-template-columns: 1fr 1fr; }
+            .container { padding: 10px; }
+            .qr-header h1 { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Print-only header -->
+<div class="print-header">
+    <h1><i class="fas fa-hospital"></i> CarePoint Hospital</h1>
+    <div class="print-meta">
+        Patient: <strong>{{ patient.name }}</strong> | UHID: <strong>{{ patient.uhid }}</strong> |
+        Visit: <strong>{{ visit.visit_type }}</strong> |
+        Date: <strong>{{ visit.visit_date.strftime('%d %b %Y') if visit.visit_date else 'N/A' }}</strong>
+    </div>
+    {% if visit.qr_image_path %}
+    <div class="print-qr">
+        <img src="{{ url_for('static', filename=visit.qr_image_path) }}" alt="QR Code">
+    </div>
+    {% endif %}
+</div>
+
+<!-- Screen header -->
+<div class="qr-header no-print">
+    <div class="hospital-name"><i class="fas fa-hospital me-1"></i> CarePoint Hospital</div>
+    <h1>Patient Visit Details</h1>
+    <div class="subtitle">
+        <span class="visit-badge {{ 'badge-op' if visit.visit_type == 'OP' else 'badge-ip' if visit.visit_type == 'IP' else 'badge-lab' }}">
+            {{ visit.visit_type }}
+        </span>
+        &nbsp; Visit #{{ visit.id }} &bull;
+        {{ visit.visit_date.strftime('%d %b %Y, %I:%M %p') if visit.visit_date else 'N/A' }}
+    </div>
+    <div class="qr-actions" style="margin-top: 16px;">
+        <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <a class="btn btn-download" href="{{ url_for('qr.download_qr', qr_token=visit.qr_token) }}"><i class="fas fa-download"></i> Download QR</a>
+        {% if patient and patient.phone %}
+        <a class="btn btn-whatsapp" href="https://wa.me/{{ patient.phone | replace('+','') | replace(' ','') | replace('-','') }}?text={{ 'Hello ' ~ patient.name ~ ', your hospital visit QR is ready. Please show this at the hospital.\n\n' ~ url_for('qr.view_visit', qr_token=visit.qr_token, _external=True) | urlencode }}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- 1. Patient Summary -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-user-circle"></i> Patient Summary
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item"><label>Name</label><div class="value">{{ patient.name }}</div></div>
+                <div class="info-item"><label>UHID</label><div class="value">{{ patient.uhid }}</div></div>
+                <div class="info-item"><label>Age</label><div class="value">{{ patient.age or 'N/A' }}</div></div>
+                <div class="info-item"><label>Gender</label><div class="value">{{ patient.gender or 'N/A' }}</div></div>
+                <div class="info-item"><label>Blood Group</label><div class="value">{{ patient.blood_type or 'N/A' }}</div></div>
+                <div class="info-item"><label>Phone</label><div class="value">{{ patient.phone or 'N/A' }}</div></div>
+                {% if patient.allergies %}
+                <div class="info-item"><label>Allergies</label><div class="value" style="color:#dc2626;">{{ patient.allergies }}</div></div>
+                {% endif %}
+                {% if patient.chronic_conditions %}
+                <div class="info-item"><label>Chronic Conditions</label><div class="value">{{ patient.chronic_conditions }}</div></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Visit Details -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-clipboard-list"></i> Visit Details
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item"><label>Visit Type</label><div class="value">{{ visit.visit_type }}</div></div>
+                <div class="info-item"><label>Status</label>
+                    <div class="value">
+                        <span class="visit-badge {{ 'badge-active' if visit.visit_status == 'Active' else 'badge-completed' }}">{{ visit.visit_status }}</span>
+                    </div>
+                </div>
+                <div class="info-item"><label>Visit Date</label><div class="value">{{ visit.visit_date.strftime('%d %b %Y, %I:%M %p') if visit.visit_date else 'N/A' }}</div></div>
+                <div class="info-item"><label>Reason</label><div class="value">{{ visit.visit_reason or 'General Consultation' }}</div></div>
+                <div class="info-item"><label>Doctor</label><div class="value">{{ 'Dr. ' ~ doctor.first_name ~ ' ' ~ doctor.last_name if doctor else 'Not Assigned' }}</div></div>
+                {% if doctor %}
+                <div class="info-item"><label>Specialization</label><div class="value">{{ doctor.specialization }}</div></div>
+                {% endif %}
+                {% if visit.token_number %}
+                <div class="info-item"><label>Token #</label><div class="value">{{ visit.token_number }}</div></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Latest Vitals -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-heartbeat"></i> Latest Vitals
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% if vitals %}
+            {% set v = vitals[0] %}
+            <div class="vitals-grid">
+                {% if v.temperature %}
+                <div class="vital-chip {{ 'alert' if v.temperature > 99.5 else '' }}">
+                    <div class="vital-label">Temperature</div>
+                    <div class="vital-value">{{ v.temperature }}&deg;F</div>
+                </div>
+                {% endif %}
+                {% if v.systolic_bp and v.diastolic_bp %}
+                <div class="vital-chip {{ 'alert' if v.systolic_bp > 140 or v.diastolic_bp > 90 else '' }}">
+                    <div class="vital-label">Blood Pressure</div>
+                    <div class="vital-value">{{ v.systolic_bp }}/{{ v.diastolic_bp }}</div>
+                </div>
+                {% endif %}
+                {% if v.heart_rate %}
+                <div class="vital-chip {{ 'alert' if v.heart_rate > 100 or v.heart_rate < 50 else '' }}">
+                    <div class="vital-label">Heart Rate</div>
+                    <div class="vital-value">{{ v.heart_rate }} bpm</div>
+                </div>
+                {% endif %}
+                {% if v.oxygen_level %}
+                <div class="vital-chip {{ 'alert' if v.oxygen_level < 94 else '' }}">
+                    <div class="vital-label">SpO2</div>
+                    <div class="vital-value">{{ v.oxygen_level }}%</div>
+                </div>
+                {% endif %}
+                {% if v.respiratory_rate %}
+                <div class="vital-chip">
+                    <div class="vital-label">Resp. Rate</div>
+                    <div class="vital-value">{{ v.respiratory_rate }}</div>
+                </div>
+                {% endif %}
+                {% if v.blood_sugar %}
+                <div class="vital-chip {{ 'alert' if v.blood_sugar > 200 else '' }}">
+                    <div class="vital-label">Blood Sugar</div>
+                    <div class="vital-value">{{ v.blood_sugar }}</div>
+                </div>
+                {% endif %}
+                {% if v.weight %}
+                <div class="vital-chip">
+                    <div class="vital-label">Weight</div>
+                    <div class="vital-value">{{ v.weight }} kg</div>
+                </div>
+                {% endif %}
+            </div>
+            <div style="font-size:0.75rem;color:#94a3b8;margin-top:8px;">
+                Recorded: {{ v.recorded_at.strftime('%d %b %Y, %I:%M %p') if v.recorded_at else 'N/A' }}
+            </div>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-heartbeat"></i>No vitals recorded yet</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 4. Medical History -->
+    {% if medical_history %}
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-history"></i> Medical History
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            <table>
+                <thead><tr><th>Type</th><th>Condition</th><th>Notes</th></tr></thead>
+                <tbody>
+                {% for h in medical_history[:10] %}
+                <tr>
+                    <td><span class="visit-badge badge-op">{{ h.type or 'medical' }}</span></td>
+                    <td>{{ h.condition or 'N/A' }}</td>
+                    <td>{{ h.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 5. Consultations / Current Treatment -->
+    {% if consultations %}
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-stethoscope"></i> Current Treatment
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% for c in consultations %}
+            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom: 1px solid #f1f5f9;">
+                <div style="font-weight:600; margin-bottom:4px;">
+                    {{ c.visit_date.strftime('%d %b %Y') if c.visit_date else '' }}
+                    {% if c.provisional_diagnosis %} &mdash; {{ c.provisional_diagnosis }}{% endif %}
+                </div>
+                {% if c.chief_complaint %}<div style="font-size:0.85rem;"><strong>Complaint:</strong> {{ c.chief_complaint }}</div>{% endif %}
+                {% if c.present_condition %}<div style="font-size:0.85rem;"><strong>Condition:</strong> {{ c.present_condition }}</div>{% endif %}
+                {% if c.treatment_plan %}<div style="font-size:0.85rem;"><strong>Treatment:</strong> {{ c.treatment_plan }}</div>{% endif %}
+                {% if c.advice %}<div style="font-size:0.85rem;"><strong>Advice:</strong> {{ c.advice }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 6. Prescriptions -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-prescription-bottle-alt"></i> Prescriptions
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% if prescriptions %}
+            <table>
+                <thead><tr><th>Date</th><th>Diagnosis</th><th>Medicines</th><th>Notes</th></tr></thead>
+                <tbody>
+                {% for p in prescriptions %}
+                <tr>
+                    <td>{{ p.prescribed_at.strftime('%d %b') if p.prescribed_at else '-' }}</td>
+                    <td>{{ p.diagnosis or '-' }}</td>
+                    <td>
+                        {% if p.medicine_items.all() %}
+                            {% for m in p.medicine_items %}
+                            <div style="font-size:0.82rem;">{{ m.medicine_name }} {{ m.dosage or '' }} {{ m.frequency or '' }}</div>
+                            {% endfor %}
+                        {% elif p.medicines %}
+                            {{ p.medicines }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ p.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-prescription-bottle-alt"></i>No prescriptions yet</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 7. Lab Reports -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-flask"></i> Lab Reports
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% if lab_orders or lab_reports %}
+            <table>
+                <thead><tr><th>Test</th><th>Status</th><th>Result</th><th>Date</th></tr></thead>
+                <tbody>
+                {% for lo in lab_orders %}
+                <tr>
+                    <td>{{ lo.test_name }}</td>
+                    <td><span class="visit-badge {{ 'badge-active' if lo.status == 'COMPLETED' else 'badge-op' }}">{{ lo.status }}</span></td>
+                    <td>{{ lo.result_preview() if lo.result_preview is defined else '-' }}</td>
+                    <td>{{ lo.created_at.strftime('%d %b') if lo.created_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+                {% for lr in lab_reports %}
+                {% if not lab_orders %}
+                <tr>
+                    <td>{{ lr.test_name }}</td>
+                    <td><span class="visit-badge badge-active">Completed</span></td>
+                    <td>{{ lr.result_value or '-' }} {{ lr.unit or '' }}</td>
+                    <td>{{ lr.conducted_at.strftime('%d %b') if lr.conducted_at else '-' }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-flask"></i>No lab reports yet</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 8. Nurse Notes -->
+    {% if nurse_notes %}
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-notes-medical"></i> Nurse Notes
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% for note in nurse_notes %}
+            <div style="margin-bottom:10px; padding-bottom:8px; border-bottom: 1px solid #f1f5f9;">
+                <div style="font-size:0.75rem; color:#94a3b8;">
+                    {{ note.created_at.strftime('%d %b %Y, %I:%M %p') if note.created_at else '' }}
+                    {% if note.note_type %} &bull; {{ note.note_type }}{% endif %}
+                    {% if note.is_critical %}<span style="color:#dc2626;font-weight:700;"> CRITICAL</span>{% endif %}
+                </div>
+                <div style="font-size:0.88rem; margin-top:2px;">{{ note.content }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 9. Billing Summary -->
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-file-invoice-dollar"></i> Billing Summary
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            {% if billing_records %}
+            <table>
+                <thead><tr><th>Bill #</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody>
+                {% for b in billing_records %}
+                <tr>
+                    <td>{{ b.bill_number or '-' }}</td>
+                    <td>{{ b.billing_type or '-' }}</td>
+                    <td style="font-weight:600;">&#8377;{{ '%.2f' | format(b.grand_total or b.amount or 0) }}</td>
+                    <td><span class="visit-badge {{ 'badge-active' if b.status == 'Paid' else 'badge-op' }}">{{ b.status }}</span></td>
+                    <td>{{ b.created_at.strftime('%d %b') if b.created_at else '-' }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state"><i class="fas fa-file-invoice-dollar"></i>No billing records yet</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 10. IP Admission (if applicable) -->
+    {% if ip_admission %}
+    <div class="card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <i class="fas fa-procedures"></i> IP Admission
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item"><label>IP Number</label><div class="value">{{ ip_admission.ip_number or 'N/A' }}</div></div>
+                <div class="info-item"><label>Admission Date</label><div class="value">{{ ip_admission.admission_date.strftime('%d %b %Y') if ip_admission.admission_date else 'N/A' }}</div></div>
+                <div class="info-item"><label>Status</label><div class="value">{{ ip_admission.admission_status or 'Active' }}</div></div>
+                <div class="info-item"><label>Ward Type</label><div class="value">{{ ip_admission.ward_type or 'N/A' }}</div></div>
+                <div class="info-item"><label>Reason</label><div class="value">{{ ip_admission.admission_reason or 'N/A' }}</div></div>
+                {% if ip_admission.discharge_date %}
+                <div class="info-item"><label>Discharge Date</label><div class="value">{{ ip_admission.discharge_date.strftime('%d %b %Y') }}</div></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div style="text-align:center; padding:20px 0; color:#94a3b8; font-size:0.78rem;">
+        <i class="fas fa-shield-alt"></i> This page was generated securely by CarePoint Hospital Management System.<br>
+        Visit ID: {{ visit.id }} | QR Token: {{ visit.qr_token }}
+    </div>
+</div>
+
+<script>
+function toggleCard(header) {
+    const body = header.nextElementSibling;
+    header.classList.toggle('collapsed');
+    body.classList.toggle('collapsed');
+}
+</script>
+</body>
+</html>

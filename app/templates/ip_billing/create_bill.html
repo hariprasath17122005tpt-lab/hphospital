@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% block title %}{{ billing_type }} Bill - {{ patient.full_name }} - CarePoint{% endblock %}
+{% block content %}
+<style>
+/* ═══ FULL WIDTH + LARGE READABLE FONTS ═══ */
+.bp{padding:20px 24px;max-width:100%;margin:0;font-family:'Inter',sans-serif;font-size:16px}
+.bp h2{font-size:1.6rem;font-weight:800;margin:0}
+.bp h2 i{color:#2563eb}
+.bcard{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:22px;margin-bottom:16px}
+.bcard-t{font-size:1.15rem;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.bcard-t i{color:#2563eb;font-size:1.1rem}
+.fg{margin-bottom:12px}.fg label{display:block;font-size:1rem;font-weight:600;color:#334155;margin-bottom:4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:1.05rem}
+.fg input:focus,.fg select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.r4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.pi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.pi-c{padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}
+.pi-c .l{font-size:0.85rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+.pi-c .v{font-size:1.1rem;font-weight:700;color:#0f172a}
+.badge-t{padding:5px 16px;border-radius:14px;font-size:0.95rem;font-weight:700}
+.badge-op{background:#ecfdf5;color:#059669}.badge-ip{background:#dbeafe;color:#1d4ed8}
+
+/* Category tabs */
+.cat-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:8px}
+.cat-tab{padding:9px 16px;border-radius:8px 8px 0 0;font-size:1rem;font-weight:700;cursor:pointer;border:1px solid transparent;color:#64748b;background:#f8fafc;transition:all .15s;white-space:nowrap}
+.cat-tab:hover{background:#eff6ff;color:#2563eb}
+.cat-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.cat-tab .tab-count{font-size:0.75rem;background:rgba(255,255,255,.25);padding:2px 7px;border-radius:10px;margin-left:4px}
+
+/* Charge items grid */
+.cat-panel{display:none}.cat-panel.active{display:block}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;max-height:420px;overflow-y:auto;padding:6px}
+.ci{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:1.05rem;transition:all .12s}
+.ci:hover{border-color:#2563eb;background:#eff6ff}
+.ci.ck{background:#dbeafe;border-color:#3b82f6}
+.ci input[type=checkbox]{width:20px;height:20px;accent-color:#2563eb;cursor:pointer;flex-shrink:0}
+.ci .cn{font-weight:600;color:#1e293b;flex:1;line-height:1.4;font-size:1rem}
+.ci .cp{font-weight:800;color:#2563eb;font-size:1rem;white-space:nowrap}
+.ci .cp.custom{color:#d97706}
+
+/* Search */
+.charge-search{position:relative;margin-bottom:12px}
+.charge-search input{padding:12px 14px 12px 38px;font-size:1.05rem}
+.charge-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:1rem}
+
+/* Items table */
+.it{width:100%;border-collapse:collapse}
+.it th{background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff;padding:12px 14px;font-size:0.95rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;text-align:left}
+.it th:first-child{border-radius:8px 0 0 0}.it th:last-child{border-radius:0 8px 0 0}
+.it td{padding:10px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;font-size:1.05rem}
+.it input,.it select{width:100%;padding:9px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:1rem}
+.it .sno{text-align:center;font-weight:700;color:#94a3b8;width:32px;font-size:1rem}
+.it .tc{background:#f0f4ff;font-weight:700;color:#1e40af}
+.del-b{background:#fef2f2;color:#dc2626;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700;font-size:1.1rem}
+.del-b:hover{background:#dc2626;color:#fff}
+.add-b{width:100%;padding:12px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;font-weight:700;color:#2563eb;cursor:pointer;margin-top:6px;font-size:1rem}
+.add-b:hover{background:#eff6ff;border-color:#2563eb}
+
+/* Totals */
+.tot{margin-top:14px;padding:18px;background:linear-gradient(135deg,#f0f4ff,#e8f0fe);border:1px solid #bfdbfe;border-radius:10px}
+.tr{display:flex;justify-content:space-between;padding:6px 0;font-size:1.1rem;align-items:center}
+.tr .tl{color:#475569;font-weight:500}.tr .tv{font-weight:700;color:#1e293b;font-size:1.1rem}
+.tr.gd{font-size:1.5rem;font-weight:900;color:#1e40af;border-top:3px solid #2563eb;padding-top:12px;margin-top:10px}
+
+/* Room calc */
+.rc{padding:14px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:12px}
+.rc-t{font-size:1rem;font-weight:800;color:#92400e;margin-bottom:10px}
+
+/* Advance payment */
+.adv-box{padding:14px 16px;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:10px;margin-top:10px}
+
+.btn-s{background:#059669;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-weight:700;cursor:pointer;font-size:1.05rem;display:inline-flex;align-items:center;gap:6px}
+.btn-s:hover{background:#047857}
+.btn-b{background:#2563eb;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-weight:700;cursor:pointer;font-size:1.05rem;display:inline-flex;align-items:center;gap:6px}
+.btn-d{background:#d97706;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-weight:700;cursor:pointer;font-size:1.05rem;display:inline-flex;align-items:center;gap:6px}
+.btn-o{background:#fff;color:#334155;border:1px solid #e2e8f0;padding:12px 28px;border-radius:8px;font-weight:600;cursor:pointer;text-decoration:none;font-size:1.05rem;display:inline-flex;align-items:center;gap:6px}
+.toast{position:fixed;top:16px;right:16px;z-index:10000;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1.05rem;display:none;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast-ok{background:#059669;color:#fff}.toast-err{background:#dc2626;color:#fff}
+@media(max-width:768px){.r2,.r3,.r4,.cg{grid-template-columns:1fr}.cat-tabs{overflow-x:auto}}
+</style>
+
+<div class="bp">
+<div id="toast" class="toast"></div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+    <h2><i class="fas fa-file-invoice-dollar"></i> {% if edit_bill %}Edit{% endif %} {{ billing_type }} Hospital Bill</h2>
+    <div style="display:flex;align-items:center;gap:8px;">
+        {% if edit_bill %}
+        <span class="badge-t" style="background:#fef3c7;color:#92400e;">Editing: {{ edit_bill.bill_number or ('#' ~ edit_bill.id) }}</span>
+        {% endif %}
+        <span class="badge-t {% if billing_type == 'IP' %}badge-ip{% else %}badge-op{% endif %}">{{ billing_type }} Billing</span>
+    </div>
+</div>
+
+<!-- PATIENT INFO -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-user"></i> Patient</div>
+    <div class="pi">
+        <div class="pi-c"><div class="l">UHID</div><div class="v">{{ patient.uhid }}</div></div>
+        <div class="pi-c"><div class="l">Name</div><div class="v">{{ patient.full_name }}</div></div>
+        <div class="pi-c"><div class="l">Age/Sex</div><div class="v">{{ patient.age or 'N/A' }} / {{ patient.gender or 'N/A' }}</div></div>
+        <div class="pi-c"><div class="l">Phone</div><div class="v">{{ patient.phone or 'N/A' }}</div></div>
+        <div class="pi-c"><div class="l">Blood</div><div class="v">{{ patient.blood_type or 'N/A' }}</div></div>
+        {% if admission %}
+        <div class="pi-c"><div class="l">IP No.</div><div class="v" style="color:#1d4ed8;font-weight:800;">{{ admission.ip_number }}</div></div>
+        <div class="pi-c"><div class="l">Ward</div><div class="v">{{ admission.ward_type or 'N/A' }}</div></div>
+        <div class="pi-c"><div class="l">Admitted</div><div class="v">{{ admission.admission_date.strftime('%d %b %Y') if admission.admission_date else 'N/A' }}</div></div>
+        <div class="pi-c"><div class="l">Days</div><div class="v" style="color:#dc2626;font-weight:800;">{{ admission.length_of_stay }}</div></div>
+        <div class="pi-c"><div class="l">Doctor</div><div class="v">Dr. {{ admission.doctor.first_name }} {{ admission.doctor.last_name }}</div></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- BILL DETAILS -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-cog"></i> Bill Details</div>
+    <div class="r4">
+        <div class="fg"><label>Doctor</label>
+            <select id="doctorId">
+                <option value="">Select</option>
+                {% for d in doctors %}<option value="{{ d.id }}" {% if admission and admission.doctor_id == d.id %}selected{% endif %}>Dr. {{ d.first_name }} {{ d.last_name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="fg"><label>Payment Method</label>
+            <select id="payMethod"><option value="Cash">Cash</option><option value="Card">Card</option><option value="UPI">UPI</option><option value="Insurance">Insurance</option><option value="Net Banking">Net Banking</option><option value="Mixed">Mixed</option></select>
+        </div>
+        <div class="fg"><label>Bill Date</label><input type="date" id="billDate" value="{{ now().strftime('%Y-%m-%d') if now is defined else '' }}"></div>
+        <div class="fg"><label>Referring Doctor</label><input type="text" id="refDoctor" placeholder="If referred"></div>
+    </div>
+    <div class="fg"><label>Description</label><input type="text" id="billDesc" value="{{ billing_type }} Bill - {{ patient.full_name }}"></div>
+</div>
+
+<!-- CONSULTATION FEES -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-user-md"></i> Consultation Fee</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        {% for f in fees %}
+        <div class="ci" onclick="togFee(this,'{{ f.consultation_type }}',{{ f.fee_amount }})" style="min-width:160px;">
+            <input type="checkbox"><span class="cn">{{ f.consultation_type }}</span><span class="cp">Rs.{{ "%.0f"|format(f.fee_amount) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- HOSPITAL CHARGES — CATEGORY TABS -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-clipboard-check"></i> Hospital Charges ({{ charges|length }} items)</div>
+
+    <!-- Search -->
+    <div class="charge-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="chargeSearch" placeholder="Search charges... (e.g. ECG, X-Ray, dressing, oxygen)" oninput="filterCharges()">
+    </div>
+
+    <!-- Category tabs -->
+    <div class="cat-tabs" id="catTabs">
+        <div class="cat-tab active" onclick="showCat('ALL')">All <span class="tab-count">{{ charges|length }}</span></div>
+        {% for cat, items in charge_categories.items() %}
+        <div class="cat-tab" onclick="showCat('{{ cat }}')" data-cat="{{ cat }}">
+            {% if cat in cat_meta %}<i class="{{ cat_meta[cat][0] }}" style="font-size:0.65rem;margin-right:2px;"></i>{% endif %}
+            {{ cat }} <span class="tab-count">{{ items|length }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Charge panels per category -->
+    <div class="cat-panel active" id="panel_ALL">
+        <div class="cg" id="allChargesGrid">
+            {% for c in charges %}
+            <div class="ci charge-item" data-cat="{{ c.charge_category }}" data-search="{{ c.charge_name|lower }} {{ c.charge_category|lower }}" onclick="togCharge(this,'{{ c.charge_name|e }}','{{ c.charge_category }}',{{ c.default_price }})">
+                <input type="checkbox"><span class="cn">{{ c.charge_name }}</span>
+                {% if c.default_price > 0 %}<span class="cp">Rs.{{ "%.0f"|format(c.default_price) }}</span>{% else %}<span class="cp custom">Custom</span>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% for cat, items in charge_categories.items() %}
+    <div class="cat-panel" id="panel_{{ cat }}">
+        <div class="cg">
+            {% for c in items %}
+            <div class="ci charge-item" data-cat="{{ c.charge_category }}" data-search="{{ c.charge_name|lower }} {{ c.charge_category|lower }}" onclick="togCharge(this,'{{ c.charge_name|e }}','{{ c.charge_category }}',{{ c.default_price }})">
+                <input type="checkbox"><span class="cn">{{ c.charge_name }}</span>
+                {% if c.default_price > 0 %}<span class="cp">Rs.{{ "%.0f"|format(c.default_price) }}</span>{% else %}<span class="cp custom">Custom</span>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ROOM CHARGE CALCULATOR (IP) -->
+{% if billing_type == 'IP' %}
+<div class="bcard">
+    <div class="rc">
+        <div class="rc-t"><i class="fas fa-bed"></i> Room / Bed Charge Calculator</div>
+        <div class="r4">
+            <div class="fg"><label>Room Type</label>
+                <select id="roomType" onchange="updateRoomRate()">
+                    <option value="">Select</option>
+                    <option value="General" data-rate="1500">General Ward</option>
+                    <option value="Semi-Private" data-rate="3000">Semi-Private</option>
+                    <option value="Private" data-rate="5000">Private AC</option>
+                    <option value="Deluxe" data-rate="8000">Deluxe</option>
+                    <option value="Suite" data-rate="12000">Suite</option>
+                    <option value="ICU" data-rate="10000">ICU</option>
+                    <option value="NICU" data-rate="12000">NICU</option>
+                    <option value="CCU" data-rate="10000">CCU</option>
+                    <option value="HDU" data-rate="7000">HDU</option>
+                    <option value="Day Care" data-rate="2000">Day Care</option>
+                </select>
+            </div>
+            <div class="fg"><label>Days</label><input type="number" id="roomDays" value="{{ admission.length_of_stay if admission else 1 }}" min="1" oninput="calcRoom()"></div>
+            <div class="fg"><label>Rate/Day</label><input type="number" id="roomRate" value="0" min="0" oninput="calcRoom()"></div>
+            <div class="fg"><label>&nbsp;</label><button class="btn-b" style="width:100%;padding:7px;font-size:0.8rem;" onclick="addRoom()"><i class="fas fa-plus"></i> Add Room Charge</button></div>
+        </div>
+        <div style="font-size:0.8rem;color:#92400e;">Preview: <strong id="roomPrev">Rs. 0</strong></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- BILLING ITEMS TABLE -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-table"></i> Bill Items</div>
+    <div style="overflow-x:auto;">
+        <table class="it" id="itemsTable">
+            <thead><tr>
+                <th>#</th><th style="width:24%;">Item</th><th style="width:11%;">Category</th>
+                <th style="width:6%;">Qty</th><th style="width:10%;">Rate</th>
+                <th style="width:10%;">Amount</th><th style="width:18%;">Remarks</th><th style="width:4%;"></th>
+            </tr></thead>
+            <tbody id="itemsBody"></tbody>
+        </table>
+    </div>
+    <button class="add-b" onclick="addRow()"><i class="fas fa-plus"></i> Add Custom Item</button>
+
+    <!-- TOTALS -->
+    <div class="tot">
+        <div class="tr"><span class="tl">Subtotal</span><span class="tv" id="subV">0.00</span></div>
+        <div class="tr"><span class="tl">Discount</span><input type="number" id="discI" value="0" min="0" style="width:90px;padding:3px 6px;border:1px solid #bfdbfe;border-radius:4px;text-align:right;font-weight:600;" oninput="calc()"></div>
+        <div class="tr"><span class="tl">Discount Reason</span><input type="text" id="discReason" placeholder="Senior citizen / Staff / etc." style="width:180px;padding:3px 6px;border:1px solid #bfdbfe;border-radius:4px;font-size:0.8rem;"></div>
+        <div class="tr"><span class="tl">Tax / GST</span><input type="number" id="taxI" value="0" min="0" style="width:90px;padding:3px 6px;border:1px solid #bfdbfe;border-radius:4px;text-align:right;font-weight:600;" oninput="calc()"></div>
+        <div class="tr gd"><span class="tl">GRAND TOTAL</span><span class="tv" id="gdV">Rs. 0.00</span></div>
+    </div>
+
+    <!-- ADVANCE PAYMENT -->
+    <div class="adv-box">
+        <div class="r3">
+            <div class="fg"><label>Advance Paid</label><input type="number" id="advPaid" value="0" min="0" oninput="calcBal()"></div>
+            <div class="fg"><label>Balance Due</label><input type="text" id="balDue" value="0.00" readonly style="background:#f0fdf4;font-weight:700;color:#dc2626;"></div>
+            <div class="fg"><label>Authorized By</label><input type="text" id="authBy" placeholder="Cashier / Staff name"></div>
+        </div>
+    </div>
+</div>
+
+<!-- INSURANCE -->
+<div class="bcard">
+    <div class="bcard-t"><i class="fas fa-shield-alt"></i> Insurance Details (if applicable)</div>
+    <div class="r3">
+        <div class="fg"><label>Insurance Company / TPA</label><input type="text" id="insCompany" placeholder="e.g. Star Health, ICICI Lombard"></div>
+        <div class="fg"><label>Policy Number</label><input type="text" id="insPolicy" placeholder="Policy / Member ID"></div>
+        <div class="fg"><label>Pre-Auth Amount</label><input type="number" id="insPreAuth" value="0" min="0"></div>
+    </div>
+</div>
+
+<!-- NOTES -->
+<div class="bcard">
+    <div class="fg"><label>Bill Notes</label><textarea id="billNotes" rows="2" placeholder="Additional notes, special instructions..."></textarea></div>
+</div>
+
+<!-- ACTIONS -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+    <button class="btn-s" onclick="saveBill('Unpaid')"><i class="fas fa-save"></i> Save (Unpaid)</button>
+    <button class="btn-b" onclick="saveBill('Paid')"><i class="fas fa-check-circle"></i> Save & Paid</button>
+    <button class="btn-d" onclick="saveBill('Draft')"><i class="fas fa-file-alt"></i> Draft</button>
+    <a href="{{ url_for('ip_billing.dashboard') }}" class="btn-o"><i class="fas fa-arrow-left"></i> Cancel</a>
+</div>
+
+<div id="saveRes" style="display:none;padding:14px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <i class="fas fa-check-circle" style="color:#059669;"></i><strong style="color:#059669;" id="saveMsg"></strong>
+    </div>
+    <div id="saveAct" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+</div>
+</div>
+
+<script>
+const CSRF=document.querySelector('meta[name="csrf-token"]')?.content||'';
+const PID={{patient.id}},BTYPE='{{billing_type}}',ADM_ID={{admission.id if admission else 'null'}};
+const EDIT_BILL_ID = {{ edit_bill.id if edit_bill else 'null' }};
+
+function toast(m,ok){const t=document.getElementById('toast');t.textContent=m;t.className='toast '+(ok?'toast-ok':'toast-err');t.style.display='block';setTimeout(()=>t.style.display='none',3500)}
+
+/* ═══ CATEGORY TABS ═══ */
+function showCat(cat){
+    document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.cat-panel').forEach(p=>p.classList.remove('active'));
+    if(cat==='ALL'){
+        document.querySelector('.cat-tab').classList.add('active');
+        document.getElementById('panel_ALL').classList.add('active');
+    }else{
+        document.querySelector(`.cat-tab[data-cat="${cat}"]`).classList.add('active');
+        const p=document.getElementById('panel_'+cat);
+        if(p)p.classList.add('active');
+    }
+}
+
+/* ═══ SEARCH CHARGES ═══ */
+function filterCharges(){
+    const q=document.getElementById('chargeSearch').value.toLowerCase().trim();
+    // Show ALL panel when searching
+    showCat('ALL');
+    document.querySelectorAll('#allChargesGrid .charge-item').forEach(el=>{
+        el.style.display=(!q||el.dataset.search.includes(q))?'flex':'none';
+    });
+}
+
+/* ═══ CHECKBOX TOGGLE ═══ */
+function togCharge(el,name,cat,price){
+    const cb=el.querySelector('input[type=checkbox]');cb.checked=!cb.checked;el.classList.toggle('ck',cb.checked);
+    if(cb.checked){const tr=addRow(name,cat,1,price);tr.dataset.ck=name;}
+    else{document.querySelectorAll('#itemsBody tr').forEach(tr=>{if(tr.dataset.ck===name)tr.remove()});renum();calc();}
+}
+function togFee(el,type,amt){
+    const cb=el.querySelector('input[type=checkbox]');cb.checked=!cb.checked;el.classList.toggle('ck',cb.checked);
+    if(cb.checked){const tr=addRow(type+' Consultation','Consultation',1,amt);tr.dataset.fk=type;}
+    else{document.querySelectorAll('#itemsBody tr').forEach(tr=>{if(tr.dataset.fk===type)tr.remove()});renum();calc();}
+}
+
+/* ═══ TABLE ROWS ═══ */
+let rn=0;
+function addRow(n='',c='',q=1,p=0,rm=''){
+    rn++;const t=(q*p).toFixed(2);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="sno">${rn}</td>
+        <td><input type="text" class="i-n" value="${n}" placeholder="Item name"></td>
+        <td><input type="text" class="i-c" value="${c}" placeholder="Category"></td>
+        <td><input type="number" class="i-q" value="${q}" min="1" oninput="cRow(this)"></td>
+        <td><input type="number" class="i-p" value="${p}" min="0" step=".01" oninput="cRow(this)"></td>
+        <td><input type="number" class="i-t tc" value="${t}" readonly></td>
+        <td><input type="text" class="i-r" value="${rm}" placeholder="Remarks"></td>
+        <td><button class="del-b" onclick="this.closest('tr').remove();renum();calc();">&times;</button></td>`;
+    document.getElementById('itemsBody').appendChild(tr);calc();return tr;
+}
+function renum(){let n=0;document.querySelectorAll('#itemsBody tr').forEach(tr=>{n++;tr.querySelector('.sno').textContent=n});rn=n;}
+function cRow(el){const tr=el.closest('tr');const q=parseInt(tr.querySelector('.i-q').value)||0;const p=parseFloat(tr.querySelector('.i-p').value)||0;tr.querySelector('.i-t').value=(q*p).toFixed(2);calc();}
+function calc(){
+    let s=0;document.querySelectorAll('#itemsBody tr').forEach(tr=>{s+=parseFloat(tr.querySelector('.i-t').value)||0});
+    const d=parseFloat(document.getElementById('discI').value)||0;
+    const t=parseFloat(document.getElementById('taxI').value)||0;
+    const g=s-d+t;
+    document.getElementById('subV').textContent=s.toFixed(2);
+    document.getElementById('gdV').textContent='Rs. '+g.toFixed(2);
+    calcBal();
+}
+function calcBal(){
+    const gStr=document.getElementById('gdV').textContent.replace('Rs. ','');
+    const g=parseFloat(gStr)||0;
+    const adv=parseFloat(document.getElementById('advPaid').value)||0;
+    document.getElementById('balDue').value=(g-adv).toFixed(2);
+}
+
+/* ═══ ROOM CALCULATOR ═══ */
+function updateRoomRate(){const o=document.getElementById('roomType').options[document.getElementById('roomType').selectedIndex];document.getElementById('roomRate').value=o.dataset.rate||0;calcRoom();}
+function calcRoom(){const d=parseInt(document.getElementById('roomDays')?.value)||0;const r=parseFloat(document.getElementById('roomRate')?.value)||0;const p=document.getElementById('roomPrev');if(p)p.textContent='Rs. '+(d*r).toFixed(0);}
+function addRoom(){const t=document.getElementById('roomType')?.value;if(!t){toast('Select room type',false);return;}const d=parseInt(document.getElementById('roomDays')?.value)||1;const r=parseFloat(document.getElementById('roomRate')?.value)||0;addRow('Room Rent - '+t+' ('+d+' days)','Room',d,r);toast('Room charge added',true);}
+
+/* ═══ SAVE ═══ */
+async function saveBill(status){
+    const items=[];let ok=true;
+    document.querySelectorAll('#itemsBody tr').forEach(tr=>{
+        const n=tr.querySelector('.i-n')?.value?.trim();
+        if(n){
+            const q=parseInt(tr.querySelector('.i-q')?.value)||0;
+            if(q<=0){ok=false;toast('Qty must be >0: '+n,false)}
+            items.push({item_name:n,item_category:tr.querySelector('.i-c')?.value?.trim()||'',quantity:q,unit_price:parseFloat(tr.querySelector('.i-p')?.value)||0,total_price:parseFloat(tr.querySelector('.i-t')?.value)||0,remarks:tr.querySelector('.i-r')?.value?.trim()||''});
+        }
+    });
+    if(!ok)return;if(!items.length){toast('Add at least one item',false);return;}
+
+    const ins=document.getElementById('insCompany')?.value?.trim();
+    const notes_parts=[];
+    if(document.getElementById('billNotes').value.trim())notes_parts.push(document.getElementById('billNotes').value.trim());
+    if(ins)notes_parts.push('Insurance: '+ins+' | Policy: '+(document.getElementById('insPolicy')?.value||'N/A')+' | Pre-Auth: Rs.'+(document.getElementById('insPreAuth')?.value||'0'));
+    const discR=document.getElementById('discReason')?.value?.trim();
+    if(discR)notes_parts.push('Discount reason: '+discR);
+    const auth=document.getElementById('authBy')?.value?.trim();
+    if(auth)notes_parts.push('Authorized by: '+auth);
+
+    const payload={patient_id:PID,billing_type:BTYPE,admission_id:ADM_ID,
+        doctor_id:document.getElementById('doctorId').value||null,
+        description:document.getElementById('billDesc').value,
+        payment_method:document.getElementById('payMethod').value,
+        discount:parseFloat(document.getElementById('discI').value)||0,
+        tax:parseFloat(document.getElementById('taxI').value)||0,
+        notes:notes_parts.join('\n'),status:status,items:items};
+
+    // Use update API if editing, save API if new
+    const url = EDIT_BILL_ID ? `/ip-billing/api/bill/${EDIT_BILL_ID}/update` : '/ip-billing/api/bill/save';
+
+    try{
+        const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},body:JSON.stringify(payload)});
+        const d=await r.json();
+        if(d.success){
+            toast(d.message,true);
+            document.getElementById('saveMsg').textContent=d.message;
+            document.getElementById('saveAct').innerHTML=`
+                <a href="/ip-billing/bill/${d.bill_id}" style="padding:7px 14px;background:#2563eb;color:#fff;border-radius:7px;text-decoration:none;font-weight:600;font-size:0.95rem;"><i class="fas fa-print"></i> View/Print Bill</a>
+                <a href="/ip-billing/dashboard" style="padding:7px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;text-decoration:none;font-weight:600;font-size:0.95rem;">Dashboard</a>`;
+            document.getElementById('saveRes').style.display='block';
+            document.getElementById('saveRes').scrollIntoView({behavior:'smooth',block:'center'});
+        }else toast(d.error||'Failed',false);
+    }catch(e){toast('Error: '+e.message,false);}
+}
+
+/* ═══ PRE-LOAD EXISTING ITEMS (EDIT MODE) ═══ */
+{% if edit_bill and edit_items %}
+document.addEventListener('DOMContentLoaded', function() {
+    {% for item in edit_items %}
+    addRow('{{ item.item_name|e }}', '{{ item.item_category|e }}', {{ item.quantity }}, {{ item.unit_price }}, '{{ item.remarks|e if item.remarks else "" }}');
+    {% endfor %}
+
+    // Pre-fill bill fields
+    {% if edit_bill.doctor_id %}
+    document.getElementById('doctorId').value = '{{ edit_bill.doctor_id }}';
+    {% endif %}
+    {% if edit_bill.payment_method %}
+    document.getElementById('payMethod').value = '{{ edit_bill.payment_method }}';
+    {% endif %}
+    {% if edit_bill.discount %}
+    document.getElementById('discI').value = {{ edit_bill.discount }};
+    {% endif %}
+    {% if edit_bill.tax %}
+    document.getElementById('taxI').value = {{ edit_bill.tax }};
+    {% endif %}
+    {% if edit_bill.notes %}
+    document.getElementById('billNotes').value = `{{ edit_bill.notes|e }}`;
+    {% endif %}
+    {% if edit_bill.description %}
+    document.getElementById('billDesc').value = '{{ edit_bill.description|e }}';
+    {% endif %}
+
+    calc();
+});
+{% endif %}
+</script>
+{% endblock %}

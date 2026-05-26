@@ -1,0 +1,938 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Checker - CarePoint AI{% endblock %}
+
+{% set topbar_title = 'Symptom Checker' %}
+{% set breadcrumb_current = 'Symptom Checker' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ============ Symptom Checker Styles ============ */
+.sc-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f766e 50%, #065f46 100%);
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    color: #fff;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+.sc-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+.sc-hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.sc-hero p {
+    opacity: 0.85;
+    font-size: 1rem;
+    max-width: 600px;
+}
+
+/* Category Grid */
+.sc-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.sc-category-card {
+    background: var(--cp-surface, #fff);
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.sc-category-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+.sc-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--cp-border, #e5e7eb);
+}
+.sc-category-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.sc-category-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--cp-text, #1f2937);
+    margin: 0;
+}
+.sc-category-header .symptom-count {
+    font-size: 0.8rem;
+    color: var(--cp-text-muted, #6b7280);
+    margin-top: 2px;
+}
+.sc-symptoms-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.sc-symptom-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 2px solid var(--cp-border, #e2e8f0);
+    background: var(--cp-surface, #fff);
+    color: var(--cp-text, #374151);
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.sc-symptom-chip:hover {
+    border-color: #6366f1;
+    background: #eef2ff;
+}
+.sc-symptom-chip.selected {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+}
+.sc-symptom-chip.selected i {
+    color: #fff;
+}
+.sc-symptom-chip i {
+    font-size: 0.75rem;
+    color: var(--cp-text-muted, #9ca3af);
+}
+
+/* Context Selectors */
+.sc-context {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 768px) {
+    .sc-context { grid-template-columns: 1fr; }
+}
+.sc-context-card {
+    background: var(--cp-surface, #fff);
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+.sc-context-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cp-text, #1f2937);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.sc-option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.sc-option {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--cp-border, #e2e8f0);
+    border-radius: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--cp-surface, #fff);
+    color: var(--cp-text, #374151);
+}
+.sc-option:hover {
+    border-color: #6366f1;
+}
+.sc-option.selected {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+}
+
+/* Selected Summary */
+.sc-selected-summary {
+    background: linear-gradient(135deg, #eef2ff, #f0fdf4);
+    border: 1px solid #c7d2fe;
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.sc-selected-summary .count-badge {
+    background: #4f46e5;
+    color: #fff;
+    padding: 0.35rem 0.85rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.sc-selected-summary .clear-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.sc-selected-summary .clear-btn:hover {
+    text-decoration: underline;
+}
+
+/* Check Button */
+.sc-check-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79,70,229,0.3);
+}
+.sc-check-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79,70,229,0.4);
+}
+.sc-check-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+.sc-check-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Results */
+.sc-results {
+    display: none;
+    margin-bottom: 2rem;
+}
+.sc-results.show {
+    display: block;
+    animation: fadeInUp 0.5s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.sc-result-card {
+    background: var(--cp-surface, #fff);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--cp-border, #e5e7eb);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.sc-result-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.sc-urgency-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.sc-urgency-selfcare { background: #d1fae5; color: #065f46; }
+.sc-urgency-soon { background: #fef3c7; color: #92400e; }
+.sc-urgency-today { background: #fed7aa; color: #9a3412; }
+.sc-urgency-emergency { background: #fecaca; color: #991b1b; animation: pulse-red 1.5s infinite; }
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+
+.sc-conditions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sc-conditions-list li {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--cp-border, #e5e7eb);
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.sc-conditions-list li .condition-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--cp-text, #1f2937);
+}
+.sc-conditions-list li .condition-specialty {
+    font-size: 0.8rem;
+    color: var(--cp-text-muted, #6b7280);
+    background: #f3f4f6;
+    padding: 0.25rem 0.65rem;
+    border-radius: 1rem;
+}
+
+.sc-next-steps {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+.sc-next-steps h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 0.75rem;
+}
+.sc-next-steps ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sc-next-steps ul li {
+    padding: 0.35rem 0;
+    font-size: 0.9rem;
+    color: #334155;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.sc-next-steps ul li i {
+    color: #0ea5e9;
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+.sc-book-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(5,150,105,0.3);
+}
+.sc-book-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(5,150,105,0.4);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Disclaimer */
+.sc-disclaimer {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.85rem;
+    color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+.sc-disclaimer i {
+    font-size: 1.1rem;
+    color: #d97706;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="sc-hero">
+    <h1><i class="fas fa-stethoscope"></i> Symptom Checker</h1>
+    <p>Select your symptoms below, set severity and duration, then get an instant preliminary assessment. This tool is for informational purposes only and does not replace professional medical advice.</p>
+</div>
+
+<!-- Disclaimer -->
+<div class="sc-disclaimer">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div>
+        <strong>Important:</strong> This symptom checker provides general guidance only and is NOT a medical diagnosis. If you are experiencing a medical emergency (chest pain, difficulty breathing, loss of consciousness), call emergency services immediately or visit the nearest emergency room.
+    </div>
+</div>
+
+<!-- Selected Symptoms Summary -->
+<div class="sc-selected-summary" id="selectedSummary" style="display: none;">
+    <div>
+        <span class="count-badge" id="selectedCount">0 symptoms selected</span>
+        <span style="margin-left: 0.75rem; font-size: 0.9rem; color: #4b5563;" id="selectedNames"></span>
+    </div>
+    <button class="clear-btn" onclick="clearAll()"><i class="fas fa-times"></i> Clear All</button>
+</div>
+
+<!-- Symptom Categories -->
+<div class="sc-categories">
+
+    <!-- Head & Neurological -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div>
+                <h3>Head & Neurological</h3>
+                <div class="symptom-count">Brain, eyes, ears, head</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Headache">
+                <input type="checkbox" value="Headache" hidden> <i class="fas fa-check" style="display:none"></i> Headache
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Dizziness">
+                <input type="checkbox" value="Dizziness" hidden> <i class="fas fa-check" style="display:none"></i> Dizziness
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Blurred Vision">
+                <input type="checkbox" value="Blurred Vision" hidden> <i class="fas fa-check" style="display:none"></i> Blurred Vision
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Confusion">
+                <input type="checkbox" value="Confusion" hidden> <i class="fas fa-check" style="display:none"></i> Confusion
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Memory Loss">
+                <input type="checkbox" value="Memory Loss" hidden> <i class="fas fa-check" style="display:none"></i> Memory Loss
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Ear Pain">
+                <input type="checkbox" value="Ear Pain" hidden> <i class="fas fa-check" style="display:none"></i> Ear Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Sore Throat">
+                <input type="checkbox" value="Sore Throat" hidden> <i class="fas fa-check" style="display:none"></i> Sore Throat
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Numbness">
+                <input type="checkbox" value="Numbness" hidden> <i class="fas fa-check" style="display:none"></i> Numbness
+            </label>
+        </div>
+    </div>
+
+    <!-- Chest & Respiratory -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #ef4444, #f87171);">
+                <i class="fas fa-lungs"></i>
+            </div>
+            <div>
+                <h3>Chest & Respiratory</h3>
+                <div class="symptom-count">Lungs, heart, chest area</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Chest Pain">
+                <input type="checkbox" value="Chest Pain" hidden> <i class="fas fa-check" style="display:none"></i> Chest Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Cough">
+                <input type="checkbox" value="Cough" hidden> <i class="fas fa-check" style="display:none"></i> Cough
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Breathing Difficulty">
+                <input type="checkbox" value="Breathing Difficulty" hidden> <i class="fas fa-check" style="display:none"></i> Breathing Difficulty
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Wheezing">
+                <input type="checkbox" value="Wheezing" hidden> <i class="fas fa-check" style="display:none"></i> Wheezing
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Palpitations">
+                <input type="checkbox" value="Palpitations" hidden> <i class="fas fa-check" style="display:none"></i> Palpitations
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Sweating">
+                <input type="checkbox" value="Sweating" hidden> <i class="fas fa-check" style="display:none"></i> Sweating
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Blood in Sputum">
+                <input type="checkbox" value="Blood in Sputum" hidden> <i class="fas fa-check" style="display:none"></i> Blood in Sputum
+            </label>
+        </div>
+    </div>
+
+    <!-- Abdomen & GI -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                <i class="fas fa-stomach"></i>
+            </div>
+            <div>
+                <h3>Abdomen & GI</h3>
+                <div class="symptom-count">Stomach, liver, digestion</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Nausea">
+                <input type="checkbox" value="Nausea" hidden> <i class="fas fa-check" style="display:none"></i> Nausea
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Vomiting">
+                <input type="checkbox" value="Vomiting" hidden> <i class="fas fa-check" style="display:none"></i> Vomiting
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Abdominal Pain">
+                <input type="checkbox" value="Abdominal Pain" hidden> <i class="fas fa-check" style="display:none"></i> Abdominal Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Diarrhea">
+                <input type="checkbox" value="Diarrhea" hidden> <i class="fas fa-check" style="display:none"></i> Diarrhea
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Constipation">
+                <input type="checkbox" value="Constipation" hidden> <i class="fas fa-check" style="display:none"></i> Constipation
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Bloating">
+                <input type="checkbox" value="Bloating" hidden> <i class="fas fa-check" style="display:none"></i> Bloating
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Loss of Appetite">
+                <input type="checkbox" value="Loss of Appetite" hidden> <i class="fas fa-check" style="display:none"></i> Loss of Appetite
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Acid Reflux">
+                <input type="checkbox" value="Acid Reflux" hidden> <i class="fas fa-check" style="display:none"></i> Acid Reflux
+            </label>
+        </div>
+    </div>
+
+    <!-- Musculoskeletal -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #0ea5e9, #38bdf8);">
+                <i class="fas fa-bone"></i>
+            </div>
+            <div>
+                <h3>Musculoskeletal</h3>
+                <div class="symptom-count">Bones, joints, muscles</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Joint Pain">
+                <input type="checkbox" value="Joint Pain" hidden> <i class="fas fa-check" style="display:none"></i> Joint Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Back Pain">
+                <input type="checkbox" value="Back Pain" hidden> <i class="fas fa-check" style="display:none"></i> Back Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Muscle Pain">
+                <input type="checkbox" value="Muscle Pain" hidden> <i class="fas fa-check" style="display:none"></i> Muscle Pain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Body Ache">
+                <input type="checkbox" value="Body Ache" hidden> <i class="fas fa-check" style="display:none"></i> Body Ache
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Swelling">
+                <input type="checkbox" value="Swelling" hidden> <i class="fas fa-check" style="display:none"></i> Swelling
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Stiffness">
+                <input type="checkbox" value="Stiffness" hidden> <i class="fas fa-check" style="display:none"></i> Stiffness
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Weakness">
+                <input type="checkbox" value="Weakness" hidden> <i class="fas fa-check" style="display:none"></i> Weakness
+            </label>
+        </div>
+    </div>
+
+    <!-- Skin -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                <i class="fas fa-hand-sparkles"></i>
+            </div>
+            <div>
+                <h3>Skin</h3>
+                <div class="symptom-count">Skin, hair, nails</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Rash">
+                <input type="checkbox" value="Rash" hidden> <i class="fas fa-check" style="display:none"></i> Rash
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Itching">
+                <input type="checkbox" value="Itching" hidden> <i class="fas fa-check" style="display:none"></i> Itching
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Skin Discoloration">
+                <input type="checkbox" value="Skin Discoloration" hidden> <i class="fas fa-check" style="display:none"></i> Skin Discoloration
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Bruising">
+                <input type="checkbox" value="Bruising" hidden> <i class="fas fa-check" style="display:none"></i> Bruising
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Dry Skin">
+                <input type="checkbox" value="Dry Skin" hidden> <i class="fas fa-check" style="display:none"></i> Dry Skin
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Hair Loss">
+                <input type="checkbox" value="Hair Loss" hidden> <i class="fas fa-check" style="display:none"></i> Hair Loss
+            </label>
+        </div>
+    </div>
+
+    <!-- General / Systemic -->
+    <div class="sc-category-card">
+        <div class="sc-category-header">
+            <div class="sc-category-icon" style="background: linear-gradient(135deg, #059669, #34d399);">
+                <i class="fas fa-thermometer-half"></i>
+            </div>
+            <div>
+                <h3>General / Systemic</h3>
+                <div class="symptom-count">Fever, fatigue, weight changes</div>
+            </div>
+        </div>
+        <div class="sc-symptoms-list">
+            <label class="sc-symptom-chip" data-symptom="Fever">
+                <input type="checkbox" value="Fever" hidden> <i class="fas fa-check" style="display:none"></i> Fever
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Fatigue">
+                <input type="checkbox" value="Fatigue" hidden> <i class="fas fa-check" style="display:none"></i> Fatigue
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Chills">
+                <input type="checkbox" value="Chills" hidden> <i class="fas fa-check" style="display:none"></i> Chills
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Night Sweats">
+                <input type="checkbox" value="Night Sweats" hidden> <i class="fas fa-check" style="display:none"></i> Night Sweats
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Weight Loss">
+                <input type="checkbox" value="Weight Loss" hidden> <i class="fas fa-check" style="display:none"></i> Weight Loss
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Weight Gain">
+                <input type="checkbox" value="Weight Gain" hidden> <i class="fas fa-check" style="display:none"></i> Weight Gain
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Frequent Urination">
+                <input type="checkbox" value="Frequent Urination" hidden> <i class="fas fa-check" style="display:none"></i> Frequent Urination
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Excessive Thirst">
+                <input type="checkbox" value="Excessive Thirst" hidden> <i class="fas fa-check" style="display:none"></i> Excessive Thirst
+            </label>
+            <label class="sc-symptom-chip" data-symptom="Insomnia">
+                <input type="checkbox" value="Insomnia" hidden> <i class="fas fa-check" style="display:none"></i> Insomnia
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Severity & Duration -->
+<div class="sc-context">
+    <div class="sc-context-card">
+        <h4><i class="fas fa-exclamation-circle" style="color: #ef4444;"></i> Severity Level</h4>
+        <div class="sc-option-group" id="severityGroup">
+            <div class="sc-option" data-value="Mild" onclick="selectOption(this, 'severity')">
+                <i class="fas fa-circle" style="color: #10b981; font-size: 0.6rem;"></i> Mild
+            </div>
+            <div class="sc-option" data-value="Moderate" onclick="selectOption(this, 'severity')">
+                <i class="fas fa-circle" style="color: #f59e0b; font-size: 0.6rem;"></i> Moderate
+            </div>
+            <div class="sc-option" data-value="Severe" onclick="selectOption(this, 'severity')">
+                <i class="fas fa-circle" style="color: #ef4444; font-size: 0.6rem;"></i> Severe
+            </div>
+        </div>
+    </div>
+    <div class="sc-context-card">
+        <h4><i class="fas fa-clock" style="color: #6366f1;"></i> Duration</h4>
+        <div class="sc-option-group" id="durationGroup">
+            <div class="sc-option" data-value="Today" onclick="selectOption(this, 'duration')">Today</div>
+            <div class="sc-option" data-value="1-3 days" onclick="selectOption(this, 'duration')">1-3 days</div>
+            <div class="sc-option" data-value="3-7 days" onclick="selectOption(this, 'duration')">3-7 days</div>
+            <div class="sc-option" data-value="1-2 weeks" onclick="selectOption(this, 'duration')">1-2 weeks</div>
+            <div class="sc-option" data-value=">2 weeks" onclick="selectOption(this, 'duration')">&gt;2 weeks</div>
+        </div>
+    </div>
+</div>
+
+<!-- Check Button -->
+<button class="sc-check-btn" id="checkBtn" onclick="checkSymptoms()" disabled>
+    <i class="fas fa-search-plus"></i> Check Symptoms
+</button>
+
+<!-- Results Section -->
+<div class="sc-results" id="resultsSection">
+    <div class="sc-result-card" id="resultContent">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================================
+// Symptom-Condition Mapping (client-side analysis)
+// ============================================================
+var symptomConditions = {
+    'Fever,Headache,Body Ache': {condition: 'Viral Fever / Flu', urgency: 'See doctor soon', specialty: 'General Medicine'},
+    'Fever,Cough,Breathing Difficulty': {condition: 'Respiratory Infection / Pneumonia', urgency: 'See doctor today', specialty: 'Pulmonology'},
+    'Chest Pain,Breathing Difficulty,Sweating': {condition: 'Possible Cardiac Event', urgency: 'Emergency', specialty: 'Cardiology'},
+    'Chest Pain,Palpitations': {condition: 'Cardiac Arrhythmia', urgency: 'See doctor today', specialty: 'Cardiology'},
+    'Headache,Blurred Vision,Dizziness': {condition: 'Hypertension / Migraine', urgency: 'See doctor soon', specialty: 'Neurology'},
+    'Nausea,Vomiting,Abdominal Pain': {condition: 'Gastroenteritis / Food Poisoning', urgency: 'See doctor soon', specialty: 'Gastroenterology'},
+    'Fever,Sore Throat,Cough': {condition: 'Upper Respiratory Tract Infection', urgency: 'Self-care', specialty: 'General Medicine'},
+    'Joint Pain,Swelling,Stiffness': {condition: 'Arthritis / Joint Inflammation', urgency: 'See doctor soon', specialty: 'Orthopedics'},
+    'Rash,Itching,Fever': {condition: 'Allergic Reaction / Dermatitis', urgency: 'See doctor soon', specialty: 'Dermatology'},
+    'Fatigue,Weight Loss,Night Sweats': {condition: 'Chronic Infection / Thyroid Disorder', urgency: 'See doctor today', specialty: 'Internal Medicine'},
+    'Frequent Urination,Excessive Thirst,Fatigue': {condition: 'Diabetes Mellitus', urgency: 'See doctor soon', specialty: 'Endocrinology'},
+    'Back Pain,Numbness,Weakness': {condition: 'Spinal Disc Problem / Nerve Compression', urgency: 'See doctor today', specialty: 'Orthopedics'},
+    'Abdominal Pain,Bloating,Constipation': {condition: 'Irritable Bowel Syndrome', urgency: 'Self-care', specialty: 'Gastroenterology'},
+    'Cough,Wheezing,Breathing Difficulty': {condition: 'Asthma / Bronchitis', urgency: 'See doctor soon', specialty: 'Pulmonology'},
+    'Headache,Confusion,Numbness': {condition: 'Possible Stroke / TIA', urgency: 'Emergency', specialty: 'Neurology'},
+    'Fever,Chills,Body Ache': {condition: 'Malaria / Dengue (Tropical Fever)', urgency: 'See doctor today', specialty: 'General Medicine'},
+    'Chest Pain,Acid Reflux,Bloating': {condition: 'GERD / Acid Reflux Disease', urgency: 'Self-care', specialty: 'Gastroenterology'},
+    'Dizziness,Ear Pain,Nausea': {condition: 'Vertigo / Inner Ear Disorder', urgency: 'See doctor soon', specialty: 'ENT'},
+    'Rash,Skin Discoloration,Itching': {condition: 'Fungal Infection / Eczema', urgency: 'Self-care', specialty: 'Dermatology'},
+    'Fatigue,Insomnia,Weight Gain': {condition: 'Hypothyroidism / Depression', urgency: 'See doctor soon', specialty: 'Endocrinology'},
+    'Fever,Blood in Sputum,Cough': {condition: 'Tuberculosis / Lung Infection', urgency: 'See doctor today', specialty: 'Pulmonology'},
+    'Muscle Pain,Fatigue,Fever': {condition: 'Viral Myalgia / Fibromyalgia', urgency: 'See doctor soon', specialty: 'General Medicine'},
+    'Loss of Appetite,Nausea,Fatigue': {condition: 'Liver Disorder / Hepatitis', urgency: 'See doctor today', specialty: 'Gastroenterology'},
+    'Headache,Fever,Sore Throat': {condition: 'Common Cold / Sinusitis', urgency: 'Self-care', specialty: 'General Medicine'}
+};
+
+// ============================================================
+// State
+// ============================================================
+var selectedSymptoms = [];
+var selectedSeverity = null;
+var selectedDuration = null;
+
+// ============================================================
+// Chip click handling
+// ============================================================
+document.querySelectorAll('.sc-symptom-chip').forEach(function(chip) {
+    chip.addEventListener('click', function(e) {
+        e.preventDefault();
+        var symptom = this.dataset.symptom;
+        var cb = this.querySelector('input[type=checkbox]');
+        var icon = this.querySelector('i');
+        if (this.classList.contains('selected')) {
+            this.classList.remove('selected');
+            cb.checked = false;
+            icon.style.display = 'none';
+            selectedSymptoms = selectedSymptoms.filter(function(s) { return s !== symptom; });
+        } else {
+            this.classList.add('selected');
+            cb.checked = true;
+            icon.style.display = 'inline';
+            selectedSymptoms.push(symptom);
+        }
+        updateSummary();
+    });
+});
+
+// ============================================================
+// Option selectors
+// ============================================================
+function selectOption(el, type) {
+    el.parentNode.querySelectorAll('.sc-option').forEach(function(o) { o.classList.remove('selected'); });
+    el.classList.add('selected');
+    if (type === 'severity') selectedSeverity = el.dataset.value;
+    if (type === 'duration') selectedDuration = el.dataset.value;
+    updateSummary();
+}
+
+function updateSummary() {
+    var summary = document.getElementById('selectedSummary');
+    var countBadge = document.getElementById('selectedCount');
+    var namesList = document.getElementById('selectedNames');
+    var checkBtn = document.getElementById('checkBtn');
+    if (selectedSymptoms.length > 0) {
+        summary.style.display = 'flex';
+        countBadge.textContent = selectedSymptoms.length + ' symptom' + (selectedSymptoms.length > 1 ? 's' : '') + ' selected';
+        namesList.textContent = selectedSymptoms.join(', ');
+    } else {
+        summary.style.display = 'none';
+    }
+    checkBtn.disabled = selectedSymptoms.length === 0;
+}
+
+function clearAll() {
+    selectedSymptoms = [];
+    selectedSeverity = null;
+    selectedDuration = null;
+    document.querySelectorAll('.sc-symptom-chip').forEach(function(chip) {
+        chip.classList.remove('selected');
+        chip.querySelector('input[type=checkbox]').checked = false;
+        chip.querySelector('i').style.display = 'none';
+    });
+    document.querySelectorAll('.sc-option').forEach(function(o) { o.classList.remove('selected'); });
+    document.getElementById('resultsSection').classList.remove('show');
+    updateSummary();
+}
+
+// ============================================================
+// Symptom Analysis
+// ============================================================
+function checkSymptoms() {
+    if (selectedSymptoms.length === 0) return;
+
+    var matches = [];
+    var matchedKeys = {};
+
+    // Try to find matching patterns
+    for (var key in symptomConditions) {
+        var patternSymptoms = key.split(',');
+        var matchCount = 0;
+        patternSymptoms.forEach(function(ps) {
+            if (selectedSymptoms.indexOf(ps) !== -1) matchCount++;
+        });
+        var matchRatio = matchCount / patternSymptoms.length;
+        if (matchRatio >= 0.6 && matchCount >= 2) {
+            matches.push({
+                key: key,
+                data: symptomConditions[key],
+                score: matchRatio,
+                matched: matchCount,
+                total: patternSymptoms.length
+            });
+        }
+    }
+
+    // Sort by match score
+    matches.sort(function(a, b) { return b.score - a.score; });
+
+    // Determine overall urgency
+    var urgencyLevels = {'Self-care': 0, 'See doctor soon': 1, 'See doctor today': 2, 'Emergency': 3};
+    var urgencyLabels = ['Self-care', 'See doctor soon', 'See doctor today', 'Emergency'];
+    var maxUrgency = 0;
+
+    // Severity escalation
+    if (selectedSeverity === 'Severe') maxUrgency = Math.max(maxUrgency, 2);
+    else if (selectedSeverity === 'Moderate') maxUrgency = Math.max(maxUrgency, 1);
+
+    // Duration escalation
+    if (selectedDuration === '>2 weeks') maxUrgency = Math.max(maxUrgency, 1);
+    if (selectedDuration === '1-2 weeks') maxUrgency = Math.max(maxUrgency, 1);
+
+    matches.forEach(function(m) {
+        var u = urgencyLevels[m.data.urgency] || 0;
+        if (u > maxUrgency) maxUrgency = u;
+    });
+
+    var finalUrgency = urgencyLabels[maxUrgency];
+
+    // Build results HTML
+    var html = '';
+
+    // Urgency banner
+    var urgencyClasses = {
+        'Self-care': 'sc-urgency-selfcare',
+        'See doctor soon': 'sc-urgency-soon',
+        'See doctor today': 'sc-urgency-today',
+        'Emergency': 'sc-urgency-emergency'
+    };
+    var urgencyIcons = {
+        'Self-care': 'fa-home',
+        'See doctor soon': 'fa-calendar-alt',
+        'See doctor today': 'fa-exclamation-triangle',
+        'Emergency': 'fa-ambulance'
+    };
+
+    html += '<h3><i class="fas fa-clipboard-check" style="color: #4f46e5;"></i> Assessment Results</h3>';
+    html += '<div class="sc-urgency-badge ' + urgencyClasses[finalUrgency] + '">';
+    html += '<i class="fas ' + urgencyIcons[finalUrgency] + '"></i> Urgency: ' + finalUrgency;
+    html += '</div>';
+
+    if (finalUrgency === 'Emergency') {
+        html += '<div style="background:#fef2f2;border:2px solid #ef4444;border-radius:0.75rem;padding:1rem 1.25rem;margin-bottom:1rem;color:#991b1b;font-weight:600;">';
+        html += '<i class="fas fa-exclamation-circle"></i> Please seek immediate medical attention. Call emergency services or visit the nearest emergency room NOW.';
+        html += '</div>';
+    }
+
+    // Possible conditions
+    if (matches.length > 0) {
+        html += '<h4 style="margin: 1.25rem 0 0.75rem; font-weight: 600;">Possible Conditions</h4>';
+        html += '<ul class="sc-conditions-list">';
+        var shown = {};
+        matches.forEach(function(m) {
+            if (!shown[m.data.condition]) {
+                shown[m.data.condition] = true;
+                var pct = Math.round(m.score * 100);
+                html += '<li>';
+                html += '<span class="condition-name"><i class="fas fa-chevron-right" style="color:#6366f1;margin-right:0.5rem;font-size:0.75rem;"></i>' + m.data.condition + '</span>';
+                html += '<div>';
+                html += '<span class="condition-specialty"><i class="fas fa-user-md" style="margin-right:0.3rem;"></i>' + m.data.specialty + '</span>';
+                html += ' <span style="font-size:0.8rem;color:#6b7280;margin-left:0.5rem;">' + pct + '% match</span>';
+                html += '</div>';
+                html += '</li>';
+            }
+        });
+        html += '</ul>';
+    } else {
+        html += '<p style="color: #6b7280; margin: 1rem 0;">No exact condition match found for this combination. Consider consulting a General Medicine doctor for further evaluation.</p>';
+    }
+
+    // Next steps
+    html += '<div class="sc-next-steps">';
+    html += '<h4><i class="fas fa-list-check"></i> Recommended Next Steps</h4>';
+    html += '<ul>';
+    if (finalUrgency === 'Emergency') {
+        html += '<li><i class="fas fa-arrow-right"></i> Call emergency services (108/112) immediately</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Go to the nearest emergency room</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Do not drive yourself - have someone take you or call an ambulance</li>';
+    } else if (finalUrgency === 'See doctor today') {
+        html += '<li><i class="fas fa-arrow-right"></i> Schedule an urgent appointment with a doctor today</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Keep track of your symptoms and their progression</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Avoid self-medication until you see a doctor</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> If symptoms worsen rapidly, visit an emergency room</li>';
+    } else if (finalUrgency === 'See doctor soon') {
+        html += '<li><i class="fas fa-arrow-right"></i> Book an appointment within the next 1-2 days</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Monitor your symptoms and note any changes</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Stay hydrated and get adequate rest</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Use basic home remedies if appropriate (warm fluids, rest)</li>';
+    } else {
+        html += '<li><i class="fas fa-arrow-right"></i> Rest and hydrate well</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Use over-the-counter remedies as needed</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> Monitor symptoms for 2-3 days</li>';
+        html += '<li><i class="fas fa-arrow-right"></i> If symptoms persist or worsen, book an appointment</li>';
+    }
+    html += '</ul>';
+    html += '</div>';
+
+    // Book appointment link
+    html += '<a href="{{ url_for("patient.appointments") }}" class="sc-book-btn">';
+    html += '<i class="fas fa-calendar-plus"></i> Book an Appointment';
+    html += '</a>';
+
+    // Summary info
+    html += '<div style="margin-top:1.5rem;padding:1rem;background:#f9fafb;border-radius:0.75rem;font-size:0.85rem;color:#6b7280;">';
+    html += '<strong>Your input:</strong> ' + selectedSymptoms.join(', ');
+    if (selectedSeverity) html += ' | Severity: ' + selectedSeverity;
+    if (selectedDuration) html += ' | Duration: ' + selectedDuration;
+    html += '</div>';
+
+    document.getElementById('resultContent').innerHTML = html;
+    document.getElementById('resultsSection').classList.add('show');
+    document.getElementById('resultsSection').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}AI Clinical Assistant — Doctor Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width:900px;">
+    <div class="row mb-3">
+        <div class="col">
+            <h4 class="fw-bold mb-1"><i class="fas fa-robot text-primary me-2"></i>AI Clinical Assistant</h4>
+            <p class="text-muted small mb-0">Ask about drugs, symptoms, differentials, lab values, protocols</p>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="card border-0 shadow-sm" style="border-radius:16px;">
+        <div id="chatMessages" class="card-body" style="height:55vh;overflow-y:auto;background:#0f172a;border-radius:16px 16px 0 0;padding:24px;">
+            <!-- Welcome message -->
+            <div class="d-flex mb-3">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;">
+                    <i class="fas fa-robot" style="color:#818cf8;font-size:.9rem;"></i>
+                </div>
+                <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;max-width:80%;color:#e2e8f0;font-size:.88rem;line-height:1.6;">
+                    Hello, Doctor. I'm your AI Clinical Assistant. Ask me about:<br>
+                    <span style="color:#818cf8;">&#8226;</span> Drug interactions & dosages<br>
+                    <span style="color:#818cf8;">&#8226;</span> Differential diagnosis from symptoms<br>
+                    <span style="color:#818cf8;">&#8226;</span> Lab result interpretation<br>
+                    <span style="color:#818cf8;">&#8226;</span> Treatment protocols & guidelines<br>
+                    <span style="color:#818cf8;">&#8226;</span> Medical terminology & ICD codes
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="card-footer border-0" style="background:#1e293b;border-radius:0 0 16px 16px;padding:16px 20px;">
+            <div class="d-flex gap-2">
+                <input type="text" id="chatInput" class="form-control" placeholder="Ask a clinical question..."
+                    style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#f1f5f9;border-radius:12px;padding:12px 16px;font-size:.9rem;"
+                    autocomplete="off">
+                <button id="sendBtn" class="btn btn-primary" style="border-radius:12px;padding:12px 20px;font-weight:600;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+                <button class="btn btn-sm quick-q" style="background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);border-radius:8px;font-size:.75rem;">Paracetamol dosage for fever</button>
+                <button class="btn btn-sm quick-q" style="background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.75rem;">Diff diagnosis: chest pain</button>
+                <button class="btn btn-sm quick-q" style="background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.75rem;">Normal CBC values</button>
+                <button class="btn btn-sm quick-q" style="background:rgba(236,72,153,.1);color:#f472b6;border:1px solid rgba(236,72,153,.2);border-radius:8px;font-size:.75rem;">Metformin interactions</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatBox = document.getElementById('chatMessages');
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+    function addMsg(text, isUser) {
+        const wrap = document.createElement('div');
+        wrap.className = 'd-flex mb-3' + (isUser ? ' justify-content-end' : '');
+
+        if (isUser) {
+            wrap.innerHTML = '<div style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);border-radius:12px;padding:12px 16px;max-width:75%;color:#e2e8f0;font-size:.88rem;line-height:1.6;">' + escapeHtml(text) + '</div>';
+        } else {
+            const formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n- /g, '<br><span style="color:#818cf8;">&#8226;</span> ')
+                .replace(/\n(\d+)\. /g, '<br><span style="color:#818cf8;">$1.</span> ')
+                .replace(/\n/g, '<br>');
+            wrap.innerHTML = '<div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;"><i class="fas fa-robot" style="color:#818cf8;font-size:.9rem;"></i></div>' +
+                '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;max-width:80%;color:#e2e8f0;font-size:.88rem;line-height:1.6;">' + formatted + '</div>';
+        }
+        chatBox.appendChild(wrap);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function addLoading() {
+        const el = document.createElement('div');
+        el.id = 'loadingMsg';
+        el.className = 'd-flex mb-3';
+        el.innerHTML = '<div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;"><i class="fas fa-robot" style="color:#818cf8;font-size:.9rem;"></i></div>' +
+            '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;color:#94a3b8;font-size:.88rem;"><i class="fas fa-circle-notch fa-spin me-2"></i>Analyzing...</div>';
+        chatBox.appendChild(el);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeLoading() {
+        const el = document.getElementById('loadingMsg');
+        if (el) el.remove();
+    }
+
+    function escapeHtml(t) {
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function send(msg) {
+        if (!msg.trim()) return;
+        addMsg(msg, true);
+        input.value = '';
+        sendBtn.disabled = true;
+        addLoading();
+
+        try {
+            const res = await fetch('{{ url_for("doctor.ai_assistant_ask") }}', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json', 'X-CSRFToken': csrfToken},
+                body: JSON.stringify({message: msg})
+            });
+            const data = await res.json();
+            removeLoading();
+            if (data.success) {
+                addMsg(data.response, false);
+            } else {
+                addMsg('Error: ' + (data.error || 'Failed to get response'), false);
+            }
+        } catch(e) {
+            removeLoading();
+            addMsg('Network error. Please try again.', false);
+        }
+        sendBtn.disabled = false;
+        input.focus();
+    }
+
+    sendBtn.addEventListener('click', () => send(input.value));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(input.value); });
+
+    document.querySelectorAll('.quick-q').forEach(btn => {
+        btn.addEventListener('click', () => send(btn.textContent.trim()));
+    });
+});
+</script>
+{% endblock %}

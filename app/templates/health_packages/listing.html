@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+{% set hide_navbar = false %}
+{% set hide_footer = false %}
+
+{% block title %}Health Checkup Packages - CarePoint Hospital{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEALTH PACKAGES — LISTING PAGE
+   Apollo-style premium health package browsing experience
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --hp-primary: #1a3b6e;
+    --hp-primary-light: #2563eb;
+    --hp-teal: #0e7490;
+    --hp-bg: #f7f9fc;
+    --hp-card-bg: #ffffff;
+    --hp-text: #1e293b;
+    --hp-muted: #64748b;
+    --hp-border: #e2e8f0;
+}
+
+/* ── Hero Section ── */
+.hp-hero {
+    background: linear-gradient(135deg, #1a3b6e 0%, #2563eb 50%, #0e7490 100%);
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hp-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: heroFloat 8s ease-in-out infinite;
+}
+
+.hp-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: heroFloat 10s ease-in-out infinite reverse;
+}
+
+@keyframes heroFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.hp-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.hp-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 8px 20px;
+    border-radius: 50px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    margin-bottom: 20px;
+}
+
+.hp-hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    letter-spacing: -.5px;
+    line-height: 1.15;
+}
+
+.hp-hero h1 em {
+    font-style: normal;
+    color: #67e8f9;
+}
+
+.hp-hero p {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,.8);
+    max-width: 600px;
+    margin: 0 auto 30px;
+    line-height: 1.7;
+}
+
+.hp-hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.hp-hero-stat {
+    text-align: center;
+}
+
+.hp-hero-stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    display: block;
+}
+
+.hp-hero-stat-label {
+    font-size: .82rem;
+    color: rgba(255,255,255,.65);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* ── Main Container ── */
+.hp-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── Category Filters ── */
+.hp-filters {
+    background: var(--hp-card-bg);
+    border-bottom: 1px solid var(--hp-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+
+.hp-filters-inner {
+    display: flex;
+    gap: 6px;
+    padding: 16px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hp-filters-inner::-webkit-scrollbar { display: none; }
+
+.hp-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 50px;
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--hp-muted);
+    background: transparent;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all .25s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.hp-filter-btn:hover {
+    color: var(--hp-primary-light);
+    background: rgba(37,99,235,.06);
+    border-color: rgba(37,99,235,.15);
+}
+
+.hp-filter-btn.active {
+    color: #fff;
+    background: var(--hp-primary-light);
+    border-color: var(--hp-primary-light);
+    box-shadow: 0 4px 14px rgba(37,99,235,.3);
+}
+
+.hp-filter-btn i {
+    font-size: .85rem;
+}
+
+/* ── Packages Grid ── */
+.hp-section {
+    padding: 50px 0 80px;
+    background: var(--hp-bg);
+    min-height: 60vh;
+}
+
+.hp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.hp-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--hp-text);
+}
+
+.hp-section-count {
+    font-size: .9rem;
+    color: var(--hp-muted);
+    background: var(--hp-card-bg);
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1px solid var(--hp-border);
+}
+
+.hp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+
+/* ── Package Card ── */
+.hp-card {
+    background: var(--hp-card-bg);
+    border-radius: 18px;
+    border: 1px solid var(--hp-border);
+    overflow: hidden;
+    transition: all .35s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,.1);
+    border-color: transparent;
+}
+
+.hp-card-accent {
+    height: 4px;
+    width: 100%;
+}
+
+.hp-card-popular {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(245,158,11,.3);
+    z-index: 2;
+}
+
+.hp-card-body {
+    padding: 28px 26px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    color: #fff;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.hp-card-icon::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 17px;
+    opacity: .15;
+}
+
+.hp-card-category {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 8px;
+    opacity: .7;
+}
+
+.hp-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.hp-card-desc {
+    font-size: .92rem;
+    color: var(--hp-muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.hp-card-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.hp-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    color: var(--hp-muted);
+}
+
+.hp-card-meta-item i {
+    font-size: .78rem;
+    opacity: .7;
+}
+
+.hp-card-tests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.hp-card-test-tag {
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: var(--hp-muted);
+    white-space: nowrap;
+}
+
+.hp-card-test-more {
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #e2e8f0;
+    color: var(--hp-text);
+}
+
+/* ── Card Footer ── */
+.hp-card-footer {
+    padding: 18px 26px;
+    border-top: 1px solid var(--hp-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafbfc;
+}
+
+.hp-card-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-card-price-label {
+    font-size: .72rem;
+    color: var(--hp-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.hp-card-price-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--hp-text);
+    line-height: 1.2;
+}
+
+.hp-card-price-value small {
+    font-size: .75rem;
+    font-weight: 500;
+    color: var(--hp-muted);
+}
+
+.hp-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.hp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s ease;
+    border: none;
+    text-decoration: none;
+}
+
+.hp-btn-primary {
+    background: var(--hp-primary-light);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37,99,235,.2);
+}
+
+.hp-btn-primary:hover {
+    background: #1d4ed8;
+    box-shadow: 0 6px 20px rgba(37,99,235,.35);
+    transform: translateY(-1px);
+    color: #fff;
+}
+
+.hp-btn-outline {
+    background: transparent;
+    color: var(--hp-primary-light);
+    border: 2px solid var(--hp-primary-light);
+}
+
+.hp-btn-outline:hover {
+    background: var(--hp-primary-light);
+    color: #fff;
+}
+
+/* ── Empty State ── */
+.hp-empty {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.hp-empty i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+}
+
+.hp-empty h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 8px;
+}
+
+.hp-empty p {
+    color: var(--hp-muted);
+    margin-bottom: 20px;
+}
+
+/* ── Trust Badges ── */
+.hp-trust {
+    background: var(--hp-card-bg);
+    padding: 50px 0;
+    border-top: 1px solid var(--hp-border);
+}
+
+.hp-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.hp-trust-item i {
+    font-size: 1.8rem;
+    color: var(--hp-primary-light);
+    margin-bottom: 12px;
+}
+
+.hp-trust-item h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--hp-text);
+    margin-bottom: 4px;
+}
+
+.hp-trust-item p {
+    font-size: .85rem;
+    color: var(--hp-muted);
+    line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 992px) {
+    .hp-hero h1 { font-size: 2.2rem; }
+    .hp-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .hp-trust-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .hp-hero { padding: 60px 0 40px; }
+    .hp-hero h1 { font-size: 1.8rem; }
+    .hp-hero p { font-size: 1rem; }
+    .hp-hero-stats { gap: 24px; }
+    .hp-grid { grid-template-columns: 1fr; }
+    .hp-filters-inner { justify-content: flex-start; padding: 12px 16px; }
+    .hp-card-footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .hp-card-actions { width: 100%; }
+    .hp-btn { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+    .hp-hero h1 { font-size: 1.5rem; }
+    .hp-hero-stat-value { font-size: 1.4rem; }
+    .hp-trust-grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
+/* ── Fasting Badge ── */
+.hp-fasting-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 50px;
+}
+
+.hp-fasting-yes {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.hp-fasting-no {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* ── Animations ── */
+.hp-card { animation: hpCardIn .5s ease both; }
+.hp-card:nth-child(1) { animation-delay: .05s; }
+.hp-card:nth-child(2) { animation-delay: .1s; }
+.hp-card:nth-child(3) { animation-delay: .15s; }
+.hp-card:nth-child(4) { animation-delay: .2s; }
+.hp-card:nth-child(5) { animation-delay: .25s; }
+.hp-card:nth-child(6) { animation-delay: .3s; }
+.hp-card:nth-child(7) { animation-delay: .35s; }
+.hp-card:nth-child(8) { animation-delay: .4s; }
+
+@keyframes hpCardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ Hero Section ═══ -->
+<section class="hp-hero">
+    <div class="hp-hero-content">
+        <div class="hp-hero-badge">
+            <i class="fas fa-shield-alt"></i>
+            NABL Accredited Lab &bull; Trusted by 50,000+ Patients
+        </div>
+        <h1>Health Checkup <em>Packages</em></h1>
+        <p>Comprehensive health screening packages designed by expert physicians. Preventive care at affordable prices with accurate diagnostics.</p>
+        <div class="hp-hero-stats">
+            <div class="hp-hero-stat">
+                <span class="hp-hero-stat-value">{{ all_packages|length }}</span>
+                <span class="hp-hero-stat-label">Packages</span>
+            </div>
+            <div class="hp-hero-stat">
+                <span class="hp-hero-stat-value">70+</span>
+                <span class="hp-hero-stat-label">Tests Available</span>
+            </div>
+            <div class="hp-hero-stat">
+                <span class="hp-hero-stat-value">24hr</span>
+                <span class="hp-hero-stat-label">Report Delivery</span>
+            </div>
+            <div class="hp-hero-stat">
+                <span class="hp-hero-stat-value">4.8</span>
+                <span class="hp-hero-stat-label">Patient Rating</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Category Filters ═══ -->
+<div class="hp-filters">
+    <div class="hp-container">
+        <div class="hp-filters-inner">
+            {% for cat in categories %}
+            <a href="{{ url_for('health_packages.listing', category=cat.key) }}"
+               class="hp-filter-btn {% if active_category == cat.key %}active{% endif %}">
+                <i class="fas {{ cat.icon }}"></i>
+                {{ cat.label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ═══ Packages Grid ═══ -->
+<section class="hp-section">
+    <div class="hp-container">
+        <div class="hp-section-header">
+            <h2 class="hp-section-title">
+                {% if active_category == 'all' %}
+                    All Health Packages
+                {% else %}
+                    {{ active_category }} Packages
+                {% endif %}
+            </h2>
+            <span class="hp-section-count">{{ packages|length }} package{{ 's' if packages|length != 1 else '' }} available</span>
+        </div>
+
+        {% if packages %}
+        <div class="hp-grid">
+            {% for pkg in packages %}
+            <div class="hp-card">
+                <div class="hp-card-accent" style="background: linear-gradient(90deg, {{ pkg.color }}, {{ pkg.color }}88);"></div>
+
+                {% if pkg.popular %}
+                <div class="hp-card-popular"><i class="fas fa-fire"></i> Popular</div>
+                {% endif %}
+
+                <div class="hp-card-body">
+                    <div class="hp-card-icon" style="background: {{ pkg.color }};">
+                        <i class="fas {{ pkg.icon }}"></i>
+                    </div>
+
+                    <span class="hp-card-category" style="color: {{ pkg.color }};">{{ pkg.category }}</span>
+                    <h3>{{ pkg.name }}</h3>
+                    <p class="hp-card-desc">{{ pkg.description }}</p>
+
+                    <div class="hp-card-meta">
+                        <span class="hp-card-meta-item">
+                            <i class="fas fa-clock"></i> {{ pkg.duration }}
+                        </span>
+                        <span class="hp-card-meta-item">
+                            <i class="fas fa-vials"></i> {{ pkg.tests|length }} tests
+                        </span>
+                        <span class="hp-fasting-badge {% if pkg.fasting %}hp-fasting-yes{% else %}hp-fasting-no{% endif %}">
+                            <i class="fas {% if pkg.fasting %}fa-utensils{% else %}fa-check-circle{% endif %}"></i>
+                            {% if pkg.fasting %}Fasting{% else %}No Fasting{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="hp-card-tests">
+                        {% for test in pkg.tests[:4] %}
+                        <span class="hp-card-test-tag">{{ test }}</span>
+                        {% endfor %}
+                        {% if pkg.tests|length > 4 %}
+                        <span class="hp-card-test-more">+{{ pkg.tests|length - 4 }} more</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="hp-card-footer">
+                    <div class="hp-card-price">
+                        <span class="hp-card-price-label">Starting from</span>
+                        <span class="hp-card-price-value">&#8377;{{ '{:,}'.format(pkg.price) }} <small>/ package</small></span>
+                    </div>
+                    <div class="hp-card-actions">
+                        <a href="{{ url_for('health_packages.detail', id=pkg.id) }}" class="hp-btn hp-btn-primary">
+                            View Details <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="hp-empty">
+            <i class="fas fa-box-open"></i>
+            <h3>No packages found</h3>
+            <p>No health packages available in this category at the moment.</p>
+            <a href="{{ url_for('health_packages.listing') }}" class="hp-btn hp-btn-primary">
+                <i class="fas fa-th-large"></i> View All Packages
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ═══ Trust Section ═══ -->
+<section class="hp-trust">
+    <div class="hp-container">
+        <div class="hp-trust-grid">
+            <div class="hp-trust-item">
+                <i class="fas fa-user-md"></i>
+                <h4>Expert Physicians</h4>
+                <p>Tests supervised by experienced specialists</p>
+            </div>
+            <div class="hp-trust-item">
+                <i class="fas fa-certificate"></i>
+                <h4>NABL Accredited</h4>
+                <p>ISO certified laboratory with quality assurance</p>
+            </div>
+            <div class="hp-trust-item">
+                <i class="fas fa-clock"></i>
+                <h4>Quick Reports</h4>
+                <p>Digital reports within 24 hours of checkup</p>
+            </div>
+            <div class="hp-trust-item">
+                <i class="fas fa-home"></i>
+                <h4>Home Collection</h4>
+                <p>Free sample collection at your doorstep</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}IP Medication Requests — Pharmacy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold"><i class="fas fa-hospital-user text-primary me-2"></i>IP Medication Requests</h2>
+            <p class="text-muted mb-0">Select an admitted patient to view and dispense their prescribed medicines</p>
+        </div>
+    </div>
+
+    {% if patients_data %}
+    <div class="row g-3">
+        {% for item in patients_data %}
+        {% set pat = item.patient %}
+        {% set adm = item.admission %}
+        {% set doc = item.doctor %}
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ url_for('pharmacy_ops.ip_medication_patient_detail', admission_id=adm.id) }}"
+               class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100" style="transition:transform .15s,box-shadow .15s;cursor:pointer;"
+                     onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 25px rgba(0,0,0,.12)'"
+                     onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                 style="width:48px;height:48px;min-width:48px;font-size:1.1rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                                {{ pat.first_name[0]|upper if pat else '?' }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-1">{{ pat.first_name }} {{ pat.last_name }}</h6>
+                                <div class="d-flex gap-2 flex-wrap mb-2">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{ pat.uhid }}</span>
+                                    <span class="badge bg-info bg-opacity-10 text-info">{{ adm.ip_number }}</span>
+                                    {% if adm.ward_type %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ adm.ward_type }}{% if adm.room_number %} R-{{ adm.room_number }}{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="fas fa-user-md me-1"></i>Dr. {{ doc.first_name }} {{ doc.last_name if doc else '' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-3">
+                                {% if item.pending > 0 %}
+                                <span class="d-flex align-items-center gap-1">
+                                    <span class="badge bg-warning text-dark">{{ item.pending }}</span>
+                                    <small class="text-muted">Pending</small>
+                                </span>
+                                {% endif %}
+                                {% if item.dispensed > 0 %}
+                                <span class="d-flex align-items-center gap-1">
+                                    <span class="badge bg-success">{{ item.dispensed }}</span>
+                                    <small class="text-muted">Dispensed</small>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <span class="text-primary fw-semibold small">
+                                View <i class="fas fa-arrow-right ms-1"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5 text-muted">
+            <i class="fas fa-box-open fa-3x mb-3 opacity-25"></i>
+            <h5>No IP Medication Requests</h5>
+            <p class="mb-0">When doctors prescribe medicines for admitted patients, they will appear here.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+<!-- CarePoint — Unified Sidebar Component -->
+<!-- Data-driven: receives sidebar_nav from context processor -->
+<aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main navigation">
+    <!-- Collapse Toggle -->
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()"
+        title="Collapse sidebar" aria-label="Toggle sidebar">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- Brand -->
+    <a href="{{ sidebar_config.home_url }}" class="sidebar-brand" aria-label="CarePoint Home">
+        <div class="sidebar-brand-icon" {% if sidebar_config.brand_gradient %}style="background: {{ sidebar_config.brand_gradient }};"{% endif %}>
+            <i class="fas {{ sidebar_config.brand_icon | default('fa-heartbeat') }}"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav" aria-label="{{ sidebar_config.role_label }} navigation">
+        {% for item in sidebar_nav %}
+            {% if item.section %}
+                <span class="sidebar-section-label">{{ item.section }}</span>
+            {% elif item.url %}
+                <a href="{{ item.url }}"
+                   class="sidebar-link {% if item.active %}active{% endif %}"
+                   {% if item.active %}aria-current="page"{% endif %}
+                   aria-label="{{ item.label }}">
+                    <i class="fas {{ item.icon }}" {% if item.icon_color %}style="color:{{ item.icon_color }};"{% endif %}></i>
+                    <span>{{ item.label }}</span>
+                    {% if item.badge %}
+                    <span class="badge-count" {% if item.badge_id %}id="{{ item.badge_id }}"{% endif %}
+                          {% if item.badge_style %}style="{{ item.badge_style }}"{% endif %}>
+                        {{ item.badge }}
+                    </span>
+                    {% endif %}
+                </a>
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" {% if sidebar_config.brand_gradient %}style="background: {{ sidebar_config.brand_gradient }};"{% endif %}>
+            {{ current_user.username[0]|upper }}
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">{{ sidebar_config.display_name | default(current_user.username) }}</div>
+            <div class="sidebar-user-role">{{ sidebar_config.role_label }}</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-link" aria-label="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<script>
+    function toggleSidebarCollapse() {
+        var sidebar = document.getElementById('appSidebar');
+        if (!sidebar) return;
+        sidebar.classList.toggle('collapsed');
+        try {
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        } catch(e) {}
+    }
+
+    // Restore sidebar collapsed state
+    (function () {
+        var sidebar = document.getElementById('appSidebar');
+        if (sidebar) {
+            try {
+                if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                    sidebar.classList.add('collapsed');
+                }
+            } catch(e) {}
+        }
+    })();
+</script>

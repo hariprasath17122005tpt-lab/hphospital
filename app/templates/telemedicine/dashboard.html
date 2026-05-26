@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Telemedicine — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-video me-2"></i>Telemedicine</h1><p class="wc-subtitle">Video consultations & remote patient care</p></div>
+        {% if role != 'PATIENT' %}<a href="{{ url_for('telemedicine.schedule') }}" class="wc-btn wc-btn-primary"><i class="fas fa-plus me-2"></i>Schedule Session</a>{% endif %}
+    </div></div>
+
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue"><div class="wc-stat-icon"><i class="fas fa-video"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.total_sessions }}</div><div class="wc-stat-label">Total Sessions</div></div></div>
+        <div class="wc-stat-card wc-stat-orange"><div class="wc-stat-icon"><i class="fas fa-clock"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.upcoming }}</div><div class="wc-stat-label">Upcoming</div></div></div>
+        <div class="wc-stat-card wc-stat-green"><div class="wc-stat-icon"><i class="fas fa-check-circle"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.completed }}</div><div class="wc-stat-label">Completed</div></div></div>
+        <div class="wc-stat-card wc-stat-purple"><div class="wc-stat-icon"><i class="fas fa-satellite-dish"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.in_progress }}</div><div class="wc-stat-label">Live Now</div></div></div>
+    </div>
+
+    {% if upcoming %}
+    <div class="wc-card mb-4">
+        <div class="wc-card-header"><h3><i class="fas fa-clock me-2 text-warning"></i>Upcoming Sessions</h3><span class="wc-badge wc-badge-warning">{{ upcoming|length }}</span></div>
+        <div class="wc-card-body">
+            <div class="row g-3">
+                {% for s in upcoming %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="wc-info-card wc-hover-lift">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="wc-badge wc-badge-{{ 'info' if s.session_type == 'Video' else 'success' }}"><i class="fas fa-{{ 'video' if s.session_type == 'Video' else 'phone' }} me-1"></i>{{ s.session_type }}</span>
+                            <span class="wc-badge wc-badge-primary">{{ s.status }}</span>
+                        </div>
+                        <h4 class="mb-1">{{ s.patient.full_name if s.patient else 'N/A' }}</h4>
+                        <p class="text-muted mb-2"><i class="fas fa-user-md me-1"></i>Dr. {{ s.doctor.first_name if s.doctor else 'N/A' }} {{ s.doctor.last_name if s.doctor else '' }}</p>
+                        <p class="mb-3"><i class="fas fa-calendar me-1"></i>{{ s.scheduled_time.strftime('%d %b %Y, %I:%M %p') }}</p>
+                        <a href="{{ url_for('telemedicine.consultation_room', room_id=s.room_id) }}" class="wc-btn wc-btn-primary wc-btn-sm w-100"><i class="fas fa-video me-1"></i>Join Room</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="wc-card">
+        <div class="wc-card-header"><h3><i class="fas fa-history me-2"></i>All Sessions</h3></div>
+        <div class="wc-card-body">
+            {% if sessions %}
+            <div class="wc-table-responsive"><table class="wc-table"><thead><tr><th>Date</th><th>Patient</th><th>Doctor</th><th>Type</th><th>Duration</th><th>Rating</th><th>Status</th><th>Action</th></tr></thead><tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td>{{ s.scheduled_time.strftime('%d %b %Y %I:%M %p') }}</td>
+                    <td>{{ s.patient.full_name if s.patient else 'N/A' }}</td>
+                    <td>Dr. {{ s.doctor.first_name if s.doctor else 'N/A' }}</td>
+                    <td><i class="fas fa-{{ 'video' if s.session_type == 'Video' else 'phone' if s.session_type == 'Audio' else 'comment' }} me-1"></i>{{ s.session_type }}</td>
+                    <td>{{ s.duration_minutes or '--' }} min</td>
+                    <td>{% if s.patient_rating %}{% for i in range(s.patient_rating) %}<i class="fas fa-star text-warning"></i>{% endfor %}{% else %}—{% endif %}</td>
+                    <td><span class="wc-badge wc-badge-{{ 'success' if s.status == 'Completed' else 'warning' if s.status in ('In Progress','Waiting') else 'danger' if s.status in ('No Show','Cancelled') else 'info' }}">{{ s.status }}</span></td>
+                    <td><a href="{{ url_for('telemedicine.consultation_room', room_id=s.room_id) }}" class="wc-btn wc-btn-sm wc-btn-outline"><i class="fas fa-door-open"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody></table></div>
+            {% else %}<div class="wc-empty-state"><i class="fas fa-video"></i><h4>No Sessions Yet</h4></div>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

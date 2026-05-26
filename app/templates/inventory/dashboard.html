@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Inventory Management — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-boxes me-2"></i>Inventory Management</h1><p class="wc-subtitle">Medical supplies, equipment & stock tracking</p></div><a href="{{ url_for('inventory.add_item') }}" class="wc-btn wc-btn-primary"><i class="fas fa-plus me-2"></i>Add Item</a></div></div>
+
+    <div class="wc-stats-grid">
+        <div class="wc-stat-card wc-stat-blue"><div class="wc-stat-icon"><i class="fas fa-box"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.total_items }}</div><div class="wc-stat-label">Total Items</div></div></div>
+        <div class="wc-stat-card wc-stat-red"><div class="wc-stat-icon"><i class="fas fa-exclamation-circle"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.out_of_stock }}</div><div class="wc-stat-label">Out of Stock</div></div></div>
+        <div class="wc-stat-card wc-stat-orange"><div class="wc-stat-icon"><i class="fas fa-exclamation-triangle"></i></div><div class="wc-stat-info"><div class="wc-stat-number">{{ stats.critical }}</div><div class="wc-stat-label">Critical Stock</div></div></div>
+        <div class="wc-stat-card wc-stat-green"><div class="wc-stat-icon"><i class="fas fa-rupee-sign"></i></div><div class="wc-stat-info"><div class="wc-stat-number">₹{{ "%.0f"|format(stats.total_value) }}</div><div class="wc-stat-label">Total Value</div></div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="wc-card mb-4">
+        <div class="wc-card-body">
+            <form method="GET" class="d-flex gap-3 align-items-end flex-wrap">
+                <div class="wc-form-group mb-0" style="min-width:200px;"><label class="wc-label">Search</label><input type="text" name="search" class="wc-input" value="{{ current_search }}" placeholder="Search items..."></div>
+                <div class="wc-form-group mb-0" style="min-width:160px;"><label class="wc-label">Category</label><select name="category" class="wc-select"><option value="">All</option>{% for c in categories %}<option value="{{ c }}" {{ 'selected' if c == current_category }}>{{ c }}</option>{% endfor %}</select></div>
+                <div class="wc-form-group mb-0" style="min-width:150px;"><label class="wc-label">Status</label><select name="status" class="wc-select"><option value="">All</option><option value="Adequate" {{ 'selected' if current_status == 'Adequate' }}>Adequate</option><option value="Low" {{ 'selected' if current_status == 'Low' }}>Low</option><option value="Critical" {{ 'selected' if current_status == 'Critical' }}>Critical</option><option value="Out of Stock" {{ 'selected' if current_status == 'Out of Stock' }}>Out of Stock</option></select></div>
+                <button type="submit" class="wc-btn wc-btn-primary"><i class="fas fa-search me-1"></i>Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="wc-card">
+        <div class="wc-card-body">
+            {% if items %}
+            <div class="wc-table-responsive">
+                <table class="wc-table">
+                    <thead><tr><th>Item Code</th><th>Item Name</th><th>Category</th><th>Stock</th><th>Unit</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {% for i in items %}
+                        <tr>
+                            <td><code>{{ i.item_code }}</code></td>
+                            <td><strong>{{ i.item_name }}</strong></td>
+                            <td>{{ i.category }}</td>
+                            <td>{{ i.current_stock }}</td>
+                            <td>{{ i.unit }}</td>
+                            <td>₹{{ "%.2f"|format(i.unit_price) }}</td>
+                            <td>
+                                {% if i.stock_status == 'Adequate' %}<span class="wc-badge wc-badge-success">Adequate</span>
+                                {% elif i.stock_status == 'Low' %}<span class="wc-badge wc-badge-warning">Low</span>
+                                {% elif i.stock_status == 'Critical' %}<span class="wc-badge wc-badge-danger">Critical</span>
+                                {% else %}<span class="wc-badge wc-badge-dark">Out of Stock</span>{% endif %}
+                            </td>
+                            <td>
+                                <button class="wc-btn wc-btn-sm wc-btn-success" onclick="quickRestock({{ i.id }}, '{{ i.item_name }}')"><i class="fas fa-plus"></i></button>
+                                <a href="{{ url_for('inventory.view_item', item_id=i.id) }}" class="wc-btn wc-btn-sm wc-btn-outline"><i class="fas fa-eye"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="wc-empty-state"><i class="fas fa-boxes"></i><h4>No Items Found</h4><p>Add items to start tracking inventory.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick Restock Modal -->
+<div class="modal fade" id="restockModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content" style="border-radius:16px;">
+    <div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-radius:16px 16px 0 0;"><h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Quick Restock</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <p id="restockItemName" class="fw-bold mb-3"></p>
+        <div class="mb-3"><label class="form-label">Quantity</label><input type="number" id="restockQty" class="form-control" value="10" min="1"></div>
+        <input type="hidden" id="restockItemId">
+    </div>
+    <div class="modal-footer"><button class="btn btn-success" onclick="doRestock()"><i class="fas fa-check me-1"></i>Restock</button></div>
+</div></div></div>
+
+<script>
+function quickRestock(id, name) {
+    document.getElementById('restockItemId').value = id;
+    document.getElementById('restockItemName').textContent = name;
+    new bootstrap.Modal(document.getElementById('restockModal')).show();
+}
+function doRestock() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    fetch('{{ url_for("inventory.stock_update") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({item_id: +document.getElementById('restockItemId').value, type: 'Purchase', quantity: +document.getElementById('restockQty').value})
+    }).then(r => r.json()).then(data => { if(data.success) location.reload(); else alert(data.error); });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ item.item_name }} — Inventory — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-box me-2"></i>{{ item.item_name }}</h1><p class="wc-subtitle">{{ item.item_code }} &bull; {{ item.category }}</p></div><a href="{{ url_for('inventory.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="wc-card"><div class="wc-card-header"><h3>Stock Info</h3></div><div class="wc-card-body text-center">
+                <div class="wc-stat-number" style="font-size:3rem;">{{ item.current_stock }}</div>
+                <p class="text-muted">{{ item.unit }}s in stock</p>
+                <span class="wc-badge wc-badge-{{ 'success' if item.stock_status == 'Adequate' else 'danger' if item.stock_status in ('Critical','Out of Stock') else 'warning' }} fs-6">{{ item.stock_status }}</span>
+                <div class="wc-detail-grid mt-4">
+                    <div class="wc-detail-item"><span class="wc-detail-label">Reorder Level</span><span>{{ item.reorder_level }}</span></div>
+                    <div class="wc-detail-item"><span class="wc-detail-label">Min Stock</span><span>{{ item.minimum_stock }}</span></div>
+                    <div class="wc-detail-item"><span class="wc-detail-label">Unit Price</span><span>₹{{ "%.2f"|format(item.unit_price) }}</span></div>
+                    <div class="wc-detail-item"><span class="wc-detail-label">Total Value</span><span>₹{{ "%.2f"|format(item.current_stock * item.unit_price) }}</span></div>
+                    <div class="wc-detail-item"><span class="wc-detail-label">Location</span><span>{{ item.location or 'N/A' }}</span></div>
+                    <div class="wc-detail-item"><span class="wc-detail-label">Supplier</span><span>{{ item.supplier or 'N/A' }}</span></div>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-md-8">
+            <div class="wc-card"><div class="wc-card-header"><h3>Transaction History</h3></div><div class="wc-card-body">
+                {% if transactions %}
+                <div class="wc-table-responsive"><table class="wc-table"><thead><tr><th>Date</th><th>Type</th><th>Qty</th><th>Reference</th><th>Remarks</th></tr></thead><tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>{{ t.created_at.strftime('%d %b %Y %I:%M %p') if t.created_at else '' }}</td>
+                        <td><span class="wc-badge wc-badge-{{ 'success' if t.transaction_type in ('Purchase','Return') else 'danger' if t.transaction_type in ('Issue','Expired','Damage') else 'info' }}">{{ t.transaction_type }}</span></td>
+                        <td>{{ t.quantity }}</td>
+                        <td>{{ t.reference or '' }}</td>
+                        <td>{{ t.remarks or '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody></table></div>
+                {% else %}<div class="wc-empty-state"><i class="fas fa-history"></i><h4>No Transactions</h4></div>{% endif %}
+            </div></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

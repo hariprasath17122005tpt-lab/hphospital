@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% block title %}Triage Board — CarePoint Emergency{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+body{background:#0f172a!important;}
+.triage-board{padding:20px;min-height:100vh;}
+.triage-header{background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 30px;border-radius:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;}
+.triage-header h1{color:#fff;font-size:2rem;font-weight:800;margin:0;}
+.triage-header .triage-clock{color:rgba(255,255,255,.9);font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;}
+.triage-columns{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.triage-col{background:rgba(255,255,255,.05);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.1);}
+.triage-col-header{padding:10px;border-radius:10px;text-align:center;margin-bottom:12px;font-weight:800;font-size:1.1rem;color:#fff;text-transform:uppercase;letter-spacing:1px;}
+.triage-col-red .triage-col-header{background:#dc2626;}
+.triage-col-orange .triage-col-header{background:#ea580c;}
+.triage-col-yellow .triage-col-header{background:#ca8a04;color:#1e293b;}
+.triage-col-green .triage-col-header{background:#16a34a;}
+.triage-patient{background:rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:10px;border-left:4px solid rgba(255,255,255,.2);}
+.triage-col-red .triage-patient{border-left-color:#dc2626;}
+.triage-col-orange .triage-patient{border-left-color:#ea580c;}
+.triage-col-yellow .triage-patient{border-left-color:#ca8a04;}
+.triage-col-green .triage-patient{border-left-color:#16a34a;}
+.triage-patient h4{color:#fff;font-size:.95rem;margin-bottom:4px;}
+.triage-patient p{color:rgba(255,255,255,.6);font-size:.85rem;margin:0;}
+.triage-patient .vitals{display:flex;gap:10px;margin-top:6px;font-size:.8rem;color:rgba(255,255,255,.5);}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="triage-board">
+    <div class="triage-header">
+        <h1><i class="fas fa-ambulance me-3"></i>EMERGENCY TRIAGE BOARD</h1>
+        <div class="triage-clock" id="triageClock"></div>
+    </div>
+    <div class="triage-columns">
+        {% set triage_levels = [('Critical', 'red'), ('Urgent', 'orange'), ('Semi-Urgent', 'yellow'), ('Non-Urgent', 'green')] %}
+        {% for level, color in triage_levels %}
+        <div class="triage-col triage-col-{{ color }}">
+            <div class="triage-col-header">{{ level }} ({{ cases|selectattr('triage_level', 'equalto', level)|list|length }})</div>
+            {% for c in cases if c.triage_level == level %}
+            <div class="triage-patient">
+                <h4>{{ c.patient.full_name if c.patient else c.patient_name or 'Unknown' }}</h4>
+                <p>{{ c.chief_complaint[:80] }}</p>
+                <div class="vitals">
+                    <span>{{ c.wait_time_minutes }}min</span>
+                    {% if c.bp_systolic %}<span>BP:{{ c.bp_systolic }}/{{ c.bp_diastolic }}</span>{% endif %}
+                    {% if c.spo2 %}<span>O2:{{ c.spo2 }}%</span>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+function updateClock(){var d=new Date();document.getElementById('triageClock').textContent=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(updateClock,1000);updateClock();
+setTimeout(()=>location.reload(),30000);
+</script>
+{% endblock %}

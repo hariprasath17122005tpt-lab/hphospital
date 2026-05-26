@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Submit Feedback — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">
+<style>
+.star-rating{display:flex;gap:4px;flex-direction:row-reverse;justify-content:flex-end;}
+.star-rating input{display:none;}
+.star-rating label{cursor:pointer;font-size:1.8rem;color:#d1d5db;transition:color .15s;}
+.star-rating input:checked ~ label,.star-rating label:hover,.star-rating label:hover ~ label{color:#f59e0b;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-comment-dots me-2"></i>Share Your Experience</h1><p class="wc-subtitle">Your feedback helps us improve our services</p></div><a href="{{ url_for('feedback_module.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+
+    <div class="wc-card">
+        <div class="wc-card-body">
+            <form method="POST" class="wc-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="wc-form-group"><label class="wc-label">Doctor (Optional)</label><select name="doctor_id" class="wc-select"><option value="">General Feedback</option>{% for d in doctors %}<option value="{{ d.id }}">Dr. {{ d.first_name }} {{ d.last_name }} — {{ d.specialization }}</option>{% endfor %}</select></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="wc-form-group"><label class="wc-label">Feedback Type</label><select name="feedback_type" class="wc-select"><option value="Overall">Overall Experience</option><option value="Consultation">Consultation</option><option value="Facility">Facility</option><option value="Staff">Staff</option></select></div>
+                    </div>
+
+                    <div class="col-12"><h5 class="wc-section-title">Rate Your Experience</h5></div>
+                    {% for name, label in [('rating', 'Overall Rating'), ('doctor_rating', 'Doctor'), ('staff_rating', 'Staff Behavior'), ('facility_rating', 'Facility'), ('cleanliness_rating', 'Cleanliness'), ('wait_time_rating', 'Wait Time')] %}
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">{{ label }}</label>
+                            <div class="star-rating">
+                                {% for i in range(5, 0, -1) %}
+                                <input type="radio" name="{{ name }}" value="{{ i }}" id="{{ name }}_{{ i }}" {{ 'checked' if i == 5 and name == 'rating' }}>
+                                <label for="{{ name }}_{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="col-12"><div class="wc-form-group"><label class="wc-label">Your Review</label><textarea name="review_text" class="wc-textarea" rows="4" placeholder="Tell us about your experience..."></textarea></div></div>
+                    <div class="col-md-6"><label class="wc-label"><input type="checkbox" name="would_recommend" value="1" checked class="me-2">Would you recommend CarePoint?</label></div>
+                    <div class="col-md-6"><label class="wc-label"><input type="checkbox" name="is_anonymous" value="1" class="me-2">Submit anonymously</label></div>
+                </div>
+
+                <div class="wc-form-actions mt-4"><button type="submit" class="wc-btn wc-btn-primary wc-btn-lg"><i class="fas fa-paper-plane me-2"></i>Submit Feedback</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

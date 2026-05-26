@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Schedule Surgery — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header">
+        <div class="wc-page-header-content">
+            <div>
+                <h1 class="wc-title"><i class="fas fa-calendar-plus me-2"></i>Schedule Surgery</h1>
+                <p class="wc-subtitle">Book Operation Theatre and assign surgical team</p>
+            </div>
+            <a href="{{ url_for('ot.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a>
+        </div>
+    </div>
+
+    <div class="wc-card">
+        <div class="wc-card-body">
+            <form method="POST" class="wc-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label"><i class="fas fa-user me-1"></i>Patient</label>
+                            <select name="patient_id" class="wc-select" required>
+                                <option value="">Select Patient</option>
+                                {% for p in patients %}
+                                <option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label"><i class="fas fa-user-md me-1"></i>Lead Surgeon</label>
+                            <select name="doctor_id" class="wc-select" required>
+                                <option value="">Select Doctor</option>
+                                {% for d in doctors %}
+                                <option value="{{ d.id }}">Dr. {{ d.first_name }} {{ d.last_name }} — {{ d.specialization }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="wc-form-group">
+                            <label class="wc-label"><i class="fas fa-procedures me-1"></i>Surgery Name</label>
+                            <input type="text" name="surgery_name" class="wc-input" placeholder="e.g., Appendectomy" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Surgery Type</label>
+                            <select name="surgery_type" class="wc-select">
+                                <option value="Elective">Elective</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Day-Care">Day-Care</option>
+                                <option value="Major">Major</option>
+                                <option value="Minor">Minor</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Priority</label>
+                            <select name="priority" class="wc-select">
+                                <option value="Elective">Elective</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="Emergency">Emergency</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label"><i class="fas fa-clock me-1"></i>Scheduled Date & Time</label>
+                            <input type="datetime-local" name="scheduled_date" class="wc-input" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label"><i class="fas fa-door-open me-1"></i>OT Room</label>
+                            <select name="ot_room" class="wc-select">
+                                <option value="OT-1">OT-1 (Major)</option>
+                                <option value="OT-2">OT-2 (Major)</option>
+                                <option value="OT-3">OT-3 (Minor)</option>
+                                <option value="Minor OT">Minor OT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Est. Duration (minutes)</label>
+                            <input type="number" name="estimated_duration" class="wc-input" value="60" min="15" max="720">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Anesthesia Type</label>
+                            <select name="anesthesia_type" class="wc-select">
+                                <option value="">Select</option>
+                                <option value="General">General Anesthesia</option>
+                                <option value="Spinal">Spinal Anesthesia</option>
+                                <option value="Local">Local Anesthesia</option>
+                                <option value="Epidural">Epidural</option>
+                                <option value="Sedation">Conscious Sedation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Anesthetist</label>
+                            <input type="text" name="anesthetist_name" class="wc-input" placeholder="Anesthetist name">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Assistant Surgeon</label>
+                            <input type="text" name="assistant_surgeon" class="wc-input" placeholder="Assistant name">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Scrub Nurse</label>
+                            <input type="text" name="scrub_nurse" class="wc-input" placeholder="Nurse name">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="wc-form-group">
+                            <label class="wc-label">Pre-Op Diagnosis</label>
+                            <textarea name="pre_op_diagnosis" class="wc-textarea" rows="3" placeholder="Pre-operative diagnosis details..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wc-form-actions mt-4">
+                    <button type="submit" class="wc-btn wc-btn-primary wc-btn-lg">
+                        <i class="fas fa-calendar-check me-2"></i>Schedule Surgery
+                    </button>
+                    <a href="{{ url_for('ot.dashboard') }}" class="wc-btn wc-btn-outline wc-btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

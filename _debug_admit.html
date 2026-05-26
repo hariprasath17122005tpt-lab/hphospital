@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Admission - CarePoint</title>
+    <meta name="csrf-token" content="IjM2ZGQzYzUwMjZiMWU0MzViZTMzZGEwNWQ4YTRlMWZhN2UzOTUyZDYi.adyKJg.jmBjzLHJZW8bJ_Z3ZwjMW7mwZuA">
+    <meta name="description"
+        content="CarePoint AI Healthcare — Modern hospital management platform with AI-powered analytics, appointments, and patient care.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="/static/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/vendor/fontawesome/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    
+    
+    <!-- Unified Dashboard Layout CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard-layout.css">
+    <!-- Pro Animation Engine -->
+    <link rel="stylesheet" href="/static/css/patient-pro.css">
+    
+
+    
+</head>
+
+
+
+
+
+
+<body class="dashboard-body">
+    
+
+    <div class="app-layout">
+        
+        
+        <!-- Doctor Sidebar — Unified Layout -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="/doctor/portal" class="sidebar-brand">
+        <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div class="sidebar-brand-text">Care<span>Point</span></div>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Main</span>
+
+        <a href="/doctor/portal"
+            class="sidebar-link ">
+            <i class="fas fa-hospital-user"></i>
+            Doctor Portal
+        </a>
+
+        <a href="/doctor/portal?mode=op"
+            class="sidebar-link "
+            style="position:relative;">
+            <i class="fas fa-bolt" style="color:#a78bfa;"></i>
+            OP Patients
+            <span id="sidebarOPBadge" style="
+                position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                color:#fff; font-size:.6rem; font-weight:800;
+                padding:2px 7px; border-radius:50px;
+                display:none;
+            ">NEW</span>
+        </a>
+
+        <a href="/reception/dashboard"
+            class="sidebar-link ">
+            <i class="fas fa-clipboard-list"></i>
+            Reception Queue
+        </a>
+
+        <a href="/doctor/dashboard"
+            class="sidebar-link ">
+            <i class="fas fa-th-large"></i>
+            Legacy Dashboard
+        </a>
+
+        <a href="/doctor/patients"
+            class="sidebar-link ">
+            <i class="fas fa-users"></i>
+            Patients
+        </a>
+
+        <a href="/doctor/appointments"
+            class="sidebar-link ">
+            <i class="fas fa-calendar-alt"></i>
+            Appointments
+        </a>
+
+        <span class="sidebar-section-label">Clinical</span>
+
+        <a href="/doctor/messages"
+            class="sidebar-link ">
+            <i class="fas fa-comment-medical"></i>
+            Messages
+        </a>
+
+        <a href="/doctor/lab-requests"
+            class="sidebar-link ">
+            <i class="fas fa-flask"></i>
+            Lab Requests
+        </a>
+
+        <a href="/doctor/lab-reports"
+            class="sidebar-link ">
+            <i class="fas fa-file-medical-alt"></i>
+            Lab Reports
+        </a>
+
+        <a href="/doctor/pharmacy-orders"
+            class="sidebar-link ">
+            <i class="fas fa-pills"></i>
+            Pharmacy Orders
+        </a>
+
+        <a href="/doctor/analytics"
+            class="sidebar-link ">
+            <i class="fas fa-chart-line"></i>
+            Analytics
+        </a>
+
+        <span class="sidebar-section-label">IP & Billing</span>
+
+        <a href="/ip-billing/dashboard"
+            class="sidebar-link ">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Billing Dashboard
+        </a>
+
+        <a href="/ip-billing/admit"
+            class="sidebar-link active">
+            <i class="fas fa-bed"></i>
+            IP Admission
+        </a>
+
+        <span class="sidebar-section-label">AI Tools</span>
+
+        <a href="/doctor/ai-assistant"
+            class="sidebar-link ">
+            <i class="fas fa-robot"></i>
+            AI Assistant
+        </a>
+
+        <span class="sidebar-section-label">Account</span>
+
+        <a href="/doctor/profile/edit"
+            class="sidebar-link ">
+            <i class="fas fa-cog"></i>
+            Settings
+        </a>
+    </nav>
+
+    <!-- User Card -->
+    <div class="sidebar-user">
+        <div class="sidebar-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">
+            D
+        </div>
+        <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Dr. dr_sharma</div>
+            <div class="sidebar-user-role">Doctor</div>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+        <a href="/logout" class="sidebar-link">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+    </div>
+</aside>
+        
+
+        
+        <div class="app-main">
+            
+            <!-- Top Navbar — Ultra-Premium Glassmorphism Layout -->
+<header class="app-topbar" data-user-role="DOCTOR">
+    <div class="topbar-left">
+        <button class="topbar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div>
+            <div class="topbar-page-title">Dashboard</div>
+            <div class="topbar-breadcrumb">
+                <a href="#">Home</a> / <span>Overview</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <!-- Search -->
+        <div class="topbar-search-wrapper" id="searchWrapper">
+            <input type="text" class="topbar-search-input" id="searchInput" placeholder="Search anything..." />
+        </div>
+        <button class="topbar-icon-btn" id="searchToggleBtn" title="Search" onclick="toggleSearch()">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="topbar-icon-btn" id="commandPaletteBtn" title="Quick Launcher (Ctrl+K)">
+            <i class="fas fa-bolt"></i>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="topbar-icon-btn theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i class="fas fa-sun"></i>
+        </button>
+
+        <!-- Notification Bell with Dropdown -->
+        <div class="notif-wrapper">
+            <button class="topbar-icon-btn" id="notifBellBtn" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-dot"></span>
+            </button>
+
+            <!-- Notification Dropdown Panel -->
+            <div class="notif-dropdown" id="notifDropdown">
+                <div class="notif-dropdown-header">
+                    <span class="notif-dropdown-title">Notifications</span>
+                    <button class="notif-mark-read" id="markAllRead">Mark all read</button>
+                </div>
+                <div class="notif-list" id="topbarNotifList">
+                    <div class="notif-item">
+                        <div class="notif-item-info">
+                            <div class="notif-item-text">Loading notifications...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="topbar-avatar" title="dr_sharma">
+            D
+        </div>
+    </div>
+</header>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    function toggleSearch() {
+        const wrapper = document.getElementById('searchWrapper');
+        const input = document.getElementById('searchInput');
+        wrapper.classList.toggle('active');
+        if (wrapper.classList.contains('active')) {
+            input.focus();
+        }
+    }
+
+    // Close search on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const wrapper = document.getElementById('searchWrapper');
+            if (wrapper) wrapper.classList.remove('active');
+        }
+    });
+
+    const commandBtn = document.getElementById('commandPaletteBtn');
+    if (commandBtn) {
+        commandBtn.addEventListener('click', function () {
+            const evt = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
+            document.dispatchEvent(evt);
+        });
+    }
+</script>
+
+            
+            
+            
+            
+
+            
+            <main class="app-content">
+                
+
+                        
+                        
+<style>
+.adm-page { padding:20px; max-width:960px; margin:0 auto; font-family:'Inter',sans-serif; }
+.adm-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:24px; margin-bottom:16px; }
+.adm-title { font-size:1.15rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.adm-title i { color:#2563eb; }
+.fg { margin-bottom:12px; }
+.fg label { display:block; font-size:0.8rem; font-weight:600; color:#334155; margin-bottom:3px; }
+.fg input, .fg select, .fg textarea { width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:7px; font-size:0.9rem; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 2px rgba(37,99,235,.12); }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.row4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; }
+.search-box { position:relative; }
+.search-results { position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:240px; overflow-y:auto; z-index:100; display:none; box-shadow:0 8px 24px rgba(0,0,0,.12); }
+.search-item { padding:10px 14px; cursor:pointer; font-size:0.85rem; border-bottom:1px solid #f1f5f9; }
+.search-item:hover { background:#eff6ff; }
+.search-item .uhid { font-size:0.72rem; color:#2563eb; font-weight:700; background:#dbeafe; padding:1px 6px; border-radius:4px; }
+.search-item .meta { font-size:0.78rem; color:#64748b; margin-top:2px; }
+.btn-primary { background:#2563eb; color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem; display:inline-flex; align-items:center; gap:6px; }
+.btn-primary:hover { background:#1d4ed8; }
+.btn-green { background:#059669; color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem; display:inline-flex; align-items:center; gap:6px; }
+.btn-green:hover { background:#047857; }
+.btn-outline { background:#fff; color:#334155; border:1px solid #e2e8f0; padding:10px 24px; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+.selected-patient { padding:12px 16px; background:#f0fdf4; border:1px solid #a7f3d0; border-radius:8px; margin-bottom:16px; display:none; }
+.selected-patient .sp-name { font-weight:700; font-size:1rem; color:#059669; }
+.selected-patient .sp-detail { font-size:0.85rem; color:#334155; margin-top:4px; }
+.tab-bar { display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid #e2e8f0; }
+.tab-btn { padding:10px 20px; font-weight:600; font-size:0.88rem; cursor:pointer; border:none; background:none; color:#64748b; border-bottom:2px solid transparent; margin-bottom:-2px; }
+.tab-btn.active { color:#2563eb; border-bottom-color:#2563eb; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.new-reg-section { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; }
+.toast { position:fixed; top:16px; right:16px; z-index:10000; padding:12px 20px; border-radius:8px; font-weight:600; font-size:0.85rem; display:none; }
+.toast-ok { background:#059669; color:#fff; } .toast-err { background:#dc2626; color:#fff; }
+@media (max-width:768px) { .row2,.row3,.row4 { grid-template-columns:1fr; } }
+</style>
+
+<div class="adm-page">
+    <div id="toast" class="toast"></div>
+
+    <!-- ═══ STEP 1: SELECT OR REGISTER PATIENT ═══ -->
+    <div class="adm-card">
+        <div class="adm-title"><i class="fas fa-user-plus"></i> Step 1 — Select Patient</div>
+
+        <!-- Selected patient display -->
+        <div class="selected-patient" id="selectedPatient">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div class="sp-name"><i class="fas fa-check-circle"></i> <span id="spName"></span></div>
+                    <div class="sp-detail">
+                        UHID: <strong id="spUhid"></strong> |
+                        Age: <span id="spAge"></span> |
+                        Gender: <span id="spGender"></span> |
+                        Phone: <span id="spPhone"></span>
+                        <span id="spAddress"></span>
+                    </div>
+                </div>
+                <button style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600;font-size:0.82rem;" onclick="clearPatient()">
+                    <i class="fas fa-times"></i> Change
+                </button>
+            </div>
+        </div>
+        <input type="hidden" id="patientId">
+
+        <!-- Tabs: Search vs New Registration -->
+        <div id="patientSelectTabs" style="">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('search')"><i class="fas fa-search"></i> Search Existing</button>
+                <button class="tab-btn" onclick="switchTab('register')"><i class="fas fa-user-plus"></i> Register New Patient</button>
+            </div>
+
+            <!-- SEARCH TAB -->
+            <div class="tab-panel active" id="tabSearch">
+                <div class="fg search-box">
+                    <label>Search by UHID, Name, Phone, or Aadhaar</label>
+                    <input type="text" id="patSearchInput" placeholder="Start typing patient name, UHID, phone..." autocomplete="off">
+                    <div class="search-results" id="patSearchResults"></div>
+                </div>
+                <div style="font-size:0.78rem;color:#94a3b8;margin-top:4px;">
+                    <i class="fas fa-info-circle"></i> Type at least 1 character. Same UHID will be reused for returning patients.
+                </div>
+            </div>
+
+            <!-- REGISTER NEW TAB -->
+            <div class="tab-panel" id="tabRegister">
+                <div class="new-reg-section">
+                    <div style="font-size:0.88rem;font-weight:700;color:#334155;margin-bottom:12px;">
+                        <i class="fas fa-user-plus" style="color:#059669;"></i> Register New Patient
+                    </div>
+                    <div class="row3">
+                        <div class="fg"><label>First Name *</label><input type="text" id="regFirstName" placeholder="First name"></div>
+                        <div class="fg"><label>Last Name</label><input type="text" id="regLastName" placeholder="Last name"></div>
+                        <div class="fg"><label>Phone</label><input type="text" id="regPhone" placeholder="Phone (optional)"></div>
+                    </div>
+                    <div class="row4">
+                        <div class="fg"><label>Age</label><input type="number" id="regAge" placeholder="Age" min="0" max="150"></div>
+                        <div class="fg">
+                            <label>Gender</label>
+                            <select id="regGender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
+                        </div>
+                        <div class="fg"><label>Blood Group</label>
+                            <select id="regBlood"><option value="">--</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+                        </div>
+                        <div class="fg"><label>Aadhaar No.</label><input type="text" id="regAadhaar" placeholder="12-digit (optional)" maxlength="12"></div>
+                    </div>
+                    <div class="row2">
+                        <div class="fg"><label>Address</label><input type="text" id="regAddress" placeholder="Address (optional)"></div>
+                        <div class="fg"><label>Emergency Contact</label><input type="text" id="regEmergency" placeholder="Name / Phone"></div>
+                    </div>
+                    <button class="btn-green" onclick="registerNewPatient()"><i class="fas fa-save"></i> Register & Select</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ STEP 2: ADMISSION DETAILS ═══ -->
+    <div class="adm-card">
+        <div class="adm-title"><i class="fas fa-bed"></i> Step 2 — Admission Details</div>
+        <div class="row2">
+            <div class="fg">
+                <label>Consulting Doctor *</label>
+                <select id="doctorId">
+                    <option value="">Select Doctor</option>
+                    
+                    <option value="2">Dr. qwe sat - Neurology</option>
+                    
+                    <option value="6">Dr. point point - Cardiology</option>
+                    
+                </select>
+            </div>
+            <div class="fg">
+                <label>Ward Type</label>
+                <select id="wardType">
+                    <option value="General">General Ward</option>
+                    <option value="Semi-Private">Semi-Private</option>
+                    <option value="Private">Private</option>
+                    <option value="ICU">ICU</option>
+                    <option value="HDU">HDU</option>
+                    <option value="Emergency">Emergency</option>
+                </select>
+            </div>
+        </div>
+        <div class="row3">
+            <div class="fg">
+                <label>Bed</label>
+                <select id="bedId">
+                    <option value="">No bed assigned</option>
+                    
+                    <option value="1">ICU - I01</option>
+                    
+                    <option value="2">ICU - I02</option>
+                    
+                    <option value="3">ICU - I03</option>
+                    
+                    <option value="4">ICU - I04</option>
+                    
+                    <option value="5">ICU - I05</option>
+                    
+                    <option value="6">General Ward - G01</option>
+                    
+                    <option value="7">General Ward - G02</option>
+                    
+                    <option value="8">General Ward - G03</option>
+                    
+                    <option value="9">General Ward - G04</option>
+                    
+                    <option value="10">General Ward - G05</option>
+                    
+                    <option value="11">General Ward - G06</option>
+                    
+                    <option value="12">General Ward - G07</option>
+                    
+                    <option value="13">General Ward - G08</option>
+                    
+                    <option value="14">General Ward - G09</option>
+                    
+                    <option value="15">General Ward - G10</option>
+                    
+                    <option value="16">Emergency - E01</option>
+                    
+                    <option value="17">Emergency - E02</option>
+                    
+                    <option value="18">Emergency - E03</option>
+                    
+                    <option value="19">Emergency - E04</option>
+                    
+                    <option value="20">Emergency - E05</option>
+                    
+                    <option value="21">Pediatrics - P01</option>
+                    
+                    <option value="22">Pediatrics - P02</option>
+                    
+                    <option value="23">Pediatrics - P03</option>
+                    
+                    <option value="24">Pediatrics - P04</option>
+                    
+                    <option value="25">Pediatrics - P05</option>
+                    
+                </select>
+            </div>
+            <div class="fg"><label>Room Number</label><input type="text" id="roomNumber" placeholder="e.g. R-201"></div>
+            <div class="fg"><label>Provisional Diagnosis</label><input type="text" id="provDiag" placeholder="Initial diagnosis"></div>
+        </div>
+        <div class="fg"><label>Admission Reason *</label><textarea id="admReason" rows="2" placeholder="Reason for admission..."></textarea></div>
+        <div class="fg"><label>Notes</label><textarea id="admNotes" rows="2" placeholder="Additional notes..."></textarea></div>
+
+        <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn-primary" id="btnAdmit" onclick="admitPatient()"><i class="fas fa-check-circle"></i> Admit Patient</button>
+            <a href="/ip-billing/dashboard" class="btn-outline"><i class="fas fa-arrow-left"></i> Cancel</a>
+        </div>
+    </div>
+
+    <!-- Post-admit result -->
+    <div id="admitResult" style="display:none; padding:16px 18px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <i class="fas fa-check-circle" style="color:#059669;font-size:1.2rem;"></i>
+            <strong style="color:#059669;" id="admitMsg"></strong>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="admitActions"></div>
+    </div>
+</div>
+
+<script>
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+function showToast(msg, ok) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+    t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3500);
+}
+
+/* ── Tab switching ── */
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    if (tab === 'register') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tabRegister').classList.add('active');
+    } else {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tabSearch').classList.add('active');
+    }
+}
+
+/* ── Patient Search (client-side — instant, no AJAX) ── */
+const ALL_PATIENTS = [{"aadhaar": "", "address": "", "age": 30, "blood_type": "", "gender": "Male", "id": 12, "name": "Demo User", "phone": "5559876543", "uhid": "CHN-2026-0009"}, {"aadhaar": "", "address": "", "age": 25, "blood_type": "", "gender": "Male", "id": 10, "name": "fake don", "phone": "5566223355", "uhid": "CHN-2026-0007"}, {"aadhaar": "", "address": "", "age": 30, "blood_type": "", "gender": "Male", "id": 8, "name": "Hari Prasad", "phone": "+919876543210", "uhid": "PAT-2026-0005"}, {"aadhaar": "", "address": "", "age": 35, "blood_type": "O+", "gender": "Male", "id": 1, "name": "John Doe", "phone": "9876543210", "uhid": "PAT-2026-0001"}, {"aadhaar": "", "address": "", "age": 25, "blood_type": "", "gender": "Male", "id": 15, "name": "oefbtm nij", "phone": "7418952963", "uhid": "CHN-2026-0012"}, {"aadhaar": "", "address": "", "age": 34, "blood_type": "", "gender": "Male", "id": 9, "name": "Ravi Kumar", "phone": "9876543210", "uhid": "CHN-2026-000006"}, {"aadhaar": "", "address": "", "age": 20, "blood_type": "", "gender": "Male", "id": 2, "name": "road road", "phone": "741852963963", "uhid": "PAT-2026-0002"}, {"aadhaar": "", "address": "", "age": 30, "blood_type": "", "gender": "Female", "id": 11, "name": "Rose H", "phone": "+1234567890", "uhid": "CHN-2026-0008"}, {"aadhaar": "", "address": "", "age": 28, "blood_type": "", "gender": "Female", "id": 16, "name": "soja", "phone": "9597244055", "uhid": "CHN-2026-0013"}, {"aadhaar": "", "address": "", "age": 30, "blood_type": "", "gender": "Male", "id": 3, "name": "Test Patient", "phone": "1234567890", "uhid": "PAT-2026-0003"}, {"aadhaar": "", "address": "", "age": 50, "blood_type": "", "gender": "Male", "id": 13, "name": "vignesh", "phone": "9442830045", "uhid": "CHN-2026-0010"}, {"aadhaar": "", "address": "", "age": 50, "blood_type": "", "gender": "Male", "id": 14, "name": "vignesh fdf", "phone": "9966558866", "uhid": "CHN-2026-0011"}, {"aadhaar": "", "address": "Salai Nagar", "age": 20, "blood_type": "O+", "gender": "Male", "id": 4, "name": "zzxcc zxc", "phone": "25252525", "uhid": "PAT-2026-0004"}];
+let searchTimer;
+document.getElementById('patSearchInput').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    const q = this.value.trim().toLowerCase();
+    const box = document.getElementById('patSearchResults');
+    if (q.length < 1) { box.style.display = 'none'; return; }
+    searchTimer = setTimeout(() => {
+        const matched = ALL_PATIENTS.filter(p =>
+            (p.name   || '').toLowerCase().includes(q) ||
+            (p.uhid   || '').toLowerCase().includes(q) ||
+            (p.phone  || '').toLowerCase().includes(q) ||
+            (p.aadhaar|| '').toLowerCase().includes(q)
+        ).slice(0, 20);
+
+        if (matched.length > 0) {
+            box.innerHTML = matched.map(p => {
+                const pJson = JSON.stringify(p).replace(/'/g, '&#39;');
+                return `<div class="search-item" onclick='selectPatient(${pJson})'>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong>${p.name}</strong> <span class="uhid">${p.uhid}</span>
+                            <div class="meta">Age: ${p.age || 'N/A'} | ${p.gender || 'N/A'} | Ph: ${p.phone || 'No phone'} ${p.aadhaar ? '| Aadhaar: '+p.aadhaar : ''}</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:#cbd5e1;"></i>
+                    </div>
+                </div>`;
+            }).join('');
+            box.style.display = 'block';
+        } else {
+            box.innerHTML = `<div class="search-item" style="color:#94a3b8;text-align:center;">
+                No patients found for "${this.value.trim()}"<br>
+                <button onclick="switchTab('register');document.getElementById('patSearchResults').style.display='none';document.getElementById('regFirstName').value='${this.value.trim()}';"
+                    style="margin-top:6px;padding:4px 12px;background:#059669;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;">
+                    <i class="fas fa-user-plus"></i> Register as New Patient
+                </button>
+            </div>`;
+            box.style.display = 'block';
+        }
+    }, 150);
+});
+
+// Close search on click outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-box')) document.getElementById('patSearchResults').style.display = 'none';
+});
+
+function selectPatient(p) {
+    document.getElementById('patientId').value = p.id;
+    document.getElementById('spName').textContent = p.name;
+    document.getElementById('spUhid').textContent = p.uhid;
+    document.getElementById('spAge').textContent = p.age || 'N/A';
+    document.getElementById('spGender').textContent = p.gender || 'N/A';
+    document.getElementById('spPhone').textContent = p.phone || 'No phone';
+    document.getElementById('spAddress').textContent = p.address ? ' | ' + p.address : '';
+    document.getElementById('selectedPatient').style.display = 'block';
+    document.getElementById('patientSelectTabs').style.display = 'none';
+    document.getElementById('patSearchResults').style.display = 'none';
+}
+
+function clearPatient() {
+    document.getElementById('patientId').value = '';
+    document.getElementById('selectedPatient').style.display = 'none';
+    document.getElementById('patientSelectTabs').style.display = '';
+}
+
+/* ── Register New Patient ── */
+async function registerNewPatient() {
+    const firstName = document.getElementById('regFirstName').value.trim();
+    if (!firstName) { showToast('First name is required', false); return; }
+
+    const payload = {
+        first_name: firstName,
+        last_name: document.getElementById('regLastName').value.trim(),
+        phone: document.getElementById('regPhone').value.trim(),
+        age: document.getElementById('regAge').value || null,
+        gender: document.getElementById('regGender').value,
+        blood_type: document.getElementById('regBlood').value,
+        aadhaar: document.getElementById('regAadhaar').value.trim(),
+        address: document.getElementById('regAddress').value.trim(),
+        emergency_contact: document.getElementById('regEmergency').value.trim(),
+    };
+
+    try {
+        const r = await fetch('/ip-billing/api/patient/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+            body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+        if (d.success && d.patient) {
+            showToast(d.message, true);
+            selectPatient(d.patient);
+        } else {
+            showToast(d.error || 'Registration failed', false);
+        }
+    } catch (err) {
+        showToast('Network error', false);
+    }
+}
+
+/* ── Admit Patient ── */
+async function admitPatient() {
+    const pid = document.getElementById('patientId').value;
+    if (!pid) { showToast('Please select or register a patient first', false); return; }
+    const did = document.getElementById('doctorId').value;
+    if (!did) { showToast('Please select a consulting doctor', false); return; }
+
+    const btn = document.getElementById('btnAdmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Admitting...';
+
+    const payload = {
+        patient_id: parseInt(pid), doctor_id: parseInt(did),
+        ward_type: document.getElementById('wardType').value,
+        bed_id: document.getElementById('bedId').value || null,
+        room_number: document.getElementById('roomNumber').value,
+        provisional_diagnosis: document.getElementById('provDiag').value,
+        admission_reason: document.getElementById('admReason').value,
+        notes: document.getElementById('admNotes').value,
+    };
+
+    try {
+        const r = await fetch('/ip-billing/admit', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+            body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+        if (d.success) {
+            showToast(d.message, true);
+            document.getElementById('admitMsg').textContent = d.message;
+            document.getElementById('admitActions').innerHTML = `
+                <a href="/ip-billing/admission/${d.admission_id}" style="padding:8px 16px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-eye"></i> View Admission</a>
+                <a href="/ip-billing/bill/create/IP/${pid}" style="padding:8px 16px;background:#059669;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-rupee-sign"></i> Create IP Bill</a>
+                <a href="/ip-billing/dashboard" style="padding:8px 16px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-arrow-left"></i> Dashboard</a>
+            `;
+            document.getElementById('admitResult').style.display = 'block';
+            document.getElementById('admitResult').scrollIntoView({ behavior:'smooth', block:'center' });
+            btn.innerHTML = '<i class="fas fa-check"></i> Admitted';
+            btn.style.opacity = '0.6';
+        } else {
+            showToast(d.error || 'Admission failed', false);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Admit Patient';
+        }
+    } catch (err) {
+        showToast('Network error: ' + err.message, false);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Admit Patient';
+    }
+}
+</script>
+
+
+                        
+                    </main>
+        </div>
+    </div>
+    
+    <div id="cpCommandPalette" class="cp-command-palette" aria-hidden="true">
+        <div class="cp-command-backdrop" data-cp-close></div>
+        <div class="cp-command-dialog" role="dialog" aria-modal="true" aria-label="Quick Navigation">
+            <div class="cp-command-input-wrap">
+                <i class="fas fa-search"></i>
+                <input id="cpCommandInput" type="text" placeholder="Search pages or actions..." autocomplete="off">
+                <kbd>ESC</kbd>
+            </div>
+            <div id="cpCommandList" class="cp-command-list"></div>
+            <div class="cp-command-foot">
+                <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+                <span><kbd>Enter</kbd> Open</span>
+                <span><kbd>Ctrl</kbd><kbd>K</kbd> Toggle</span>
+            </div>
+        </div>
+    </div>
+    <style>
+        .cp-command-palette {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+        }
+
+        .cp-command-palette.open {
+            display: block;
+        }
+
+        .cp-command-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.62);
+            backdrop-filter: blur(6px);
+        }
+
+        .cp-command-dialog {
+            position: relative;
+            max-width: 720px;
+            margin: 9vh auto 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+        }
+
+        .cp-command-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .cp-command-input-wrap i {
+            color: #93c5fd;
+        }
+
+        .cp-command-input-wrap input {
+            flex: 1;
+            background: transparent;
+            border: 0;
+            outline: none;
+            color: #f8fafc;
+            font-size: 0.98rem;
+        }
+
+        .cp-command-input-wrap kbd,
+        .cp-command-foot kbd {
+            border: 1px solid rgba(148, 163, 184, 0.42);
+            border-bottom-width: 2px;
+            border-radius: 6px;
+            padding: 2px 6px;
+            color: #cbd5e1;
+            background: rgba(15, 23, 42, 0.45);
+            font-size: 0.72rem;
+            margin-left: 4px;
+        }
+
+        .cp-command-list {
+            max-height: 360px;
+            overflow: auto;
+            padding: 8px;
+        }
+
+        .cp-command-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #e2e8f0;
+            text-decoration: none;
+            border: 1px solid transparent;
+            margin-bottom: 6px;
+        }
+
+        .cp-command-item:hover,
+        .cp-command-item.active {
+            background: rgba(59, 130, 246, 0.16);
+            border-color: rgba(147, 197, 253, 0.32);
+        }
+
+        .cp-command-item small {
+            color: #94a3b8;
+        }
+
+        .cp-command-foot {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 0.76rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 10px 14px;
+        }
+    </style>
+    
+
+    <!-- Scripts (shared) -->
+    <script src="/static/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/static/vendor/jquery.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    
+    <script>
+        window.cpQuickLinks = [
+            
+        { name: 'Doctor Portal', hint: 'Clinical command center', url: "/doctor/portal" },
+        { name: 'Appointments', hint: 'Pending and confirmed', url: "/doctor/appointments" },
+        { name: 'Patient List', hint: 'Assigned patients', url: "/doctor/patients" },
+        { name: 'Messages', hint: 'Patient communication', url: "/doctor/messages" },
+        { name: 'Lab Requests', hint: 'Lab tests you requested', url: "/doctor/lab-requests" },
+        { name: 'Lab Reports', hint: 'Completed lab reports', url: "/doctor/lab-reports" },
+        { name: 'Pharmacy Orders', hint: 'Medicine dispensing status', url: "/doctor/pharmacy-orders" },
+        { name: 'Check-ins', hint: 'Express check-ins queue', url: "/features/doctor/pending-checkins" },
+        { name: 'Analytics', hint: 'Performance insights', url: "/doctor/analytics" }
+        
+        ];
+    </script>
+    
+    
+    <script src="/static/js/pro-engine.js"></script>
+    
+    <script>
+        (function removeDoctorEncounterOperations() {
+            function stripEncounterPanel() {
+                // Keep this cleanup narrowly scoped to the legacy dashboard page only.
+                // Running it on all /doctor pages can remove unrelated portal content.
+                if (window.location.pathname !== '/doctor/dashboard') return;
+
+                const markers = [
+                    'Primary diagnosis',
+                    'Symptoms and clinical findings',
+                    'Consultation notes / plan'
+                ];
+
+                const markerNode = markers
+                    .map((p) => document.querySelector('[placeholder="' + p + '"]'))
+                    .find(Boolean);
+
+                if (markerNode) {
+                    let panel = markerNode;
+                    while (panel && panel !== document.body) {
+                        const hasAllMarkers = markers.every((p) => !!panel.querySelector('[placeholder="' + p + '"]'));
+                        if (hasAllMarkers) break;
+                        panel = panel.parentElement;
+                    }
+                    if (panel && panel !== document.body) {
+                        panel.remove();
+                    }
+                }
+
+                const titleNode = Array.from(
+                    document.querySelectorAll('h1,h2,h3,h4,h5,h6,div,span,label,strong')
+                ).find((el) => (el.textContent || '').trim().toLowerCase() === 'encounter operations');
+
+                if (titleNode) {
+                    let panel = titleNode;
+                    while (panel && panel !== document.body) {
+                        const text = (panel.textContent || '').toLowerCase();
+                        if (
+                            text.includes('encounter operations') &&
+                            text.includes('clinical templates') &&
+                            text.includes('vitals') &&
+                            text.includes('medication')
+                        ) {
+                            panel.remove();
+                            break;
+                        }
+                        panel = panel.parentElement;
+                    }
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', stripEncounterPanel);
+            } else {
+                stripEncounterPanel();
+            }
+            setTimeout(stripEncounterPanel, 250);
+            setTimeout(stripEncounterPanel, 900);
+        })();
+    </script>
+    
+</body>
+
+</html>

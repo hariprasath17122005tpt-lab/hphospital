@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Record — {{ patient.full_name }} — Consultation #{{ consultation.id }}</title>
+    <style>
+        :root { --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; --brand:#1e40af; --danger:#dc2626; --warn:#d97706; --teal:#0d9488; }
+        * { box-sizing:border-box; margin:0; }
+        body { font-family:'Segoe UI',Inter,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+        .sheet { max-width:960px; margin:20px auto; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+
+        /* Header */
+        .hdr { padding:20px 28px; border-bottom:3px solid var(--brand); display:flex; justify-content:space-between; align-items:center; }
+        .hdr-left h1 { font-size:20px; color:var(--brand); margin-bottom:2px; }
+        .hdr-left p { font-size:12px; color:var(--muted); }
+        .hdr-right { text-align:right; font-size:12px; color:var(--muted); }
+        .hdr-right strong { color:var(--ink); }
+
+        /* Section */
+        .sec { padding:16px 28px; border-bottom:1px solid var(--line); }
+        .sec:last-child { border-bottom:none; }
+        .sec-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--brand); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .sec-title i { font-size:14px; }
+
+        /* Grid */
+        .grid { display:grid; gap:10px; }
+        .grid-2 { grid-template-columns:1fr 1fr; }
+        .grid-3 { grid-template-columns:1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+        .cell { padding:8px 12px; background:#f8fafc; border:1px solid var(--line); border-radius:6px; }
+        .cell .lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700; }
+        .cell .val { font-size:13px; font-weight:600; color:var(--ink); margin-top:2px; }
+        .cell .val.empty { color:#cbd5e1; font-style:italic; font-weight:400; }
+
+        /* Alert badges */
+        .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:5px; font-size:11px; font-weight:700; margin:2px; }
+        .badge-danger { background:#fee2e2; color:var(--danger); }
+        .badge-warn { background:#fef3c7; color:var(--warn); }
+        .badge-info { background:#dbeafe; color:var(--brand); }
+        .badge-purple { background:#ede9fe; color:#7c3aed; }
+
+        /* Text block */
+        .text-block { padding:10px 14px; background:#f8fafc; border:1px solid var(--line); border-radius:6px; font-size:13px; line-height:1.6; white-space:pre-wrap; min-height:28px; }
+        .text-block.empty { color:#cbd5e1; font-style:italic; }
+        .text-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+
+        /* Medicine table */
+        table { width:100%; border-collapse:collapse; margin-top:8px; }
+        th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; font-size:12px; }
+        th { background:#f1f5f9; font-size:11px; text-transform:uppercase; letter-spacing:.6px; font-weight:700; color:var(--muted); }
+        td { font-size:13px; }
+
+        /* Footer */
+        .ftr { padding:16px 28px; display:flex; justify-content:space-between; align-items:flex-end; border-top:1px dashed var(--line); }
+        .sig { text-align:right; }
+        .sig .line { margin-top:30px; border-top:1px solid var(--ink); width:220px; margin-left:auto; }
+        .sig .name { font-size:13px; font-weight:600; margin-top:4px; }
+        .sig .spec { font-size:11px; color:var(--muted); }
+        .stamp { font-size:11px; color:var(--muted); }
+
+        /* Actions bar (not printed) */
+        .actions { max-width:960px; margin:0 auto 20px; display:flex; gap:10px; flex-wrap:wrap; }
+        .btn { padding:8px 18px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; border:none; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
+        .btn-primary { background:var(--brand); color:#fff; }
+        .btn-teal { background:var(--teal); color:#fff; }
+        .btn-outline { background:#fff; color:var(--ink); border:1px solid var(--line); }
+        .btn:hover { opacity:0.9; }
+
+        @media print {
+            body { background:#fff; }
+            .sheet { margin:0; border:none; border-radius:0; box-shadow:none; }
+            .actions { display:none !important; }
+        }
+        @media (max-width:768px) {
+            .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+            .hdr { flex-direction:column; gap:10px; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Action buttons (not printed) -->
+<div class="actions" style="margin-top:20px;">
+    <a href="{{ url_for('doctor.consultation_prescription', consultation_id=consultation.id) }}" class="btn btn-teal"><i class="fas fa-prescription"></i> View Prescription</a>
+    <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print Record</button>
+    <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to Patient</a>
+    <a href="{{ url_for('doctor.consultation_page', patient_id=patient.id) }}" class="btn btn-outline"><i class="fas fa-plus"></i> New Consultation</a>
+</div>
+
+<div class="sheet">
+
+    <!-- ── HEADER ──────────────────────────────────────── -->
+    <div class="hdr">
+        <div class="hdr-left">
+            <h1><i class="fas fa-hospital"></i> {{ doctor_record.hospital.name if doctor_record and doctor_record.hospital else 'CarePoint Hospital' }}</h1>
+            <p>Detailed Consultation Record &mdash; Internal Hospital Document</p>
+        </div>
+        <div class="hdr-right">
+            <div>Consultation ID: <strong>#{{ consultation.id }}</strong></div>
+            <div>Date: <strong>{{ consultation.visit_date.strftime('%B %d, %Y %I:%M %p') if consultation.visit_date else consultation.created_at.strftime('%B %d, %Y %I:%M %p') if consultation.created_at else 'N/A' }}</strong></div>
+            <div>Doctor: <strong>Dr. {{ doctor_record.first_name }} {{ doctor_record.last_name }}</strong></div>
+            <div>Specialization: {{ doctor_record.specialization or 'N/A' }}</div>
+            <div>Reg No: {{ doctor_record.license_number or 'N/A' }}</div>
+        </div>
+    </div>
+
+    <!-- ── SECTION A: PATIENT DETAILS ──────────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-id-card"></i> Section A — Patient Details</div>
+        <div class="grid grid-4">
+            <div class="cell"><div class="lbl">UHID</div><div class="val">{{ patient.uhid }}</div></div>
+            <div class="cell"><div class="lbl">Name</div><div class="val">{{ patient.full_name }}</div></div>
+            <div class="cell"><div class="lbl">Age / Gender</div><div class="val">{{ patient.age or 'N/A' }} / {{ patient.gender or 'N/A' }}</div></div>
+            <div class="cell"><div class="lbl">Phone</div><div class="val">{{ patient.phone or 'N/A' }}</div></div>
+        </div>
+        <div class="grid grid-4" style="margin-top:8px;">
+            <div class="cell"><div class="lbl">Weight</div><div class="val">{{ patient.weight or 'N/A' }}{% if patient.weight %} kg{% endif %}</div></div>
+            <div class="cell"><div class="lbl">Height</div><div class="val">{{ patient.height or 'N/A' }}{% if patient.height %} cm{% endif %}</div></div>
+            <div class="cell"><div class="lbl">Blood Group</div><div class="val">{{ patient.blood_type or 'N/A' }}</div></div>
+            <div class="cell"><div class="lbl">DOB</div><div class="val">{{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else 'N/A' }}</div></div>
+        </div>
+    </div>
+
+    <!-- ── SECTION B: MEDICAL BACKGROUND ───────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-notes-medical"></i> Section B — Medical Background</div>
+
+        <!-- Alert badges -->
+        <div style="margin-bottom:10px;">
+            {% if patient.allergy_history or patient.allergies %}
+            <span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Allergy: {{ patient.allergy_history or patient.allergies }}</span>
+            {% endif %}
+            {% if patient.chronic_conditions %}
+            <span class="badge badge-warn"><i class="fas fa-heartbeat"></i> Chronic: {{ patient.chronic_conditions }}</span>
+            {% endif %}
+            {% if patient.family_history %}
+            <span class="badge badge-purple"><i class="fas fa-users"></i> Family: {{ patient.family_history }}</span>
+            {% endif %}
+            {% for e in history_entries %}
+                {% if e.type == 'allergy' %}<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> {{ e.condition }}</span>{% endif %}
+                {% if e.type == 'chronic' %}<span class="badge badge-warn"><i class="fas fa-heartbeat"></i> {{ e.condition }}</span>{% endif %}
+                {% if e.type == 'family' %}<span class="badge badge-purple"><i class="fas fa-users"></i> {{ e.condition }}</span>{% endif %}
+                {% if e.type == 'medical' %}<span class="badge badge-info"><i class="fas fa-notes-medical"></i> {{ e.condition }}</span>{% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="grid grid-2">
+            <div>
+                <div class="text-label">Medical History</div>
+                <div class="text-block {% if not patient.medical_history %}empty{% endif %}">{{ patient.medical_history or 'No records' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Allergy History</div>
+                <div class="text-block {% if not (patient.allergy_history or patient.allergies) %}empty{% endif %}">{{ patient.allergy_history or patient.allergies or 'None reported' }}</div>
+            </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:8px;">
+            <div>
+                <div class="text-label">Chronic Conditions</div>
+                <div class="text-block {% if not patient.chronic_conditions %}empty{% endif %}">{{ patient.chronic_conditions or 'None reported' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Family History</div>
+                <div class="text-block {% if not patient.family_history %}empty{% endif %}">{{ patient.family_history or 'None reported' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION C: CURRENT VISIT ────────────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-stethoscope"></i> Section C — Current Visit / Consultation</div>
+        <div class="text-label">Chief Complaint</div>
+        <div class="text-block {% if not consultation.chief_complaint %}empty{% endif %}" style="margin-bottom:10px;">{{ consultation.chief_complaint or 'Not recorded' }}</div>
+
+        <div class="grid grid-2">
+            <div>
+                <div class="text-label">Present Condition / HPI</div>
+                <div class="text-block {% if not consultation.present_condition %}empty{% endif %}">{{ consultation.present_condition or 'Not recorded' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Past Medication</div>
+                <div class="text-block {% if not consultation.past_medication %}empty{% endif %}">{{ consultation.past_medication or 'Not recorded' }}</div>
+            </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:8px;">
+            <div>
+                <div class="text-label">Examination Notes</div>
+                <div class="text-block {% if not consultation.examination_notes %}empty{% endif %}">{{ consultation.examination_notes or 'Not recorded' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Clinical Notes</div>
+                <div class="text-block {% if not consultation.clinical_notes %}empty{% endif %}">{{ consultation.clinical_notes or 'Not recorded' }}</div>
+            </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:8px;">
+            <div>
+                <div class="text-label">Provisional Diagnosis</div>
+                <div class="text-block {% if not consultation.provisional_diagnosis %}empty{% endif %}" style="font-weight:600;">{{ consultation.provisional_diagnosis or 'Not recorded' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Final Diagnosis</div>
+                <div class="text-block {% if not consultation.final_diagnosis %}empty{% endif %}" style="font-weight:700; color:var(--brand);">{{ consultation.final_diagnosis or 'Not recorded' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION D: VITALS ───────────────────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-heartbeat"></i> Section D — Vitals</div>
+        <div class="grid grid-4">
+            <div class="cell"><div class="lbl">Blood Pressure</div><div class="val">{% if consultation.vitals_bp_systolic and consultation.vitals_bp_diastolic %}{{ consultation.vitals_bp_systolic }}/{{ consultation.vitals_bp_diastolic }} mmHg{% else %}<span class="empty">—</span>{% endif %}</div></div>
+            <div class="cell"><div class="lbl">Pulse Rate</div><div class="val">{{ consultation.vitals_pulse or '—' }}{% if consultation.vitals_pulse %} bpm{% endif %}</div></div>
+            <div class="cell"><div class="lbl">SpO2</div><div class="val">{{ consultation.vitals_spo2 or '—' }}{% if consultation.vitals_spo2 %}%{% endif %}</div></div>
+            <div class="cell"><div class="lbl">Temperature</div><div class="val">{{ consultation.vitals_temperature or '—' }}{% if consultation.vitals_temperature %} &deg;F{% endif %}</div></div>
+        </div>
+        <div class="grid grid-4" style="margin-top:8px;">
+            <div class="cell"><div class="lbl">Respiratory Rate</div><div class="val">{{ consultation.vitals_respiratory_rate or '—' }}{% if consultation.vitals_respiratory_rate %} /min{% endif %}</div></div>
+            <div class="cell"><div class="lbl">GRBS</div><div class="val">{{ consultation.vitals_grbs or '—' }}{% if consultation.vitals_grbs %} mg/dL{% endif %}</div></div>
+            <div class="cell"><div class="lbl">Weight</div><div class="val">{{ consultation.vitals_weight or patient.weight or '—' }}{% if consultation.vitals_weight or patient.weight %} kg{% endif %}</div></div>
+            <div class="cell"><div class="lbl">BMI</div><div class="val">{% set w = consultation.vitals_weight or patient.weight %}{% set h = patient.height %}{% if w and h %}{{ "%.1f"|format(w / ((h/100)**2)) }}{% else %}—{% endif %}</div></div>
+        </div>
+    </div>
+
+    <!-- ── SECTION E: PRESCRIPTION ─────────────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-prescription-bottle-alt"></i> Section E — Prescription</div>
+        {% if medicines %}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Medicine</th><th>Dose</th><th>Route</th><th>Frequency</th><th>Duration</th><th>Food</th><th>Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in medicines %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td style="font-weight:600;">{{ m.name }}</td>
+                    <td>{{ m.dosage or '—' }}</td>
+                    <td>{{ m.route or '—' }}</td>
+                    <td>{{ m.frequency or '—' }}</td>
+                    <td>{{ m.duration or '—' }}</td>
+                    <td>{{ m.food_relation or '—' }}</td>
+                    <td>{{ m.instruction or m.special_instruction or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-block empty">No medicines prescribed in this consultation</div>
+        {% endif %}
+    </div>
+
+    <!-- ── SECTION F: TREATMENT / PLAN ─────────────────── -->
+    <div class="sec">
+        <div class="sec-title"><i class="fas fa-clipboard-list"></i> Section F — Treatment Plan & Follow-up</div>
+        <div class="grid grid-2">
+            <div>
+                <div class="text-label">Investigations Advised</div>
+                <div class="text-block {% if not consultation.investigation_suggested %}empty{% endif %}">{{ consultation.investigation_suggested or 'None' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Procedures Advised</div>
+                <div class="text-block {% if not consultation.procedures_advised %}empty{% endif %}">{{ consultation.procedures_advised or 'None' }}</div>
+            </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:8px;">
+            <div>
+                <div class="text-label">Treatment Plan</div>
+                <div class="text-block {% if not consultation.treatment_plan %}empty{% endif %}">{{ consultation.treatment_plan or 'Not recorded' }}</div>
+            </div>
+            <div>
+                <div class="text-label">General Advice</div>
+                <div class="text-block {% if not consultation.advice %}empty{% endif %}">{{ consultation.advice or 'Not recorded' }}</div>
+            </div>
+        </div>
+        <div class="grid grid-3" style="margin-top:8px;">
+            <div>
+                <div class="text-label">Diet Advice</div>
+                <div class="text-block {% if not consultation.diet_advice %}empty{% endif %}">{{ consultation.diet_advice or 'None' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Rest / Activity</div>
+                <div class="text-block {% if not consultation.rest_activity_advice %}empty{% endif %}">{{ consultation.rest_activity_advice or 'None' }}</div>
+            </div>
+            <div>
+                <div class="text-label">Follow-up Date</div>
+                <div class="text-block {% if not consultation.followup_date %}empty{% endif %}" style="font-weight:700;">{{ consultation.followup_date.strftime('%B %d, %Y') if consultation.followup_date else 'Not scheduled' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── INTERNAL NOTES (Doctor Only) ────────────────── -->
+    {% if consultation.doctor_internal_notes %}
+    <div class="sec" style="background:#fffbeb;">
+        <div class="sec-title" style="color:#92400e;"><i class="fas fa-lock"></i> Internal Notes (Doctor Only — Not for Patient)</div>
+        <div class="text-block" style="background:#fef3c7;border-color:#fde68a;">{{ consultation.doctor_internal_notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ── FOOTER / SIGNATURE ──────────────────────────── -->
+    <div class="ftr">
+        <div class="stamp">
+            <div>Generated: {{ consultation.created_at.strftime('%Y-%m-%d %I:%M %p') if consultation.created_at else 'N/A' }}</div>
+            <div>Consultation #{{ consultation.id }} | Patient: {{ patient.uhid }}</div>
+            <div style="margin-top:4px;font-size:10px;color:#94a3b8;">This is an internal hospital record. Not for patient distribution.</div>
+        </div>
+        <div class="sig">
+            <div class="line"></div>
+            <div class="name">Dr. {{ doctor_record.first_name }} {{ doctor_record.last_name }}</div>
+            <div class="spec">{{ doctor_record.specialization or '' }} | Reg: {{ doctor_record.license_number or 'N/A' }}</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

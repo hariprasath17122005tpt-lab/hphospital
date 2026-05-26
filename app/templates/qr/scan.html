@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}Scan QR Code — CarePoint{% endblock %}
+
+{% block content %}
+<style>
+    .scan-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 24px;
+        text-align: center;
+    }
+    .scan-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--cp-text, #1a1f36);
+    }
+    .scan-subtitle {
+        font-size: 0.88rem;
+        color: var(--cp-text-secondary, #64748b);
+        margin-bottom: 24px;
+    }
+    #qr-reader {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto 20px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid var(--cp-border, #e2e8f0);
+    }
+    #qr-reader video {
+        border-radius: 14px;
+    }
+    .scan-result {
+        display: none;
+        background: var(--cp-surface, #fff);
+        border: 1px solid var(--cp-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 16px;
+    }
+    .scan-result.show { display: block; }
+    .scan-result .result-icon {
+        font-size: 2.5rem;
+        color: #22c55e;
+        margin-bottom: 8px;
+    }
+    .scan-result .result-text {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+    .scan-result .result-link {
+        display: inline-block;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .scan-result .result-link:hover { opacity: 0.9; }
+
+    .manual-input {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--cp-border, #e2e8f0);
+    }
+    .manual-input label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--cp-text-secondary, #64748b);
+        display: block;
+        margin-bottom: 6px;
+    }
+    .manual-input .input-group {
+        display: flex;
+        gap: 8px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .manual-input input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid var(--cp-border, #e2e8f0);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        background: var(--cp-surface, #fff);
+        color: var(--cp-text, #1a1f36);
+    }
+    .manual-input button {
+        padding: 10px 18px;
+        background: #6366f1;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .manual-input button:hover { background: #4f46e5; }
+
+    .scan-instructions {
+        background: var(--cp-surface, #fff);
+        border: 1px solid var(--cp-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 16px 20px;
+        text-align: left;
+        margin-bottom: 20px;
+    }
+    .scan-instructions h3 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .scan-instructions h3 i { color: #6366f1; }
+    .scan-instructions ol {
+        font-size: 0.82rem;
+        color: var(--cp-text-secondary, #64748b);
+        padding-left: 18px;
+    }
+    .scan-instructions ol li { margin-bottom: 4px; }
+
+    .camera-error {
+        display: none;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+        border-radius: 12px;
+        padding: 14px 20px;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+    .camera-error.show { display: block; }
+</style>
+
+<div class="scan-container">
+    <div class="scan-title"><i class="fas fa-qrcode" style="color:#6366f1;margin-right:8px;"></i>Scan Patient QR Code</div>
+    <div class="scan-subtitle">Point your camera at the patient's visit QR code to view their details instantly</div>
+
+    <div class="scan-instructions">
+        <h3><i class="fas fa-info-circle"></i> How to use</h3>
+        <ol>
+            <li>Allow camera access when prompted</li>
+            <li>Point the camera at the QR code on the patient's visit slip</li>
+            <li>The system will automatically detect and redirect to patient details</li>
+        </ol>
+    </div>
+
+    <div class="camera-error" id="cameraError">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="cameraErrorText">Camera access denied. Please allow camera access in your browser settings.</span>
+    </div>
+
+    <div id="qr-reader"></div>
+
+    <div class="scan-result" id="scanResult">
+        <div class="result-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="result-text" id="resultText">QR Code Detected!</div>
+        <a class="result-link" id="resultLink" href="#">
+            <i class="fas fa-external-link-alt me-1"></i> View Patient Details
+        </a>
+    </div>
+
+    <div class="manual-input">
+        <label>Or enter QR token manually:</label>
+        <div class="input-group">
+            <input type="text" id="manualToken" placeholder="e.g. VISIT-A1B2C3D4E5F6">
+            <button onclick="goToToken()"><i class="fas fa-arrow-right"></i> Go</button>
+        </div>
+    </div>
+</div>
+
+<!-- html5-qrcode CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+let scanner = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    startScanner();
+});
+
+function startScanner() {
+    const qrReader = document.getElementById('qr-reader');
+    scanner = new Html5Qrcode("qr-reader");
+
+    const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+    };
+
+    scanner.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanFailure
+    ).catch(err => {
+        console.warn("Camera error:", err);
+        const errDiv = document.getElementById('cameraError');
+        const errText = document.getElementById('cameraErrorText');
+
+        if (String(err).includes('NotAllowedError')) {
+            errText.textContent = 'Camera access denied. Please allow camera access in your browser settings and reload.';
+        } else if (String(err).includes('NotFoundError')) {
+            errText.textContent = 'No camera found. Please connect a camera or use the manual token input below.';
+        } else {
+            errText.textContent = 'Could not start camera: ' + err + '. Use the manual token input below.';
+        }
+        errDiv.classList.add('show');
+    });
+}
+
+function onScanSuccess(decodedText) {
+    // Stop scanning
+    if (scanner) {
+        scanner.stop().catch(() => {});
+    }
+
+    // Extract token from URL or use raw text
+    let visitUrl = decodedText;
+    const tokenMatch = decodedText.match(/\/qr\/visit\/(VISIT-[A-Z0-9]+)/i);
+
+    if (tokenMatch) {
+        // It's our QR URL — redirect directly
+        visitUrl = '/qr/visit/' + tokenMatch[1];
+    } else if (decodedText.startsWith('VISIT-')) {
+        // Raw token
+        visitUrl = '/qr/visit/' + decodedText;
+    }
+
+    const resultDiv = document.getElementById('scanResult');
+    const resultLink = document.getElementById('resultLink');
+    const resultText = document.getElementById('resultText');
+
+    resultText.textContent = 'QR Code Detected!';
+    resultLink.href = visitUrl;
+    resultDiv.classList.add('show');
+
+    // Auto-redirect after a brief delay
+    setTimeout(() => {
+        window.location.href = visitUrl;
+    }, 1000);
+}
+
+function onScanFailure(error) {
+    // Ignore — continuous scanning
+}
+
+function goToToken() {
+    const token = document.getElementById('manualToken').value.trim();
+    if (!token) { alert('Please enter a QR token'); return; }
+
+    // Accept full URL or just token
+    const tokenMatch = token.match(/VISIT-[A-Z0-9]+/i);
+    if (tokenMatch) {
+        window.location.href = '/qr/visit/' + tokenMatch[0];
+    } else {
+        window.location.href = '/qr/visit/' + token;
+    }
+}
+
+// Allow Enter key in manual input
+document.getElementById('manualToken')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') goToToken();
+});
+</script>
+{% endblock %}

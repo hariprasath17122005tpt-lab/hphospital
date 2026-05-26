@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription — {{ patient.full_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap');
+
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'Inter',sans-serif; background:#e8ecf1; color:#1a1a2e; }
+
+        /* ═══ PAGE ═══ */
+        .rx-page {
+            max-width:860px; margin:16px auto; background:#fff;
+            box-shadow:0 4px 40px rgba(0,0,0,0.08);
+            position:relative; overflow:hidden;
+        }
+
+        /* ═══ TOP ACCENT ═══ */
+        .rx-page::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:5px;
+            background:linear-gradient(90deg, #0c4a6e, #0284c7, #06b6d4, #0284c7, #0c4a6e);
+        }
+
+        /* ═══ WATERMARK ═══ */
+        .watermark {
+            position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-30deg);
+            font-size:100px; font-weight:900; color:rgba(0,0,0,0.015);
+            letter-spacing:12px; pointer-events:none; white-space:nowrap;
+            font-family:'Playfair Display',serif;
+        }
+
+        /* ═══ HEADER ═══ */
+        .rx-header {
+            padding:22px 32px 16px; display:flex; justify-content:space-between;
+            align-items:flex-start; position:relative; z-index:1;
+        }
+        .rx-header::after {
+            content:''; position:absolute; bottom:0; left:32px; right:32px;
+            height:2px; background:linear-gradient(90deg, #0c4a6e, #0284c7, transparent);
+        }
+
+        .hosp-block { text-align:right; max-width:320px; }
+        .hosp-name {
+            font-family:'Playfair Display',serif; font-size:24px; font-weight:800;
+            color:#0c4a6e; letter-spacing:.3px; line-height:1.2;
+        }
+        .hosp-tag { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#0284c7; margin-top:2px; }
+        .hosp-addr { font-size:10.5px; color:#64748b; line-height:1.5; margin-top:6px; }
+        .hosp-contact { font-size:10.5px; color:#475569; margin-top:3px; }
+        .hosp-contact span { color:#0284c7; font-weight:600; }
+
+        .doc-block {}
+        .doc-label { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
+        .doc-name { font-size:18px; font-weight:800; color:#0f172a; }
+        .doc-spec { font-size:12px; color:#0284c7; font-weight:600; margin-top:1px; }
+        .doc-qual { font-size:11px; color:#64748b; margin-top:1px; }
+        .doc-reg { font-size:10px; color:#94a3b8; margin-top:4px; font-weight:600; letter-spacing:.3px; }
+
+        /* ═══ PATIENT STRIP ═══ */
+        .pt-strip {
+            margin:14px 32px 0; border:1.5px solid #0c4a6e; border-radius:8px;
+            overflow:hidden; position:relative; z-index:1;
+        }
+        .pt-strip-head {
+            background:linear-gradient(135deg, #0c4a6e, #0369a1);
+            padding:6px 14px; display:flex; justify-content:space-between;
+        }
+        .pt-strip-head span { font-size:10px; font-weight:700; color:rgba(255,255,255,.85); letter-spacing:1px; text-transform:uppercase; }
+        .pt-strip-body { padding:10px 14px; }
+        .pt-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; }
+        .pt-row { display:flex; gap:6px; align-items:baseline; font-size:12px; }
+        .pt-lbl { color:#64748b; font-weight:600; min-width:55px; font-size:10.5px; }
+        .pt-val { color:#0f172a; font-weight:700; }
+        .pt-date { font-size:11px; color:#475569; margin-top:6px; border-top:1px dashed #e2e8f0; padding-top:5px; }
+        .pt-date i { color:#0284c7; margin-right:4px; }
+
+        /* ═══ ALLERGY BAR ═══ */
+        .allergy-bar {
+            margin:10px 32px 0; padding:7px 14px; border-radius:6px;
+            background:linear-gradient(135deg, #fef2f2, #fee2e2); border:1px solid #fca5a5;
+            display:flex; align-items:center; gap:8px; position:relative; z-index:1;
+        }
+        .allergy-bar i { color:#dc2626; font-size:13px; }
+        .allergy-bar span { font-size:11px; font-weight:700; color:#991b1b; letter-spacing:.3px; }
+
+        /* ═══ VITALS ═══ */
+        .vitals-strip {
+            margin:12px 32px 0; display:grid; grid-template-columns:repeat(auto-fit, minmax(85px,1fr));
+            gap:6px; position:relative; z-index:1;
+        }
+        .vital-card {
+            text-align:center; padding:8px 4px; border-radius:8px;
+            border:1px solid #e2e8f0; background:#f8fafc;
+        }
+        .vital-card .v-label { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:#94a3b8; }
+        .vital-card .v-val { font-size:14px; font-weight:800; color:#0f172a; margin-top:1px; }
+        .vital-card .v-unit { font-size:9px; color:#64748b; font-weight:500; }
+        .vital-card.highlight { border-color:#0284c7; background:linear-gradient(135deg, #f0f9ff, #e0f2fe); }
+
+        /* ═══ CLINICAL SECTIONS ═══ */
+        .clinical { padding:8px 32px 0; position:relative; z-index:1; }
+        .cl-section { margin-bottom:8px; }
+        .cl-title {
+            font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px;
+            color:#0c4a6e; margin-bottom:3px; padding-bottom:2px;
+            border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:6px;
+        }
+        .cl-title i { font-size:10px; color:#0284c7; }
+        .cl-body { font-size:12px; color:#334155; line-height:1.6; white-space:pre-wrap; }
+
+        /* ═══ MEDICINES TABLE ═══ */
+        .rx-section { padding:4px 32px 0; position:relative; z-index:1; }
+        .rx-banner {
+            display:flex; align-items:center; gap:10px; margin-bottom:8px;
+            padding-bottom:6px; border-bottom:2px solid #0c4a6e;
+        }
+        .rx-symbol {
+            font-family:'Playfair Display',serif; font-size:32px; font-weight:800;
+            color:#0c4a6e; line-height:1;
+        }
+        .rx-banner-text { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#64748b; }
+
+        .med-tbl { width:100%; border-collapse:collapse; }
+        .med-tbl thead th {
+            background:linear-gradient(135deg, #0c4a6e, #0369a1); color:#fff;
+            padding:7px 8px; font-size:9px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.7px; text-align:left;
+        }
+        .med-tbl thead th:first-child { border-radius:6px 0 0 0; }
+        .med-tbl thead th:last-child { border-radius:0 6px 0 0; }
+        .med-tbl tbody td {
+            padding:7px 8px; font-size:11.5px; border-bottom:1px solid #f1f5f9;
+            vertical-align:top;
+        }
+        .med-tbl tbody tr:hover { background:#f8fafc; }
+        .med-tbl tbody tr:last-child td { border-bottom:2px solid #e2e8f0; }
+        .med-tbl .sno { text-align:center; font-weight:700; color:#94a3b8; width:28px; }
+        .med-tbl .med-name { font-weight:700; color:#0f172a; }
+        .med-tbl .med-route-tag {
+            display:inline-block; font-size:8.5px; font-weight:700; padding:1px 6px;
+            border-radius:3px; background:#e0f2fe; color:#0369a1; margin-top:2px;
+        }
+        .med-tbl .med-freq { font-weight:600; color:#0c4a6e; }
+        .med-tbl .med-food {
+            font-size:10px; padding:2px 6px; border-radius:3px;
+            background:#ecfdf5; color:#065f46; font-weight:600;
+        }
+
+        /* ═══ INSTRUCTIONS ═══ */
+        .instr-section { padding:6px 32px 0; position:relative; z-index:1; }
+        .instr-box {
+            padding:10px 14px; border-radius:8px; border:1px solid #e2e8f0;
+            background:linear-gradient(135deg, #f8fafc, #f1f5f9);
+        }
+        .instr-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#0c4a6e; margin-bottom:6px; }
+        .instr-list { list-style:none; }
+        .instr-list li {
+            font-size:11.5px; color:#334155; padding:3px 0; padding-left:16px;
+            position:relative; line-height:1.5;
+        }
+        .instr-list li::before { content:'\f105'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; left:0; color:#0284c7; font-size:10px; }
+        .followup-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            padding:5px 14px; border-radius:6px; margin-top:6px;
+            background:linear-gradient(135deg, #0c4a6e, #0369a1);
+            color:#fff; font-size:11px; font-weight:700;
+        }
+        .followup-badge i { font-size:12px; }
+
+        /* ═══ FOOTER ═══ */
+        .rx-footer {
+            margin:16px 32px 0; padding-top:10px;
+            display:flex; justify-content:space-between; align-items:flex-end;
+            position:relative; z-index:1;
+        }
+        .stamp-area { font-size:10px; color:#94a3b8; }
+        .sig-block { text-align:right; }
+        .sig-line { width:180px; border-top:1px solid #334155; margin-left:auto; margin-bottom:4px; }
+        .sig-name { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; color:#0f172a; }
+        .sig-spec { font-size:10.5px; color:#64748b; }
+
+        .bottom-bar {
+            margin-top:14px; padding:10px 32px;
+            background:linear-gradient(135deg, #0c4a6e, #0369a1);
+            text-align:center; font-size:10px; color:rgba(255,255,255,.8); line-height:1.6;
+        }
+        .bottom-bar strong { color:#fff; font-size:11px; letter-spacing:.5px; }
+
+        /* ═══ ACTIONS (not printed) ═══ */
+        .actions { max-width:860px; margin:0 auto 10px; display:flex; gap:8px; flex-wrap:wrap; }
+        .btn {
+            padding:8px 18px; border-radius:8px; font-weight:600; font-size:12px;
+            cursor:pointer; border:none; display:inline-flex; align-items:center;
+            gap:5px; text-decoration:none; transition:all .2s;
+        }
+        .btn-dark { background:#0c4a6e; color:#fff; }
+        .btn-dark:hover { background:#0369a1; }
+        .btn-teal { background:#0d9488; color:#fff; }
+        .btn-teal:hover { background:#0f766e; }
+        .btn-out { background:#fff; color:#334155; border:1px solid #cbd5e1; }
+        .btn-out:hover { background:#f8fafc; border-color:#94a3b8; }
+
+        @media print {
+            body { background:#fff; }
+            .rx-page { margin:0; box-shadow:none; }
+            .actions { display:none !important; }
+        }
+        @media (max-width:640px) {
+            .rx-header { flex-direction:column; gap:12px; }
+            .hosp-block { text-align:left; max-width:100%; }
+            .pt-grid { grid-template-columns:1fr; }
+            .vitals-strip { grid-template-columns:repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Actions (screen only) -->
+<div class="actions" style="margin-top:16px;">
+    {% if current_user is defined and current_user.is_authenticated and current_user.role %}
+        {% if current_user.role.value == 'DOCTOR' %}
+        <a href="{{ url_for('doctor.consultation_detail', consultation_id=consultation.id) }}" class="btn btn-teal"><i class="fas fa-file-medical-alt"></i> Detailed Record</a>
+        <a href="{{ url_for('doctor.view_patient', patient_id=patient.id) }}" class="btn btn-out"><i class="fas fa-arrow-left"></i> Back to Patient</a>
+        {% elif current_user.role.value == 'PATIENT' %}
+        <a href="{{ url_for('patient.prescriptions') }}" class="btn btn-out"><i class="fas fa-arrow-left"></i> Back to Prescriptions</a>
+        {% elif current_user.role.value in ('PHARMACIST', 'ADMIN', 'HOST') %}
+        <a href="{{ url_for('pharmacy_ops.dashboard') }}" class="btn btn-out"><i class="fas fa-arrow-left"></i> Back to Pharmacy</a>
+        {% endif %}
+    {% endif %}
+    <button class="btn btn-dark" onclick="window.print()"><i class="fas fa-print"></i> Print / Download</button>
+</div>
+
+<div class="rx-page">
+    <div class="watermark">PRESCRIPTION</div>
+
+    <!-- ════ HEADER ════ -->
+    <div class="rx-header">
+        <div class="doc-block">
+            <div class="doc-label">Consulting Physician</div>
+            <div class="doc-name">Dr. {{ doctor_record.first_name }} {{ doctor_record.last_name }}</div>
+            <div class="doc-spec">{{ doctor_record.specialization or 'General Medicine' }}</div>
+            {% if doctor_record.qualification %}
+            <div class="doc-qual">{{ doctor_record.qualification }}</div>
+            {% endif %}
+            <div class="doc-reg">Reg. No: {{ doctor_record.license_number or 'N/A' }}</div>
+        </div>
+        <div class="hosp-block">
+            <div class="hosp-name">{{ doctor_record.hospital.name if doctor_record and doctor_record.hospital else 'CarePoint Hospital' }}</div>
+            <div class="hosp-tag">Healthcare Excellence</div>
+            <div class="hosp-addr">
+                {% if doctor_record.clinic_address %}{{ doctor_record.clinic_address }}
+                {% elif doctor_record.hospital and doctor_record.hospital.address %}{{ doctor_record.hospital.address }}
+                {% else %}123 Health Avenue, Medical District{% endif %}
+            </div>
+            <div class="hosp-contact">
+                {% if doctor_record.phone %}<span><i class="fas fa-phone-alt"></i></span> {{ doctor_record.phone }}{% endif %}
+                {% if doctor_record.hospital and doctor_record.hospital.contact_email %} &nbsp;|&nbsp; <span><i class="fas fa-envelope"></i></span> {{ doctor_record.hospital.contact_email }}{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ PATIENT INFO ════ -->
+    <div class="pt-strip">
+        <div class="pt-strip-head">
+            <span><i class="fas fa-user-circle"></i> Patient Information</span>
+            <span>UHID: {{ patient.uhid }}</span>
+        </div>
+        <div class="pt-strip-body">
+            <div class="pt-grid">
+                <div class="pt-row"><span class="pt-lbl">Name</span><span class="pt-val">{{ patient.full_name }}</span></div>
+                <div class="pt-row"><span class="pt-lbl">Age / Sex</span><span class="pt-val">{{ patient.age or 'N/A' }} Yrs / {{ patient.gender or 'N/A' }}</span></div>
+                <div class="pt-row"><span class="pt-lbl">Phone</span><span class="pt-val">{{ patient.phone or 'N/A' }}</span></div>
+                <div class="pt-row"><span class="pt-lbl">Blood</span><span class="pt-val">{{ patient.blood_type or 'N/A' }}</span></div>
+                {% if patient.address %}
+                <div class="pt-row" style="grid-column:span 2;"><span class="pt-lbl">Address</span><span class="pt-val">{{ patient.address }}</span></div>
+                {% endif %}
+            </div>
+            <div class="pt-date">
+                <i class="fas fa-calendar-alt"></i>
+                <strong>Consultation:</strong>
+                {{ consultation.visit_date.strftime('%A, %d %B %Y | %I:%M %p') if consultation.visit_date else consultation.created_at.strftime('%A, %d %B %Y | %I:%M %p') if consultation.created_at else 'N/A' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ ALLERGY WARNING ════ -->
+    {% if allergy_warning %}
+    <div class="allergy-bar">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>KNOWN ALLERGY: {{ allergy_warning }}</span>
+    </div>
+    {% endif %}
+
+    <!-- ════ VITALS ════ -->
+    <div class="vitals-strip">
+        {% if patient.height %}
+        <div class="vital-card"><div class="v-label">Height</div><div class="v-val">{{ patient.height }}</div><div class="v-unit">cm</div></div>
+        {% endif %}
+        {% if consultation.vitals_weight or patient.weight %}
+        <div class="vital-card"><div class="v-label">Weight</div><div class="v-val">{{ consultation.vitals_weight or patient.weight }}</div><div class="v-unit">kg</div></div>
+        {% endif %}
+        {% set w = consultation.vitals_weight or patient.weight %}{% set h = patient.height %}
+        {% if w and h %}
+        <div class="vital-card"><div class="v-label">BMI</div><div class="v-val">{{ "%.1f"|format(w / ((h/100)**2)) }}</div><div class="v-unit">kg/m&sup2;</div></div>
+        {% endif %}
+        {% if consultation.vitals_temperature %}
+        <div class="vital-card"><div class="v-label">Temp</div><div class="v-val">{{ consultation.vitals_temperature }}</div><div class="v-unit">&deg;F</div></div>
+        {% endif %}
+        {% if consultation.vitals_bp_systolic and consultation.vitals_bp_diastolic %}
+        <div class="vital-card highlight"><div class="v-label">Blood Pressure</div><div class="v-val">{{ consultation.vitals_bp_systolic }}/{{ consultation.vitals_bp_diastolic }}</div><div class="v-unit">mmHg</div></div>
+        {% endif %}
+        {% if consultation.vitals_spo2 %}
+        <div class="vital-card"><div class="v-label">SpO2</div><div class="v-val">{{ consultation.vitals_spo2 }}</div><div class="v-unit">%</div></div>
+        {% endif %}
+        {% if consultation.vitals_pulse %}
+        <div class="vital-card"><div class="v-label">Pulse</div><div class="v-val">{{ consultation.vitals_pulse }}</div><div class="v-unit">bpm</div></div>
+        {% endif %}
+        {% if consultation.vitals_respiratory_rate %}
+        <div class="vital-card"><div class="v-label">Resp Rate</div><div class="v-val">{{ consultation.vitals_respiratory_rate }}</div><div class="v-unit">/min</div></div>
+        {% endif %}
+        {% if consultation.vitals_grbs %}
+        <div class="vital-card"><div class="v-label">GRBS</div><div class="v-val">{{ consultation.vitals_grbs }}</div><div class="v-unit">mg/dL</div></div>
+        {% endif %}
+    </div>
+
+    <!-- ════ CLINICAL SECTIONS ════ -->
+    <div class="clinical">
+        {% if consultation.chief_complaint %}
+        <div class="cl-section">
+            <div class="cl-title"><i class="fas fa-comment-medical"></i> Chief Complaints & HPI</div>
+            <div class="cl-body">{{ consultation.chief_complaint }}{% if consultation.present_condition %}
+{{ consultation.present_condition }}{% endif %}</div>
+        </div>
+        {% endif %}
+
+        {% if consultation.examination_notes %}
+        <div class="cl-section">
+            <div class="cl-title"><i class="fas fa-stethoscope"></i> Physical Examination</div>
+            <div class="cl-body">{{ consultation.examination_notes }}</div>
+        </div>
+        {% endif %}
+
+        {% if consultation.clinical_notes %}
+        <div class="cl-section">
+            <div class="cl-title"><i class="fas fa-file-alt"></i> Clinical Notes</div>
+            <div class="cl-body">{{ consultation.clinical_notes }}</div>
+        </div>
+        {% endif %}
+
+        {% if consultation.final_diagnosis or consultation.provisional_diagnosis %}
+        <div class="cl-section">
+            <div class="cl-title"><i class="fas fa-diagnoses"></i> Diagnosis</div>
+            <div class="cl-body" style="font-weight:700; color:#0c4a6e;">{{ consultation.final_diagnosis or consultation.provisional_diagnosis }}</div>
+        </div>
+        {% endif %}
+
+        {% if consultation.investigation_suggested or consultation.procedures_advised %}
+        <div class="cl-section">
+            <div class="cl-title"><i class="fas fa-vials"></i> Tests / Procedures Advised</div>
+            <div class="cl-body">{{ consultation.investigation_suggested or '' }}{% if consultation.procedures_advised %}{% if consultation.investigation_suggested %}
+{% endif %}{{ consultation.procedures_advised }}{% endif %}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ════ MEDICINES ════ -->
+    {% if medicines %}
+    <div class="rx-section">
+        <div class="rx-banner">
+            <div class="rx-symbol">Rx</div>
+            <div class="rx-banner-text">Medicines Prescribed</div>
+        </div>
+        <table class="med-tbl">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Medicine Name</th>
+                    <th>Dose</th>
+                    <th>Route</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in medicines %}
+                <tr>
+                    <td class="sno">{{ loop.index }}</td>
+                    <td>
+                        <span class="med-name">{{ m.name }}</span>
+                        {% if m.route %}<br><span class="med-route-tag">{{ m.route }}</span>{% endif %}
+                    </td>
+                    <td>{{ m.dosage or '—' }}</td>
+                    <td>{{ m.route or '—' }}</td>
+                    <td class="med-freq">{{ m.frequency or '—' }}</td>
+                    <td>{{ m.duration or '—' }}</td>
+                    <td>
+                        {% if m.food_relation %}<span class="med-food">{{ m.food_relation }}</span>{% endif %}
+                        {% if m.instruction %}<br><span style="font-size:10.5px;color:#475569;">{{ m.instruction }}</span>{% endif %}
+                        {% if m.special_instruction %}<br><span style="font-size:10.5px;color:#0369a1;font-weight:600;">{{ m.special_instruction }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- ════ INSTRUCTIONS / ADVICE ════ -->
+    {% if consultation.advice or consultation.diet_advice or consultation.rest_activity_advice or consultation.treatment_plan or consultation.followup_date %}
+    <div class="instr-section">
+        <div class="instr-box">
+            <div class="instr-title"><i class="fas fa-clipboard-list"></i> Instructions & Advice</div>
+            <ul class="instr-list">
+                {% if consultation.advice %}<li>{{ consultation.advice }}</li>{% endif %}
+                {% if consultation.diet_advice %}<li><strong>Diet:</strong> {{ consultation.diet_advice }}</li>{% endif %}
+                {% if consultation.rest_activity_advice %}<li><strong>Activity:</strong> {{ consultation.rest_activity_advice }}</li>{% endif %}
+                {% if consultation.treatment_plan %}<li><strong>Plan:</strong> {{ consultation.treatment_plan }}</li>{% endif %}
+            </ul>
+            {% if consultation.followup_date %}
+            <div class="followup-badge">
+                <i class="fas fa-calendar-check"></i>
+                Follow-up: {{ consultation.followup_date.strftime('%A, %d %B %Y') }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ════ SIGNATURE ════ -->
+    <div class="rx-footer">
+        <div class="stamp-area">
+            <div>Consultation #{{ consultation.id }}</div>
+            <div>{{ consultation.visit_date.strftime('%d %b %Y, %I:%M %p') if consultation.visit_date else '' }}</div>
+            <div style="margin-top:4px;font-size:9px;color:#cbd5e1;">This is a computer-generated prescription</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-name">Dr. {{ doctor_record.first_name }} {{ doctor_record.last_name }}</div>
+            <div class="sig-spec">{{ doctor_record.specialization or '' }}{% if doctor_record.license_number %} | Reg: {{ doctor_record.license_number }}{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- ════ BOTTOM BAR ════ -->
+    <div class="bottom-bar">
+        <strong>{{ doctor_record.hospital.name if doctor_record and doctor_record.hospital else 'CarePoint Hospital' }}</strong><br>
+        {% if doctor_record.clinic_address %}{{ doctor_record.clinic_address }}{% elif doctor_record.hospital and doctor_record.hospital.address %}{{ doctor_record.hospital.address }}{% else %}123 Health Avenue, Medical District{% endif %}<br>
+        {% if doctor_record.phone %}Tel: {{ doctor_record.phone }}{% endif %}
+        {% if doctor_record.hospital and doctor_record.hospital.contact_email %} | {{ doctor_record.hospital.contact_email }}{% endif %}
+    </div>
+</div>
+
+</body>
+</html>

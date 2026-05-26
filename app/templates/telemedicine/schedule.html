@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Schedule Teleconsultation — CarePoint{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/world-class.css') }}">{% endblock %}
+
+{% block content %}
+<div class="wc-page">
+    <div class="wc-page-header"><div class="wc-page-header-content"><div><h1 class="wc-title"><i class="fas fa-calendar-plus me-2"></i>Schedule Teleconsultation</h1></div><a href="{{ url_for('telemedicine.dashboard') }}" class="wc-btn wc-btn-outline"><i class="fas fa-arrow-left me-2"></i>Back</a></div></div>
+    <div class="wc-card"><div class="wc-card-body">
+        <form method="POST" class="wc-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-4">
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Patient</label><select name="patient_id" class="wc-select" required><option value="">Select</option>{% for p in patients %}<option value="{{ p.id }}">{{ p.full_name }} ({{ p.uhid }})</option>{% endfor %}</select></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Doctor</label><select name="doctor_id" class="wc-select" required><option value="">Select</option>{% for d in doctors %}<option value="{{ d.id }}">Dr. {{ d.first_name }} {{ d.last_name }} — {{ d.specialization }}</option>{% endfor %}</select></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Scheduled Time</label><input type="datetime-local" name="scheduled_time" class="wc-input" required></div></div>
+                <div class="col-md-6"><div class="wc-form-group"><label class="wc-label">Session Type</label><select name="session_type" class="wc-select"><option value="Video">Video Call</option><option value="Audio">Audio Call</option><option value="Chat">Chat</option></select></div></div>
+            </div>
+            <div class="wc-form-actions mt-4"><button type="submit" class="wc-btn wc-btn-primary wc-btn-lg"><i class="fas fa-calendar-check me-2"></i>Schedule</button></div>
+        </form>
+    </div></div>
+</div>
+{% endblock %}
