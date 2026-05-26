@@ -1,84 +1,355 @@
 {% extends "base.html" %}
+{% block title %}Doctor Analytics{% endblock %}
+
+{% set topbar_title = 'Analytics & Statistics' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow-lg mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-chart-bar"></i> Analytics & Statistics
-                    </h4>
+<style>
+    .analytics-card {
+        background: var(--cp-surface, #fff);
+        border: 1px solid var(--cp-border, #e2e8f0);
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .analytics-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+    .stat-card {
+        position: relative;
+        padding: 1.5rem;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .stat-card.sc-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .stat-card.sc-green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .stat-card.sc-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .stat-card.sc-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .stat-card.sc-red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .stat-card.sc-cyan::before { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+
+    .stat-icon {
+        width: 48px; height: 48px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--cp-text, #1e293b);
+    }
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--cp-text-muted, #94a3b8);
+        margin-top: 0.25rem;
+    }
+    .chart-container {
+        position: relative;
+        width: 100%;
+    }
+    .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--cp-text, #1e293b);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .section-title i {
+        color: var(--cp-accent, #3b82f6);
+    }
+    .diag-row {
+        display: flex;
+        align-items: center;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid var(--cp-border, #e2e8f0);
+    }
+    .diag-row:last-child { border-bottom: none; }
+    .diag-rank {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .diag-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--cp-glass-strong, #e2e8f0);
+        flex-grow: 1;
+        margin: 0 0.75rem;
+        overflow: hidden;
+    }
+    .diag-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.8s ease;
+    }
+    .lab-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--cp-border, #e2e8f0);
+    }
+    .lab-item:last-child { border-bottom: none; }
+
+    /* Override base card styles */
+    .card {
+        background: var(--cp-surface, #fff) !important;
+        border: 1px solid var(--cp-border, #e2e8f0) !important;
+        border-radius: 16px !important;
+    }
+    h1, h4, h5, h6, .fw-bold { color: var(--cp-text, #1e293b) !important; }
+    p, .text-muted { color: var(--cp-text-secondary, #64748b) !important; }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="fw-bold mb-1" style="font-size:1.75rem;">
+                <i class="fas fa-chart-bar me-2" style="color:#3b82f6;"></i>Analytics Dashboard
+            </h1>
+            <p class="text-muted mb-0">Performance metrics, patient insights, and clinical trends.</p>
+        </div>
+    </div>
+
+    <!-- ══════ Patient Statistics Cards ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-blue">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;">
+                        <i class="fas fa-users"></i>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <div class="card text-center border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-muted">Total Patients</h5>
-                                    <h2 class="text-primary">{{ total_patients }}</h2>
-                                </div>
-                            </div>
+                <div class="stat-value">{{ total_patients }}</div>
+                <div class="stat-label">Total Patients</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-green">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:#10b981;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ new_patients_month }}</div>
+                <div class="stat-label">New This Month</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-red">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(239,68,68,0.1);color:#ef4444;">
+                        <i class="fas fa-procedures"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ ip_patient_count }}</div>
+                <div class="stat-label">IP Patients</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-purple">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">
+                        <i class="fas fa-redo"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ followup_rate }}%</div>
+                <div class="stat-label">Follow-up Rate</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-cyan">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(6,182,212,0.1);color:#06b6d4;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ completed_appointments }}</div>
+                <div class="stat-label">Completed Appts</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="analytics-card stat-card sc-orange">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+                <div class="stat-value" style="font-size:1.5rem;">{{ "%.0f"|format(total_revenue) }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Revenue Chart + Appointment Trend ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-chart-area"></i> Monthly Revenue Trend</div>
+                <div class="chart-container" style="height: 280px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-chart-line"></i> Weekly Appointment Trend</div>
+                <div class="chart-container" style="height: 280px;">
+                    <canvas id="appointmentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Top Diagnoses + Lab Orders ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-notes-medical"></i> Top Diagnoses</div>
+                {% if top_diagnoses %}
+                    {% set max_diag = top_diagnoses[0][1] if top_diagnoses else 1 %}
+                    {% set diag_colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316','#14b8a6','#6366f1'] %}
+                    {% for diag_name, diag_count in top_diagnoses %}
+                    <div class="diag-row">
+                        <div class="diag-rank" style="background:{{ diag_colors[loop.index0 % 10] }}15;color:{{ diag_colors[loop.index0 % 10] }};">
+                            {{ loop.index }}
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card text-center border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-muted">Total Appointments</h5>
-                                    <h2 class="text-success">{{ total_appointments }}</h2>
-                                </div>
+                        <div class="ms-2 flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small fw-semibold" style="color:var(--cp-text);">{{ diag_name[:50] }}{% if diag_name|length > 50 %}...{% endif %}</span>
+                                <span class="badge rounded-pill" style="background:{{ diag_colors[loop.index0 % 10] }}15;color:{{ diag_colors[loop.index0 % 10] }};">
+                                    {{ diag_count }}
+                                </span>
                             </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card text-center border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-muted">Completed</h5>
-                                    <h2 class="text-info">{{ completed_appointments }}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <div class="card text-center border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-muted">Pending</h5>
-                                    <h2 class="text-warning">{{ pending_appointments }}</h2>
-                                </div>
+                            <div class="diag-bar">
+                                <div class="diag-bar-fill" style="width: {{ (diag_count / max_diag * 100)|int }}%; background: {{ diag_colors[loop.index0 % 10] }};"></div>
                             </div>
                         </div>
                     </div>
-
-                    <hr>
-
-                    <h5 class="mt-4 mb-3">Health Conditions Distribution</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Common Patient Conditions</h6>
-                            {% if conditions %}
-                                <ul class="list-group">
-                                    {% for condition, count in conditions %}
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            {{ condition }}
-                                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p class="text-muted">No data available</p>
-                            {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No diagnosis data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-flask"></i> Most Ordered Lab Tests</div>
+                {% if lab_test_counts %}
+                    {% for test_name, test_count in lab_test_counts %}
+                    <div class="lab-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded"
+                                  style="width:28px;height:28px;background:rgba(6,182,212,0.1);color:#06b6d4;font-size:0.75rem;">
+                                <i class="fas fa-vial"></i>
+                            </span>
+                            <span class="small fw-semibold" style="color:var(--cp-text);">{{ test_name }}</span>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Patient Demographics</h6>
-                            {% if age_stats %}
-                                <ul class="list-group">
-                                    <li class="list-group-item">
-                                        Average Age: <strong>{{ age_stats }}</strong>
-                                    </li>
-                                    <li class="list-group-item">
-                                        Total Registered: <strong>{{ total_patients }}</strong>
-                                    </li>
-                                </ul>
-                            {% else %}
-                                <p class="text-muted">No data available</p>
-                            {% endif %}
+                        <span class="badge bg-light text-dark">{{ test_count }} orders</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No lab order data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Patient Demographics + Risk Distribution ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-venus-mars"></i> Gender Distribution</div>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-birthday-cake"></i> Age Distribution</div>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-heartbeat"></i> Health Risk Profile</div>
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="riskChart"></canvas>
+                </div>
+                <div class="text-center mt-2">
+                    <span class="badge me-1" style="background:rgba(239,68,68,0.15);color:#ef4444;">High: {{ high_risk_count }}</span>
+                    <span class="badge me-1" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Medium: {{ medium_risk_count }}</span>
+                    <span class="badge" style="background:rgba(16,185,129,0.15);color:#10b981;">Low: {{ low_risk_count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Original conditions list + average age ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-clipboard-list"></i> Health Conditions Summary</div>
+                {% if conditions %}
+                    <ul class="list-group list-group-flush">
+                        {% for condition, count in conditions %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            style="background:transparent;border-color:var(--cp-border);color:var(--cp-text);">
+                            {{ condition }}
+                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No data available.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="analytics-card p-4">
+                <div class="section-title"><i class="fas fa-info-circle"></i> Quick Facts</div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:var(--cp-glass,#f8fafc);">
+                            <div class="text-muted small">Average Patient Age</div>
+                            <div class="fw-bold fs-4" style="color:var(--cp-text);">{{ age_stats or '--' }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:var(--cp-glass,#f8fafc);">
+                            <div class="text-muted small">Total Appointments</div>
+                            <div class="fw-bold fs-4" style="color:var(--cp-text);">{{ total_appointments }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:var(--cp-glass,#f8fafc);">
+                            <div class="text-muted small">Pending Appointments</div>
+                            <div class="fw-bold fs-4" style="color:#f59e0b;">{{ pending_appointments }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded" style="background:var(--cp-glass,#f8fafc);">
+                            <div class="text-muted small">Completion Rate</div>
+                            <div class="fw-bold fs-4" style="color:#10b981;">
+                                {{ "%.0f"|format(completed_appointments / total_appointments * 100) if total_appointments > 0 else 0 }}%
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -86,20 +357,178 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
+{% block extra_js %}
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Shared chart defaults
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--cp-text-muted').trim() || '#94a3b8';
+    const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--cp-border').trim() || '#e2e8f0';
+
+    Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+    Chart.defaults.color = textColor;
+
+    // ── Revenue Chart (Bar + Line) ──
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ revenue_labels | tojson }},
+                datasets: [{
+                    label: 'Revenue',
+                    data: {{ revenue_monthly | tojson }},
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return 'Rs. ' + ctx.raw.toLocaleString(); }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor + '40' },
+                        ticks: { callback: function(v) { return 'Rs.' + v; } }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
-    .card-header {
-        border-radius: 10px 10px 0 0;
-        padding: 1.5rem;
+
+    // ── Appointment Trend Chart ──
+    const apptCtx = document.getElementById('appointmentChart');
+    if (apptCtx) {
+        new Chart(apptCtx, {
+            type: 'line',
+            data: {
+                labels: {{ appt_trend_labels | tojson }},
+                datasets: [{
+                    label: 'Appointments',
+                    data: {{ appt_trend_data | tojson }},
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#8b5cf6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor + '40' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
-    .list-group-item {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        margin-bottom: 0.5rem;
+
+    // ── Gender Doughnut ──
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx) {
+        const genderData = {{ gender_counts | tojson }};
+        new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(genderData),
+                datasets: [{
+                    data: Object.values(genderData),
+                    backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16 } }
+                }
+            }
+        });
     }
-</style>
+
+    // ── Age Distribution Bar ──
+    const ageCtx = document.getElementById('ageChart');
+    if (ageCtx) {
+        const ageData = {{ age_groups | tojson }};
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(ageData),
+                datasets: [{
+                    label: 'Patients',
+                    data: Object.values(ageData),
+                    backgroundColor: ['#06b6d4', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: gridColor + '40' },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // ── Risk Doughnut ──
+    const riskCtx = document.getElementById('riskChart');
+    if (riskCtx) {
+        new Chart(riskCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                datasets: [{
+                    data: [{{ high_risk_count }}, {{ medium_risk_count }}, {{ low_risk_count }}],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16 } }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -40,8 +40,8 @@
     }
 
     .stat-card {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
         border-radius: 16px;
         padding: 20px;
         text-align: center;
@@ -55,7 +55,7 @@
 
     .stat-card .stat-label {
         font-size: 0.78rem;
-        color: #94a3b8;
+        color: var(--cp-text-secondary);
         margin-top: 4px;
     }
 
@@ -88,8 +88,8 @@
     }
 
     .patient-card {
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
         border-radius: 16px;
         padding: 20px;
         position: relative;
@@ -162,18 +162,18 @@
         align-items: center;
         gap: 8px;
         font-size: 0.82rem;
-        color: #94a3b8;
+        color: var(--cp-text-secondary);
         margin-bottom: 6px;
     }
 
     .pc-detail i {
         width: 16px;
         text-align: center;
-        color: #64748b;
+        color: var(--cp-text-muted);
     }
 
     .pc-detail strong {
-        color: #e2e8f0;
+        color: var(--cp-text);
     }
 
     .pc-actions {
@@ -222,8 +222,8 @@
     }
 
     .queue-table-wrap {
-        background: rgba(30, 41, 59, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
         border-radius: 16px;
         overflow: hidden;
     }
@@ -239,20 +239,20 @@
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: #64748b;
-        background: rgba(30, 41, 59, 0.6);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        color: var(--cp-text-muted);
+        background: var(--cp-surface);
+        border-bottom: 1px solid var(--cp-border);
     }
 
     .queue-table td {
         padding: 14px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--cp-glass);
         font-size: 0.85rem;
         vertical-align: middle;
     }
 
     .queue-table tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
+        background: var(--cp-glass);
     }
 
     .token-badge {
@@ -314,14 +314,14 @@
 
     .time-info {
         font-size: 0.78rem;
-        color: #94a3b8;
+        color: var(--cp-text-secondary);
     }
 
     /* Empty State */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
-        color: #64748b;
+        color: var(--cp-text-muted);
     }
 
     .empty-state i {
@@ -336,8 +336,8 @@
     }
 
     .walkin-form {
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--cp-surface);
+        border: 1px solid var(--cp-border);
         border-radius: 16px;
         padding: 24px;
     }
@@ -353,7 +353,7 @@
         display: block;
         font-size: 0.78rem;
         font-weight: 600;
-        color: #94a3b8;
+        color: var(--cp-text-secondary);
         margin-bottom: 4px;
     }
 
@@ -362,9 +362,9 @@
         width: 100%;
         padding: 10px 14px;
         border-radius: 10px;
-        background: rgba(15, 23, 42, 0.7);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        color: #f1f5f9;
+        background: var(--cp-glass);
+        border: 1px solid var(--cp-border);
+        color: var(--cp-text);
         font-size: 0.88rem;
         outline: none;
         transition: border-color 0.2s;
@@ -372,7 +372,7 @@
 
     .form-group input:focus,
     .form-group select:focus {
-        border-color: rgba(139, 92, 246, 0.4);
+        border-color: var(--cp-accent);
     }
 
     .btn-register {
@@ -414,7 +414,7 @@
         align-items: center;
         gap: 8px;
         font-size: 0.75rem;
-        color: #64748b;
+        color: var(--cp-text-muted);
         margin-bottom: 20px;
     }
 
@@ -470,6 +470,80 @@
         <div class="stat-card fade-card" style="animation-delay:0.2s">
             <div class="stat-num cancelled">{{ cancelled_by_doctor }}</div>
             <div class="stat-label">Cancelled by Doctor</div>
+        </div>
+    </div>
+
+    <!-- Queue Analytics Section -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:28px;">
+        <!-- Average Wait Time -->
+        <div class="stat-card fade-card" style="animation-delay:0.25s; text-align:left; padding:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(251,191,36,0.15);color:#fbbf24;font-size:1.2rem;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem;color:var(--cp-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Average Wait Time</div>
+                    <div style="font-size:1.8rem;font-weight:800;color:#fbbf24;">
+                        {% if avg_wait_time > 0 %}{{ avg_wait_time }} <span style="font-size:0.85rem;font-weight:600;">min</span>
+                        {% else %}<span style="font-size:1rem;color:var(--cp-text-secondary);">No data</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div style="font-size:0.78rem;color:var(--cp-text-secondary);">
+                From check-in to doctor acceptance
+            </div>
+        </div>
+
+        <!-- Today's Summary -->
+        <div class="stat-card fade-card" style="animation-delay:0.3s; text-align:left; padding:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,0.15);color:#34d399;font-size:1.2rem;">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div style="font-size:0.75rem;color:var(--cp-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Today's Summary</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div style="padding:8px 10px;border-radius:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);">
+                    <div style="font-size:1.2rem;font-weight:800;color:#34d399;">{{ total }}</div>
+                    <div style="font-size:0.7rem;color:var(--cp-text-secondary);">Total Patients</div>
+                </div>
+                <div style="padding:8px 10px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15);">
+                    <div style="font-size:1.2rem;font-weight:800;color:#fbbf24;">{{ currently_waiting }}</div>
+                    <div style="font-size:0.7rem;color:var(--cp-text-secondary);">Currently Waiting</div>
+                </div>
+                <div style="padding:8px 10px;border-radius:8px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.15);">
+                    <div style="font-size:1.2rem;font-weight:800;color:#a78bfa;">{{ avg_wait_time }} min</div>
+                    <div style="font-size:0.7rem;color:var(--cp-text-secondary);">Avg Wait</div>
+                </div>
+                <div style="padding:8px 10px;border-radius:8px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);">
+                    <div style="font-size:1.2rem;font-weight:800;color:#60a5fa;">{{ peak_hour }}</div>
+                    <div style="font-size:0.7rem;color:var(--cp-text-secondary);">Peak Hour ({{ peak_hour_count }})</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Queue Size by Doctor -->
+        <div class="stat-card fade-card" style="animation-delay:0.35s; text-align:left; padding:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,0.15);color:#a78bfa;font-size:1.2rem;">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div style="font-size:0.75rem;color:var(--cp-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Queue by Doctor</div>
+            </div>
+            {% if queue_by_doctor %}
+            <div style="max-height:140px;overflow-y:auto;">
+                {% for doc_name, count in queue_by_doctor.items() %}
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(148,163,184,0.08);">
+                    <span style="font-size:0.82rem;font-weight:600;color:var(--cp-text);">{{ doc_name }}</span>
+                    <span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">{{ count }} patient{{ 's' if count > 1 else '' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="font-size:0.82rem;color:var(--cp-text-secondary);text-align:center;padding:16px 0;">
+                <i class="fas fa-check-circle" style="color:#34d399;"></i> No patients in doctor queues
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -654,6 +728,10 @@
                     </button>
                     {% elif q.doctor_status == 'Completed' %}
                     <span class="status-pill completed" style="padding: 8px 16px;">✓ Consultation Complete</span>
+                    <a href="{{ url_for('ip_billing.create_bill_page', billing_type='OP', patient_id=q.patient.id) }}"
+                       style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;margin-left:6px;">
+                        <i class="fas fa-file-invoice-dollar"></i> OP Bill
+                    </a>
                     {% elif q.doctor_status == 'Cancelled' %}
                     <span class="status-pill cancelled" style="padding: 8px 16px;">✗ Cancelled</span>
                     {% endif %}
@@ -692,6 +770,7 @@
                         <th>Reception</th>
                         <th>Doctor Status</th>
                         <th>Overall</th>
+                        <th>Billing</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -750,6 +829,18 @@
                             <span class="status-pill accepted-doctor">In Consultation</span>
                             {% else %}
                             <span class="status-pill waiting">{{ q.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            {% if q.doctor_status == 'Completed' or q.status == 'Completed' %}
+                            <a href="{{ url_for('ip_billing.create_bill_page', billing_type='OP', patient_id=q.patient.id) }}"
+                               style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;background:#059669;color:#fff;border-radius:6px;font-weight:600;font-size:0.85rem;text-decoration:none;">
+                                <i class="fas fa-rupee-sign"></i> OP Bill
+                            </a>
+                            {% elif q.reception_status == 'Accepted' %}
+                            <span style="color:#94a3b8;font-size:0.82rem;">Waiting</span>
+                            {% else %}
+                            <span style="color:#64748b;font-size:0.82rem;">—</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -812,7 +903,11 @@
             <span style="font-size:0.82rem;color:#94a3b8;font-weight:600;">Visit type</span>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#e2e8f0;">
                 <input type="radio" name="wk_visit" value="consult" checked onchange="toggleVisitType()">
-                Doctor consultation
+                OP - Doctor Consultation
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#e2e8f0;">
+                <input type="radio" name="wk_visit" value="ip" onchange="toggleVisitType()">
+                <span style="color:#60a5fa;font-weight:600;">IP - Admission</span>
             </label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#e2e8f0;">
                 <input type="radio" name="wk_visit" value="lab" onchange="toggleVisitType()">
@@ -1034,8 +1129,21 @@
             reason: reason
         }).then(d => {
             if (d.success) {
-                alert('✅ ' + d.message + (uhid ? ` | UHID: ${uhid.trim()}` : ''));
-                location.reload();
+                if (d.qr_token) {
+                    showQrModal({
+                        patient_name: d.patient_name || patientName,
+                        uhid: d.uhid || uhid,
+                        token: d.token,
+                        visit_type: 'OP',
+                        qr_image_url: d.qr_image_url,
+                        qr_visit_url: d.qr_visit_url,
+                        qr_token: d.qr_token,
+                        phone: d.phone || '',
+                    });
+                } else {
+                    alert('✅ ' + d.message);
+                    location.reload();
+                }
             } else {
                 alert('❌ ' + (d.error || 'Failed'));
             }
@@ -1143,11 +1251,19 @@
 
     // ═══ WALK-IN REGISTRATION WITH DUPLICATE DETECTION ═══
     function toggleVisitType() {
-        const lab = document.querySelector('input[name="wk_visit"]:checked')?.value === 'lab';
+        const vtype = document.querySelector('input[name="wk_visit"]:checked')?.value;
+        const lab = vtype === 'lab';
+        const ip = vtype === 'ip';
         document.getElementById('wk_lab_tests_wrap').style.display = lab ? 'block' : 'none';
         document.getElementById('wk_doctor_wrap').style.display = lab ? 'none' : 'block';
         document.getElementById('wk_reason_wrap').style.display = lab ? 'none' : 'block';
-        document.getElementById('wk_btn_label').textContent = lab ? 'Create lab orders' : 'Register & Generate Token';
+        if (ip) {
+            document.getElementById('wk_btn_label').textContent = 'Register & Admit as IP';
+        } else if (lab) {
+            document.getElementById('wk_btn_label').textContent = 'Create lab orders';
+        } else {
+            document.getElementById('wk_btn_label').textContent = 'Register & Generate Token';
+        }
     }
 
     function hideDuplicateWarning() {
@@ -1192,7 +1308,41 @@
         const firstName = document.getElementById('wk_first_name').value.trim();
         if (!firstName) { alert('First name is required'); return; }
 
-        const labVisit = document.querySelector('input[name="wk_visit"]:checked')?.value === 'lab';
+        const visitType = document.querySelector('input[name="wk_visit"]:checked')?.value;
+
+        // IP Admission — register patient first then redirect to IP admission page
+        if (visitType === 'ip') {
+            const doctorId = document.getElementById('wk_doctor').value;
+            if (!doctorId) { alert('Please select a doctor for IP admission'); return; }
+
+            // First register as walk-in to get patient_id, then redirect to admit page
+            apiCall('/reception/api/register-walkin', {
+                first_name: firstName,
+                last_name: document.getElementById('wk_last_name').value.trim(),
+                phone: document.getElementById('wk_phone').value.trim(),
+                age: document.getElementById('wk_age').value || null,
+                gender: document.getElementById('wk_gender').value,
+                doctor_id: doctorId,
+                reason: 'IP Admission',
+                force_create: true
+            }).then(d => {
+                if (d.success && d.patient_id) {
+                    // Redirect to IP admission page with patient pre-selected
+                    window.location.href = `/ip-billing/admit?patient_id=${d.patient_id}&doctor_id=${doctorId}`;
+                } else if (d.success && d.uhid) {
+                    // Try to find patient by UHID
+                    window.location.href = `/ip-billing/admit`;
+                } else {
+                    alert('Patient registered. Go to IP Billing > IP Admission to complete admission.');
+                    window.location.href = '/ip-billing/admit';
+                }
+            }).catch(() => {
+                window.location.href = '/ip-billing/admit';
+            });
+            return;
+        }
+
+        const labVisit = visitType === 'lab';
         if (labVisit) {
             const tests = Array.from(document.querySelectorAll('.lab-test-cb:checked')).map(c => c.value);
             if (!tests.length) { alert('Select at least one laboratory test'); return; }
@@ -1256,11 +1406,22 @@
             reason: document.getElementById('wk_reason').value.trim()
         }).then(d => {
             if (d.success) {
-                let msg = '✅ ' + d.message;
-                if (d.uhid) msg += '\nUHID: ' + d.uhid;
-                alert(msg);
                 sessionStorage.removeItem('rcp_walkin_form');
-                location.reload();
+                if (d.qr_token) {
+                    showQrModal({
+                        patient_name: d.patient_name || firstName,
+                        uhid: d.uhid || '',
+                        token: d.token,
+                        visit_type: 'OP',
+                        qr_image_url: d.qr_image_url,
+                        qr_visit_url: d.qr_visit_url,
+                        qr_token: d.qr_token,
+                        phone: d.phone || '',
+                    });
+                } else {
+                    alert('✅ ' + d.message);
+                    location.reload();
+                }
             } else {
                 alert('❌ ' + (d.error || 'Failed'));
             }
@@ -1403,5 +1564,122 @@
             startRefresh();
         }
     })();
+
+    // ═══ QR CODE MODAL ═══
+    function showQrModal(data) {
+        const modal = document.getElementById('qrModal');
+        if (!modal) return;
+
+        document.getElementById('qrModalPatientName').textContent = data.patient_name || '';
+        document.getElementById('qrModalUhid').textContent = data.uhid || '';
+        document.getElementById('qrModalToken').textContent = data.token || '';
+        document.getElementById('qrModalVisitType').textContent = data.visit_type || 'OP';
+
+        const qrImg = document.getElementById('qrModalImage');
+        if (data.qr_image_url) {
+            qrImg.src = data.qr_image_url;
+            qrImg.style.display = 'block';
+        } else {
+            qrImg.style.display = 'none';
+        }
+
+        const qrLink = document.getElementById('qrModalLink');
+        qrLink.href = data.qr_visit_url || '#';
+        qrLink.textContent = data.qr_visit_url || '';
+
+        // WhatsApp button
+        const waBtn = document.getElementById('qrWhatsappBtn');
+        if (data.phone && data.qr_visit_url) {
+            const cleanPhone = (data.phone || '').replace(/[\s\-\+]/g, '');
+            const waMsg = encodeURIComponent(
+                `Hello ${data.patient_name || 'Patient'}, your hospital visit QR is ready. ` +
+                `Please show this at the hospital.\n\n${data.qr_visit_url}`
+            );
+            waBtn.href = `https://wa.me/${cleanPhone}?text=${waMsg}`;
+            waBtn.style.display = 'inline-flex';
+        } else {
+            waBtn.style.display = 'none';
+        }
+
+        // Download button
+        const dlBtn = document.getElementById('qrDownloadBtn');
+        if (data.qr_token) {
+            dlBtn.href = `/qr/download/${data.qr_token}`;
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeQrModal() {
+        document.getElementById('qrModal').style.display = 'none';
+        location.reload();
+    }
+
+    function printQr() {
+        const printContent = document.getElementById('qrPrintArea').innerHTML;
+        const win = window.open('', '_blank', 'width=400,height=600');
+        win.document.write(`<!DOCTYPE html><html><head><title>Visit QR</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-align: center; padding: 30px; }
+            h2 { margin-bottom: 4px; }
+            .meta { color: #666; font-size: 0.9rem; margin-bottom: 16px; }
+            img { width: 200px; height: 200px; margin: 16px 0; }
+            .info { font-size: 0.95rem; margin: 6px 0; }
+            .footer { margin-top: 20px; font-size: 0.75rem; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+        </style></head><body>${printContent}</body></html>`);
+        win.document.close();
+        win.onload = function() { win.print(); win.close(); };
+    }
 </script>
+
+<!-- QR Modal Overlay -->
+<div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+    <div style="background:var(--cp-surface, #fff); border-radius:20px; padding:28px; max-width:420px; width:90%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); position:relative;">
+        <button onclick="closeQrModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--cp-text-secondary, #64748b);">&times;</button>
+
+        <div id="qrPrintArea">
+            <h2 style="font-size:1.1rem; text-align:center; margin-bottom:2px;">
+                <i class="fas fa-hospital" style="color:#6366f1;"></i> CarePoint Hospital
+            </h2>
+            <div style="text-align:center; color:var(--cp-text-secondary, #64748b); font-size:0.82rem; margin-bottom:14px;">Patient Visit QR Code</div>
+
+            <div style="text-align:center;">
+                <img id="qrModalImage" src="" alt="QR Code" style="width:180px; height:180px; border-radius:12px; border:2px solid #e2e8f0;">
+            </div>
+
+            <div style="text-align:center; margin-top:14px;">
+                <div class="info" style="font-size:1rem; font-weight:700;"><span id="qrModalPatientName"></span></div>
+                <div class="info" style="font-size:0.85rem; color:var(--cp-text-secondary, #64748b);">
+                    UHID: <strong id="qrModalUhid"></strong> &bull;
+                    Token: <strong id="qrModalToken"></strong> &bull;
+                    <span id="qrModalVisitType"></span>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:8px;">
+                <a id="qrModalLink" href="#" target="_blank" style="font-size:0.75rem; color:#6366f1; word-break:break-all;"></a>
+            </div>
+
+            <div style="text-align:center; font-size:0.7rem; color:#94a3b8; margin-top:12px; border-top:1px solid var(--cp-border, #e2e8f0); padding-top:8px;">
+                Generated by CarePoint Hospital Management System
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:16px;">
+            <button onclick="printQr()" style="padding:9px 16px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-weight:600; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a id="qrDownloadBtn" href="#" style="padding:9px 16px; background:#059669; color:#fff; border:none; border-radius:10px; font-weight:600; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px; text-decoration:none;">
+                <i class="fas fa-download"></i> Download
+            </a>
+            <a id="qrWhatsappBtn" href="#" target="_blank" style="padding:9px 16px; background:#25D366; color:#fff; border:none; border-radius:10px; font-weight:600; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px; text-decoration:none;">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <button onclick="closeQrModal()" style="padding:9px 16px; background:var(--cp-surface-hover, #f1f5f9); color:var(--cp-text, #334155); border:1px solid var(--cp-border, #e2e8f0); border-radius:10px; font-weight:600; font-size:0.82rem; cursor:pointer;">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

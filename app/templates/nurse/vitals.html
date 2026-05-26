@@ -65,9 +65,40 @@
                             </div>
                         </div>
 
+                        <!-- Pain Assessment Scale -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Pain Assessment (0-10)</label>
+                            <div class="d-flex flex-wrap gap-1 justify-content-between pain-scale-container">
+                                {% set pain_faces = [
+                                    ('0', '😊', 'No Pain', '#22c55e'),
+                                    ('1', '🙂', 'Minimal', '#4ade80'),
+                                    ('2', '🙂', 'Mild', '#86efac'),
+                                    ('3', '😐', 'Uncomfortable', '#fde047'),
+                                    ('4', '😐', 'Moderate', '#facc15'),
+                                    ('5', '😟', 'Distracting', '#fb923c'),
+                                    ('6', '😟', 'Distressing', '#f97316'),
+                                    ('7', '😣', 'Unmanageable', '#ef4444'),
+                                    ('8', '😖', 'Intense', '#dc2626'),
+                                    ('9', '😭', 'Severe', '#b91c1c'),
+                                    ('10', '😱', 'Worst', '#991b1b')
+                                ] %}
+                                {% for val, face, label, color in pain_faces %}
+                                <label class="pain-option text-center" style="cursor:pointer; flex: 0 0 calc(9% - 2px); min-width: 40px;">
+                                    <input type="radio" name="pain_score" value="{{ val }}" class="d-none pain-radio">
+                                    <div class="pain-face rounded-3 p-1 border" style="transition: all 0.2s; font-size: 1.3rem;" data-color="{{ color }}">
+                                        {{ face }}
+                                    </div>
+                                    <div class="pain-label" style="font-size: 0.6rem; color: {{ color }}; font-weight: 700;">{{ val }}</div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            <div id="painDescription" class="small text-muted mt-1" style="min-height: 1.2em;"></div>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label small">Remarks</label>
-                            <textarea name="notes" class="form-control" rows="2" placeholder="Additional observations..."></textarea>
+                            <textarea name="notes" id="notesField" class="form-control" rows="2" placeholder="Additional observations..."></textarea>
+                            <input type="hidden" name="pain_score_hidden" id="painScoreHidden" value="">
                         </div>
 
                         <button type="submit" class="btn btn-success w-100"><i class="fas fa-save me-2"></i>Save Vitals</button>
@@ -111,6 +142,7 @@
                                     <th>SpO2</th>
                                     <th>RR</th>
                                     <th>Fasting Glucose</th>
+                                    <th>Pain</th>
                                     <th>Alerts</th>
                                 </tr>
                             </thead>
@@ -124,6 +156,20 @@
                                     <td class="{% if v.has_alerts and 'low_oxygen' in v.has_alerts %}text-danger fw-bold{% endif %}">{{ v.oxygen_level }}%</td>
                                     <td>{{ v.respiratory_rate or '—' }}</td>
                                     <td>{{ v.blood_sugar or '—' }}</td>
+                                    <td>
+                                        {% if v.notes and v.notes.startswith('Pain: ') %}
+                                            {% set pain_val = v.notes.split('/10')[0].replace('Pain: ', '') %}
+                                            {% if pain_val|int >= 7 %}
+                                                <span class="badge bg-danger">{{ pain_val }}/10</span>
+                                            {% elif pain_val|int >= 4 %}
+                                                <span class="badge bg-warning text-dark">{{ pain_val }}/10</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ pain_val }}/10</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% for a in v.has_alerts %}
                                         <span class="badge bg-danger" style="font-size:0.65rem;">{{ a }}</span>
@@ -148,8 +194,70 @@
 </div>
 
 {% block extra_js %}
+<style>
+    .pain-option .pain-face {
+        border-color: rgba(148,163,184,0.2) !important;
+        background: rgba(30,41,59,0.3);
+    }
+    .pain-option .pain-face:hover {
+        transform: scale(1.15);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .pain-radio:checked + .pain-face {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 3px currentColor, 0 4px 12px rgba(0,0,0,0.2);
+        background: rgba(255,255,255,0.1);
+    }
+</style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Pain scale logic
+    const painLabels = {
+        '0': 'No Pain — Patient is comfortable',
+        '1': 'Minimal — Barely noticeable',
+        '2': 'Mild — Minor discomfort',
+        '3': 'Uncomfortable — Tolerable pain',
+        '4': 'Moderate — Distracting but manageable',
+        '5': 'Distracting — Cannot ignore, interferes with tasks',
+        '6': 'Distressing — Interferes with concentration',
+        '7': 'Unmanageable — Difficult to function',
+        '8': 'Intense — Physical activity severely limited',
+        '9': 'Severe — Crying out, near unbearable',
+        '10': 'Worst Possible — Unbearable, emergency'
+    };
+
+    document.querySelectorAll('.pain-radio').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            var val = this.value;
+            var desc = document.getElementById('painDescription');
+            var hidden = document.getElementById('painScoreHidden');
+            if (desc) desc.textContent = painLabels[val] || '';
+            if (hidden) hidden.value = val;
+
+            // Update visual selection
+            document.querySelectorAll('.pain-face').forEach(function(face) {
+                face.style.color = '';
+            });
+            var selectedFace = this.nextElementSibling;
+            if (selectedFace) {
+                selectedFace.style.color = selectedFace.dataset.color;
+            }
+        });
+    });
+
+    // Prepend pain score to notes on form submit
+    var vitalsForm = document.querySelector('form[action*="vitals_add"]');
+    if (vitalsForm) {
+        vitalsForm.addEventListener('submit', function() {
+            var painVal = document.getElementById('painScoreHidden').value;
+            var notesField = document.getElementById('notesField');
+            if (painVal !== '' && notesField) {
+                var existingNotes = notesField.value.trim();
+                notesField.value = 'Pain: ' + painVal + '/10.' + (existingNotes ? ' ' + existingNotes : '');
+            }
+        });
+    }
+
     const searchInput = document.getElementById('patientSearch');
     const selectEl = document.getElementById('patientSelect');
     const resultsDiv = document.getElementById('searchResults');

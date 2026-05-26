@@ -9,7 +9,7 @@
     href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 <style>
-    :root {
+    :root, [data-theme="dark"] {
         --bg: #030712;
         --pri: #818cf8;
         --acc: #34d399;
@@ -17,6 +17,15 @@
         --text: #f8fafc;
         --dim: #94a3b8;
         --glass: rgba(15, 23, 42, .7)
+    }
+    [data-theme="light"] {
+        --bg: #f1f5f9;
+        --pri: #4f46e5;
+        --acc: #059669;
+        --border: rgba(0, 0, 0, .08);
+        --text: #0f172a;
+        --dim: #64748b;
+        --glass: rgba(255, 255, 255, .85)
     }
 
     body {

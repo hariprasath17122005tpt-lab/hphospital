@@ -78,7 +78,8 @@ body {
     font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: #050508;
     color: #ffffff;
-    line-height: 1.6;
+    font-size: 17px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -1490,3 +1491,85 @@ div[style*="background: #f9"] {
 .premium-card .text-dark {
     color: #1e293b !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL FONT SIZE & READABILITY BOOST
+   Applied site-wide for better visibility on all screens
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Base text size */
+html { font-size: 17px; }
+
+/* All paragraphs and text */
+p, span, div, li, td, th, label, a { font-size: inherit; }
+
+/* Headings */
+h1 { font-size: 2rem !important; }
+h2 { font-size: 1.65rem !important; }
+h3 { font-size: 1.4rem !important; }
+h4 { font-size: 1.2rem !important; }
+h5 { font-size: 1.1rem !important; }
+h6 { font-size: 1rem !important; }
+
+/* Forms */
+input, select, textarea, .form-control, .form-select {
+    font-size: 1rem !important;
+    padding: 10px 14px !important;
+}
+input[type="checkbox"], input[type="radio"] {
+    width: 18px !important;
+    height: 18px !important;
+    padding: 0 !important;
+}
+label, .form-label { font-size: 0.95rem !important; }
+
+/* Tables */
+table th { font-size: 0.92rem !important; padding: 10px 12px !important; }
+table td { font-size: 0.95rem !important; padding: 10px 12px !important; }
+.table-sm th { font-size: 0.88rem !important; padding: 8px 10px !important; }
+.table-sm td { font-size: 0.9rem !important; padding: 8px 10px !important; }
+
+/* Buttons */
+.btn, button { font-size: 0.95rem !important; padding: 9px 18px !important; }
+.btn-sm { font-size: 0.88rem !important; padding: 6px 14px !important; }
+.btn-lg { font-size: 1.1rem !important; padding: 12px 28px !important; }
+
+/* Badges */
+.badge { font-size: 0.82rem !important; padding: 5px 10px !important; }
+
+/* Cards */
+.card-header { font-size: 1.05rem !important; }
+.card-body { font-size: 0.98rem !important; }
+.card-title { font-size: 1.15rem !important; }
+
+/* Bootstrap modals */
+.modal-title { font-size: 1.2rem !important; }
+.modal-body { font-size: 0.98rem !important; }
+
+/* Alerts & Toasts */
+.alert { font-size: 0.98rem !important; }
+.toast-body { font-size: 0.95rem !important; }
+
+/* Navigation & Sidebar */
+.sidebar-link, .nav-link { font-size: 0.95rem !important; }
+.sidebar-section-label { font-size: 0.78rem !important; }
+
+/* Breadcrumbs & small text */
+.breadcrumb-item { font-size: 0.88rem !important; }
+small, .small, .text-sm { font-size: 0.88rem !important; }
+
+/* Make text-muted more readable */
+.text-muted { opacity: 0.75 !important; }
+
+/* Stat cards */
+.stat-num, .stat-card .stat-num { font-size: 2.2rem !important; }
+.stat-label, .stat-card .stat-label { font-size: 0.88rem !important; }
+
+/* Patient queue items */
+.patient-card, .queue-item { font-size: 0.95rem !important; }
+
+/* Dropdown menus */
+.dropdown-item { font-size: 0.95rem !important; padding: 8px 16px !important; }
+
+/* Pagination */
+.page-link { font-size: 0.95rem !important; }

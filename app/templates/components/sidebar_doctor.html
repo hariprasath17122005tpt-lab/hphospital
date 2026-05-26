@@ -32,6 +32,20 @@
             ">NEW</span>
         </a>
 
+        <a href="{{ url_for('doctor.portal') }}?mode=ip"
+            class="sidebar-link {% if request.endpoint == 'doctor.portal' and request.args.get('mode') == 'ip' or request.endpoint == 'doctor.ip_patient_detail' %}active{% endif %}"
+            style="position:relative;">
+            <i class="fas fa-bed" style="color:#67e8f9;"></i>
+            IP Patients
+            <span id="sidebarIPBadge" style="
+                position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                background:linear-gradient(135deg,#06b6d4,#0891b2);
+                color:#fff; font-size:.6rem; font-weight:800;
+                padding:2px 7px; border-radius:50px;
+                display:none;
+            ">0</span>
+        </a>
+
         <a href="{{ url_for('reception.dashboard') }}"
             class="sidebar-link {% if request.endpoint and request.endpoint.startswith('reception.') %}active{% endif %}">
             <i class="fas fa-clipboard-list"></i>
@@ -48,6 +62,12 @@
             class="sidebar-link {% if request.endpoint in ['doctor.patient_list', 'doctor.view_patient'] %}active{% endif %}">
             <i class="fas fa-users"></i>
             Patients
+        </a>
+
+        <a href="{{ url_for('qr.scan_page') }}"
+            class="sidebar-link {% if request.endpoint == 'qr.scan_page' %}active{% endif %}">
+            <i class="fas fa-qrcode"></i>
+            Scan QR Code
         </a>
 
         <a href="{{ url_for('doctor.appointments') }}"
@@ -88,18 +108,58 @@
             Analytics
         </a>
 
-        <span class="sidebar-section-label">Operations</span>
+        <span class="sidebar-section-label">IP & Billing</span>
 
-        <a href="{{ url_for('lab.dashboard') }}"
-            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('lab.') %}active{% endif %}">
-            <i class="fas fa-microscope"></i>
-            Lab Dashboard
+        <a href="{{ url_for('ip_billing.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('ip_billing.dashboard') %}active{% endif %}">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Billing Dashboard
         </a>
 
-        <a href="{{ url_for('pharmacy_ops.dashboard') }}"
-            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('pharmacy_ops.') %}active{% endif %}">
-            <i class="fas fa-prescription-bottle-alt"></i>
-            Pharmacy Dashboard
+        <a href="{{ url_for('ip_billing.admit_patient') }}"
+            class="sidebar-link {% if request.endpoint == 'ip_billing.admit_patient' %}active{% endif %}">
+            <i class="fas fa-bed"></i>
+            IP Admission
+        </a>
+
+        <span class="sidebar-section-label">AI Tools</span>
+
+        <a href="{{ url_for('doctor.ai_assistant') }}"
+            class="sidebar-link {% if request.endpoint == 'doctor.ai_assistant' %}active{% endif %}">
+            <i class="fas fa-robot"></i>
+            AI Assistant
+        </a>
+
+        <span class="sidebar-section-label">Advanced</span>
+
+        <a href="{{ url_for('ot.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('ot.') %}active{% endif %}">
+            <i class="fas fa-procedures"></i>
+            OT Management
+        </a>
+
+        <a href="{{ url_for('emergency.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('emergency.') %}active{% endif %}">
+            <i class="fas fa-ambulance" style="color:#ef4444;"></i>
+            Emergency
+        </a>
+
+        <a href="{{ url_for('insurance.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('insurance.') %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i>
+            Insurance/TPA
+        </a>
+
+        <a href="{{ url_for('telemedicine.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('telemedicine.') %}active{% endif %}">
+            <i class="fas fa-video" style="color:#8b5cf6;"></i>
+            Telemedicine
+        </a>
+
+        <a href="{{ url_for('feedback_module.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('feedback_module.') %}active{% endif %}">
+            <i class="fas fa-star" style="color:#f59e0b;"></i>
+            Feedback
         </a>
 
         <span class="sidebar-section-label">Account</span>

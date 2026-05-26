@@ -42,7 +42,7 @@ class MedicalImageAnalyzer:
             self.model = BlipForQuestionAnswering.from_pretrained(self.model_name).to(self.device)
             self.model.eval()
             self.model_loaded = True
-            print("✓ BLIP Model loaded successfully!")
+            print("BLIP Model loaded successfully!")
         except Exception as e:
             print(f"Error loading model: {e}")
             self.model_loaded = False

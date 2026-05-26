@@ -6,11 +6,9 @@
 
 {% block content %}
 <style>
-    /* Host Dashboard - Dark Theme */
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
+    /* Host Dashboard - Theme-Aware */
     .container-fluid {
-        color: #fff;
+        color: var(--cp-text);
     }
 
     .text-dark,
@@ -18,56 +16,58 @@
     h2,
     h5,
     .fw-bold {
-        color: #fff !important;
+        color: var(--cp-text) !important;
     }
 
     .text-secondary,
     .text-muted,
     p {
-        color: rgba(255, 255, 255, 0.6) !important;
+        color: var(--cp-text-secondary) !important;
     }
 
     .card {
-        background: rgba(20, 20, 30, 0.9) !important;
+        background: var(--cp-surface) !important;
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid var(--cp-border) !important;
+        box-shadow: var(--cp-card-shadow) !important;
+        transition: all 0.3s var(--cp-ease);
     }
 
     .card:hover {
-        border-color: rgba(99, 102, 241, 0.4) !important;
+        border-color: var(--cp-border-active) !important;
         transform: translateY(-4px);
+        box-shadow: var(--cp-card-shadow-hover) !important;
     }
 
     .card-header {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: var(--cp-glass) !important;
+        border-bottom: 1px solid var(--cp-border) !important;
     }
 
     .card-header h5 {
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: var(--cp-heading-font);
         letter-spacing: -0.02em;
     }
 
     /* Icon boxes */
     .icon-box.primary {
-        background: rgba(99, 102, 241, 0.2) !important;
-        color: #818cf8 !important;
-        border: 1px solid rgba(99, 102, 241, 0.3);
+        background: var(--cp-accent-soft) !important;
+        color: var(--cp-accent) !important;
+        border: 1px solid var(--cp-border-active);
     }
 
     /* Tables */
     .table {
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--cp-text-secondary);
     }
 
     .table thead {
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: var(--cp-glass) !important;
     }
 
     .table th {
-        color: rgba(255, 255, 255, 0.5) !important;
-        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: var(--cp-text-muted) !important;
+        border-color: var(--cp-border) !important;
         font-weight: 700;
         text-transform: uppercase;
         font-size: 0.7rem;
@@ -75,63 +75,64 @@
     }
 
     .table td {
-        border-color: rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
+        border-color: var(--cp-border) !important;
+        color: var(--cp-text-secondary) !important;
     }
 
     .table tbody {
-        background: rgba(15, 15, 25, 0.95) !important;
+        background: transparent !important;
     }
 
     .table tbody tr {
-        background: rgba(15, 15, 25, 0.95) !important;
+        background: transparent !important;
+        transition: background 0.2s;
     }
 
     .table tbody .fw-bold {
-        color: #fff !important;
+        color: var(--cp-text) !important;
     }
 
     .table tbody .text-muted,
     .table tbody small {
-        color: rgba(255, 255, 255, 0.5) !important;
+        color: var(--cp-text-muted) !important;
     }
 
     .table-hover tbody tr:hover {
-        background: rgba(30, 30, 45, 0.95) !important;
+        background: var(--cp-glass-strong) !important;
     }
 
     .bg-light {
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: var(--cp-glass) !important;
     }
 
-    /* Badges */
+    /* Badges - these use accent colors, keep as-is */
     .badge.bg-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        background: var(--cp-danger) !important;
     }
 
     .badge.bg-success {
-        background: linear-gradient(135deg, #10b981, #059669) !important;
+        background: var(--cp-success) !important;
     }
 
     .badge.bg-warning {
-        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        background: var(--cp-warning) !important;
     }
 
     .badge.bg-secondary {
-        background: rgba(255, 255, 255, 0.2) !important;
+        background: var(--cp-glass-strong) !important;
+        color: var(--cp-text-muted) !important;
     }
 
     /* Buttons */
     .btn-primary {
-        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        background: var(--cp-gradient-1) !important;
         border: none !important;
-        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 4px 20px var(--cp-accent-glow);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 8px 30px var(--cp-accent-glow);
     }
 
     .btn-success {
@@ -141,36 +142,101 @@
     }
 
     .btn-dark {
-        background: linear-gradient(135deg, #1f2937, #111827) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--cp-surface) !important;
+        border: 1px solid var(--cp-border) !important;
+        color: var(--cp-text) !important;
     }
 
     .btn-outline-secondary {
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        color: rgba(255, 255, 255, 0.6) !important;
+        border-color: var(--cp-border) !important;
+        color: var(--cp-text-secondary) !important;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--cp-glass-strong) !important;
+        color: var(--cp-text) !important;
     }
 
     /* Stats */
     h2.fw-bold {
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: var(--cp-heading-font);
         font-size: 2.25rem !important;
     }
 
     /* Alert */
     .alert-danger {
-        background: rgba(239, 68, 68, 0.15) !important;
-        border: 1px solid rgba(239, 68, 68, 0.3) !important;
-        color: #f87171 !important;
+        background: var(--cp-danger-bg) !important;
+        border: 1px solid rgba(220, 38, 38, 0.3) !important;
+        color: var(--cp-danger) !important;
     }
 
     .alert-danger h5 {
-        color: #f87171 !important;
+        color: var(--cp-danger) !important;
     }
 
     /* Links */
     a.btn {
-        transition: all 0.3s ease;
+        transition: all 0.3s var(--cp-ease);
     }
+
+    /* Revenue cards */
+    .revenue-card {
+        position: relative;
+        overflow: hidden;
+    }
+    .revenue-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+    }
+    .revenue-card.rev-today::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .revenue-card.rev-month::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .revenue-card.rev-outstanding::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+    /* Occupancy bar */
+    .occupancy-bar-bg {
+        height: 10px;
+        border-radius: 5px;
+        background: var(--cp-glass-strong);
+        overflow: hidden;
+    }
+    .occupancy-bar-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 1s ease;
+    }
+
+    /* Department mini-cards */
+    .dept-mini-card {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.2s ease;
+        cursor: default;
+    }
+    .dept-mini-card:hover {
+        transform: translateX(4px);
+    }
+    .dept-mini-icon {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* Staff role badges */
+    .staff-role-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--cp-border);
+    }
+    .staff-role-row:last-child { border-bottom: none; }
 </style>
 <div class="container-fluid py-4">
     <!-- Header -->
@@ -190,7 +256,7 @@
     </div>
 
     <!-- Alert Banners -->
-    {% if settings.emergency_mode %}
+    {% if settings and settings.emergency_mode %}
     <div class="alert alert-danger shadow border-0 mb-4 d-flex align-items-center">
         <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
         <div>
@@ -201,9 +267,73 @@
     </div>
     {% endif %}
 
-    <!-- KPI Cards -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-3">
+    <!-- ══════ REVENUE ROW ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 revenue-card rev-today">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <p class="text-muted small mb-1">Today's Revenue</p>
+                            <h2 class="fw-bold mb-0" style="color: #10b981 !important;">
+                                <i class="fas fa-rupee-sign" style="font-size:1.4rem"></i>
+                                {{ "%.2f"|format(revenue_today) }}
+                            </h2>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;background:rgba(16,185,129,0.12);color:#10b981;">
+                            <i class="fas fa-calendar-day fa-lg"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ appointments_today }} appointment{{ 's' if appointments_today != 1 }} today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 revenue-card rev-month">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <p class="text-muted small mb-1">This Month's Revenue</p>
+                            <h2 class="fw-bold mb-0" style="color: #3b82f6 !important;">
+                                <i class="fas fa-rupee-sign" style="font-size:1.4rem"></i>
+                                {{ "%.2f"|format(revenue_month) }}
+                            </h2>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;background:rgba(59,130,246,0.12);color:#3b82f6;">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">Paid bills this month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 revenue-card rev-outstanding">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <p class="text-muted small mb-1">Outstanding Bills</p>
+                            <h2 class="fw-bold mb-0" style="color: #f59e0b !important;">
+                                <i class="fas fa-rupee-sign" style="font-size:1.4rem"></i>
+                                {{ "%.2f"|format(outstanding_bills) }}
+                            </h2>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;background:rgba(245,158,11,0.12);color:#f59e0b;">
+                            <i class="fas fa-file-invoice-dollar fa-lg"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">Unpaid + partial payments</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ KPI Cards (original + enhanced) ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm h-100 hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -219,7 +349,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm h-100 hover-lift border-start border-4 border-warning">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -236,13 +366,13 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm h-100 hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="icon-box success rounded-circle d-flex align-items-center justify-content-center"
                             style="width: 48px; height: 48px; background: #ecfdf5; color: #10b981;">
-                            <i class="fas fa-users-medical fa-lg"></i>
+                            <i class="fas fa-users fa-lg"></i>
                         </div>
                     </div>
                     <h2 class="fw-bold mb-1">{{ total_patients }}</h2>
@@ -251,29 +381,162 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
             <div class="card border-0 shadow-sm h-100 hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="icon-box danger rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 48px; height: 48px; background: #fef2f2; color: #ef4444;">
-                            <i class="fas fa-shield-virus fa-lg"></i>
+                        <div class="icon-box rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 48px; height: 48px; background: #ede9fe; color: #8b5cf6;">
+                            <i class="fas fa-user-nurse fa-lg"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success">Secure</span>
                     </div>
-                    <h2 class="fw-bold mb-1">100%</h2>
-                    <p class="text-secondary small mb-0">System Integrity</p>
+                    <h2 class="fw-bold mb-1">{{ total_nurses }}</h2>
+                    <p class="text-secondary small mb-0">Active Nurses</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions & Logs -->
+    <!-- ══════ Bed Occupancy + IP + Appointments Row ══════ -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0"><i class="fas fa-bed me-2"></i>Bed Occupancy</h6>
+                        <span class="badge {% if bed_occupancy_pct > 85 %}bg-danger{% elif bed_occupancy_pct > 60 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                            {{ bed_occupancy_pct }}%
+                        </span>
+                    </div>
+                    <div class="occupancy-bar-bg mb-2">
+                        <div class="occupancy-bar-fill" style="width: {{ bed_occupancy_pct }}%; background: {% if bed_occupancy_pct > 85 %}#ef4444{% elif bed_occupancy_pct > 60 %}#f59e0b{% else %}#10b981{% endif %};"></div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>{{ beds_occupied }} occupied</span>
+                        <span>{{ beds_total - beds_occupied }} available</span>
+                        <span>{{ beds_total }} total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                         style="width:52px;height:52px;background:rgba(220,38,38,0.1);color:#dc2626;">
+                        <i class="fas fa-procedures fa-lg"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ active_ip }}</h2>
+                    <p class="text-secondary small mb-0">Active IP Admissions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                         style="width:52px;height:52px;background:rgba(59,130,246,0.1);color:#3b82f6;">
+                        <i class="fas fa-calendar-check fa-lg"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ appointments_today }}</h2>
+                    <p class="text-secondary small mb-0">Appointments Today</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Staff by Role + Department Breakdown ══════ -->
+    <div class="row g-4 mb-4">
+        <!-- Staff by Role -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-users-cog me-2"></i>Staff by Role</h5>
+                </div>
+                <div class="card-body">
+                    {% set role_icons = {
+                        'DOCTOR': 'fa-user-md',
+                        'NURSE': 'fa-user-nurse',
+                        'LAB_STAFF': 'fa-flask',
+                        'PHARMACIST': 'fa-pills',
+                        'RECEPTIONIST': 'fa-concierge-bell',
+                        'ADMIN': 'fa-user-shield',
+                        'HOST': 'fa-crown',
+                        'PATIENT': 'fa-user'
+                    } %}
+                    {% set role_colors = {
+                        'DOCTOR': '#3b82f6',
+                        'NURSE': '#8b5cf6',
+                        'LAB_STAFF': '#06b6d4',
+                        'PHARMACIST': '#10b981',
+                        'RECEPTIONIST': '#f59e0b',
+                        'ADMIN': '#6366f1',
+                        'HOST': '#ef4444',
+                        'PATIENT': '#64748b'
+                    } %}
+                    {% for role_name, count in staff_by_role.items() %}
+                    {% if role_name != 'PATIENT' %}
+                    <div class="staff-role-row">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded"
+                                  style="width:30px;height:30px;background:{{ role_colors.get(role_name, '#64748b') }}15;color:{{ role_colors.get(role_name, '#64748b') }};">
+                                <i class="fas {{ role_icons.get(role_name, 'fa-user') }} small"></i>
+                            </span>
+                            <span class="small fw-semibold">{{ role_name.replace('_', ' ').title() }}</span>
+                        </div>
+                        <span class="badge rounded-pill" style="background:{{ role_colors.get(role_name, '#64748b') }}20;color:{{ role_colors.get(role_name, '#64748b') }};">
+                            {{ count }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% if not staff_by_role %}
+                    <p class="text-muted small text-center py-3 mb-0">No staff data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Patient Breakdown -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-hospital me-2"></i>Department-wise Patients</h5>
+                    <a href="{{ url_for('host.departments') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-th-large me-1"></i> Manage Departments
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if department_stats %}
+                    <div class="row g-2">
+                        {% for dept_name, patient_count in department_stats.items() %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="dept-mini-card" style="background: var(--cp-glass);">
+                                <div class="dept-mini-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6;">
+                                    <i class="fas fa-hospital-alt"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="small fw-semibold" style="color: var(--cp-text);">{{ dept_name }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ patient_count }} patient{{ 's' if patient_count != 1 }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">No department data yet. Appointments will populate this section.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Audit Logs & Quick Actions (original) ══════ -->
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Recent Audit Logs</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-stream me-2"></i>Recent Activity Feed</h5>
                     <a href="{{ url_for('host.audit_logs') }}" class="btn btn-outline-secondary btn-sm">View All</a>
                 </div>
                 <div class="card-body p-0">
@@ -284,6 +547,7 @@
                                     <th class="ps-4">Action</th>
                                     <th>Actor</th>
                                     <th>Details</th>
+                                    <th>IP</th>
                                     <th>Time</th>
                                 </tr>
                             </thead>
@@ -291,21 +555,24 @@
                                 {% for log in recent_logs %}
                                 <tr>
                                     <td class="ps-4">
-                                        {% if 'APPROVE' in log.action or 'UNSUSPEND' in log.action %}
+                                        {% if 'APPROVE' in log.action or 'UNSUSPEND' in log.action or 'CREATE' in log.action %}
                                         <span class="badge bg-success">{{ log.action }}</span>
-                                        {% elif 'SUSPEND' in log.action or 'REJECT' in log.action %}
+                                        {% elif 'SUSPEND' in log.action or 'REJECT' in log.action or 'DELETE' in log.action %}
                                         <span class="badge bg-danger">{{ log.action }}</span>
+                                        {% elif 'UPDATE' in log.action %}
+                                        <span class="badge bg-warning text-dark">{{ log.action }}</span>
                                         {% else %}
                                         <span class="badge bg-secondary">{{ log.action }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="fw-bold">{{ log.actor_name }}</td>
-                                    <td class="text-muted small">{{ log.details[:50] }}...</td>
+                                    <td class="text-muted small">{{ (log.details or '')[:60] }}{% if log.details and log.details|length > 60 %}...{% endif %}</td>
+                                    <td class="text-muted small"><code>{{ log.ip_address or '-' }}</code></td>
                                     <td class="text-muted small">{{ log.timestamp.strftime('%H:%M | %b %d') }}</td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="4" class="text-center py-4">No recent logs.</td>
+                                    <td colspan="5" class="text-center py-4">No recent logs.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -346,6 +613,12 @@
                             {% if pending_doctors > 0 %}
                             <span class="badge bg-white text-primary rounded-pill">{{ pending_doctors }}</span>
                             {% endif %}
+                        </a>
+                        <a href="{{ url_for('host.departments') }}"
+                            class="btn btn-primary d-flex align-items-center justify-content-between p-3"
+                            style="background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;">
+                            <span><i class="fas fa-hospital me-2"></i> Departments</span>
+                            <i class="fas fa-chevron-right"></i>
                         </a>
                         <a href="{{ url_for('host.create_staff') }}"
                             class="btn btn-success d-flex align-items-center justify-content-between p-3">

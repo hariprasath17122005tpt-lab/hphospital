@@ -1,6 +1,0 @@
-Using patient: id=3 username=patient_john
-Dashboard response status: 200
-Response length: 78564 chars
-Contains 'health': True
-Contains 'patient': True
-DASHBOARD LOADED SUCCESSFULLY!

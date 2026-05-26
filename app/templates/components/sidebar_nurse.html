@@ -24,6 +24,12 @@
             Assigned Patients
         </a>
 
+        <a href="{{ url_for('qr.scan_page') }}"
+            class="sidebar-link {% if request.endpoint == 'qr.scan_page' %}active{% endif %}">
+            <i class="fas fa-qrcode"></i>
+            Scan QR Code
+        </a>
+
         <a href="{{ url_for('nurse.vitals') }}"
             class="sidebar-link {% if request.endpoint == 'nurse.vitals' %}active{% endif %}">
             <i class="fas fa-heartbeat"></i>
@@ -48,11 +54,15 @@
             Lab Coordination
         </a>
 
+        <span class="sidebar-section-label">Inpatient</span>
+
         <a href="{{ url_for('nurse.medications') }}"
             class="sidebar-link {% if request.endpoint in ('nurse.medications', 'nurse.medication_update') %}active{% endif %}">
             <i class="fas fa-pills"></i>
-            Medication Admin
+            IP Medications
         </a>
+
+        <span class="sidebar-section-label">Shift</span>
 
         <a href="{{ url_for('nurse.handover') }}"
             class="sidebar-link {% if request.endpoint in ('nurse.handover', 'nurse.handover_save') %}active{% endif %}">

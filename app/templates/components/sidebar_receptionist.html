@@ -29,6 +29,26 @@
             <i class="fas fa-notes-medical"></i>
             Patient History
         </a>
+
+        <a href="{{ url_for('qr.scan_page') }}"
+            class="sidebar-link {% if request.endpoint == 'qr.scan_page' %}active{% endif %}">
+            <i class="fas fa-qrcode"></i>
+            Scan QR Code
+        </a>
+
+        <span class="sidebar-section-label">IP & Billing</span>
+
+        <a href="{{ url_for('ip_billing.dashboard') }}"
+            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('ip_billing.dashboard') %}active{% endif %}">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Billing Dashboard
+        </a>
+
+        <a href="{{ url_for('ip_billing.admit_patient') }}"
+            class="sidebar-link {% if request.endpoint == 'ip_billing.admit_patient' %}active{% endif %}">
+            <i class="fas fa-bed"></i>
+            IP Admission
+        </a>
     </nav>
 
     <!-- User Card -->

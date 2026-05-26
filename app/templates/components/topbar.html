@@ -1,43 +1,49 @@
-<!-- Top Navbar — Ultra-Premium Glassmorphism Layout -->
-<header class="app-topbar" data-user-role="{{ current_user.role.value if current_user.is_authenticated and current_user.role else '' }}">
+<!-- Top Navbar — Premium Design System -->
+<header class="app-topbar" data-user-role="{{ current_user.role.value if current_user.is_authenticated and current_user.role else '' }}" role="banner">
     <div class="topbar-left">
-        <button class="topbar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <button class="topbar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
             <i class="fas fa-bars"></i>
         </button>
         <div>
             <div class="topbar-page-title">{{ topbar_title | default('Dashboard') }}</div>
-            <div class="topbar-breadcrumb">
-                <a href="#">Home</a> / <span>{{ breadcrumb_current | default('Overview') }}</span>
-            </div>
+            <nav class="topbar-breadcrumb" aria-label="Breadcrumb">
+                <a href="{{ sidebar_config.home_url if sidebar_config else '#' }}">Home</a> / <span>{{ breadcrumb_current | default('Overview') }}</span>
+            </nav>
         </div>
     </div>
 
     <div class="topbar-right">
         <!-- Search -->
         <div class="topbar-search-wrapper" id="searchWrapper">
-            <input type="text" class="topbar-search-input" id="searchInput" placeholder="Search anything..." />
+            <input type="text" class="topbar-search-input" id="searchInput" placeholder="Search anything..."
+                   aria-label="Search" />
         </div>
-        <button class="topbar-icon-btn" id="searchToggleBtn" title="Search" onclick="toggleSearch()">
+        <button class="topbar-icon-btn" id="searchToggleBtn" title="Search" onclick="toggleSearch()" aria-label="Toggle search">
             <i class="fas fa-search"></i>
         </button>
-        <button class="topbar-icon-btn" id="commandPaletteBtn" title="Quick Launcher (Ctrl+K)">
+        <button class="topbar-icon-btn" id="commandPaletteBtn" title="Quick Launcher (Ctrl+K)" aria-label="Open command palette">
             <i class="fas fa-bolt"></i>
         </button>
 
+        <!-- Scan QR -->
+        <a class="topbar-icon-btn" href="/qr/scan" title="Scan Patient QR Code" aria-label="Scan QR Code" style="text-decoration:none;">
+            <i class="fas fa-qrcode"></i>
+        </a>
+
         <!-- Theme Toggle -->
-        <button class="topbar-icon-btn theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+        <button class="topbar-icon-btn theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
             <i class="fas fa-sun"></i>
         </button>
 
         <!-- Notification Bell with Dropdown -->
         <div class="notif-wrapper">
-            <button class="topbar-icon-btn" id="notifBellBtn" title="Notifications">
+            <button class="topbar-icon-btn" id="notifBellBtn" title="Notifications" aria-label="Notifications" aria-expanded="false">
                 <i class="fas fa-bell"></i>
-                <span class="notif-dot"></span>
+                <span class="notif-dot" aria-hidden="true"></span>
             </button>
 
             <!-- Notification Dropdown Panel -->
-            <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown" id="notifDropdown" role="menu" aria-label="Notifications">
                 <div class="notif-dropdown-header">
                     <span class="notif-dropdown-title">Notifications</span>
                     <button class="notif-mark-read" id="markAllRead">Mark all read</button>
@@ -45,53 +51,162 @@
                 <div class="notif-list" id="topbarNotifList">
                     <div class="notif-item">
                         <div class="notif-item-info">
-                            <div class="notif-item-text">Loading notifications...</div>
+                            <div class="notif-item-text">No new notifications</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Avatar -->
-        <div class="topbar-avatar" title="{{ current_user.username }}">
-            {{ current_user.username[0]|upper }}
+        <!-- Avatar with Profile Dropdown -->
+        <div class="notif-wrapper">
+            <div class="topbar-avatar" title="{{ current_user.username }}" id="profileAvatarBtn"
+                 onclick="this.parentElement.querySelector('.notif-dropdown').classList.toggle('show')"
+                 role="button" aria-label="Profile menu" aria-expanded="false" tabindex="0">
+                {{ current_user.username[0]|upper }}
+            </div>
+            <div class="notif-dropdown" style="width: 220px;" role="menu" aria-label="Profile menu">
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--cp-border);">
+                    <div style="font-weight: 700; color: var(--cp-text); font-size: 0.9rem;">{{ current_user.username }}</div>
+                    <div style="font-size: 0.72rem; color: var(--cp-text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ current_user.role.value|replace('_', ' ') if current_user.role else '' }}
+                    </div>
+                </div>
+                <div style="padding: 8px;">
+                    {% if current_user.role.value == 'PATIENT' %}
+                    <a href="{{ url_for('patient.profile') }}" class="cp-command-item" style="font-size: 0.85rem;">
+                        <span><i class="fas fa-user me-2"></i> My Profile</span>
+                    </a>
+                    {% elif current_user.role.value == 'DOCTOR' %}
+                    <a href="{{ url_for('doctor.edit_profile') }}" class="cp-command-item" style="font-size: 0.85rem;">
+                        <span><i class="fas fa-user me-2"></i> My Profile</span>
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="cp-command-item" style="font-size: 0.85rem; color: var(--cp-danger);">
+                        <span><i class="fas fa-sign-out-alt me-2"></i> Logout</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </header>
 
 <!-- Sidebar Overlay (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" aria-hidden="true"></div>
 
 <script>
     function toggleSidebar() {
-        const sidebar = document.getElementById('appSidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active');
+        var sidebar = document.getElementById('appSidebar');
+        var overlay = document.getElementById('sidebarOverlay');
+        if (sidebar) sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
     }
 
     function toggleSearch() {
-        const wrapper = document.getElementById('searchWrapper');
-        const input = document.getElementById('searchInput');
-        wrapper.classList.toggle('active');
-        if (wrapper.classList.contains('active')) {
-            input.focus();
+        var wrapper = document.getElementById('searchWrapper');
+        var input = document.getElementById('searchInput');
+        if (wrapper) {
+            wrapper.classList.toggle('active');
+            if (wrapper.classList.contains('active') && input) {
+                input.focus();
+            }
         }
     }
 
     // Close search on Escape
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            const wrapper = document.getElementById('searchWrapper');
+            var wrapper = document.getElementById('searchWrapper');
             if (wrapper) wrapper.classList.remove('active');
+            // Close any open dropdowns
+            document.querySelectorAll('.notif-dropdown.show').forEach(function(d) {
+                d.classList.remove('show');
+            });
         }
     });
 
-    const commandBtn = document.getElementById('commandPaletteBtn');
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        document.querySelectorAll('.notif-wrapper').forEach(function(wrapper) {
+            if (!wrapper.contains(e.target)) {
+                var dd = wrapper.querySelector('.notif-dropdown');
+                if (dd) dd.classList.remove('show');
+            }
+        });
+    });
+
+    // Command palette button
+    var commandBtn = document.getElementById('commandPaletteBtn');
     if (commandBtn) {
         commandBtn.addEventListener('click', function () {
-            const evt = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
+            var evt = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
             document.dispatchEvent(evt);
         });
     }
+
+    // ── Real-time Notification System ──
+    (function() {
+        var bellBtn = document.getElementById('notifBellBtn');
+        var notifDot = bellBtn ? bellBtn.querySelector('.notif-dot') : null;
+        var notifList = document.getElementById('topbarNotifList');
+        var markAllBtn = document.getElementById('markAllRead');
+
+        function loadNotifications() {
+            fetch('/notifications/api/recent')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!notifList) return;
+                    if (data.length === 0) {
+                        notifList.innerHTML = '<div class="notif-item"><div class="notif-item-info"><div class="notif-item-text" style="color:#94a3b8;">No notifications</div></div></div>';
+                        if (notifDot) notifDot.style.display = 'none';
+                        return;
+                    }
+                    var unread = data.filter(function(n) { return !n.is_read; }).length;
+                    if (notifDot) notifDot.style.display = unread > 0 ? 'block' : 'none';
+                    var html = '';
+                    data.forEach(function(n) {
+                        html += '<div class="notif-item' + (n.is_read ? '' : ' notif-unread') + '">';
+                        html += '<div class="notif-item-info">';
+                        if (n.action_url) html += '<a href="' + n.action_url + '" style="text-decoration:none;color:inherit;">';
+                        html += '<div class="notif-item-text" style="font-weight:' + (n.is_read ? '400' : '600') + ';">' + n.title + '</div>';
+                        html += '<div style="font-size:.75rem;color:#94a3b8;">' + n.time_ago + '</div>';
+                        if (n.action_url) html += '</a>';
+                        html += '</div></div>';
+                    });
+                    html += '<div style="padding:8px 16px;text-align:center;"><a href="/notifications/" style="font-size:.82rem;color:#2563eb;font-weight:600;text-decoration:none;">View All Notifications</a></div>';
+                    notifList.innerHTML = html;
+                })
+                .catch(function() {});
+        }
+
+        if (bellBtn) {
+            bellBtn.addEventListener('click', function() {
+                var dd = bellBtn.closest('.notif-wrapper').querySelector('.notif-dropdown');
+                if (dd) { dd.classList.toggle('show'); loadNotifications(); }
+            });
+        }
+
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function() {
+                var csrfToken = document.querySelector('meta[name="csrf-token"]');
+                fetch('/notifications/api/mark-read', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken ? csrfToken.content : ''},
+                    body: JSON.stringify({notification_id: 'all'})
+                }).then(function() { loadNotifications(); });
+            });
+        }
+
+        // Auto-check for new notifications every 30 seconds
+        function checkUnread() {
+            fetch('/notifications/api/unread-count')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (notifDot) notifDot.style.display = data.count > 0 ? 'block' : 'none';
+                })
+                .catch(function() {});
+        }
+        checkUnread();
+        setInterval(checkUnread, 30000);
+    })();
 </script>

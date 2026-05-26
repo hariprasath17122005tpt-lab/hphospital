@@ -6,13 +6,81 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── DESIGN TOKENS ────────────────────────────────────────── */
+/* NOTE: Light mode defaults come from design-system.css :root.
+   This file only sets layout tokens in :root and overrides for dark. */
 :root {
     /* Layout */
     --layout-sidebar-w: 272px;
     --layout-sidebar-collapsed-w: 80px;
     --layout-topbar-h: 68px;
 
-    /* Palette — Premium Dark Medical Theme */
+    /* Transitions */
+    --cp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --cp-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --cp-transition: 0.3s var(--cp-ease);
+    --cp-card-radius: 20px;
+}
+
+/* ─── LIGHT MODE — Explicit overrides ─────────────────────── */
+[data-theme="light"] {
+    --cp-bg: #f0f4f8;
+    --cp-content-bg: #f5f7fa;
+    --cp-sidebar-bg: rgba(255, 255, 255, 0.95);
+    --cp-sidebar-border: rgba(0, 0, 0, 0.08);
+    --cp-topbar-bg: rgba(255, 255, 255, 0.92);
+    --cp-topbar-border: rgba(0, 0, 0, 0.06);
+    --cp-surface: rgba(255, 255, 255, 0.90);
+    --cp-surface-hover: rgba(255, 255, 255, 0.98);
+    --cp-glass: rgba(0, 0, 0, 0.02);
+    --cp-glass-strong: rgba(0, 0, 0, 0.04);
+
+    --cp-accent: #1565C0;
+    --cp-accent-2: #0e7490;
+    --cp-accent-glow: rgba(21, 101, 192, 0.25);
+    --cp-accent-soft: rgba(21, 101, 192, 0.08);
+    --cp-gradient-1: linear-gradient(135deg, #1565C0, #0e7490);
+    --cp-gradient-2: linear-gradient(135deg, #0e7490, #0891b2);
+    --cp-gradient-hero: linear-gradient(135deg, #1565C0 0%, #0e7490 100%);
+
+    --cp-success: #16a34a;
+    --cp-success-bg: rgba(22, 163, 74, 0.08);
+    --cp-warning: #d97706;
+    --cp-warning-bg: rgba(217, 119, 6, 0.08);
+    --cp-danger: #dc2626;
+    --cp-danger-bg: rgba(220, 38, 38, 0.08);
+    --cp-info: #0284c7;
+    --cp-info-bg: rgba(2, 132, 199, 0.08);
+    --cp-purple: #7c3aed;
+
+    --cp-text: #1a1f36;
+    --cp-text-secondary: rgba(26, 31, 54, 0.65);
+    --cp-text-muted: rgba(26, 31, 54, 0.40);
+    --cp-text-dim: rgba(26, 31, 54, 0.25);
+
+    --cp-border: rgba(0, 0, 0, 0.08);
+    --cp-border-active: rgba(21, 101, 192, 0.40);
+    --cp-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --cp-card-shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.08);
+    --cp-glow-shadow: 0 0 30px rgba(21, 101, 192, 0.10);
+
+    --sidebar-active-bg: var(--cp-gradient-1);
+    --sidebar-active-text: #ffffff;
+    --sidebar-link-color: rgba(26, 31, 54, 0.60);
+    --sidebar-link-hover: #1a1f36;
+    --sidebar-section-color: rgba(26, 31, 54, 0.35);
+
+    --cp-input-bg: rgba(255, 255, 255, 0.75);
+    --cp-input-border: rgba(0, 0, 0, 0.10);
+    --cp-input-focus-bg: #ffffff;
+    --cp-input-text: #1a1f36;
+
+    --cp-scrollbar-thumb: rgba(0, 0, 0, 0.12);
+    --cp-overlay-bg: rgba(0, 0, 0, 0.3);
+    --cp-btn-close-filter: none;
+}
+
+/* ─── DARK MODE — Premium Medical Theme ───────────────────── */
+[data-theme="dark"] {
     --cp-bg: #06090f;
     --cp-sidebar-bg: rgba(10, 15, 28, 0.92);
     --cp-sidebar-border: rgba(255, 255, 255, 0.06);
@@ -24,7 +92,6 @@
     --cp-glass: rgba(255, 255, 255, 0.03);
     --cp-glass-strong: rgba(255, 255, 255, 0.06);
 
-    /* Accent Gradients */
     --cp-accent: #6366f1;
     --cp-accent-2: #8b5cf6;
     --cp-accent-glow: rgba(99, 102, 241, 0.35);
@@ -34,29 +101,35 @@
     --cp-gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
     --cp-gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-    /* Status Colors */
     --cp-success: #10b981;
     --cp-warning: #f59e0b;
     --cp-danger: #ef4444;
     --cp-info: #06b6d4;
     --cp-purple: #8b5cf6;
 
-    /* Text */
     --cp-text: #f1f5f9;
     --cp-text-secondary: rgba(241, 245, 249, 0.65);
     --cp-text-muted: rgba(241, 245, 249, 0.38);
 
-    /* Borders & Shadows */
     --cp-border: rgba(255, 255, 255, 0.06);
     --cp-border-active: rgba(99, 102, 241, 0.4);
     --cp-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.04);
-    --cp-card-radius: 20px;
     --cp-glow-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
 
-    /* Transitions */
-    --cp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --cp-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --cp-transition: 0.3s var(--cp-ease);
+    --sidebar-active-bg: var(--cp-gradient-1);
+    --sidebar-active-text: #ffffff;
+    --sidebar-link-color: rgba(241, 245, 249, 0.50);
+    --sidebar-link-hover: #f1f5f9;
+    --sidebar-section-color: rgba(241, 245, 249, 0.28);
+
+    --cp-input-bg: rgba(14, 20, 36, 0.6);
+    --cp-input-border: rgba(255, 255, 255, 0.08);
+    --cp-input-focus-bg: rgba(14, 20, 36, 0.9);
+    --cp-input-text: #f1f5f9;
+
+    --cp-scrollbar-thumb: rgba(255, 255, 255, 0.08);
+    --cp-overlay-bg: rgba(2, 6, 23, 0.60);
+    --cp-btn-close-filter: invert(1);
 }
 
 /* ─── RESET FOR DASHBOARD PAGES ────────────────────────────── */
@@ -271,7 +344,7 @@ body.dashboard-body::after {
 
 .sidebar-brand-text {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.45rem;
     font-weight: 700;
     color: var(--cp-text);
     letter-spacing: -0.02em;
@@ -295,7 +368,7 @@ body.dashboard-body::after {
 }
 
 .sidebar-section-label {
-    font-size: 0.62rem;
+    font-size: 0.82rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -314,7 +387,7 @@ body.dashboard-body::after {
     border-radius: 14px;
     color: var(--cp-text-secondary);
     text-decoration: none;
-    font-size: 0.88rem;
+    font-size: 1.05rem;
     font-weight: 500;
     transition: all 0.25s var(--cp-ease);
     position: relative;
@@ -327,9 +400,9 @@ body.dashboard-body::after {
 
 .sidebar-link i,
 .sidebar-link .sidebar-icon {
-    width: 20px;
+    width: 22px;
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.15rem;
     flex-shrink: 0;
     transition: all 0.25s var(--cp-ease);
 }
@@ -402,7 +475,7 @@ body.dashboard-body::after {
     margin-left: auto;
     background: var(--cp-danger);
     color: #fff;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     font-weight: 700;
     padding: 2px 7px;
     border-radius: 20px;
@@ -455,8 +528,8 @@ body.dashboard-body::after {
 }
 
 .sidebar-avatar {
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     background: var(--cp-gradient-1);
     display: flex;
@@ -464,7 +537,7 @@ body.dashboard-body::after {
     justify-content: center;
     color: #fff;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     flex-shrink: 0;
     box-shadow: 0 2px 10px var(--cp-accent-glow);
     transition: transform 0.3s var(--cp-ease);
@@ -480,7 +553,7 @@ body.dashboard-body::after {
 }
 
 .sidebar-user-name {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--cp-text);
     white-space: nowrap;
@@ -489,7 +562,7 @@ body.dashboard-body::after {
 }
 
 .sidebar-user-role {
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     color: var(--cp-text-muted);
     text-transform: capitalize;
 }
@@ -589,14 +662,14 @@ body.dashboard-body::after {
 
 .topbar-page-title {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--cp-text);
     letter-spacing: -0.01em;
 }
 
 .topbar-breadcrumb {
-    font-size: 0.78rem;
+    font-size: 0.88rem;
     color: var(--cp-text-muted);
 }
 
@@ -1635,4 +1708,530 @@ body.dashboard-body.light-mode .theme-toggle-btn:hover {
 
 .glow-border:hover::after {
     opacity: 0.3;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMPREHENSIVE LIGHT MODE FIX
+   Overrides ALL hardcoded white text from style.css !important rules
+   This file loads AFTER style.css so same-specificity !important wins
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* --- Text & Headings --- */
+body.dashboard-body.light-mode h1,
+body.dashboard-body.light-mode h2,
+body.dashboard-body.light-mode h3,
+body.dashboard-body.light-mode h4,
+body.dashboard-body.light-mode h5,
+body.dashboard-body.light-mode h6 {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode p,
+body.dashboard-body.light-mode span,
+body.dashboard-body.light-mode label,
+body.dashboard-body.light-mode li,
+body.dashboard-body.light-mode td,
+body.dashboard-body.light-mode th,
+body.dashboard-body.light-mode div {
+    color: #334155;
+}
+
+body.dashboard-body.light-mode .fw-bold,
+body.dashboard-body.light-mode .fw-semibold,
+body.dashboard-body.light-mode strong {
+    color: #1a1f36 !important;
+}
+
+/* --- Bootstrap text utilities --- */
+body.dashboard-body.light-mode .text-dark {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .text-muted {
+    color: #64748b !important;
+}
+
+body.dashboard-body.light-mode .text-secondary {
+    color: #475569 !important;
+}
+
+body.dashboard-body.light-mode .text-white {
+    color: #fff !important;
+}
+
+/* --- Stat cards & values --- */
+body.dashboard-body.light-mode .stat-value {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .stat-label {
+    color: #64748b !important;
+}
+
+body.dashboard-body.light-mode .stat-num,
+body.dashboard-body.light-mode .stat-val {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .stat-lbl {
+    color: #64748b !important;
+}
+
+/* --- Vital cards --- */
+body.dashboard-body.light-mode .vital-card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dashboard-body.light-mode .vital-card .card-value-lg,
+body.dashboard-body.light-mode .vital-card .card-label {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .vital-card .text-muted {
+    color: #64748b !important;
+}
+
+/* --- Body stats card --- */
+body.dashboard-body.light-mode .body-stats-card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dashboard-body.light-mode .body-stats-card .stat-val {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .body-stats-card .stat-lbl {
+    color: #64748b !important;
+}
+
+/* --- Cards --- */
+body.dashboard-body.light-mode .card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .card .card-title,
+body.dashboard-body.light-mode .card .card-title.fw-bold,
+body.dashboard-body.light-mode .card-header h5,
+body.dashboard-body.light-mode .card-header .fw-bold {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .card-header {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* --- Section titles --- */
+body.dashboard-body.light-mode .main-content-dashboard h5,
+body.dashboard-body.light-mode .dashboard-container h5,
+body.dashboard-body.light-mode .section-title {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .main-content-dashboard h1,
+body.dashboard-body.light-mode .main-content-dashboard h2,
+body.dashboard-body.light-mode .main-content-dashboard h3,
+body.dashboard-body.light-mode .main-content-dashboard h4,
+body.dashboard-body.light-mode .main-content-dashboard h6,
+body.dashboard-body.light-mode .dashboard-container h1,
+body.dashboard-body.light-mode .dashboard-container h2,
+body.dashboard-body.light-mode .dashboard-container h3,
+body.dashboard-body.light-mode .dashboard-container h4,
+body.dashboard-body.light-mode .dashboard-container h6 {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .dashboard-container .fw-bold,
+body.dashboard-body.light-mode .main-content-dashboard .fw-bold {
+    color: #1a1f36 !important;
+}
+
+/* --- Form controls --- */
+body.dashboard-body.light-mode .form-label {
+    color: #374151 !important;
+}
+
+body.dashboard-body.light-mode .form-control,
+body.dashboard-body.light-mode .form-select {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .form-control::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.dashboard-body.light-mode .form-control:focus,
+body.dashboard-body.light-mode .form-select:focus {
+    background: #fff !important;
+    border-color: var(--cp-accent) !important;
+    color: #1a1f36 !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+}
+
+body.dashboard-body.light-mode .input-group-text {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    color: #475569 !important;
+}
+
+/* --- Tables --- */
+body.dashboard-body.light-mode .table {
+    color: #334155;
+}
+
+body.dashboard-body.light-mode .table thead {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+body.dashboard-body.light-mode .table th {
+    color: #64748b !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .table td {
+    color: #334155 !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .table tbody tr {
+    background: transparent;
+}
+
+body.dashboard-body.light-mode .table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+}
+
+/* --- Background utility overrides --- */
+body.dashboard-body.light-mode .bg-light {
+    background: #f8fafc !important;
+}
+
+body.dashboard-body.light-mode .bg-white {
+    background: #ffffff !important;
+}
+
+/* --- Patient info --- */
+body.dashboard-body.light-mode .patient-info .fw-bold {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .patient-info small {
+    color: #64748b !important;
+}
+
+/* --- Glass header --- */
+body.dashboard-body.light-mode .glass-header h6 {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .glass-header small {
+    color: #64748b !important;
+}
+
+/* --- Welcome text --- */
+body.dashboard-body.light-mode .welcome-text h1 {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .welcome-text p {
+    color: #475569 !important;
+}
+
+/* --- Search pill --- */
+body.dashboard-body.light-mode .search-pill {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dashboard-body.light-mode .search-pill input {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .search-pill input::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* --- Date badge --- */
+body.dashboard-body.light-mode .date-badge {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- Quick actions --- */
+body.dashboard-body.light-mode .action-button-card .text-dark {
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .quick-actions-panel h6.text-muted {
+    color: #64748b !important;
+}
+
+/* --- Operations items --- */
+body.dashboard-body.light-mode .ops-item {
+    color: #475569 !important;
+}
+
+body.dashboard-body.light-mode .ops-item:hover {
+    color: var(--cp-accent) !important;
+}
+
+body.dashboard-body.light-mode .ops-item i {
+    color: #94a3b8 !important;
+}
+
+/* --- Buttons --- */
+body.dashboard-body.light-mode .btn-outline-dark {
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #475569;
+}
+
+body.dashboard-body.light-mode .btn-outline-dark:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1a1f36;
+}
+
+/* --- Progress bar --- */
+body.dashboard-body.light-mode .progress {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- Scoped dashboard containers --- */
+body.dashboard-body.light-mode .patient-layout .bg-light,
+body.dashboard-body.light-mode .dashboard-container .bg-light,
+body.dashboard-body.light-mode .main-content-dashboard .bg-light {
+    background: #f8fafc !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .bg-white,
+body.dashboard-body.light-mode .dashboard-container .bg-white,
+body.dashboard-body.light-mode .main-content-dashboard .bg-white {
+    background: #ffffff !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .text-muted,
+body.dashboard-body.light-mode .dashboard-container .text-muted,
+body.dashboard-body.light-mode .main-content-dashboard .text-muted {
+    color: #64748b !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .text-secondary,
+body.dashboard-body.light-mode .dashboard-container .text-secondary,
+body.dashboard-body.light-mode .main-content-dashboard .text-secondary {
+    color: #475569 !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .text-dark,
+body.dashboard-body.light-mode .dashboard-container .text-dark,
+body.dashboard-body.light-mode .main-content-dashboard .text-dark {
+    color: #1a1f36 !important;
+}
+
+/* --- Scoped form controls --- */
+body.dashboard-body.light-mode .patient-layout .form-control,
+body.dashboard-body.light-mode .dashboard-container .form-control,
+body.dashboard-body.light-mode .main-content-dashboard .form-control,
+body.dashboard-body.light-mode .patient-layout .form-select,
+body.dashboard-body.light-mode .dashboard-container .form-select,
+body.dashboard-body.light-mode .main-content-dashboard .form-select {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    color: #1a1f36 !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .form-control::placeholder,
+body.dashboard-body.light-mode .dashboard-container .form-control::placeholder,
+body.dashboard-body.light-mode .main-content-dashboard .form-control::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .input-group-text,
+body.dashboard-body.light-mode .dashboard-container .input-group-text,
+body.dashboard-body.light-mode .main-content-dashboard .input-group-text {
+    background: rgba(0, 0, 0, 0.04) !important;
+    border: 2px solid rgba(0, 0, 0, 0.1) !important;
+    color: #475569 !important;
+}
+
+/* --- Scoped cards --- */
+body.dashboard-body.light-mode .patient-layout .card,
+body.dashboard-body.light-mode .dashboard-container .card {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .card-header,
+body.dashboard-body.light-mode .dashboard-container .card-header {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+/* --- Scoped tables --- */
+body.dashboard-body.light-mode .patient-layout .table,
+body.dashboard-body.light-mode .dashboard-container .table {
+    color: #334155;
+}
+
+body.dashboard-body.light-mode .patient-layout .table thead,
+body.dashboard-body.light-mode .dashboard-container .table thead {
+    background: rgba(0, 0, 0, 0.02) !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .table th,
+body.dashboard-body.light-mode .dashboard-container .table th {
+    color: #64748b !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .table td,
+body.dashboard-body.light-mode .dashboard-container .table td {
+    color: #334155 !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .patient-layout .table tbody tr,
+body.dashboard-body.light-mode .dashboard-container .table tbody tr {
+    background: transparent;
+}
+
+body.dashboard-body.light-mode .patient-layout .table tbody tr:hover,
+body.dashboard-body.light-mode .dashboard-container .table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+}
+
+/* --- Inline style color overrides (catches hardcoded colors in templates) --- */
+body.dashboard-body.light-mode [style*="color:#fff"],
+body.dashboard-body.light-mode [style*="color: #fff"],
+body.dashboard-body.light-mode [style*="color:white"],
+body.dashboard-body.light-mode [style*="color: white"],
+body.dashboard-body.light-mode [style*="color:#f1f5f9"],
+body.dashboard-body.light-mode [style*="color: #f1f5f9"],
+body.dashboard-body.light-mode [style*="color:#e2e8f0"],
+body.dashboard-body.light-mode [style*="color: #e2e8f0"],
+body.dashboard-body.light-mode [style*="color:#cbd5e1"],
+body.dashboard-body.light-mode [style*="color: #cbd5e1"] {
+    color: #1e293b !important;
+}
+
+/* --- Modal overrides --- */
+body.dashboard-body.light-mode .modal-content {
+    background: #fff !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dashboard-body.light-mode .modal-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dashboard-body.light-mode .modal-footer {
+    border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dashboard-body.light-mode .modal-title {
+    color: #1a1f36 !important;
+}
+
+/* --- Dropdown menus --- */
+body.dashboard-body.light-mode .dropdown-menu {
+    background: #fff !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.dashboard-body.light-mode .dropdown-item {
+    color: #334155 !important;
+}
+
+body.dashboard-body.light-mode .dropdown-item:hover {
+    background: rgba(99, 102, 241, 0.06) !important;
+    color: #1a1f36 !important;
+}
+
+/* --- Notification dropdown in light mode --- */
+body.dashboard-body.light-mode .notif-dropdown {
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.dashboard-body.light-mode .notif-item-text {
+    color: #334155 !important;
+}
+
+/* --- Command palette light mode --- */
+body.dashboard-body.light-mode .cp-command-dialog {
+    background: rgba(255, 255, 255, 0.97);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dashboard-body.light-mode .cp-command-input-wrap input {
+    color: #1a1f36;
+}
+
+body.dashboard-body.light-mode .cp-command-item {
+    color: #334155;
+}
+
+body.dashboard-body.light-mode .cp-command-item:hover,
+body.dashboard-body.light-mode .cp-command-item.active {
+    background: rgba(99, 102, 241, 0.08);
+}
+
+/* --- Gradient text stays visible in both modes --- */
+body.dashboard-body.light-mode .text-gradient,
+body.dashboard-body.light-mode .text-aurora {
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* --- Ensure buttons with white text on colored backgrounds stay white --- */
+body.dashboard-body.light-mode .btn-primary,
+body.dashboard-body.light-mode .btn-success,
+body.dashboard-body.light-mode .btn-danger,
+body.dashboard-body.light-mode .btn-warning,
+body.dashboard-body.light-mode .btn-info,
+body.dashboard-body.light-mode [class*="btn-"][style*="background"] {
+    color: #fff !important;
+}
+
+/* --- Badges on colored backgrounds stay readable --- */
+body.dashboard-body.light-mode .badge {
+    color: inherit;
+}
+
+body.dashboard-body.light-mode .badge.bg-primary,
+body.dashboard-body.light-mode .badge.bg-success,
+body.dashboard-body.light-mode .badge.bg-danger,
+body.dashboard-body.light-mode .badge.bg-warning,
+body.dashboard-body.light-mode .badge.bg-info {
+    color: #fff !important;
+}
+
+/* --- Avatar circle stays white text on gradient background --- */
+body.dashboard-body.light-mode .avatar-circle {
+    color: #fff !important;
+}
+
+/* --- Sidebar active link stays white on accent background --- */
+body.dashboard-body.light-mode .sidebar-link.active {
+    color: #fff !important;
+}
+
+body.dashboard-body.light-mode .sidebar-link.active i {
+    color: #fff !important;
+}
+
+/* --- Pro buttons --- */
+body.dashboard-body.light-mode .pro-btn-primary {
+    color: #fff !important;
+}
+
+/* --- Topbar search --- */
+body.dashboard-body.light-mode .topbar-search-input {
+    color: #1a1f36 !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+
+body.dashboard-body.light-mode .topbar-search-input::placeholder {
+    color: #94a3b8 !important;
 }

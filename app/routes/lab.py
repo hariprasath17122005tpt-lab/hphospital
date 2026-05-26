@@ -37,6 +37,72 @@ LAB_ORDER_STATUSES = ('CREATED', 'SAMPLE_COLLECTED', 'PROCESSING', 'COMPLETED')
 SOURCE_DOCTOR = 'DOCTOR'
 SOURCE_WALK_IN = 'WALK_IN'
 
+# Reference ranges for common lab tests — used for flagging abnormal/critical results
+REFERENCE_RANGES = {
+    'Hemoglobin': {'min': 12.0, 'max': 17.5, 'unit': 'g/dL', 'critical_low': 7.0, 'critical_high': 20.0},
+    'Blood Sugar (Fasting)': {'min': 70, 'max': 100, 'unit': 'mg/dL', 'critical_low': 50, 'critical_high': 400},
+    'Blood Sugar (PP)': {'min': 70, 'max': 140, 'unit': 'mg/dL', 'critical_low': 50, 'critical_high': 400},
+    'Creatinine': {'min': 0.6, 'max': 1.2, 'unit': 'mg/dL', 'critical_low': 0.2, 'critical_high': 10.0},
+    'Potassium': {'min': 3.5, 'max': 5.0, 'unit': 'mEq/L', 'critical_low': 2.5, 'critical_high': 6.5},
+    'Sodium': {'min': 136, 'max': 145, 'unit': 'mEq/L', 'critical_low': 120, 'critical_high': 160},
+    'Platelet Count': {'min': 150000, 'max': 400000, 'unit': '/uL', 'critical_low': 50000, 'critical_high': 1000000},
+}
+
+
+def _flag_result_value(test_name, field_name, value_str):
+    """
+    Return 'critical', 'abnormal', or 'normal' for a given result value.
+    Checks both the test_name and the field_name against REFERENCE_RANGES.
+    """
+    ref = REFERENCE_RANGES.get(field_name) or REFERENCE_RANGES.get(test_name)
+    if not ref:
+        return 'normal'
+    try:
+        val = float(str(value_str).replace(',', '').strip())
+    except (ValueError, TypeError):
+        return 'normal'
+    if val <= ref.get('critical_low', float('-inf')) or val >= ref.get('critical_high', float('inf')):
+        return 'critical'
+    if val < ref.get('min', float('-inf')) or val > ref.get('max', float('inf')):
+        return 'abnormal'
+    return 'normal'
+
+
+def _get_critical_results(orders):
+    """
+    Scan completed orders for critical result values.
+    Returns a list of dicts: {order, patient_name, test_name, field, value, ref_range}.
+    """
+    critical_results = []
+    for o in orders:
+        if o.status != 'COMPLETED' or not o.result_data:
+            continue
+        try:
+            data = json.loads(o.result_data) if isinstance(o.result_data, str) else o.result_data
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        for field, value in data.items():
+            if field in ('completed_at', 'order_notes', 'file_path'):
+                continue
+            flag = _flag_result_value(o.test_name, field, value)
+            if flag == 'critical':
+                ref = REFERENCE_RANGES.get(field) or REFERENCE_RANGES.get(o.test_name)
+                ref_str = f"{ref['min']}-{ref['max']} {ref.get('unit', '')}" if ref else 'N/A'
+                patient = o.patient
+                critical_results.append({
+                    'order': o,
+                    'patient_name': f"{patient.first_name} {patient.last_name}" if patient else 'Unknown',
+                    'patient_id': o.patient_id,
+                    'test_name': o.test_name,
+                    'field': field,
+                    'value': value,
+                    'ref_range': ref_str,
+                    'completed_at': o.updated_at,
+                })
+    return critical_results
+
 # Default fee when not in catalog (institution configures real fee schedule separately)
 DEFAULT_LAB_PRICE = 499.0
 
@@ -233,6 +299,47 @@ def dashboard():
         processing = all_q.filter(LabOrder.status == 'PROCESSING').count()
         completed = all_q.filter(LabOrder.status == 'COMPLETED').count()
 
+        # Critical results: scan recently completed orders
+        recent_completed_orders = all_q.filter(
+            LabOrder.status == 'COMPLETED'
+        ).order_by(LabOrder.updated_at.desc()).limit(100).all()
+        critical_results = _get_critical_results(recent_completed_orders)
+
+        # Pre-parse result_data for each order and compute result flags
+        order_result_flags = {}
+        for o in orders:
+            if o.status != 'COMPLETED' or not o.result_data:
+                order_result_flags[o.id] = 'pending'
+                continue
+            try:
+                data = json.loads(o.result_data) if isinstance(o.result_data, str) else o.result_data
+            except (json.JSONDecodeError, TypeError):
+                order_result_flags[o.id] = 'no_data'
+                continue
+            if not isinstance(data, dict):
+                order_result_flags[o.id] = 'no_data'
+                continue
+            has_critical = False
+            has_abnormal = False
+            count = 0
+            for field, value in data.items():
+                if field in ('completed_at', 'order_notes', 'file_path') or not value:
+                    continue
+                flag = _flag_result_value(o.test_name, field, value)
+                if flag == 'critical':
+                    has_critical = True
+                elif flag == 'abnormal':
+                    has_abnormal = True
+                count += 1
+            if has_critical:
+                order_result_flags[o.id] = 'critical'
+            elif has_abnormal:
+                order_result_flags[o.id] = 'abnormal'
+            elif count > 0:
+                order_result_flags[o.id] = 'normal'
+            else:
+                order_result_flags[o.id] = 'no_data'
+
         return render_template(
             'lab/dashboard.html',
             orders=orders,
@@ -247,6 +354,10 @@ def dashboard():
             SOURCE_DOCTOR=SOURCE_DOCTOR,
             SOURCE_WALK_IN=SOURCE_WALK_IN,
             LAB_UI_BUILD_ID=LAB_UI_BUILD_ID,
+            critical_results=critical_results,
+            REFERENCE_RANGES=REFERENCE_RANGES,
+            flag_result_value=_flag_result_value,
+            order_result_flags=order_result_flags,
         )
     except Exception as e:
         logger.exception(f"Error in lab dashboard: {e}")
@@ -605,6 +716,10 @@ def view_report(report_id):
                     'range': ranges.get(field_name, '-') if isinstance(ranges, dict) else '-',
                 })
 
+    # Add result flags for color-coding
+    for row in report_rows:
+        row['flag'] = _flag_result_value(report.test_name, row['name'], row['value'])
+
     return render_template(
         'lab/report_view.html',
         report=report,
@@ -612,6 +727,7 @@ def view_report(report_id):
         report_data=report_data,
         report_date=report_date,
         report_rows=report_rows,
+        REFERENCE_RANGES=REFERENCE_RANGES,
     )
 
 

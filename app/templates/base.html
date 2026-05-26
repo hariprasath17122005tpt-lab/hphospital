@@ -1,46 +1,530 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title>{% block title %}CarePoint - AI Healthcare Platform{% endblock %}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description"
         content="CarePoint AI Healthcare — Modern hospital management platform with AI-powered analytics, appointments, and patient care.">
 
+    <!-- Prevent flash of wrong theme -->
+    <script>
+        (function() {
+            var saved = null;
+            try { saved = localStorage.getItem('cp-theme'); } catch(e) {}
+            var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
 
     <!-- Bootstrap CSS -->
     <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fontawesome/all.min.css') }}">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
     {% set user_role = (current_user.role.value if (current_user.is_authenticated and current_user.role) else '') %}
-    {% if current_user.is_authenticated and user_role in ['PATIENT', 'DOCTOR', 'HOST', 'LAB_STAFF',
-    'PHARMACIST', 'RECEPTIONIST', 'NURSE'] %}
-    <!-- Unified Dashboard Layout CSS -->
+    {% set is_dashboard = current_user.is_authenticated and user_role in ['PATIENT', 'DOCTOR', 'HOST',
+    'LAB_STAFF', 'PHARMACIST', 'RECEPTIONIST', 'NURSE'] %}
+
+    {% if is_dashboard %}
+    <!-- Design System (theme tokens + layout) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <!-- Legacy layout + animations (kept for backward compatibility) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-layout.css') }}">
-    <!-- Pro Animation Engine -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/patient-pro.css') }}">
+    {% else %}
+    <!-- Public pages CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% endif %}
 
     {% block extra_css %}{% endblock %}
-</head>
 
-{# ═══════════════════════════════════════════════════════════════
-DETERMINE LAYOUT TYPE
-═══════════════════════════════════════════════════════════════ #}
-{% set is_dashboard = current_user.is_authenticated and user_role in ['PATIENT', 'DOCTOR', 'HOST',
-'LAB_STAFF', 'PHARMACIST', 'RECEPTIONIST', 'NURSE'] %}
+    <!-- ═══ THEME CONTRAST FIX — Master Overrides ═══
+         Ensures ALL text is visible in both light and dark modes.
+         Handles 280+ hardcoded color instances across all portal templates. -->
+    <style>
+    /* ══════════════════════════════════════════════════════════════
+       LIGHT MODE — Complete visibility fix
+       Problem: Many templates hardcode color:#fff for dark-mode-only.
+       Fix: Override text colors on content elements, but KEEP white
+       text on buttons/badges/gradients that have colored backgrounds.
+       ══════════════════════════════════════════════════════════════ */
+
+    /* ── Body ── */
+    [data-theme="light"] body {
+        background: #f0f4f8 !important;
+        color: #1a1f36 !important;
+    }
+
+    /* ── ALL text elements inside main content ── */
+    [data-theme="light"] .app-content h1,
+    [data-theme="light"] .app-content h2,
+    [data-theme="light"] .app-content h3,
+    [data-theme="light"] .app-content h4,
+    [data-theme="light"] .app-content h5,
+    [data-theme="light"] .app-content h6 {
+        color: #0f172a !important;
+    }
+
+    [data-theme="light"] .app-content p,
+    [data-theme="light"] .app-content label,
+    [data-theme="light"] .app-content li,
+    [data-theme="light"] .app-content td,
+    [data-theme="light"] .app-content th,
+    [data-theme="light"] .app-content small,
+    [data-theme="light"] .app-content div,
+    [data-theme="light"] .app-content strong,
+    [data-theme="light"] .app-content b,
+    [data-theme="light"] .app-content em,
+    [data-theme="light"] .app-content legend {
+        color: #334155 !important;
+    }
+
+    /* ── Span: be careful not to break badges/buttons ── */
+    [data-theme="light"] .app-content span {
+        color: #334155 !important;
+    }
+
+    /* ── WHITELIST: elements that SHOULD keep white text ──
+         Buttons, badges, gradient headers, colored backgrounds */
+    [data-theme="light"] .app-content [class*="btn"],
+    [data-theme="light"] .app-content [class*="badge"],
+    [data-theme="light"] .app-content [class*="alert-"],
+    [data-theme="light"] .app-content .sidebar-link.active,
+    [data-theme="light"] .app-content [style*="gradient"],
+    [data-theme="light"] .app-content [style*="background:#"],
+    [data-theme="light"] .app-content [style*="background: #"],
+    [data-theme="light"] .app-content [style*="background:linear"],
+    [data-theme="light"] .app-content [style*="background: linear"],
+    [data-theme="light"] .app-content [style*="background:rgb"],
+    [data-theme="light"] .app-content [style*="background: rgb"] {
+        color: inherit !important;
+    }
+
+    /* ── Override inline style="color:#fff" on non-button elements ──
+       Inline styles have highest specificity, so we use a JS approach
+       via the theme-fix script below instead of pure CSS. */
+
+    /* ── Links ── */
+    [data-theme="light"] .app-content a:not([class*="btn"]):not([class*="badge"]):not([class*="nav"]) {
+        color: #1565C0 !important;
+    }
+
+    /* ── Form Inputs ── */
+    [data-theme="light"] input[type="text"],
+    [data-theme="light"] input[type="password"],
+    [data-theme="light"] input[type="email"],
+    [data-theme="light"] input[type="number"],
+    [data-theme="light"] input[type="tel"],
+    [data-theme="light"] input[type="date"],
+    [data-theme="light"] input[type="datetime-local"],
+    [data-theme="light"] input[type="search"],
+    [data-theme="light"] select,
+    [data-theme="light"] textarea {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+    [data-theme="light"] input:focus,
+    [data-theme="light"] select:focus,
+    [data-theme="light"] textarea:focus {
+        border-color: #1565C0 !important;
+        box-shadow: 0 0 0 3px rgba(21,101,192,.15) !important;
+    }
+    [data-theme="light"] input::placeholder,
+    [data-theme="light"] textarea::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    /* ── Cards & Surfaces ── */
+    [data-theme="light"] .card,
+    [data-theme="light"] .modal-content,
+    [data-theme="light"] .dropdown-menu,
+    [data-theme="light"] .popover {
+        background: #ffffff !important;
+        color: #1a1f36 !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    /* ── Tables ── */
+    [data-theme="light"] table thead th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+    }
+    [data-theme="light"] table tbody td {
+        color: #334155 !important;
+        border-color: #f1f5f9 !important;
+    }
+    [data-theme="light"] table tbody tr:hover {
+        background: rgba(21,101,192,.03) !important;
+    }
+
+    /* ── Sidebar ── */
+    [data-theme="light"] .app-sidebar {
+        background: rgba(255,255,255,.97) !important;
+        border-color: #e2e8f0 !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-link {
+        color: #475569 !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-link:hover {
+        background: rgba(21,101,192,.06) !important;
+        color: #1565C0 !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-link.active {
+        color: #ffffff !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-link.active span,
+    [data-theme="light"] .app-sidebar .sidebar-link.active i {
+        color: #ffffff !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-brand-text {
+        color: #0f172a !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-brand-text span {
+        color: #0e7490 !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-section-label {
+        color: #94a3b8 !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-user-name {
+        color: #0f172a !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-user-role {
+        color: #64748b !important;
+    }
+    [data-theme="light"] .app-sidebar .sidebar-footer .sidebar-link {
+        color: #64748b !important;
+    }
+
+    /* ── Topbar ── */
+    [data-theme="light"] .app-topbar {
+        background: rgba(255,255,255,.95) !important;
+        border-color: #e2e8f0 !important;
+    }
+    [data-theme="light"] .app-topbar .topbar-page-title {
+        color: #0f172a !important;
+    }
+    [data-theme="light"] .app-topbar .topbar-icon-btn {
+        color: #475569 !important;
+    }
+    [data-theme="light"] .app-topbar .topbar-avatar {
+        color: #ffffff !important;
+    }
+    [data-theme="light"] .topbar-breadcrumb,
+    [data-theme="light"] .topbar-breadcrumb a,
+    [data-theme="light"] .topbar-breadcrumb span {
+        color: #64748b !important;
+    }
+    [data-theme="light"] .topbar-search-input {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    /* ── Notification dropdown ── */
+    [data-theme="light"] .notif-dropdown {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,.12) !important;
+    }
+    [data-theme="light"] .notif-dropdown-title,
+    [data-theme="light"] .notif-item-text,
+    [data-theme="light"] .notif-mark-read {
+        color: #0f172a !important;
+    }
+
+    /* ── Login page overrides ── */
+    [data-theme="light"] .auth-card,
+    [data-theme="light"] .auth-container,
+    [data-theme="light"] .glass-card,
+    [data-theme="light"] .login-card {
+        background: rgba(255,255,255,.95) !important;
+        border-color: #e2e8f0 !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,.08) !important;
+    }
+
+    /* Login page headings & text (outside .app-content) */
+    [data-theme="light"] h1, [data-theme="light"] h2,
+    [data-theme="light"] h3, [data-theme="light"] h4,
+    [data-theme="light"] h5, [data-theme="light"] h6 {
+        color: #0f172a !important;
+    }
+    [data-theme="light"] p,
+    [data-theme="light"] label {
+        color: #334155 !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       DARK MODE — Fix dark text on dark background
+       Problem: Some elements have hardcoded dark text (from Bootstrap
+       or inline styles) that vanishes on dark backgrounds.
+       ══════════════════════════════════════════════════════════════ */
+
+    [data-theme="dark"] .app-content .text-dark,
+    [data-theme="dark"] .app-content .text-body {
+        color: #f1f5f9 !important;
+    }
+
+    [data-theme="dark"] .app-content .text-muted {
+        color: rgba(241,245,249,.5) !important;
+    }
+
+    [data-theme="dark"] .app-content .text-secondary {
+        color: rgba(241,245,249,.65) !important;
+    }
+
+    [data-theme="dark"] .app-content .bg-white,
+    [data-theme="dark"] .app-content .bg-light {
+        background: rgba(14,20,36,.75) !important;
+    }
+
+    [data-theme="dark"] .app-content .border {
+        border-color: rgba(255,255,255,.06) !important;
+    }
+
+    [data-theme="dark"] .app-content .border-bottom,
+    [data-theme="dark"] .app-content .border-top {
+        border-color: rgba(255,255,255,.06) !important;
+    }
+
+    /* Dark mode: Bootstrap cards */
+    [data-theme="dark"] .card {
+        background: rgba(14,20,36,.75) !important;
+        border-color: rgba(255,255,255,.06) !important;
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .card-header,
+    [data-theme="dark"] .card-footer {
+        background: rgba(255,255,255,.03) !important;
+        border-color: rgba(255,255,255,.06) !important;
+    }
+
+    /* Dark mode: Modal */
+    [data-theme="dark"] .modal-content {
+        background: #1a1f36 !important;
+        border-color: rgba(255,255,255,.08) !important;
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .modal-header {
+        border-color: rgba(255,255,255,.08) !important;
+    }
+    [data-theme="dark"] .modal-footer {
+        border-color: rgba(255,255,255,.08) !important;
+    }
+
+    /* Dark mode: Dropdown */
+    [data-theme="dark"] .dropdown-menu {
+        background: #1a1f36 !important;
+        border-color: rgba(255,255,255,.08) !important;
+    }
+    [data-theme="dark"] .dropdown-item {
+        color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] .dropdown-item:hover {
+        background: rgba(255,255,255,.06) !important;
+    }
+
+    /* Dark mode: Form controls */
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select {
+        background: rgba(14,20,36,.6) !important;
+        color: #f1f5f9 !important;
+        border-color: rgba(255,255,255,.08) !important;
+    }
+
+    /* Dark mode: tables with Bootstrap classes */
+    [data-theme="dark"] .table {
+        color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] .table thead th {
+        color: rgba(241,245,249,.7) !important;
+        border-color: rgba(255,255,255,.08) !important;
+    }
+    [data-theme="dark"] .table td {
+        border-color: rgba(255,255,255,.04) !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* Dark mode: list group */
+    [data-theme="dark"] .list-group-item {
+        background: rgba(14,20,36,.5) !important;
+        border-color: rgba(255,255,255,.06) !important;
+        color: #e2e8f0 !important;
+    }
+
+    /* Dark mode: nav tabs/pills */
+    [data-theme="dark"] .nav-link {
+        color: rgba(241,245,249,.6) !important;
+    }
+    [data-theme="dark"] .nav-link.active {
+        color: #fff !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       DARK MODE — Fix hardcoded background:#fff on custom classes
+       These templates use .ib-card, .ib-section, .ib-table etc.
+       with inline <style> blocks that set background:#fff.
+       ══════════════════════════════════════════════════════════════ */
+
+    /* IP Billing dashboard */
+    [data-theme="dark"] .ib-card,
+    [data-theme="dark"] .ib-section {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+    [data-theme="dark"] .ib-section-hdr {
+        background: rgba(255,255,255,.03) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+    [data-theme="dark"] .ib-table th {
+        background: rgba(255,255,255,.04) !important;
+        color: rgba(241,245,249,.65) !important;
+    }
+    [data-theme="dark"] .ib-table td {
+        color: var(--cp-text, #e2e8f0) !important;
+        border-color: rgba(255,255,255,.04) !important;
+    }
+    [data-theme="dark"] .ib-table tr:hover {
+        background: rgba(255,255,255,.03) !important;
+    }
+    [data-theme="dark"] .ib-card .label {
+        color: rgba(241,245,249,.5) !important;
+    }
+    [data-theme="dark"] .btn-sm-action {
+        background: var(--cp-surface, rgba(14,20,36,.6)) !important;
+        color: var(--cp-text, #e2e8f0) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.08)) !important;
+    }
+
+    /* Doctor portal classes */
+    [data-theme="dark"] .dp-card,
+    [data-theme="dark"] .dp-section {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+
+    /* Nurse dashboard */
+    [data-theme="dark"] .nurse-card,
+    [data-theme="dark"] .ns-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* Reception dashboard */
+    [data-theme="dark"] .rc-card,
+    [data-theme="dark"] .rx-card,
+    [data-theme="dark"] .queue-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* Lab dashboard */
+    [data-theme="dark"] .lab-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* Host/Admin dashboard */
+    [data-theme="dark"] .host-card,
+    [data-theme="dark"] .admin-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* Pharmacy dashboard */
+    [data-theme="dark"] .ph-card,
+    [data-theme="dark"] .pharmacy-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* Patient dashboard & diet plan */
+    [data-theme="dark"] .patient-card,
+    [data-theme="dark"] .pt-card,
+    [data-theme="dark"] .health-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+        color: var(--cp-text, #f1f5f9) !important;
+    }
+
+    /* World-class module cards */
+    [data-theme="dark"] .wc-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+    [data-theme="dark"] .wc-card-header {
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+    [data-theme="dark"] .wc-table thead th {
+        background: rgba(255,255,255,.04) !important;
+        color: rgba(241,245,249,.65) !important;
+    }
+    [data-theme="dark"] .wc-table tbody td {
+        color: var(--cp-text, #e2e8f0) !important;
+        border-color: rgba(255,255,255,.04) !important;
+    }
+    [data-theme="dark"] .wc-stat-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+    [data-theme="dark"] .wc-info-card {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       UNIVERSAL: Catch-all for ANY element with inline background:#fff
+       in dark mode — convert to dark surface color.
+       This is the NUCLEAR option — catches everything CSS missed.
+       ══════════════════════════════════════════════════════════════ */
+    [data-theme="dark"] .app-content [style*="background:#fff"],
+    [data-theme="dark"] .app-content [style*="background: #fff"],
+    [data-theme="dark"] .app-content [style*="background:#ffffff"],
+    [data-theme="dark"] .app-content [style*="background: #ffffff"],
+    [data-theme="dark"] .app-content [style*="background: white"],
+    [data-theme="dark"] .app-content [style*="background:white"] {
+        background: var(--cp-surface, rgba(14,20,36,.75)) !important;
+        border-color: var(--cp-border, rgba(255,255,255,.06)) !important;
+    }
+
+    /* Same for background in <style> blocks via class selectors */
+    [data-theme="dark"] .app-content [style*="background:#f8fafc"],
+    [data-theme="dark"] .app-content [style*="background: #f8fafc"],
+    [data-theme="dark"] .app-content [style*="background:#f1f5f9"],
+    [data-theme="dark"] .app-content [style*="background: #f1f5f9"] {
+        background: rgba(255,255,255,.03) !important;
+    }
+
+    /* Also fix text inside these white-bg containers */
+    [data-theme="dark"] .app-content [style*="color:#334155"],
+    [data-theme="dark"] .app-content [style*="color: #334155"],
+    [data-theme="dark"] .app-content [style*="color:#475569"],
+    [data-theme="dark"] .app-content [style*="color: #475569"],
+    [data-theme="dark"] .app-content [style*="color:#64748b"],
+    [data-theme="dark"] .app-content [style*="color: #64748b"],
+    [data-theme="dark"] .app-content [style*="color:#1e293b"],
+    [data-theme="dark"] .app-content [style*="color: #1e293b"],
+    [data-theme="dark"] .app-content [style*="color:#0f172a"],
+    [data-theme="dark"] .app-content [style*="color: #0f172a"] {
+        color: var(--cp-text, #e2e8f0) !important;
+    }
+    </style>
+</head>
 
 {% if is_dashboard %}
 
@@ -53,23 +537,12 @@ DETERMINE LAYOUT TYPE
     </div>
     {% endif %}
 
+    <!-- Skip to content (accessibility) -->
+    <a href="#mainContent" class="skip-to-content">Skip to main content</a>
+
     <div class="app-layout">
-        {# ── Sidebar (role-specific) ── #}
-        {% if current_user.role.value == 'PATIENT' %}
-        {% include 'components/sidebar_patient.html' %}
-        {% elif current_user.role.value == 'DOCTOR' %}
-        {% include 'components/sidebar_doctor.html' %}
-        {% elif current_user.role.value == 'HOST' %}
-        {% include 'components/sidebar_host.html' %}
-        {% elif current_user.role.value == 'LAB_STAFF' %}
-        {% include 'components/sidebar_lab.html' %}
-        {% elif current_user.role.value == 'PHARMACIST' %}
-        {% include 'components/sidebar_pharmacist.html' %}
-        {% elif current_user.role.value == 'RECEPTIONIST' %}
-        {% include 'components/sidebar_receptionist.html' %}
-        {% elif current_user.role.value == 'NURSE' %}
-        {% include 'components/sidebar_nurse.html' %}
-        {% endif %}
+        {# ── Unified Sidebar ── #}
+        {% include 'components/sidebar.html' %}
 
         {# ── Main Area ── #}
         <div class="app-main">
@@ -92,7 +565,7 @@ DETERMINE LAYOUT TYPE
             {% endwith %}
 
             {# ── Content Area ── #}
-            <main class="app-content">
+            <main class="app-content" id="mainContent">
                 {% else %}
 
                 <body>
@@ -220,8 +693,7 @@ DETERMINE LAYOUT TYPE
                     </main>
         </div>
     </div>
-    {# Floating Chatbot #}
-    {% include 'components/floating_chatbot.html' %}
+    {# Floating Chatbot — disabled #}
     <div id="cpCommandPalette" class="cp-command-palette" aria-hidden="true">
         <div class="cp-command-backdrop" data-cp-close></div>
         <div class="cp-command-dialog" role="dialog" aria-modal="true" aria-label="Quick Navigation">
@@ -238,106 +710,7 @@ DETERMINE LAYOUT TYPE
             </div>
         </div>
     </div>
-    <style>
-        .cp-command-palette {
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            display: none;
-        }
-
-        .cp-command-palette.open {
-            display: block;
-        }
-
-        .cp-command-backdrop {
-            position: absolute;
-            inset: 0;
-            background: rgba(2, 6, 23, 0.62);
-            backdrop-filter: blur(6px);
-        }
-
-        .cp-command-dialog {
-            position: relative;
-            max-width: 720px;
-            margin: 9vh auto 0;
-            border-radius: 16px;
-            overflow: hidden;
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
-        }
-
-        .cp-command-input-wrap {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        .cp-command-input-wrap i {
-            color: #93c5fd;
-        }
-
-        .cp-command-input-wrap input {
-            flex: 1;
-            background: transparent;
-            border: 0;
-            outline: none;
-            color: #f8fafc;
-            font-size: 0.98rem;
-        }
-
-        .cp-command-input-wrap kbd,
-        .cp-command-foot kbd {
-            border: 1px solid rgba(148, 163, 184, 0.42);
-            border-bottom-width: 2px;
-            border-radius: 6px;
-            padding: 2px 6px;
-            color: #cbd5e1;
-            background: rgba(15, 23, 42, 0.45);
-            font-size: 0.72rem;
-            margin-left: 4px;
-        }
-
-        .cp-command-list {
-            max-height: 360px;
-            overflow: auto;
-            padding: 8px;
-        }
-
-        .cp-command-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            border-radius: 10px;
-            color: #e2e8f0;
-            text-decoration: none;
-            border: 1px solid transparent;
-            margin-bottom: 6px;
-        }
-
-        .cp-command-item:hover,
-        .cp-command-item.active {
-            background: rgba(59, 130, 246, 0.16);
-            border-color: rgba(147, 197, 253, 0.32);
-        }
-
-        .cp-command-item small {
-            color: #94a3b8;
-        }
-
-        .cp-command-foot {
-            display: flex;
-            justify-content: space-between;
-            color: #94a3b8;
-            font-size: 0.76rem;
-            border-top: 1px solid rgba(148, 163, 184, 0.2);
-            padding: 10px 14px;
-        }
-    </style>
+    <!-- Command palette styles are in design-system.css -->
     {% else %}
     </main>
 
@@ -394,10 +767,151 @@ DETERMINE LAYOUT TYPE
     {% endif %}
     {% endif %}
 
+    <!-- Floating Theme Toggle (visible on ALL pages including login) -->
+    {% if not is_dashboard %}
+    <button id="floatingThemeToggle" title="Toggle Dark/Light Mode" aria-label="Toggle theme" style="
+        position:fixed;bottom:24px;left:24px;z-index:99999;
+        width:48px;height:48px;border-radius:50%;border:2px solid rgba(148,163,184,.25);
+        background:rgba(30,41,59,.85);color:#e2e8f0;font-size:1.1rem;cursor:pointer;
+        display:grid;place-items:center;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+        box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s cubic-bezier(.4,0,.2,1);
+    ">
+        <i class="fas fa-sun"></i>
+    </button>
+    <script>
+    (function(){
+        var btn=document.getElementById('floatingThemeToggle');
+        if(!btn) return;
+        var root=document.documentElement;
+        function getTheme(){return root.getAttribute('data-theme')||'light';}
+        function updateIcon(){
+            var theme=getTheme();
+            btn.innerHTML=theme==='dark'?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+            btn.style.background=theme==='dark'?'rgba(30,41,59,.85)':'rgba(255,255,255,.9)';
+            btn.style.color=theme==='dark'?'#fbbf24':'#1e293b';
+            btn.style.borderColor=theme==='dark'?'rgba(148,163,184,.25)':'rgba(0,0,0,.1)';
+        }
+        updateIcon();
+        btn.addEventListener('click',function(){
+            var newTheme=getTheme()==='dark'?'light':'dark';
+            root.setAttribute('data-theme',newTheme);
+            try{localStorage.setItem('cp-theme',newTheme);}catch(e){}
+            updateIcon();
+            // Dynamically swap CSS variables for login pages
+            document.querySelectorAll('style').forEach(function(s){
+                // This dispatches for any listeners
+            });
+            window.dispatchEvent(new Event('themeChanged'));
+            btn.style.transform='rotate(360deg)';
+            setTimeout(function(){btn.style.transform='rotate(0deg)';},400);
+        });
+    })();
+    </script>
+    {% endif %}
+
     <!-- Scripts (shared) -->
     <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='vendor/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- ═══ THEME CONTRAST FIX — Runtime JS ═══
+         Fixes inline style="color:#fff" and style="color:white" on text elements.
+         CSS cannot override inline styles, so JS is needed. -->
+    <script>
+    (function(){
+        // Tags where white text on theme bg is a problem
+        var textTags = ['H1','H2','H3','H4','H5','H6','P','SPAN','STRONG','B','EM','LABEL','TD','TH','LI','DIV','SMALL','LEGEND'];
+        // Tags/classes where white text is INTENTIONAL (on colored bg)
+        function shouldKeepWhite(el) {
+            if (!el) return false;
+            var tag = el.tagName;
+            // Buttons and badges always keep their color
+            if (tag === 'BUTTON' || tag === 'A') return true;
+            var cls = el.className || '';
+            if (typeof cls === 'string' && (/btn|badge|alert-|nav-link/.test(cls))) return true;
+            // Check if parent has a colored/gradient background
+            var bg = el.style.background || el.style.backgroundColor || '';
+            if (bg && (bg.includes('gradient') || bg.includes('rgb') || (bg.includes('#') && bg !== '#fff' && bg !== '#ffffff' && bg !== 'transparent'))) return true;
+            // Check parent bg
+            var par = el.parentElement;
+            if (par) {
+                var parBg = par.style.background || par.style.backgroundColor || '';
+                if (parBg && (parBg.includes('gradient') || parBg.includes('rgb'))) return true;
+                var parCls = par.className || '';
+                if (typeof parCls === 'string' && (/btn|badge|alert-/.test(parCls))) return true;
+            }
+            return false;
+        }
+
+        function fixInlineColors() {
+            var theme = document.documentElement.getAttribute('data-theme') || 'light';
+            var content = document.querySelector('.app-content') || document.body;
+            var els = content.querySelectorAll('[style]');
+
+            els.forEach(function(el) {
+                var s = el.getAttribute('style') || '';
+
+                if (theme === 'dark') {
+                    // FIX 1: Convert white backgrounds to dark surface in dark mode
+                    if (/background\s*:\s*(#fff|#ffffff|white|#f[8-9a-f][a-f0-9]{4})/i.test(s)) {
+                        el.style.background = 'rgba(14,20,36,.75)';
+                        el.style.borderColor = 'rgba(255,255,255,.06)';
+                    }
+                    // FIX 2: Convert light gray backgrounds
+                    if (/background\s*:\s*(#f[0-8]|#e[0-9a-f])/i.test(s)) {
+                        el.style.background = 'rgba(255,255,255,.03)';
+                    }
+                    // FIX 3: Convert dark text colors to light in dark mode
+                    if (/color\s*:\s*(#[0-5][0-9a-f]{5}|#[0-5][0-9a-f]{2}|black)/i.test(s)) {
+                        if (textTags.includes(el.tagName) && !shouldKeepWhite(el)) {
+                            el.style.color = '#e2e8f0';
+                        }
+                    }
+                } else {
+                    // LIGHT MODE
+                    // FIX 4: Convert white text to dark in light mode
+                    if (/color\s*:\s*(#fff|#ffffff|white|#f[0-9a-f]{5}|#f[0-9a-f]{2})/i.test(s)) {
+                        if (textTags.includes(el.tagName) && !shouldKeepWhite(el)) {
+                            el.style.color = '#1a1f36';
+                        }
+                    }
+                }
+            });
+
+            // FIX 5: Handle <style> blocks that create classes with hardcoded colors
+            // Target common patterns in template <style> blocks
+            if (theme === 'dark') {
+                // Any element with explicit white bg from CSS classes (not inline)
+                var allEls = content.querySelectorAll('div, section, article, aside, main, table, thead, tbody');
+                allEls.forEach(function(el) {
+                    var computed = window.getComputedStyle(el);
+                    var bg = computed.backgroundColor;
+                    // Pure white or near-white backgrounds
+                    if (bg === 'rgb(255, 255, 255)' || bg === 'rgb(248, 250, 252)' ||
+                        bg === 'rgb(241, 245, 249)' || bg === 'rgb(249, 250, 251)') {
+                        el.style.setProperty('background', 'var(--cp-surface, rgba(14,20,36,.75))', 'important');
+                        el.style.setProperty('border-color', 'var(--cp-border, rgba(255,255,255,.06))', 'important');
+                    }
+                });
+            }
+        }
+
+        // Run on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fixInlineColors);
+        } else {
+            fixInlineColors();
+        }
+
+        // Run when theme changes
+        window.addEventListener('themeChanged', function() {
+            setTimeout(fixInlineColors, 50);
+        });
+
+        // Also run after a small delay to catch dynamically rendered content
+        setTimeout(fixInlineColors, 500);
+    })();
+    </script>
     {% if is_dashboard %}
     <script>
         window.cpQuickLinks = [
@@ -429,8 +943,7 @@ DETERMINE LAYOUT TYPE
         ];
     </script>
     {% endif %}
-    {% if current_user.is_authenticated and current_user.role.value in ['PATIENT', 'DOCTOR', 'HOST', 'LAB_STAFF',
-    'PHARMACIST', 'RECEPTIONIST'] %}
+    {% if is_dashboard %}
     <script src="{{ url_for('static', filename='js/pro-engine.js') }}"></script>
     {% endif %}
     <script>

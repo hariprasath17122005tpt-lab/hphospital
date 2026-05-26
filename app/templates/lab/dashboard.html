@@ -84,6 +84,67 @@
         </div>
     </div>
 
+    <!-- Critical Results Alert Section -->
+    {% if critical_results %}
+    <div class="card border-0 shadow-sm mb-4"
+        style="border-radius: 16px; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3);">
+        <div class="card-header border-0 py-3 d-flex justify-content-between align-items-center"
+            style="background: rgba(220,38,38,0.12); border-radius: 16px 16px 0 0; cursor: pointer;"
+            data-bs-toggle="collapse" data-bs-target="#criticalLabResults" aria-expanded="true">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-exclamation-triangle fa-lg" style="color: #ef4444; animation: pulse 1.5s infinite;"></i>
+                <h6 class="mb-0 fw-bold" style="color: #fca5a5;">CRITICAL LAB RESULTS</h6>
+                <span class="badge rounded-pill px-2 py-1"
+                    style="background: rgba(239,68,68,0.3); color: #fca5a5; font-weight: 700;">{{ critical_results|length }}</span>
+            </div>
+            <i class="fas fa-chevron-down" style="color: #fca5a5;"></i>
+        </div>
+        <div class="collapse show" id="criticalLabResults">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm align-middle mb-0" style="--bs-table-bg: transparent;">
+                        <thead>
+                            <tr style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#fca5a5;">
+                                <th class="ps-4">Patient</th>
+                                <th>Test</th>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                                <th>Reference Range</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cr in critical_results[:15] %}
+                            <tr style="border-bottom: 1px solid rgba(239,68,68,0.15);">
+                                <td class="ps-4">
+                                    <div class="fw-semibold" style="color: #fecaca;">{{ cr.patient_name }}</div>
+                                    <div class="small" style="color: #f87171;">#{{ cr.patient_id }}</div>
+                                </td>
+                                <td><strong style="color: #fecaca;">{{ cr.test_name }}</strong></td>
+                                <td style="color: #fca5a5;">{{ cr.field }}</td>
+                                <td>
+                                    <span class="badge rounded-pill px-3 py-1"
+                                        style="background: rgba(239,68,68,0.25); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); font-size: 0.85rem; font-weight: 700;">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ cr.value }}
+                                    </span>
+                                </td>
+                                <td class="small" style="color: #94a3b8;">{{ cr.ref_range }}</td>
+                                <td class="small" style="color: #94a3b8;">{{ cr.completed_at.strftime('%d %b %H:%M') if cr.completed_at else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if critical_results|length > 15 %}
+                <div class="text-center py-2" style="color: #fca5a5; font-size: 0.82rem;">
+                    <i class="fas fa-ellipsis-h me-1"></i> {{ critical_results|length - 15 }} more critical results
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card border-0 shadow-sm mb-3"
         style="border-radius: 16px; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.1);">
         <div class="card-body py-3">
@@ -136,6 +197,7 @@
                     <th>Category</th>
                     <th>Source</th>
                     <th>Status</th>
+                    <th>Results</th>
                     <th>Ordered</th>
                     <th class="pe-4 text-end">Actions</th>
                 </tr>
@@ -159,6 +221,26 @@
                         {% endif %}
                     </td>
                     <td><span class="lab-status-pill" data-status="{{ o.status }}">{{ o.status.replace('_',' ') }}</span></td>
+                    <td>
+                        {% set rflag = order_result_flags.get(o.id, 'pending') %}
+                        {% if rflag == 'critical' %}
+                            <span class="badge rounded-pill px-2 py-1" style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4);" title="Critical values detected">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Critical
+                            </span>
+                        {% elif rflag == 'abnormal' %}
+                            <span class="badge rounded-pill px-2 py-1" style="background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.4);" title="Abnormal values detected">
+                                <i class="fas fa-exclamation-circle me-1"></i>Abnormal
+                            </span>
+                        {% elif rflag == 'normal' %}
+                            <span class="badge rounded-pill px-2 py-1" style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.4);" title="All values within normal range">
+                                <i class="fas fa-check-circle me-1"></i>Normal
+                            </span>
+                        {% elif rflag == 'no_data' %}
+                            <span class="small text-secondary">No data</span>
+                        {% else %}
+                            <span class="small text-secondary">Pending</span>
+                        {% endif %}
+                    </td>
                     <td class="small text-secondary">{{ o.created_at.strftime('%d %b %Y %H:%M') if o.created_at else '—' }}</td>
                     <td class="pe-4 text-end lab-actions-cell">
                         {% if current_user.role.value in ['LAB_STAFF','ADMIN'] %}
@@ -185,7 +267,7 @@
                 </tr>
                 {% else %}
                 <tr id="labEmptyRow">
-                    <td colspan="7" class="text-center py-5 text-secondary">No lab orders match the current filters.</td>
+                    <td colspan="8" class="text-center py-5 text-secondary">No lab orders match the current filters.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -574,6 +656,42 @@
         return `<div class="btn-group btn-group-sm flex-wrap justify-content-end">${btns}</div>`;
     }
 
+    // Client-side reference ranges for result flagging on dynamic refresh
+    const REF_RANGES = {
+        'Hemoglobin': {min:12.0, max:17.5, cl:7.0, ch:20.0},
+        'Blood Sugar (Fasting)': {min:70, max:100, cl:50, ch:400},
+        'Blood Sugar (PP)': {min:70, max:140, cl:50, ch:400},
+        'Creatinine': {min:0.6, max:1.2, cl:0.2, ch:10.0},
+        'Potassium': {min:3.5, max:5.0, cl:2.5, ch:6.5},
+        'Sodium': {min:136, max:145, cl:120, ch:160},
+        'Platelet Count': {min:150000, max:400000, cl:50000, ch:1000000},
+    };
+
+    function resultFlagBadge(o) {
+        if (o.status !== 'COMPLETED' || !o.result_data) {
+            return o.status === 'COMPLETED' ? '<span class="small text-secondary">No data</span>' : '<span class="small text-secondary">Pending</span>';
+        }
+        let data = o.result_data;
+        if (typeof data === 'string') { try { data = JSON.parse(data); } catch(e) { return '<span class="small text-secondary">--</span>'; } }
+        if (typeof data !== 'object' || data === null) return '<span class="small text-secondary">--</span>';
+        let hasCritical = false, hasAbnormal = false, count = 0;
+        const skip = ['completed_at', 'order_notes', 'file_path'];
+        for (const [field, val] of Object.entries(data)) {
+            if (skip.includes(field) || !val) continue;
+            const ref = REF_RANGES[field] || REF_RANGES[o.test_name];
+            if (!ref) { count++; continue; }
+            const num = parseFloat(String(val).replace(/,/g, ''));
+            if (isNaN(num)) { count++; continue; }
+            if (num <= ref.cl || num >= ref.ch) hasCritical = true;
+            else if (num < ref.min || num > ref.max) hasAbnormal = true;
+            count++;
+        }
+        if (hasCritical) return '<span class="badge rounded-pill px-2 py-1" style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4);"><i class="fas fa-exclamation-triangle me-1"></i>Critical</span>';
+        if (hasAbnormal) return '<span class="badge rounded-pill px-2 py-1" style="background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.4);"><i class="fas fa-exclamation-circle me-1"></i>Abnormal</span>';
+        if (count > 0) return '<span class="badge rounded-pill px-2 py-1" style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.4);"><i class="fas fa-check-circle me-1"></i>Normal</span>';
+        return '<span class="small text-secondary">--</span>';
+    }
+
     function rowHtml(o) {
         const dt = o.created_at ? new Date(o.created_at).toLocaleString() : '—';
         return `<tr data-order-id="${o.id}">
@@ -582,6 +700,7 @@
             <td class="small text-secondary">${o.test_category || ''}</td>
             <td>${sourceBadge(o.source_type)}</td>
             <td>${statusPillHtml(o.status)}</td>
+            <td>${resultFlagBadge(o)}</td>
             <td class="small text-secondary">${dt}</td>
             <td class="pe-4 text-end">${actionsHtml(o)}</td>
         </tr>`;
@@ -606,7 +725,7 @@
                 if (!tb) return;
                 updateStats(data.orders);
                 if (!data.orders.length) {
-                    tb.innerHTML = '<tr id="labEmptyRow"><td colspan="7" class="text-center py-5 text-secondary">No lab orders match the current filters.</td></tr>';
+                    tb.innerHTML = '<tr id="labEmptyRow"><td colspan="8" class="text-center py-5 text-secondary">No lab orders match the current filters.</td></tr>';
                     return;
                 }
                 tb.innerHTML = data.orders.map(rowHtml).join('');

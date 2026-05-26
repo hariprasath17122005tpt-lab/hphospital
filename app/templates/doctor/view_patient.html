@@ -13,10 +13,12 @@
                         <div class="col-md-6">
                             <h5>Personal Information</h5>
                             <p>
-                                <strong>Name:</strong> {{ patient.first_name }} {{ patient.last_name }}<br>
-                                <strong>Email:</strong> {{ patient.user.email }}<br>
+                                <strong>Name:</strong> {{ patient.full_name }}<br>
+                                <strong>UHID:</strong> {{ patient.uhid or 'N/A' }}<br>
+                                <strong>Email:</strong> {{ patient.user.email if patient.user else 'N/A' }}<br>
                                 <strong>Phone:</strong> {{ patient.phone or 'N/A' }}<br>
-                                <strong>Date of Birth:</strong> {{ patient.dob or 'N/A' }}<br>
+                                <strong>Age:</strong> {{ patient.age or 'N/A' }} | <strong>Gender:</strong> {{ patient.gender or 'N/A' }}<br>
+                                <strong>Weight:</strong> {{ patient.weight or 'N/A' }}{% if patient.weight %} kg{% endif %}<br>
                                 <strong>Address:</strong> {{ patient.address or 'N/A' }}
                             </p>
                         </div>
@@ -24,10 +26,21 @@
                             <h5>Medical Information</h5>
                             <p>
                                 <strong>Blood Type:</strong> {{ patient.blood_type or 'N/A' }}<br>
-                                <strong>Allergies:</strong> {{ patient.allergies or 'N/A' }}<br>
-                                <strong>Medical History:</strong>
                             </p>
-                            <p class="text-muted">{{ patient.medical_history or 'No information provided' }}</p>
+                            <!-- Alert badges for key history -->
+                            {% if patient.allergies or patient.allergy_history %}
+                            <span class="badge bg-danger mb-1"><i class="fas fa-exclamation-triangle"></i> Allergy: {{ patient.allergy_history or patient.allergies }}</span><br>
+                            {% endif %}
+                            {% if patient.chronic_conditions %}
+                            <span class="badge bg-warning text-dark mb-1"><i class="fas fa-heartbeat"></i> Chronic: {{ patient.chronic_conditions }}</span><br>
+                            {% endif %}
+                            {% if patient.family_history %}
+                            <span class="badge bg-info mb-1"><i class="fas fa-users"></i> Family: {{ patient.family_history }}</span><br>
+                            {% endif %}
+                            <div class="mt-2">
+                                <strong>Medical History:</strong>
+                                <p class="text-muted mb-1">{{ patient.medical_history or 'No information provided' }}</p>
+                            </div>
                         </div>
                     </div>
 
@@ -66,8 +79,11 @@
                     </div>
 
                     <div class="card mb-4">
-                        <div class="card-header bg-light">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
                             <h6 class="mb-0"><i class="fas fa-heartbeat"></i> Recent Health Data</h6>
+                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#consultHistoryPanel" aria-expanded="false">
+                                <i class="fas fa-history"></i> History
+                            </button>
                         </div>
                         <div class="card-body">
                             {% if recent_health_data %}
@@ -109,6 +125,65 @@
                             {% else %}
                             <p class="text-muted">No health data available</p>
                             {% endif %}
+
+                            <!-- ══ CONSULTATION HISTORY PANEL ══ -->
+                            <div class="collapse mt-3" id="consultHistoryPanel">
+                                <div class="card border-primary">
+                                    <div class="card-header bg-primary text-white py-2">
+                                        <h6 class="mb-0"><i class="fas fa-file-medical-alt"></i> Consultation History &amp; Prescriptions</h6>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        {% if patient_consultations %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Doctor</th>
+                                                        <th>Complaint</th>
+                                                        <th>Diagnosis</th>
+                                                        <th>Vitals</th>
+                                                        <th style="text-align:center;">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for c in patient_consultations %}
+                                                    <tr>
+                                                        <td><small>{{ c.created_at.strftime('%m/%d/%Y %H:%M') if c.created_at else '--' }}</small></td>
+                                                        <td><small>Dr. {{ c.doctor.first_name }} {{ c.doctor.last_name }}</small></td>
+                                                        <td><small>{{ (c.chief_complaint or '--')[:40] }}{% if c.chief_complaint and c.chief_complaint|length > 40 %}...{% endif %}</small></td>
+                                                        <td>
+                                                            <small class="fw-bold">{{ (c.final_diagnosis or c.provisional_diagnosis or '--')[:40] }}{% if (c.final_diagnosis or c.provisional_diagnosis or '')|length > 40 %}...{% endif %}</small>
+                                                        </td>
+                                                        <td>
+                                                            <small>
+                                                                {% if c.vitals_bp_systolic and c.vitals_bp_diastolic %}BP:{{ c.vitals_bp_systolic }}/{{ c.vitals_bp_diastolic }}{% endif %}
+                                                                {% if c.vitals_pulse %} P:{{ c.vitals_pulse }}{% endif %}
+                                                                {% if c.vitals_temperature %} T:{{ c.vitals_temperature }}{% endif %}
+                                                                {% if not c.vitals_bp_systolic and not c.vitals_pulse and not c.vitals_temperature %}--{% endif %}
+                                                            </small>
+                                                        </td>
+                                                        <td style="text-align:center; white-space:nowrap;">
+                                                            <a href="{{ url_for('doctor.consultation_detail', consultation_id=c.id) }}"
+                                                               class="btn btn-sm btn-outline-primary me-1" title="Full Detailed Record">
+                                                                <i class="fas fa-file-medical-alt"></i> Record
+                                                            </a>
+                                                            <a href="{{ url_for('doctor.consultation_prescription', consultation_id=c.id) }}"
+                                                               class="btn btn-sm btn-outline-success" title="Prescription Print">
+                                                                <i class="fas fa-prescription"></i> Rx
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% else %}
+                                        <p class="text-muted mb-0 p-2">No consultation records yet. Click "Write Prescription" to start the first consultation.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -164,11 +239,14 @@
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('doctor.patient_list') }}" class="btn btn-secondary">Back to Patient List</a>
                         <a href="{{ url_for('doctor.create_prescription', patient_id=patient.id) }}"
-                            class="btn btn-info text-white">
+                            class="btn btn-primary">
                             <i class="fas fa-prescription"></i> Write Prescription
                         </a>
-                        <a href="{{ url_for('doctor.create_bill', patient_id=patient.id) }}" class="btn btn-success">
-                            <i class="fas fa-file-invoice-dollar"></i> Create Bill
+                        <a href="{{ url_for('ip_billing.create_bill_page', billing_type='OP', patient_id=patient.id) }}" class="btn btn-success">
+                            <i class="fas fa-file-invoice-dollar"></i> OP Bill
+                        </a>
+                        <a href="{{ url_for('ip_billing.create_bill_page', billing_type='IP', patient_id=patient.id) }}" class="btn btn-info text-white">
+                            <i class="fas fa-bed"></i> IP Bill
                         </a>
                         <a href="{{ url_for('doctor.lab_reports_view') }}" class="btn btn-outline-primary">
                             <i class="fas fa-file-medical"></i> View Lab Reports

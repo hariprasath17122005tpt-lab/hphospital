@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&display=swap"
     rel="stylesheet">
 <style>
-    :root {
+    :root, [data-theme="dark"] {
         --pg-bg: #020818;
         --pg-gold: #d4a853;
         --pg-gold-l: #f0d48a;
@@ -17,6 +17,16 @@
         --pg-border: rgba(255, 255, 255, .06);
         --pg-text: #f1f5f9;
         --pg-muted: #64748b;
+    }
+    [data-theme="light"] {
+        --pg-bg: #f1f5f9;
+        --pg-gold: #92400e;
+        --pg-gold-l: #b45309;
+        --pg-violet: #6d28d9;
+        --pg-glass: rgba(255, 255, 255, .88);
+        --pg-border: rgba(0, 0, 0, .08);
+        --pg-text: #0f172a;
+        --pg-muted: #475569;
     }
 
     body {

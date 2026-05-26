@@ -28,10 +28,10 @@
 
     /* Cards */
     .he-card {
-        background: rgba(15, 15, 30, 0.65);
+        background: var(--cp-surface);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--cp-border);
         border-radius: 24px;
         padding: 32px;
         position: relative;
@@ -43,7 +43,7 @@
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1.1rem;
         font-weight: 700;
-        color: #f1f5f9;
+        color: var(--cp-text);
         margin-bottom: 24px;
         display: flex;
         align-items: center;
@@ -66,7 +66,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: rgba(241, 245, 249, 0.5);
+        color: var(--cp-text-muted);
         margin-bottom: 8px;
     }
 
@@ -78,11 +78,11 @@
 
     .he-control {
         width: 100%;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--cp-glass);
+        border: 1px solid var(--cp-border);
         border-radius: 14px;
         padding: 16px 18px;
-        color: #f1f5f9;
+        color: var(--cp-text);
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1.2rem;
         font-weight: 600;
@@ -90,15 +90,15 @@
     }
 
     .he-control:focus {
-        border-color: #818cf8;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--cp-accent);
+        box-shadow: 0 0 0 3px var(--cp-accent-soft, rgba(99, 102, 241, 0.15));
+        background: var(--cp-glass);
     }
 
     .he-unit {
         position: absolute;
         right: 18px;
-        color: rgba(241, 245, 249, 0.3);
+        color: var(--cp-text-muted);
         font-size: 0.8rem;
         font-weight: 600;
         pointer-events: none;
@@ -107,7 +107,7 @@
     /* Range Indicators (Mock Visual) */
     .he-range-bar {
         height: 4px;
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--cp-glass);
         margin-top: 8px;
         border-radius: 2px;
         position: relative;
@@ -128,12 +128,12 @@
         justify-content: space-between;
         align-items: center;
         padding: 16px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--cp-border);
     }
 
     .he-switch-label {
         font-size: 0.9rem;
-        color: #f1f5f9;
+        color: var(--cp-text);
         font-weight: 500;
     }
 
@@ -155,9 +155,24 @@
         overflow: hidden;
     }
 
-    .he-submit-btn:hover {
+    .he-submit-btn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+    }
+
+    .he-submit-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, #374151, #1f2937);
+    }
+
+    .he-required:invalid,
+    .he-required[value=""] {
+        border-color: rgba(239, 68, 68, 0.25);
+    }
+
+    .he-required:valid:not(:placeholder-shown) {
+        border-color: rgba(16, 185, 129, 0.3);
     }
 
     /* Responsive */
@@ -192,8 +207,8 @@
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Systolic BP (Top)</label>
                         <div class="he-control-wrap">
-                            <input type="number" class="he-control" name="systolic_bp" placeholder="120" min="40"
-                                max="250" oninput="updateRange(this, 120, 140)">
+                            <input type="number" class="he-control he-required" name="systolic_bp" placeholder="120" min="40"
+                                max="250" required oninput="updateRange(this, 120, 140)">
                             <span class="he-unit">mmHg</span>
                         </div>
                         <div class="he-range-bar">
@@ -203,8 +218,8 @@
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Diastolic BP (Bottom)</label>
                         <div class="he-control-wrap">
-                            <input type="number" class="he-control" name="diastolic_bp" placeholder="80" min="30"
-                                max="150" oninput="updateRange(this, 80, 90)">
+                            <input type="number" class="he-control he-required" name="diastolic_bp" placeholder="80" min="30"
+                                max="150" required oninput="updateRange(this, 80, 90)">
                             <span class="he-unit">mmHg</span>
                         </div>
                         <div class="he-range-bar">
@@ -216,8 +231,8 @@
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Fasting Glucose</label>
                         <div class="he-control-wrap">
-                            <input type="number" step="0.1" class="he-control" name="fasting_sugar" placeholder="90"
-                                oninput="updateRange(this, 100, 125)">
+                            <input type="number" step="0.1" class="he-control he-required" name="fasting_sugar" placeholder="90"
+                                required oninput="updateRange(this, 100, 125)">
                             <span class="he-unit">mg/dL</span>
                         </div>
                         <div class="he-range-bar">
@@ -227,8 +242,8 @@
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Heart Rate</label>
                         <div class="he-control-wrap">
-                            <input type="number" class="he-control" name="heart_rate" placeholder="72" min="30"
-                                max="220" oninput="updateRange(this, 100, 120)">
+                            <input type="number" class="he-control he-required" name="heart_rate" placeholder="72" min="30"
+                                max="220" required oninput="updateRange(this, 100, 120)">
                             <span class="he-unit">bpm</span>
                         </div>
                         <div class="he-range-bar">
@@ -240,15 +255,15 @@
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Body Temp</label>
                         <div class="he-control-wrap">
-                            <input type="number" step="0.1" class="he-control" name="temperature" placeholder="98.6"
-                                min="90" max="110">
+                            <input type="number" step="0.1" class="he-control he-required" name="temperature" placeholder="98.6"
+                                min="90" max="110" required>
                             <span class="he-unit">°F</span>
                         </div>
                     </div>
                     <div class="col-md-6 he-input-group">
                         <label class="he-label">Random Sugar</label>
                         <div class="he-control-wrap">
-                            <input type="number" step="0.1" class="he-control" name="random_sugar" placeholder="140">
+                            <input type="number" step="0.1" class="he-control he-required" name="random_sugar" placeholder="140" required>
                             <span class="he-unit">mg/dL</span>
                         </div>
                     </div>
@@ -256,8 +271,8 @@
 
                 <div class="he-input-group mt-3">
                     <label class="he-label">Current Symptoms</label>
-                    <textarea class="he-control" name="symptoms" rows="3" placeholder="Describe how you feel..."
-                        style="font-size:1rem;font-weight:400;min-height:100px;"></textarea>
+                    <textarea class="he-control he-required" name="symptoms" rows="3" placeholder="Describe how you feel..."
+                        style="font-size:1rem;font-weight:400;min-height:100px;" required></textarea>
                 </div>
             </div>
 
@@ -302,7 +317,7 @@
 
                 <div style="flex:1;"></div>
 
-                <button type="submit" class="he-submit-btn pro-magnetic">
+                <button type="submit" class="he-submit-btn pro-magnetic" id="submitBtn" disabled>
                     <span class="magnetic-inner"><i class="fas fa-save me-2"></i> Save & Analyze</span>
                 </button>
             </div>
@@ -322,5 +337,23 @@
         else if (val > warn) bar.style.background = '#fbbf24'; // Yellow
         else bar.style.background = '#34d399'; // Green
     }
+
+    // Validate: enable Save only when all physiological fields are filled
+    (function() {
+        const requiredFields = document.querySelectorAll('.he-required');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function checkAllFilled() {
+            const allFilled = Array.from(requiredFields).every(function(field) {
+                return field.value.trim() !== '';
+            });
+            submitBtn.disabled = !allFilled;
+        }
+
+        requiredFields.forEach(function(field) {
+            field.addEventListener('input', checkAllFilled);
+            field.addEventListener('change', checkAllFilled);
+        });
+    })();
 </script>
 {% endblock %}

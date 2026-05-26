@@ -20,14 +20,9 @@
                         <i class="fas fa-heart-pulse"></i>
                     </div>
                     <h5>Health Score</h5>
-                    {% if latest_health %}
-                        {% set diabetes = latest_health.diabetes_risk or 0 %}
-                        {% set heart = latest_health.heart_disease_risk or 0 %}
-                        {% set hyper = latest_health.hypertension_risk or 0 %}
-                        {% set total_risk = diabetes + heart + hyper %}
-                        {% set health_score = 100 - (total_risk / 3) %}
-                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ "%.0f"|format(health_score) }}/100</p>
-                        <p class="text-muted" style="font-size: 12px;">AI-assessed health status</p>
+                    {% if health_score > 0 %}
+                        <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">{{ health_score }}/100</p>
+                        <p class="text-muted" style="font-size: 12px;">Vitals-based health status</p>
                     {% else %}
                         <p style="font-size: 32px; font-weight: 600; margin: 12px 0;">--</p>
                         <p class="text-muted" style="font-size: 12px;">No data available</p>
@@ -221,5 +216,80 @@
             </a>
         </div>
     </div>
+
+    <!-- OP Registration (Express Check-in) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('features.digital_checkin') }}" class="card border-0 text-decoration-none text-reset" style="transition: all 0.2s; border-left: 4px solid #dc2626 !important;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-hospital-user" style="font-size: 32px; color: #dc2626; margin-bottom: 12px; display: block;"></i>
+                    <h5>OP Registration</h5>
+                    <p class="text-muted" style="font-size: 12px;">Express check-in for outpatient visit</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══ MORE FEATURES ROW ═══ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.symptom_checker') }}" class="card border-0 text-decoration-none text-reset" style="transition:all .2s;border-left:4px solid #ef4444 !important;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-stethoscope" style="font-size:32px;color:#ef4444;margin-bottom:12px;display:block;"></i>
+                    <h5>Symptom Checker</h5>
+                    <p class="text-muted" style="font-size:12px;">AI-powered symptom analysis</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('patient.image_analysis') }}" class="card border-0 text-decoration-none text-reset" style="transition:all .2s;border-left:4px solid #8b5cf6 !important;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-x-ray" style="font-size:32px;color:#8b5cf6;margin-bottom:12px;display:block;"></i>
+                    <h5>Image Analysis</h5>
+                    <p class="text-muted" style="font-size:12px;">Upload X-rays, scans for review</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('telemedicine.dashboard') }}" class="card border-0 text-decoration-none text-reset" style="transition:all .2s;border-left:4px solid #06b6d4 !important;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-video" style="font-size:32px;color:#06b6d4;margin-bottom:12px;display:block;"></i>
+                    <h5>Telemedicine</h5>
+                    <p class="text-muted" style="font-size:12px;">Video consult with doctor</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ url_for('feedback_module.submit') }}" class="card border-0 text-decoration-none text-reset" style="transition:all .2s;border-left:4px solid #f59e0b !important;">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-star" style="font-size:32px;color:#f59e0b;margin-bottom:12px;display:block;"></i>
+                    <h5>Give Feedback</h5>
+                    <p class="text-muted" style="font-size:12px;">Rate your experience</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══ EMERGENCY SOS BUTTON ═══ -->
+    <div class="card border-0 mb-4" style="background:linear-gradient(135deg,#dc2626,#991b1b);border-radius:16px;overflow:hidden;">
+        <div class="card-body d-flex align-items-center justify-content-between p-4">
+            <div>
+                <h4 style="color:#fff;font-weight:800;margin:0;">Emergency?</h4>
+                <p style="color:rgba(255,255,255,.8);margin:4px 0 0;font-size:.9rem;">Call ambulance or reach emergency department immediately</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="tel:108" style="padding:12px 24px;background:#fff;color:#dc2626;border-radius:12px;font-weight:800;font-size:1rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    <i class="fas fa-phone-alt"></i> Call 108
+                </a>
+                <a href="tel:+919443966329" style="padding:12px 24px;background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    <i class="fas fa-hospital"></i> Call Hospital
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
 {% endblock %}

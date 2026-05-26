@@ -1,12 +1,15 @@
 
-from flask import Blueprint, render_template, request, flash, redirect, url_for, abort, session
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort, session, jsonify
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
-from app.models.models import db, User, UserRole, Doctor, Nurse, Patient, AuditLog, SystemSettings, Hospital, FrontpageDoctor
+from app.models.models import (db, User, UserRole, Doctor, Nurse, Patient, AuditLog,
+                                SystemSettings, Hospital, FrontpageDoctor,
+                                Billing, Bed, Appointment, IPAdmission)
 from werkzeug.utils import secure_filename
 import os
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 host_bp = Blueprint('host', __name__, url_prefix='/host')
 
@@ -43,21 +46,150 @@ def dashboard():
     # Quick Stats - Doctors
     total_doctors = Doctor.query.filter_by(is_deleted=False).count()
     pending_doctors = Doctor.query.filter_by(verified=False, is_deleted=False).count()
-    
+
     # Quick Stats - Patients
     total_patients = Patient.query.count()
     suspicious_activities = 0 # Placeholder for logic
-    
+
     settings = SystemSettings.query.first()
-    
+
     recent_logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(10).all()
-    
-    return render_template('host/dashboard.html', 
+
+    # ── Financial Stats ──
+    today = datetime.utcnow().date()
+    month_start = today.replace(day=1)
+
+    # Revenue today (sum of grand_total for Paid bills created today)
+    revenue_today = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status == 'Paid',
+        func.date(Billing.created_at) == today
+    ).scalar() or 0
+
+    # Revenue this month
+    revenue_month = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status == 'Paid',
+        func.date(Billing.created_at) >= month_start
+    ).scalar() or 0
+
+    # Outstanding bills (Unpaid / Partial)
+    outstanding_bills = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status.in_(['Unpaid', 'Partial'])
+    ).scalar() or 0
+
+    # ── Staff Counts ──
+    total_nurses = Nurse.query.filter_by(is_deleted=False).count()
+    staff_by_role = {}
+    role_counts = db.session.query(User.role, func.count(User.id)).filter(
+        User.is_active == True
+    ).group_by(User.role).all()
+    for role_enum, cnt in role_counts:
+        staff_by_role[role_enum.value] = cnt
+
+    # ── Bed Occupancy ──
+    beds_total = Bed.query.count()
+    beds_occupied = Bed.query.filter_by(is_occupied=True).count()
+    bed_occupancy_pct = round((beds_occupied / beds_total * 100), 1) if beds_total > 0 else 0
+
+    # ── IP & Appointments ──
+    active_ip = IPAdmission.query.filter_by(admission_status='Admitted').count()
+    appointments_today = Appointment.query.filter(
+        func.date(Appointment.appointment_date) == today
+    ).count()
+
+    # ── Department-wise Patient Count (from Doctor specialization -> Appointments) ──
+    dept_patient_counts = db.session.query(
+        Doctor.specialization,
+        func.count(func.distinct(Appointment.patient_id))
+    ).join(Appointment, Appointment.doctor_id == Doctor.id).filter(
+        Doctor.is_deleted == False
+    ).group_by(Doctor.specialization).all()
+    department_stats = {spec: cnt for spec, cnt in dept_patient_counts if spec}
+
+    return render_template('host/dashboard.html',
                          total_doctors=total_doctors,
                          pending_doctors=pending_doctors,
                          total_patients=total_patients,
+                         total_nurses=total_nurses,
                          settings=settings,
-                         recent_logs=recent_logs)
+                         recent_logs=recent_logs,
+                         revenue_today=revenue_today,
+                         revenue_month=revenue_month,
+                         outstanding_bills=outstanding_bills,
+                         staff_by_role=staff_by_role,
+                         beds_total=beds_total,
+                         beds_occupied=beds_occupied,
+                         bed_occupancy_pct=bed_occupancy_pct,
+                         active_ip=active_ip,
+                         appointments_today=appointments_today,
+                         department_stats=department_stats)
+
+@host_bp.route('/departments')
+@login_required
+@host_required
+def departments():
+    """Department Management — overview of all hospital departments."""
+    DEPARTMENTS = [
+        {'name': 'General Medicine', 'icon': 'fa-stethoscope', 'color': '#3b82f6'},
+        {'name': 'Pediatrics', 'icon': 'fa-baby', 'color': '#8b5cf6'},
+        {'name': 'Cardiology', 'icon': 'fa-heartbeat', 'color': '#ef4444'},
+        {'name': 'Orthopedics', 'icon': 'fa-bone', 'color': '#f59e0b'},
+        {'name': 'ENT', 'icon': 'fa-ear-listen', 'color': '#10b981'},
+        {'name': 'Dermatology', 'icon': 'fa-hand-dots', 'color': '#ec4899'},
+        {'name': 'Ophthalmology', 'icon': 'fa-eye', 'color': '#06b6d4'},
+        {'name': 'Gynecology', 'icon': 'fa-venus', 'color': '#d946ef'},
+        {'name': 'Emergency', 'icon': 'fa-truck-medical', 'color': '#dc2626'},
+        {'name': 'ICU', 'icon': 'fa-bed-pulse', 'color': '#b91c1c'},
+        {'name': 'Radiology', 'icon': 'fa-x-ray', 'color': '#6366f1'},
+        {'name': 'Pathology', 'icon': 'fa-microscope', 'color': '#0d9488'},
+        {'name': 'Pharmacy', 'icon': 'fa-pills', 'color': '#16a34a'},
+    ]
+
+    # Doctor count per specialization
+    doc_counts = db.session.query(
+        Doctor.specialization,
+        func.count(Doctor.id)
+    ).filter(Doctor.is_deleted == False, Doctor.verified == True).group_by(
+        Doctor.specialization
+    ).all()
+    doc_count_map = {spec.strip(): cnt for spec, cnt in doc_counts if spec}
+
+    # Patient count per department (through appointments with doctors of that specialty)
+    patient_counts = db.session.query(
+        Doctor.specialization,
+        func.count(func.distinct(Appointment.patient_id))
+    ).join(Appointment, Appointment.doctor_id == Doctor.id).filter(
+        Doctor.is_deleted == False
+    ).group_by(Doctor.specialization).all()
+    patient_count_map = {spec.strip(): cnt for spec, cnt in patient_counts if spec}
+
+    # IP admissions per department (through doctor specialization)
+    ip_counts = db.session.query(
+        Doctor.specialization,
+        func.count(IPAdmission.id)
+    ).join(IPAdmission, IPAdmission.doctor_id == Doctor.id).filter(
+        Doctor.is_deleted == False,
+        IPAdmission.admission_status == 'Admitted'
+    ).group_by(Doctor.specialization).all()
+    ip_count_map = {spec.strip(): cnt for spec, cnt in ip_counts if spec}
+
+    dept_data = []
+    for dept in DEPARTMENTS:
+        name = dept['name']
+        doctors = doc_count_map.get(name, 0)
+        patients = patient_count_map.get(name, 0)
+        ip_active = ip_count_map.get(name, 0)
+        dept_data.append({
+            'name': name,
+            'icon': dept['icon'],
+            'color': dept['color'],
+            'doctor_count': doctors,
+            'patient_count': patients,
+            'ip_active': ip_active,
+            'active': doctors > 0,
+        })
+
+    return render_template('host/departments.html', departments=dept_data)
+
 
 @host_bp.route('/doctors')
 @login_required
@@ -366,6 +498,226 @@ def frontpage_doctor_toggle(doc_id):
     return redirect(url_for('host.frontpage_doctors'))
 
 
-# --- Emergency Override (Global) ---
-# This is a bit tricky to implement globally without middleware,
-# but we can simulate it by checking it in main decorators or context processors.
+# ══════════════════════════════════════════════════════════════════════════
+# DETAILED MANAGEMENT PAGES — Full hospital activity tracking
+# ══════════════════════════════════════════════════════════════════════════
+
+@host_bp.route('/activity/logins')
+@login_required
+@host_required
+def login_activity():
+    """All doctor, patient, staff login activity with timestamps."""
+    try:
+        from app.models.auth_models import LoginActivity
+        activities = LoginActivity.query.order_by(LoginActivity.login_time.desc()).limit(200).all()
+    except Exception:
+        activities = []
+
+    # Also get from AuditLog for login actions
+    login_logs = AuditLog.query.filter(
+        AuditLog.action.in_(['LOGIN', 'LOGOUT', 'LOGIN_SUCCESS', 'LOGIN_FAILED', 'REGISTER'])
+    ).order_by(AuditLog.timestamp.desc()).limit(200).all()
+
+    return render_template('host/login_activity.html',
+                           activities=activities, login_logs=login_logs)
+
+
+@host_bp.route('/activity/registrations')
+@login_required
+@host_required
+def patient_registrations():
+    """All patient registrations with date, time, details."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    query = Patient.query.order_by(Patient.created_at.desc())
+    total = query.count()
+    patients = query.offset((page - 1) * per_page).limit(per_page).all()
+    return render_template('host/patient_registrations.html',
+                           patients=patients, total=total, page=page, per_page=per_page)
+
+
+@host_bp.route('/activity/doctors')
+@login_required
+@host_required
+def doctor_activity():
+    """All doctor details — logins, patients seen, prescriptions, revenue."""
+    doctors = Doctor.query.filter_by(is_deleted=False).all()
+    doctor_data = []
+    for doc in doctors:
+        appt_count = Appointment.query.filter_by(doctor_id=doc.id).count()
+        from app.models.models import Prescription
+        rx_count = Prescription.query.filter_by(doctor_id=doc.id).count()
+        revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+            Billing.doctor_id == doc.id, Billing.status == 'Paid'
+        ).scalar() or 0
+        ip_count = IPAdmission.query.filter_by(doctor_id=doc.id, admission_status='Admitted').count()
+        doctor_data.append({
+            'doctor': doc,
+            'appointments': appt_count,
+            'prescriptions': rx_count,
+            'revenue': revenue,
+            'ip_patients': ip_count,
+        })
+    return render_template('host/doctor_activity.html', doctor_data=doctor_data)
+
+
+@host_bp.route('/activity/staff')
+@login_required
+@host_required
+def staff_activity():
+    """All staff details — nurses, lab, pharmacy, reception with their activity."""
+    nurses = Nurse.query.filter_by(is_deleted=False).all()
+    staff_users = User.query.filter(
+        User.role.in_([UserRole.LAB_STAFF, UserRole.PHARMACIST, UserRole.RECEPTIONIST, UserRole.NURSE])
+    ).order_by(User.role, User.username).all()
+    return render_template('host/staff_activity.html',
+                           nurses=nurses, staff_users=staff_users)
+
+
+@host_bp.route('/finance/billing')
+@login_required
+@host_required
+def billing_report():
+    """Complete billing report — all patient payments, pending, by type."""
+    today = datetime.utcnow().date()
+    month_start = today.replace(day=1)
+
+    # All bills
+    bills = Billing.query.order_by(Billing.created_at.desc()).limit(200).all()
+
+    # Summary stats
+    total_revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status == 'Paid').scalar() or 0
+    revenue_today = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status == 'Paid', func.date(Billing.created_at) == today).scalar() or 0
+    revenue_month = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status == 'Paid', func.date(Billing.created_at) >= month_start).scalar() or 0
+    outstanding = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.status.in_(['Unpaid', 'Partial'])).scalar() or 0
+    total_bills = Billing.query.count()
+    paid_bills = Billing.query.filter_by(status='Paid').count()
+    unpaid_bills = Billing.query.filter(Billing.status.in_(['Unpaid', 'Partial'])).count()
+
+    # By type (OP vs IP)
+    op_revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.billing_type == 'OP', Billing.status == 'Paid').scalar() or 0
+    ip_revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.billing_type == 'IP', Billing.status == 'Paid').scalar() or 0
+
+    return render_template('host/billing_report.html',
+                           bills=bills, total_revenue=total_revenue,
+                           revenue_today=revenue_today, revenue_month=revenue_month,
+                           outstanding=outstanding, total_bills=total_bills,
+                           paid_bills=paid_bills, unpaid_bills=unpaid_bills,
+                           op_revenue=op_revenue, ip_revenue=ip_revenue)
+
+
+@host_bp.route('/finance/pharmacy')
+@login_required
+@host_required
+def pharmacy_report():
+    """Pharmacy sales & orders — all medicines dispensed, revenue."""
+    from app.models.models import PharmacyOrder, PharmacySale
+
+    today = datetime.utcnow().date()
+    month_start = today.replace(day=1)
+
+    orders = PharmacyOrder.query.order_by(PharmacyOrder.created_at.desc()).limit(200).all()
+
+    # Revenue from pharmacy sales
+    total_pharmacy_revenue = db.session.query(
+        func.coalesce(func.sum(PharmacySale.price * PharmacySale.quantity), 0)
+    ).scalar() or 0
+    pharmacy_today = db.session.query(
+        func.coalesce(func.sum(PharmacySale.price * PharmacySale.quantity), 0)
+    ).filter(func.date(PharmacySale.sold_at) == today).scalar() or 0
+    pharmacy_month = db.session.query(
+        func.coalesce(func.sum(PharmacySale.price * PharmacySale.quantity), 0)
+    ).filter(func.date(PharmacySale.sold_at) >= month_start).scalar() or 0
+
+    total_orders = PharmacyOrder.query.count()
+    dispensed = PharmacyOrder.query.filter_by(status='Dispensed').count()
+    pending = PharmacyOrder.query.filter_by(status='Pending').count()
+
+    # Top medicines
+    top_meds = db.session.query(
+        PharmacyOrder.medicine_name, func.count(PharmacyOrder.id)
+    ).group_by(PharmacyOrder.medicine_name).order_by(
+        func.count(PharmacyOrder.id).desc()
+    ).limit(15).all()
+
+    return render_template('host/pharmacy_report.html',
+                           orders=orders, total_pharmacy_revenue=total_pharmacy_revenue,
+                           pharmacy_today=pharmacy_today, pharmacy_month=pharmacy_month,
+                           total_orders=total_orders, dispensed=dispensed,
+                           pending=pending, top_meds=top_meds)
+
+
+@host_bp.route('/finance/lab')
+@login_required
+@host_required
+def lab_report():
+    """Lab orders & revenue — all tests ordered, completed, revenue."""
+    from app.models.models import LabOrder
+
+    today = datetime.utcnow().date()
+    month_start = today.replace(day=1)
+
+    orders = LabOrder.query.order_by(LabOrder.created_at.desc()).limit(200).all()
+
+    total_orders = LabOrder.query.count()
+    completed = LabOrder.query.filter_by(status='COMPLETED').count()
+    pending = LabOrder.query.filter(LabOrder.status.in_(['CREATED', 'SAMPLE_COLLECTED', 'PROCESSING'])).count()
+    today_orders = LabOrder.query.filter(func.date(LabOrder.created_at) == today).count()
+    month_orders = LabOrder.query.filter(func.date(LabOrder.created_at) >= month_start).count()
+
+    # Revenue from lab billing
+    lab_revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.description.ilike('%lab%'), Billing.status == 'Paid'
+    ).scalar() or 0
+
+    # Top tests ordered
+    top_tests = db.session.query(
+        LabOrder.test_name, func.count(LabOrder.id)
+    ).group_by(LabOrder.test_name).order_by(
+        func.count(LabOrder.id).desc()
+    ).limit(15).all()
+
+    return render_template('host/lab_report.html',
+                           orders=orders, total_orders=total_orders,
+                           completed=completed, pending=pending,
+                           today_orders=today_orders, month_orders=month_orders,
+                           lab_revenue=lab_revenue, top_tests=top_tests)
+
+
+@host_bp.route('/patients/all')
+@login_required
+@host_required
+def all_patients():
+    """Complete patient directory with all details and payment history."""
+    search = request.args.get('q', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+
+    query = Patient.query
+    if search:
+        query = query.filter(db.or_(
+            Patient.name.ilike(f'%{search}%'),
+            Patient.uhid.ilike(f'%{search}%'),
+            Patient.phone.ilike(f'%{search}%')
+        ))
+    query = query.order_by(Patient.created_at.desc())
+    total = query.count()
+    patients = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    # Get total paid per patient
+    patient_payments = {}
+    for p in patients:
+        paid = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+            Billing.patient_id == p.id, Billing.status == 'Paid'
+        ).scalar() or 0
+        patient_payments[p.id] = paid
+
+    return render_template('host/all_patients.html',
+                           patients=patients, patient_payments=patient_payments,
+                           total=total, page=page, per_page=per_page, search=search)

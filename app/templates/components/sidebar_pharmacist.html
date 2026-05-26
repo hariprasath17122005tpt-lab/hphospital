@@ -34,6 +34,14 @@
             Patient History
         </a>
 
+        <span class="sidebar-section-label">Inpatient</span>
+
+        <a href="{{ url_for('pharmacy_ops.ip_medication_requests') }}"
+            class="sidebar-link {% if request.endpoint == 'pharmacy_ops.ip_medication_requests' %}active{% endif %}">
+            <i class="fas fa-hospital-user"></i>
+            IP Med Requests
+        </a>
+
         <span class="sidebar-section-label">Inventory</span>
 
         <a href="{{ url_for('features.pharmacy') }}"

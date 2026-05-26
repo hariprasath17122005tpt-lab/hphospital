@@ -6,12 +6,172 @@
     <div class="row mb-4">
         <div class="col">
             <h2 class="fw-bold"><i class="fas fa-pills text-purple me-2"></i>Medication Administration</h2>
-            <p class="text-muted mb-0">Track and administer prescribed medications</p>
+            <p class="text-muted mb-0">Administer medications for admitted (IP) patients and outpatient prescriptions</p>
         </div>
     </div>
 
+    <!-- ═══ IP MEDICATION TASKS (Priority Section) ═══ -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-hospital-user text-primary me-2"></i>IP Medication Orders
+                {% if ip_med_data %}<span class="badge bg-primary ms-2">{{ ip_med_data|length }} pending</span>{% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if ip_med_data %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient</th>
+                            <th>IP / Ward</th>
+                            <th>Medicine</th>
+                            <th>Dose</th>
+                            <th>Route</th>
+                            <th>Frequency</th>
+                            <th>Instructions</th>
+                            <th>Pharmacy</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ip_med_data %}
+                        {% set rec = item.record %}
+                        {% set adm = item.admission %}
+                        {% set pat = item.patient %}
+                        {% set disp = item.dispensing %}
+                        {% set ip_med = item.ip_med %}
+                        <tr>
+                            <td>
+                                {% if pat %}
+                                <div class="fw-bold">{{ pat.first_name }} {{ pat.last_name }}</div>
+                                <small class="text-muted">{{ pat.uhid }}</small>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if adm %}
+                                <div class="fw-semibold text-primary">{{ adm.ip_number }}</div>
+                                <small class="text-muted">{{ adm.ward_type or '' }} {{ 'R-' ~ adm.room_number if adm.room_number else '' }}</small>
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="fw-bold">{{ rec.medicine_name }}</td>
+                            <td>{{ rec.dosage or '—' }}</td>
+                            <td>{{ rec.route or '—' }}</td>
+                            <td>{{ rec.frequency or '—' }}</td>
+                            <td class="small">
+                                {% if ip_med and ip_med.special_instruction %}{{ ip_med.special_instruction }}{% endif %}
+                                {% if ip_med and ip_med.food_relation %}<br><em>{{ ip_med.food_relation }}</em>{% endif %}
+                            </td>
+                            <td>
+                                {% if disp %}
+                                    {% if disp.dispensing_status == 'Dispensed' %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Dispensed</span>
+                                    {% elif disp.dispensing_status == 'Partially Dispensed' %}
+                                    <span class="badge bg-warning text-dark">Partial</span>
+                                    {% elif disp.dispensing_status == 'Not Available' %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rec.administration_status == 'Pending' %}
+                                <span class="badge bg-warning text-dark mb-1">Pending</span>
+                                {% elif rec.administration_status == 'Delayed' %}
+                                <span class="badge bg-orange text-white mb-1">Delayed</span>
+                                {% endif %}
+                            </td>
+                            <td style="min-width:220px;">
+                                {% if rec.administration_status in ('Pending', 'Delayed') %}
+                                {% set not_dispensed = (not disp) or (disp.dispensing_status not in ('Dispensed', 'Partially Dispensed')) %}
+                                {% if not_dispensed %}
+                                <div class="text-warning small fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i>Not yet dispensed</div>
+                                {% endif %}
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;">
+                                        <input type="hidden" name="med_id" value="{{ rec.id }}">
+                                        <input type="hidden" name="status" value="Given">
+                                        <button class="btn btn-sm btn-success" type="submit" {% if not_dispensed %}title="Pharmacy has not dispensed yet"{% endif %}><i class="fas fa-check me-1"></i>Given</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;">
+                                        <input type="hidden" name="med_id" value="{{ rec.id }}">
+                                        <input type="hidden" name="status" value="Missed">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Missed</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;">
+                                        <input type="hidden" name="med_id" value="{{ rec.id }}">
+                                        <input type="hidden" name="status" value="Delayed">
+                                        <button class="btn btn-sm btn-outline-warning" type="submit">Delay</button>
+                                    </form>
+                                </div>
+                                <input type="text" name="remarks" placeholder="Remarks (optional)" class="form-control form-control-sm mt-1" style="max-width:200px;font-size:.78rem;" form="form_remarks_{{ rec.id }}">
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-check-circle fa-2x mb-2 opacity-25"></i>
+                <p class="mb-0">No pending IP medication tasks</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ═══ RECENTLY COMPLETED IP MEDICATIONS ═══ -->
+    {% if ip_completed %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-history text-success me-2"></i>Recently Administered (IP)</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient</th>
+                            <th>Medicine</th>
+                            <th>Dose / Route</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rec in ip_completed %}
+                        <tr>
+                            <td>{% if rec.patient %}<span class="fw-semibold">{{ rec.patient.first_name }} {{ rec.patient.last_name }}</span>{% else %}—{% endif %}</td>
+                            <td class="fw-bold">{{ rec.medicine_name }}</td>
+                            <td>{{ rec.dosage or '' }} {{ rec.route or '' }}</td>
+                            <td>
+                                {% if rec.administration_status == 'Given' %}<span class="badge bg-success">Given</span>
+                                {% elif rec.administration_status == 'Missed' %}<span class="badge bg-danger">Missed</span>
+                                {% else %}<span class="badge bg-secondary">{{ rec.administration_status }}</span>{% endif %}
+                            </td>
+                            <td class="small text-muted">{{ rec.administration_time.strftime('%d %b %H:%M') if rec.administration_time else '—' }}</td>
+                            <td class="small text-muted">{{ rec.remarks or '' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ═══ OP MEDICATION RECORDS (Legacy) ═══ -->
     {% if med_records %}
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-prescription-bottle-alt text-info me-2"></i>Outpatient Medications</h5>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -37,36 +197,23 @@
                             <td>{{ m.dosage or '—' }}</td>
                             <td class="small text-muted">{{ m.scheduled_time.strftime('%d %b, %H:%M') if m.scheduled_time else '—' }}</td>
                             <td>
-                                {% if m.administration_status == 'Given' %}
-                                <span class="badge bg-success">Given</span>
-                                {% elif m.administration_status == 'Missed' %}
-                                <span class="badge bg-danger">Missed</span>
-                                {% elif m.administration_status == 'Delayed' %}
-                                <span class="badge bg-warning text-dark">Delayed</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Pending</span>
-                                {% endif %}
+                                {% if m.administration_status == 'Given' %}<span class="badge bg-success">Given</span>
+                                {% elif m.administration_status == 'Missed' %}<span class="badge bg-danger">Missed</span>
+                                {% elif m.administration_status == 'Delayed' %}<span class="badge bg-warning text-dark">Delayed</span>
+                                {% else %}<span class="badge bg-secondary">Pending</span>{% endif %}
                             </td>
                             <td>
                                 {% if m.administration_status == 'Pending' %}
                                 <div class="btn-group btn-group-sm">
                                     <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="med_id" value="{{ m.id }}">
                                         <input type="hidden" name="status" value="Given">
                                         <button class="btn btn-sm btn-outline-success" type="submit"><i class="fas fa-check me-1"></i>Given</button>
                                     </form>
                                     <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;" class="ms-1">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="med_id" value="{{ m.id }}">
                                         <input type="hidden" name="status" value="Missed">
                                         <button class="btn btn-sm btn-outline-danger" type="submit">Missed</button>
-                                    </form>
-                                    <form method="POST" action="{{ url_for('nurse.medication_update') }}" style="display:inline;" class="ms-1">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="med_id" value="{{ m.id }}">
-                                        <input type="hidden" name="status" value="Delayed">
-                                        <button class="btn btn-sm btn-outline-warning" type="submit">Delayed</button>
                                     </form>
                                 </div>
                                 {% elif m.administration_status == 'Given' %}
@@ -82,12 +229,14 @@
             </div>
         </div>
     </div>
-    {% else %}
+    {% endif %}
+
+    {% if not ip_med_data and not med_records and not ip_completed %}
     <div class="card border-0 shadow-sm">
         <div class="card-body text-center py-5 text-muted">
             <i class="fas fa-capsules fa-3x mb-3 opacity-25"></i>
             <h5>No Medication Records</h5>
-            <p class="mb-0">Medication administration records will appear here when doctors prescribe medicines for your assigned patients.</p>
+            <p class="mb-0">Medication administration tasks will appear here when doctors prescribe medicines for admitted patients.</p>
         </div>
     </div>
     {% endif %}

@@ -1,167 +1,387 @@
 {% extends "base.html" %}
 {% set hide_navbar = true %}
 {% set hide_footer = true %}
-{% block title %}CarePoint Hospital — Tirupattur | Quality Healthcare for Everyone{% endblock %}
+{% block title %}ARUL Hospital — Tirupattur | Quality Healthcare for Every Family{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --blue:#1a3b6e;--blue-d:#0f2549;--blue-l:#2563eb;--teal:#0e7490;
-  --white:#ffffff;--bg:#f7f9fc;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
-  --red:#dc2626;--green:#16a34a;--gold:#b8860b;
+  --blue:#1a3b6e;--blue-d:#0a1628;--blue-l:#2563eb;--teal:#0d9488;--navy:#0f172a;
+  --white:#ffffff;--bg:#f8fafc;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --red:#dc2626;--green:#16a34a;--gold:#f59e0b;--purple:#7c3aed;--pink:#db2777;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.08);
+  --shadow-xl:0 24px 60px rgba(0,0,0,.1);
+  --gradient-primary:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);
+  --gradient-accent:linear-gradient(135deg,#0d9488 0%,#059669 100%);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',system-ui,sans-serif;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins','DM Sans',system-ui,sans-serif;color:var(--text);background:var(--white);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
 a{text-decoration:none;color:inherit;}
-.container{max-width:1200px;margin:0 auto;padding:0 20px;}
+.container{max-width:1240px;margin:0 auto;padding:0 24px;}
+
+/* ── Scroll reveal ── */
+[data-reveal]{opacity:0;transform:translateY(32px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+[data-reveal].visible{opacity:1;transform:translateY(0);}
+[data-reveal="delay-1"]{transition-delay:.12s;}
+[data-reveal="delay-2"]{transition-delay:.24s;}
+[data-reveal="delay-3"]{transition-delay:.36s;}
 
 /* ═══ TOP BAR ═══ */
-.topbar{background:var(--blue-d);padding:6px 0;font-size:.78rem;color:#94a3b8;}
-.topbar a{color:#93c5fd;transition:color .15s;}
-.topbar a:hover{color:#fff;}
-.topbar .sep{margin:0 10px;opacity:.25;}
-.amb-pill{background:var(--red);color:#fff!important;padding:2px 12px;border-radius:50px;font-weight:700;font-size:.72rem;letter-spacing:.3px;}
+.topbar{background:linear-gradient(90deg,#0a1628,#0f172a);padding:12px 0;font-size:.8rem;color:rgba(255,255,255,.75);font-weight:500;}
+.topbar a{color:rgba(255,255,255,.95);transition:all .2s;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+.topbar a:hover{color:#06b6d4;transform:translateX(2px);}
+.topbar .sep{margin:0 12px;opacity:.3;font-weight:300;}
+.amb-pill{background:var(--red);color:#fff!important;padding:4px 16px;border-radius:50px;font-weight:700;font-size:.74rem;letter-spacing:.3px;animation:ambGlow 2s infinite;display:inline-flex;align-items:center;gap:5px;}
+@keyframes ambGlow{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
 
 /* ═══ NAVBAR ═══ */
-.nav-main{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:999;}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue-l));display:grid;place-items:center;color:#fff;font-size:1.15rem;}
-.logo-txt{font-size:1.35rem;font-weight:800;color:var(--blue);letter-spacing:-.4px;}
-.logo-txt span{color:var(--teal);}
-.logo-sub{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-top:-2px;}
+.nav-main{background:rgba(255,255,255,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:999;transition:all .3s;}
+.nav-main.scrolled{box-shadow:0 4px 24px rgba(0,0,0,.1);background:rgba(255,255,255,.98);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;}
+.logo{display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .2s;}
+.logo:hover{transform:scale(1.02);}
+.logo-mark{width:48px;height:48px;border-radius:12px;background:var(--gradient-primary);display:grid;place-items:center;color:#fff;font-size:1.3rem;box-shadow:0 4px 16px rgba(37,99,235,.25);font-weight:bold;}
+.logo-txt{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#1a3b6e,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px;}
+.logo-sub{font-size:.68rem;color:var(--teal);text-transform:uppercase;letter-spacing:2px;display:block;margin-top:-4px;font-weight:700;}
 .nav-links{display:flex;gap:0;list-style:none;position:relative;}
 .nav-item{position:relative;}
-.nav-item>a{font-size:.88rem;font-weight:600;color:var(--text);padding:24px 16px;display:flex;align-items:center;gap:4px;position:relative;transition:color .15s;cursor:pointer;}
-.nav-item>a::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:2.5px;background:var(--blue-l);border-radius:2px;transform:scaleX(0);transition:transform .2s;}
+.nav-item>a{font-size:.9rem;font-weight:600;color:var(--text);padding:24px 16px;display:flex;align-items:center;gap:4px;position:relative;transition:color .15s;cursor:pointer;}
+.nav-item>a::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:3px;background:var(--blue-l);border-radius:2px;transform:scaleX(0);transition:transform .25s cubic-bezier(.4,0,.2,1);}
 .nav-item>a:hover{color:var(--blue-l);}
 .nav-item:hover>a::after{transform:scaleX(1);}
-.nav-item>a .fa-chevron-down{font-size:.55rem;margin-left:2px;transition:transform .2s;}
+.nav-item>a .fa-chevron-down{font-size:.55rem;margin-left:2px;transition:transform .25s;}
 .nav-item:hover>a .fa-chevron-down{transform:rotate(180deg);}
 
 /* Mega dropdown */
-.mega-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%);background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.12);padding:28px 32px;min-width:520px;opacity:0;visibility:hidden;transition:all .25s;z-index:1000;pointer-events:none;}
+.mega-drop{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-xl);padding:32px 36px;min-width:520px;opacity:0;visibility:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000;pointer-events:none;}
 .nav-item:hover .mega-drop{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);}
-.mega-drop h5{font-size:.95rem;font-weight:700;color:var(--blue);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--blue-l);display:inline-block;}
+.mega-drop h5{font-size:.98rem;font-weight:800;color:var(--blue);margin-bottom:12px;padding-bottom:10px;border-bottom:3px solid var(--blue-l);display:inline-block;}
 .mega-list{list-style:none;padding:0;margin:0;}
 .mega-list li{margin-bottom:6px;}
-.mega-list li a{font-size:.85rem;color:var(--text);padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:8px;transition:all .15s;}
-.mega-list li a:hover{background:rgba(37,99,235,.06);color:var(--blue-l);}
-.mega-list li a i{color:var(--blue-l);width:18px;text-align:center;font-size:.8rem;}
-.mega-desc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:10px;}
-.mega-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.mega-list li a{font-size:.87rem;color:var(--text);padding:9px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;transition:all .15s;font-weight:500;}
+.mega-list li a:hover{background:rgba(37,99,235,.08);color:var(--blue-l);transform:translateX(2px);}
+.mega-list li a i{color:var(--blue-l);width:18px;text-align:center;font-size:.85rem;}
+.mega-desc{font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:12px;}
+.mega-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 
-.nav-right{display:flex;align-items:center;gap:8px;}
-.btn-login{font-size:.85rem;font-weight:600;color:var(--blue);padding:8px 18px;border:2px solid var(--blue);border-radius:8px;transition:all .2s;}
-.btn-login:hover{background:var(--blue);color:#fff;}
-.btn-appt{font-size:.85rem;font-weight:700;color:#fff;background:var(--blue);padding:9px 22px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;transition:all .2s;border:none;}
-.btn-appt:hover{background:var(--blue-l);box-shadow:0 4px 14px rgba(37,99,235,.25);color:#fff;}
-.btn-staff{font-size:.75rem;color:var(--muted);padding:7px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;transition:all .2s;}
-.btn-staff:hover{border-color:var(--gold);color:var(--gold);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.btn-login{font-size:.87rem;font-weight:700;color:var(--blue);padding:10px 22px;border:2px solid var(--blue);border-radius:10px;transition:all .25s;background:transparent;}
+.btn-login:hover{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(26,59,110,.2);transform:translateY(-1px);}
+.btn-appt{font-size:.87rem;font-weight:800;color:#fff;background:var(--gradient-primary);padding:10px 24px;border-radius:10px;display:inline-flex;align-items:center;gap:7px;transition:all .25s;border:none;box-shadow:0 4px 16px rgba(37,99,235,.3);cursor:pointer;}
+.btn-appt:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.4);background:linear-gradient(135deg,#1d4ed8,#1e40af);}
+.btn-staff{font-size:.77rem;color:var(--muted);padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:transparent;transition:all .2s;font-weight:600;}
+.btn-staff:hover{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.05);}
 .mob-tog{display:none;background:none;border:none;font-size:1.3rem;color:var(--blue);cursor:pointer;}
 
-/* ═══ HERO ═══ */
-.hero{position:relative;overflow:hidden;}
-.hero-img{width:100%;height:480px;object-fit:cover;display:block;filter:brightness(.4);}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,37,73,.92) 0%,rgba(15,37,73,.65) 45%,rgba(15,37,73,.15) 100%);}
+/* ═══ HERO — Premium Video Background ═══ */
+.hero{position:relative;overflow:hidden;background:var(--navy);}
+.hero-video-container{position:relative;width:100%;height:650px;overflow:hidden;background:linear-gradient(135deg,#0a1628 0%,#1a3b6e 100%);}
+.hero-video{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.45) contrast(1.1);animation:zoomVideo 20s ease-in-out infinite;}
+@keyframes zoomVideo{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.hero-video::-webkit-media-controls{display:none;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(100deg,rgba(10,25,50,.92) 0%,rgba(10,25,50,.75) 45%,rgba(10,25,50,.35) 100%);}
 .hero-content{position:absolute;inset:0;display:flex;align-items:center;}
-.hero-text{max-width:540px;}
-.hero-tag{display:inline-block;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);color:#fff;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:600;letter-spacing:.5px;margin-bottom:16px;}
-.hero h1{font-size:2.6rem;font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px;letter-spacing:-.5px;}
-.hero h1 em{font-style:normal;color:#67e8f9;}
-.hero-p{font-size:.95rem;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:24px;}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;}
-.btn-hero{padding:12px 28px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;transition:all .25s;border:none;cursor:pointer;}
-.btn-hero.primary{background:#fff;color:var(--blue);}
-.btn-hero.primary:hover{background:#f0f4ff;box-shadow:0 6px 20px rgba(0,0,0,.15);}
-.btn-hero.outline{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35);}
-.btn-hero.outline:hover{background:rgba(255,255,255,.1);border-color:#fff;}
+.hero-text{max-width:620px;animation:heroSlideIn .8s cubic-bezier(.34,1.56,.64,1);}
+@keyframes heroSlideIn{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+.hero-tag{display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.95);padding:9px 20px;border-radius:50px;font-size:.76rem;font-weight:800;letter-spacing:1px;margin-bottom:24px;text-transform:uppercase;}
+.hero-tag .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:dotBlink 2s infinite;box-shadow:0 0 8px rgba(34,197,94,.5);}
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'DM Serif Display',serif;font-size:3.8rem;font-weight:300;color:#fff;line-height:1.08;margin-bottom:18px;letter-spacing:-.5px;}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#67e8f9,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;}
+.hero-p{font-size:1.05rem;color:rgba(255,255,255,.7);line-height:1.8;margin-bottom:36px;font-weight:400;max-width:580px;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:44px;}
+.btn-hero{padding:15px 32px;border-radius:11px;font-weight:800;font-size:.95rem;display:inline-flex;align-items:center;gap:9px;transition:all .35s cubic-bezier(.34,1.56,.64,1);border:none;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.btn-hero.primary{background:#fff;color:var(--blue);box-shadow:0 8px 28px rgba(255,255,255,.15);}
+.btn-hero.primary:hover{box-shadow:0 12px 40px rgba(255,255,255,.2);transform:translateY(-3px);}
+.btn-hero.outline{background:transparent;color:#fff;border:2.5px solid rgba(255,255,255,.3);backdrop-filter:blur(8px);}
+.btn-hero.outline:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);transform:translateY(-2px);}
+.hero-trust{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+.hero-trust-item{display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.6);font-size:.85rem;font-weight:600;}
+.hero-trust-item i{color:#06b6d4;font-size:1rem;animation:trustFloat 3s ease-in-out infinite;}
+@keyframes trustFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.hero-trust-divider{width:1px;height:20px;background:rgba(255,255,255,.15);}
+
+/* ═══ FLOATING APPOINTMENT WIDGET ═══ */
+.float-appt{position:fixed;bottom:32px;right:32px;z-index:998;display:flex;flex-direction:column;gap:12px;align-items:flex-end;}
+.float-appt-btn{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;cursor:pointer;border:none;transition:all .3s;box-shadow:var(--shadow-lg);backdrop-filter:blur(8px);}
+.float-appt-btn.appt{background:var(--gradient-primary);color:#fff;}
+.float-appt-btn.appt:hover{transform:scale(1.1);box-shadow:0 10px 36px rgba(37,99,235,.4);}
+.float-appt-btn.wa{background:linear-gradient(135deg,#25d366,#1da851);color:#fff;}
+.float-appt-btn.wa:hover{transform:scale(1.1);box-shadow:0 10px 36px rgba(37,211,102,.4);}
+.float-appt-btn.phone{background:#fff;color:var(--blue);border:2px solid var(--blue-l);box-shadow:0 8px 24px rgba(37,99,235,.2);}
+.float-appt-btn.phone:hover{background:var(--blue-l);color:#fff;transform:scale(1.1);}
 
 /* ═══ QUICK BAR ═══ */
-.qbar{background:var(--white);border-bottom:1px solid var(--border);}
-.qbar-inner{display:flex;justify-content:center;}
-.qb{display:flex;align-items:center;gap:8px;padding:14px 26px;font-size:.85rem;font-weight:600;color:var(--text);border-right:1px solid var(--border);transition:all .15s;}
+.qbar{background:linear-gradient(180deg,#ffffff,#f8fafc);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
+.qbar-inner{display:grid;grid-template-columns:repeat(4,1fr);}
+.qb{display:flex;align-items:center;gap:14px;padding:20px 22px;font-size:.89rem;font-weight:700;color:var(--text);border-right:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden;}
+.qb::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,.05),transparent);opacity:0;transition:opacity .3s;}
+.qb:hover::before{opacity:1;}
 .qb:last-child{border-right:none;}
-.qb:hover{color:var(--blue-l);background:rgba(37,99,235,.03);}
-.qb i{color:var(--blue-l);font-size:.95rem;}
+.qb:hover{color:var(--blue-l);background:rgba(37,99,235,.04);}
+.qb i{color:var(--blue-l);font-size:1.15rem;width:22px;text-align:center;position:relative;z-index:1;}
+.qb span{font-size:.73rem;color:var(--muted);display:block;font-weight:500;margin-top:2px;}
 
-/* ═══ SECTIONS ═══ */
-.sec{padding:60px 0;}
-.sec-bg{background:var(--white);}
-.sec-hd{text-align:center;margin-bottom:40px;}
-.sec-hd h2{font-size:1.8rem;font-weight:800;color:var(--blue);margin-bottom:6px;}
-.sec-hd h2 em{font-style:normal;color:var(--teal);}
-.sec-hd p{color:var(--muted);font-size:.9rem;}
-.sec-line{width:50px;height:3px;background:var(--blue-l);border-radius:3px;margin:10px auto 0;}
+/* ═══ SECTION HEADERS ═══ */
+.sec-hd{text-align:center;margin-bottom:56px;}
+.sec-hd .tag{display:inline-block;background:rgba(37,99,235,.08);color:var(--blue-l);padding:8px 18px;border-radius:50px;font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;font-family:'Poppins',sans-serif;}
+.sec-hd h2{font-family:'DM Serif Display',serif;font-size:2.8rem;font-weight:300;color:var(--blue);margin-bottom:12px;letter-spacing:-.4px;}
+.sec-hd h2 em{font-style:normal;color:var(--teal);font-weight:700;}
+.sec-hd p{color:var(--muted);font-size:.98rem;max-width:540px;margin:0 auto;line-height:1.8;font-weight:400;}
 
-/* Departments */
-.dept-g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-.dc{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 14px;text-align:center;transition:all .2s;}
-.dc:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:var(--blue-l);transform:translateY(-3px);}
-.dc-ico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin:0 auto 10px;font-size:1rem;}
-.dc h4{font-size:.85rem;font-weight:700;margin-bottom:3px;}
-.dc p{font-size:.72rem;color:var(--muted);margin:0;line-height:1.4;}
+/* ═══ DOCTORS ═══ */
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:32px;padding:20px 0;}
+.doc-card{background:var(--white);border-radius:22px;overflow:hidden;transition:all .5s cubic-bezier(.34,1.56,.64,1);text-align:center;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.08);border:1px solid rgba(229,231,235,.6);}
+.doc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#2563eb,#0d9488);transform:scaleX(0);transition:transform .5s cubic-bezier(.34,1.56,.64,1);z-index:10;}
+.doc-card:hover::before{transform:scaleX(1);}
+.doc-card:hover{box-shadow:0 20px 60px rgba(37,99,235,.15);transform:translateY(-12px);border-color:rgba(37,99,235,.2);}
+.doc-card::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(37,99,235,.03),rgba(13,148,136,.02));opacity:0;transition:opacity .5s;pointer-events:none;z-index:1;}
+.doc-card:hover::after{opacity:1;}
+.doc-card-img{position:relative;width:100%;height:320px;overflow:hidden;background:linear-gradient(135deg,#dbeafe,#ccfbf1);}
+.doc-card img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .6s cubic-bezier(.34,1.56,.64,1);}
+.doc-card:hover img{transform:scale(1.08);}
+.doc-card .ph{width:100%;height:320px;background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 50%,#ccfbf1 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.doc-card .ph::before{content:'';position:absolute;inset:0;background:linear-gradient(45deg,rgba(255,255,255,.2),transparent);animation:shimmer 3s infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.doc-card .ph i{font-size:5rem;color:#7dd3fc;opacity:.8;}
+.doc-card .info{padding:28px 24px 32px;position:relative;z-index:2;}
+.doc-card .info h4{font-size:1.18rem;font-weight:800;color:var(--blue);margin-bottom:8px;letter-spacing:-.3px;}
+.doc-card .info .spec{font-size:.92rem;color:var(--teal);font-weight:700;margin-bottom:12px;display:block;}
+.doc-card .info .qual{font-size:.82rem;color:var(--muted);margin-top:10px;font-weight:500;line-height:1.6;}
+.doc-card .experience{display:inline-block;background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(13,148,136,.08));padding:10px 18px;border-radius:25px;font-size:.8rem;color:var(--blue);font-weight:700;margin-top:14px;border:1px solid rgba(37,99,235,.15);}
+.doc-card .badge{position:absolute;top:-8px;right:16px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:8px 16px;border-radius:50px;font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;box-shadow:0 4px 12px rgba(37,99,235,.3);z-index:5;}
 
-/* Features */
-.why-g{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
-.wc{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:26px 22px;transition:all .2s;}
-.wc:hover{box-shadow:0 8px 24px rgba(0,0,0,.05);transform:translateY(-2px);}
-.wc-ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:1rem;margin-bottom:12px;}
-.wc h4{font-size:.9rem;font-weight:700;margin-bottom:5px;}
-.wc p{font-size:.8rem;color:var(--muted);line-height:1.55;margin:0;}
 
-/* Stats */
-.stat-bar{background:var(--blue);padding:44px 0;}
-.stat-g{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center;}
-.sg .sn{font-size:2rem;font-weight:800;color:#fff;}
-.sg .sl{font-size:.8rem;color:rgba(255,255,255,.6);margin-top:2px;}
+/* ═══ SERVICES ═══ */
+.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1.5px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.04);}
+.svc{padding:40px 24px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .35s;position:relative;overflow:hidden;cursor:default;background:var(--white);}
+.svc::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(37,99,235,.03),transparent);opacity:0;transition:opacity .35s;}
+.svc:nth-child(4n){border-right:none;}
+.svc:nth-child(n+5){border-bottom:none;}
+.svc:hover::before{opacity:1;}
+.svc:hover{transform:scale(1.02);z-index:1;box-shadow:0 8px 32px rgba(37,99,235,.12);}
+.svc-ico{width:64px;height:64px;border-radius:14px;display:grid;place-items:center;margin:0 auto 16px;font-size:1.6rem;position:relative;z-index:1;transition:all .4s;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.svc:hover .svc-ico{transform:translateY(-6px) scale(1.08);}
+.svc h4{font-size:.98rem;font-weight:800;margin-bottom:8px;position:relative;z-index:1;color:var(--blue);}
+.svc p{font-size:.85rem;color:var(--muted);margin:0;line-height:1.7;position:relative;z-index:1;font-weight:500;}
 
-/* Team CTA */
-.team-sec{position:relative;overflow:hidden;}
-.team-img{width:100%;height:280px;object-fit:cover;filter:brightness(.35);}
-.team-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;}
-.team-over h2{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:8px;}
-.team-over p{color:rgba(255,255,255,.7);font-size:.9rem;margin-bottom:18px;}
-.btn-team{background:#fff;color:var(--blue);padding:11px 26px;border-radius:8px;font-weight:700;font-size:.88rem;display:inline-flex;align-items:center;gap:8px;transition:all .25s;}
-.btn-team:hover{box-shadow:0 6px 20px rgba(0,0,0,.15);}
+/* ═══ STATS ═══ */
+.stats-section{position:relative;overflow:hidden;background:var(--navy);}
+.stats-section .bg-img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;filter:brightness(.2) blur(2px);mix-blend-mode:multiply;}
+.stats-inner{position:relative;z-index:2;padding:80px 0;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center;}
+.stat-card{padding:16px;position:relative;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.05);border-radius:12px;opacity:0;transition:opacity .3s;}
+.stat-card:hover::before{opacity:1;}
+.stat-num{font-family:'DM Serif Display',serif;font-size:3.4rem;color:#fff;line-height:1;margin-bottom:8px;font-weight:300;}
+.stat-num .accent{color:#06b6d4;}
+.stat-label{font-size:.92rem;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.5px;}
 
-/* Info section */
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start;}
-.info-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;}
-.info-card h4{font-size:1rem;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.info-card h4 i{color:var(--blue-l);}
-.info-card p,.info-card li{font-size:.84rem;color:var(--muted);line-height:1.65;}
-.info-card ul{padding-left:18px;margin:0;}
-.info-card li{margin-bottom:4px;}
+/* ═══ WHY US ═══ */
+.why-row{display:grid;grid-template-columns:5fr 7fr;gap:52px;align-items:center;}
+.why-left .tag{display:inline-block;background:rgba(37,99,235,.08);color:var(--blue-l);padding:8px 18px;border-radius:50px;font-size:.78rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+.why-left h2{font-family:'DM Serif Display',serif;font-size:2.6rem;color:var(--blue);line-height:1.15;margin-bottom:18px;font-weight:300;}
+.why-left h2 span{color:var(--teal);font-weight:700;}
+.why-left>p{font-size:.96rem;color:var(--muted);line-height:1.8;margin-bottom:28px;font-weight:400;}
+.why-left .btn-why{background:var(--gradient-primary);color:#fff;padding:14px 28px;border-radius:11px;font-weight:800;font-size:.92rem;display:inline-flex;align-items:center;gap:9px;transition:all .3s;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,.25);}
+.why-left .btn-why:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(37,99,235,.35);}
+.why-cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.wc{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:28px 24px;transition:all .35s;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.wc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient-primary);transform:scaleX(0);transition:transform .4s;}
+.wc:hover::before{transform:scaleX(1);}
+.wc:hover{box-shadow:var(--shadow-md);transform:translateY(-4px);}
+.wc .bar{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:4px 0 0 4px;}
+.wc .ico{font-size:1.4rem;margin-bottom:12px;}
+.wc h4{font-size:.96rem;font-weight:800;margin-bottom:6px;color:var(--blue);}
+.wc p{font-size:.83rem;color:var(--muted);margin:0;line-height:1.7;font-weight:500;}
 
-/* Footer */
-.ft{background:#0c1525;padding:40px 0 16px;color:#94a3b8;font-size:.82rem;}
-.ft h5{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:12px;}
-.ft a{color:#94a3b8;display:block;margin-bottom:6px;font-size:.8rem;transition:color .15s;}
-.ft a:hover{color:#38bdf8;}
-.ft-bot{border-top:1px solid rgba(255,255,255,.06);margin-top:22px;padding-top:14px;text-align:center;font-size:.75rem;color:#64748b;}
+/* ═══ TESTIMONIAL / TRUST STRIP ═══ */
+.trust-section{background:linear-gradient(180deg,#fff,#f8fafc);border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;}
+.trust-track{display:flex;gap:52px;align-items:center;padding:24px 0;animation:trustScroll 28s linear infinite;width:max-content;}
+.trust-track:hover{animation-play-state:paused;}
+@keyframes trustScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.trust-item{display:flex;align-items:center;gap:12px;white-space:nowrap;color:var(--text);font-size:.9rem;font-weight:700;letter-spacing:.3px;}
+.trust-item i{color:var(--blue-l);font-size:1.1rem;}
+.trust-item .stars{color:var(--gold);font-size:.8rem;display:flex;gap:3px;}
+
+/* ═══ INFO CARDS ═══ */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.info-card{border-radius:18px;padding:36px 32px;transition:all .35s;border:1.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.info-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.08);}
+.info-card h4{font-size:1.08rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--blue);}
+.info-card .content{font-size:.93rem;line-height:2.1;color:var(--text);font-weight:500;}
+.info-card ul{font-size:.91rem;padding-left:20px;margin:0;line-height:2.2;color:var(--text);font-weight:500;}
+
+/* ═══ CTA BANNER ═══ */
+.cta-sec{position:relative;overflow:hidden;}
+.cta-sec .bg-img{width:100%;height:320px;object-fit:cover;filter:brightness(.35);}
+.cta-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;}
+.cta-over h2{font-family:'DM Serif Display',serif;font-size:2.6rem;color:#fff;margin-bottom:12px;font-weight:300;}
+.cta-over p{color:rgba(255,255,255,.65);font-size:1.05rem;margin-bottom:28px;font-weight:400;}
+.cta-over .btn-cta{background:#fff;color:var(--blue);padding:15px 32px;border-radius:11px;font-weight:800;font-size:.97rem;display:inline-flex;align-items:center;gap:9px;transition:all .3s;box-shadow:0 8px 28px rgba(0,0,0,.15);cursor:pointer;}
+.cta-over .btn-cta:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.2);}
+
+/* ═══ FOOTER ═══ */
+.ft{background:linear-gradient(135deg,#0a1628,#0f172a);padding:56px 0 22px;color:rgba(255,255,255,.5);font-size:.87rem;}
+.ft h5{font-size:.92rem;font-weight:800;color:#fff;margin-bottom:16px;letter-spacing:.3px;}
+.ft a{color:rgba(255,255,255,.5);display:block;margin-bottom:8px;font-size:.84rem;transition:all .2s;font-weight:500;}
+.ft a:hover{color:#67e8f9;transform:translateX(3px);}
+.ft-bot{border-top:1px solid rgba(255,255,255,.08);margin-top:28px;padding-top:16px;text-align:center;font-size:.79rem;color:rgba(255,255,255,.3);}
 
 /* Modal */
-.mod-staff .modal-content{border-radius:12px;}
-.mod-staff .modal-header{background:var(--blue);color:#fff;border-radius:12px 12px 0 0;}
-.mod-staff .btn-close{filter:invert(1);}
+.mod-staff .modal-content{border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow-xl);background:var(--white);}
+.mod-staff .modal-header{background:var(--gradient-primary);color:#fff;border-radius:16px 16px 0 0;border:none;font-weight:800;padding:24px;}
+.mod-staff .btn-close{filter:invert(1);opacity:.6;}
 
-/* Responsive */
+/* ═══ RESPONSIVE ═══ */
 @media(max-width:991px){
   .nav-links{display:none;}.mob-tog{display:block;}
   .mega-drop{display:none!important;}
-  .hero h1{font-size:2rem;}.hero-img{height:360px;}
-  .dept-g{grid-template-columns:repeat(2,1fr);}
-  .why-g{grid-template-columns:1fr;}
-  .stat-g{grid-template-columns:repeat(2,1fr);}
+  .hero-video-container{height:480px;}
+  .hero h1{font-size:2.6rem;}.hero-tag{font-size:.71rem;}
+  .svc-grid{grid-template-columns:repeat(2,1fr);}
+  .svc:nth-child(2n){border-right:none;}
+  .svc:nth-child(n+7){border-bottom:none;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .why-row{grid-template-columns:1fr;}
   .info-grid{grid-template-columns:1fr;}
-  .qb{padding:10px 12px;font-size:.78rem;}
+  .qbar-inner{grid-template-columns:repeat(2,1fr);}
+  .qb:nth-child(2){border-right:none;}
+  .qb:nth-child(-n+2){border-bottom:1px solid var(--border);}
 }
 @media(max-width:576px){
-  .hero h1{font-size:1.5rem;}.hero-img{height:300px;}
+  .hero-video-container{height:380px;}
+  .hero h1{font-size:2rem;}.hero-video{filter:brightness(.55);}
+  .hero-btns{flex-direction:column;align-items:flex-start;}
+  .hero-trust{flex-direction:column;gap:12px;align-items:flex-start;}
   .nav-right .btn-login,.nav-right .btn-staff{display:none;}
-  .dept-g{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .svc-grid{grid-template-columns:1fr;}
+  .svc{border-right:none!important;border-bottom:1px solid var(--border)!important;}
+  .svc:last-child{border-bottom:none!important;}
+  .stats-grid{grid-template-columns:1fr;}
+  .why-cards{grid-template-columns:1fr;}
+  .sec-hd h2{font-size:2.1rem;}
+  .qbar-inner{grid-template-columns:1fr;}
+  .qb{border-right:none!important;border-bottom:1px solid var(--border);}
+  .qb:last-child{border-bottom:none;}
+  .float-appt{bottom:12px;right:12px;}
+  .float-appt-btn{width:54px;height:54px;font-size:1.1rem;}
 }
+
+/* ═══ FORCE DROPDOWN TEXT VISIBILITY (ALL THEMES) ═══ */
+.mega-drop{background:#ffffff !important;border:1px solid #e2e8f0 !important;box-shadow:0 24px 64px rgba(0,0,0,.14),0 8px 24px rgba(0,0,0,.06) !important;}
+.mega-drop h5{color:#1a3b6e !important;border-bottom:3px solid #2563eb !important;}
+.mega-drop .mega-list li a{color:#334155 !important;}
+.mega-drop .mega-list li a span{color:#334155 !important;}
+.mega-drop .mega-list li a:hover{color:#2563eb !important;background:rgba(37,99,235,.06) !important;}
+.mega-drop .mega-list li a i{color:#2563eb !important;}
+.mega-drop .mega-desc{color:#64748b !important;}
+.mega-drop .mega-desc *{color:inherit !important;}
+.mega-drop p{color:#64748b !important;}
+.mega-drop strong{color:#334155 !important;}
+
+/* ═══ FORCE DOCTOR CARD VISIBILITY ═══ */
+.doc-card{background:#ffffff !important;border:none !important;box-shadow:0 8px 32px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.04) !important;}
+.doc-card:hover{box-shadow:0 24px 64px rgba(37,99,235,.15),0 8px 24px rgba(0,0,0,.08) !important;transform:translateY(-12px) !important;}
+.doc-card .doc-card-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to top,#ffffff,transparent);z-index:2;pointer-events:none;}
+.doc-card .info{background:#ffffff !important;padding:24px 24px 28px !important;position:relative;z-index:3;}
+.doc-card .info h4{color:#0f172a !important;font-size:1.18rem !important;font-weight:800 !important;}
+.doc-card .info .spec{color:#0d9488 !important;font-size:.92rem !important;font-weight:700 !important;display:flex !important;align-items:center !important;gap:6px !important;}
+.doc-card .info .spec::before{content:'';width:18px;height:2px;background:linear-gradient(90deg,#0d9488,#06b6d4);border-radius:1px;flex-shrink:0;}
+.doc-card .info .qual{color:#64748b !important;font-size:.84rem !important;font-weight:500 !important;display:flex !important;align-items:center !important;gap:8px !important;}
+.doc-card .info .qual i{color:#2563eb !important;font-size:.78rem;flex-shrink:0;}
+.doc-card .experience{color:#1a3b6e !important;background:linear-gradient(135deg,rgba(197,162,85,.08),rgba(37,99,235,.06)) !important;border:1px solid rgba(197,162,85,.2) !important;display:inline-flex;align-items:center;gap:6px;}
+.doc-card .experience i{color:#c5a255 !important;}
+.doc-book-btn{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:10px 20px;background:var(--gradient-primary);color:#fff !important;border-radius:10px;font-size:.84rem;font-weight:700;transition:all .3s;box-shadow:0 4px 16px rgba(37,99,235,.2);text-decoration:none !important;letter-spacing:.2px;}
+.doc-book-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.3);background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff !important;}
+
+/* ═══ LUXURY DESIGN ENHANCEMENTS ═══ */
+:root{--gold:#c5a255;--gold-light:#e8d5a0;}
+
+/* Premium section divider */
+.luxury-divider{height:3px;background:linear-gradient(90deg,transparent 5%,#c5a255 30%,#e8d5a0 50%,#c5a255 70%,transparent 95%);margin:0;border:none;opacity:.5;}
+
+/* Premium hero shimmer text */
+.hero h1{text-shadow:0 4px 40px rgba(0,0,0,.3);}
+.hero h1 em{background:linear-gradient(90deg,#67e8f9,#06b6d4,#67e8f9);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmerText 4s linear infinite;}
+@keyframes shimmerText{to{background-position:200% center;}}
+
+/* Enhanced hero tag */
+.hero-tag{border-color:rgba(198,162,85,.3) !important;background:rgba(198,162,85,.08) !important;}
+
+/* Premium section headers */
+.sec-hd .tag{background:linear-gradient(135deg,rgba(197,162,85,.12),rgba(37,99,235,.08)) !important;color:#8b6914 !important;border:1px solid rgba(197,162,85,.2);}
+.sec-hd h2{color:#0f172a !important;}
+.sec-hd h2 em{color:#0d9488 !important;font-style:normal !important;font-weight:700 !important;}
+.sec-hd p{color:#64748b !important;}
+
+/* Premium doctor section */
+#find-doctor{background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 50%,#f0f4f8 100%) !important;position:relative;}
+#find-doctor::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#c5a255,#e8d5a0,#c5a255,transparent);}
+
+/* Premium stats */
+.stats-section{background:linear-gradient(135deg,#0a1628 0%,#0f2847 50%,#0a1628 100%) !important;}
+.stat-num{background:linear-gradient(135deg,#ffffff,#e0e7ff) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+.stat-num.accent{background:linear-gradient(135deg,#67e8f9,#06b6d4) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+.stat-label{color:rgba(255,255,255,.55) !important;}
+
+/* Premium service cards */
+.svc{background:#ffffff !important;}
+.svc:hover{box-shadow:0 12px 40px rgba(37,99,235,.1),0 4px 12px rgba(197,162,85,.06) !important;}
+.svc h4{color:#0f172a !important;}
+.svc p{color:#64748b !important;}
+.svc-ico{box-shadow:0 6px 16px rgba(0,0,0,.06),0 0 0 4px rgba(255,255,255,.8) !important;}
+
+/* Premium why cards */
+.wc{background:#ffffff !important;}
+.wc h4{color:#0f172a !important;}
+.wc p{color:#64748b !important;}
+
+/* Premium info cards */
+.info-card h4{color:#0f172a !important;}
+.info-card .content{color:#334155 !important;}
+.info-card ul{color:#334155 !important;}
+
+/* Quick bar */
+.qbar{background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%) !important;border-bottom:1px solid rgba(197,162,85,.12) !important;}
+.qb{color:#0f172a !important;}
+.qb span{color:#64748b !important;}
+.qb:hover{background:linear-gradient(135deg,rgba(197,162,85,.04),rgba(37,99,235,.04)) !important;}
+
+/* Trust strip */
+.trust-section{background:linear-gradient(180deg,#fff,#fafbfd) !important;}
+.trust-item{color:#0f172a !important;}
+
+/* Luxury footer accent */
+.ft{position:relative;}
+.ft::before{content:'';display:block;height:3px;background:linear-gradient(90deg,#c5a255,#e8d5a0,#2563eb,#06b6d4);}
+
+/* CTA premium */
+.cta-sec .btn-cta{background:linear-gradient(135deg,#ffffff,#f0f4f8) !important;color:var(--blue) !important;box-shadow:0 12px 40px rgba(0,0,0,.2) !important;}
+.cta-sec .btn-cta:hover{box-shadow:0 16px 48px rgba(0,0,0,.25) !important;transform:translateY(-4px) !important;}
+.cta-over h2{color:#fff !important;}
+.cta-over p{color:rgba(255,255,255,.65) !important;}
+
+/* Floating buttons premium */
+.float-appt-btn{backdrop-filter:blur(12px) !important;}
+.float-appt-btn.appt{box-shadow:0 8px 28px rgba(37,99,235,.35) !important;}
+.float-appt-btn.wa{box-shadow:0 8px 28px rgba(37,211,102,.35) !important;}
+
+/* Nav premium */
+.nav-main{background:rgba(255,255,255,.97) !important;backdrop-filter:blur(24px) !important;}
+.nav-main.scrolled{box-shadow:0 4px 32px rgba(0,0,0,.08),0 1px 4px rgba(197,162,85,.1) !important;}
+.btn-appt{box-shadow:0 6px 20px rgba(37,99,235,.3) !important;}
+.btn-appt:hover{box-shadow:0 10px 32px rgba(37,99,235,.4) !important;}
+
+/* Topbar premium */
+.topbar{background:linear-gradient(90deg,#070d1a,#0a1628,#0f172a) !important;border-bottom:1px solid rgba(197,162,85,.15);}
+.topbar a:hover{color:#c5a255 !important;}
+.amb-pill{animation:ambGlow 2s infinite;box-shadow:0 0 0 0 rgba(220,38,38,.4),0 4px 12px rgba(220,38,38,.25) !important;}
+
 </style>
 {% endblock %}
 
@@ -170,20 +390,45 @@ a{text-decoration:none;color:inherit;}
 <div class="topbar">
   <div class="container d-flex justify-content-between align-items-center">
     <div><i class="fas fa-phone-alt me-1"></i><a href="tel:+919443966329">+91 94439 66329</a><span class="sep">|</span><i class="fas fa-envelope me-1"></i><a href="mailto:info@carepointhosp.com">info@carepointhosp.com</a></div>
-    <div><i class="fas fa-map-marker-alt me-1"></i> Ashok Nagar, Tirupattur<span class="sep">|</span><a href="tel:108" class="amb-pill"><i class="fas fa-plus-circle me-1"></i>AMBULANCE</a></div>
+    <div><i class="fas fa-map-marker-alt me-1"></i> Ashok Nagar, Tirupattur<span class="sep">|</span><a href="tel:108" class="amb-pill"><i class="fas fa-plus-circle me-1"></i>AMBULANCE 108</a></div>
   </div>
 </div>
 
 <!-- NAVBAR -->
-<div class="nav-main">
+<div class="nav-main" id="mainNav">
   <div class="container nav-inner">
     <a href="{{ url_for('main.index') }}" class="logo">
       <div class="logo-mark"><i class="fas fa-heartbeat"></i></div>
-      <div><div class="logo-txt">Care<span>Point</span></div><div class="logo-sub">Hospital &bull; Tirupattur</div></div>
+      <div><div class="logo-txt">ARUL</div><div class="logo-sub">Hospital &bull; Tirupattur</div></div>
     </a>
 
     <ul class="nav-links">
       <li class="nav-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+
+      <!-- Health Tools -->
+      <li class="nav-item">
+        <a href="#">Tools <i class="fas fa-chevron-down"></i></a>
+        <div class="mega-drop" style="min-width:420px;">
+          <div class="mega-cols">
+            <div>
+              <h5>Health Tools</h5>
+              <ul class="mega-list">
+                <li><a href="{{ url_for('health_tools.bmi_calculator') }}"><i class="fas fa-weight"></i>BMI Calculator</a></li>
+                <li><a href="{{ url_for('health_tools.bmi_calculator') }}#heart"><i class="fas fa-heartbeat"></i>Heart Risk Assessment</a></li>
+                <li><a href="{{ url_for('health_tools.bmi_calculator') }}#bp"><i class="fas fa-stethoscope"></i>BP Category Checker</a></li>
+                <li><a href="{{ url_for('health_tools.index') }}"><i class="fas fa-tools"></i>All Health Tools</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5>Health Packages</h5>
+              <ul class="mega-list">
+                <li><a href="{{ url_for('main.features') }}"><i class="fas fa-box-open"></i>Checkup Packages</a></li>
+                <li><a href="{{ url_for('auth.patient_register') }}"><i class="fas fa-calendar-check"></i>Book Appointment</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
 
       <!-- Specialities Dropdown -->
       <li class="nav-item">
@@ -212,7 +457,7 @@ a{text-decoration:none;color:inherit;}
         </div>
       </li>
 
-      <!-- Patient Care Dropdown -->
+      <!-- Patient Care -->
       <li class="nav-item">
         <a href="#">Patient Care <i class="fas fa-chevron-down"></i></a>
         <div class="mega-drop" style="min-width:400px;">
@@ -228,7 +473,7 @@ a{text-decoration:none;color:inherit;}
         </div>
       </li>
 
-      <!-- About Dropdown -->
+      <!-- About -->
       <li class="nav-item">
         <a href="#">About <i class="fas fa-chevron-down"></i></a>
         <div class="mega-drop" style="min-width:480px;">
@@ -252,7 +497,7 @@ a{text-decoration:none;color:inherit;}
         </div>
       </li>
 
-      <!-- Contact Dropdown -->
+      <!-- Contact -->
       <li class="nav-item">
         <a href="#">Contact <i class="fas fa-chevron-down"></i></a>
         <div class="mega-drop" style="min-width:360px;">
@@ -276,54 +521,99 @@ a{text-decoration:none;color:inherit;}
   </div>
 </div>
 
-<!-- HERO -->
+<!-- ═══ HERO ═══ -->
 <section class="hero">
-  <img src="{{ url_for('static', filename='img/hero-doctor.jpg') }}" alt="CarePoint Hospital Tirupattur" class="hero-img">
-  <div class="hero-overlay"></div>
+  <div class="hero-video-container">
+    <video class="hero-video" autoplay muted loop playsinline preload="metadata">
+      <source src="{{ url_for('static', filename='arul-hospital.mp4') }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="hero-overlay"></div>
+  </div>
   <div class="hero-content">
     <div class="container">
       <div class="hero-text">
-        <div class="hero-tag">TIRUPATTUR'S TRUSTED HEALTHCARE CENTRE</div>
+        <div class="hero-tag"><span class="dot"></span> TIRUPATTUR'S TRUSTED HEALTHCARE CENTRE</div>
         <h1>Quality Healthcare<br>For <em>Every Family.</em></h1>
-        <p class="hero-p">CarePoint Hospital provides compassionate general medical care, pediatrics, diagnostics, and AI-powered health management for the community of Ashok Nagar, Tirupattur and surrounding areas.</p>
+        <p class="hero-p">ARUL Hospital provides compassionate general medical care, pediatrics, diagnostics, and AI-powered health management for the community of Tirupattur and surrounding areas.</p>
         <div class="hero-btns">
           <a href="{{ url_for('auth.patient_register') }}" class="btn-hero primary">Book an Appointment <i class="fas fa-arrow-right"></i></a>
           <a href="tel:+919443966329" class="btn-hero outline"><i class="fas fa-phone-alt"></i> Call Now</a>
-          <a href="https://wa.me/{{ whatsapp_number }}?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment" target="_blank" class="btn-hero outline" style="border-color:rgba(37,211,102,.5);color:#25d366;"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i> WhatsApp</a>
+          <a href="https://wa.me/{{ whatsapp_number }}?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment" target="_blank" class="btn-hero outline" style="border-color:rgba(37,211,102,.4);color:#4ade80;"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i> WhatsApp</a>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-trust-item"><i class="fas fa-check-circle"></i> 5,000+ Patients</div>
+          <div class="hero-trust-divider"></div>
+          <div class="hero-trust-item"><i class="fas fa-user-md"></i> 10+ Doctors</div>
+          <div class="hero-trust-divider"></div>
+          <div class="hero-trust-item"><i class="fas fa-shield-alt"></i> 8+ Years Trust</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- QUICK BAR -->
-<div class="qbar">
+<!-- Luxury divider -->
+<hr class="luxury-divider">
+
+<!-- ═══ QUICK BAR ═══ -->
+<div class="qbar" data-reveal>
   <div class="container qbar-inner">
-    <a href="{{ url_for('auth.patient_register') }}" class="qb"><i class="fas fa-calendar-check"></i>Book Appointment</a>
-    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-flask"></i>Lab Results</a>
-    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-file-medical"></i>Health Records</a>
-    <a href="tel:+919443966329" class="qb"><i class="fas fa-phone-alt"></i>Call Hospital</a>
+    <a href="{{ url_for('auth.patient_register') }}" class="qb"><i class="fas fa-calendar-check"></i><div>Book Appointment<span>Schedule your visit</span></div></a>
+    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-flask"></i><div>Lab Results<span>View test reports</span></div></a>
+    <a href="{{ url_for('auth.patient_login') }}" class="qb"><i class="fas fa-file-medical"></i><div>Health Records<span>Access your history</span></div></a>
+    <a href="tel:+919443966329" class="qb"><i class="fas fa-phone-alt"></i><div>Call Hospital<span>+91 94439 66329</span></div></a>
   </div>
 </div>
 
-<!-- OUR DOCTORS -->
+<!-- ═══ TRUST STRIP ═══ -->
+<div class="trust-section">
+  <div class="trust-track">
+    <div class="trust-item"><i class="fas fa-award"></i> 8+ Years of Excellence</div>
+    <div class="trust-item"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div> Rated by Patients</div>
+    <div class="trust-item"><i class="fas fa-robot"></i> AI-Powered Diagnostics</div>
+    <div class="trust-item"><i class="fas fa-shield-alt"></i> Secure Health Records</div>
+    <div class="trust-item"><i class="fas fa-hand-holding-heart"></i> Affordable Care for All</div>
+    <div class="trust-item"><i class="fas fa-user-md"></i> Experienced Specialists</div>
+    <div class="trust-item"><i class="fas fa-pills"></i> In-house Pharmacy</div>
+    <div class="trust-item"><i class="fas fa-vial"></i> Lab & Diagnostics</div>
+    <!-- duplicate for seamless loop -->
+    <div class="trust-item"><i class="fas fa-award"></i> 8+ Years of Excellence</div>
+    <div class="trust-item"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div> Rated by Patients</div>
+    <div class="trust-item"><i class="fas fa-robot"></i> AI-Powered Diagnostics</div>
+    <div class="trust-item"><i class="fas fa-shield-alt"></i> Secure Health Records</div>
+    <div class="trust-item"><i class="fas fa-hand-holding-heart"></i> Affordable Care for All</div>
+    <div class="trust-item"><i class="fas fa-user-md"></i> Experienced Specialists</div>
+    <div class="trust-item"><i class="fas fa-pills"></i> In-house Pharmacy</div>
+    <div class="trust-item"><i class="fas fa-vial"></i> Lab & Diagnostics</div>
+  </div>
+</div>
+
+<!-- ═══ DOCTORS ═══ -->
 {% if frontpage_doctors %}
-<section class="sec sec-bg" id="find-doctor">
+<section style="padding:80px 0;" id="find-doctor">
   <div class="container">
-    <div class="sec-hd"><h2>Our <em>Doctors</em></h2><p>Experienced physicians dedicated to your health and well-being</p><div class="sec-line"></div></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+    <div class="sec-hd" data-reveal>
+      <div class="tag">Medical Team</div>
+      <h2>Our <em>Doctors</em></h2>
+      <p>Experienced physicians dedicated to your health and well-being</p>
+    </div>
+    <div class="doc-grid">
       {% for doc in frontpage_doctors %}
-      <div style="background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .25s;text-align:center;" onmouseover="this.style.boxShadow='0 12px 30px rgba(0,0,0,.08)';this.style.transform='translateY(-4px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
-        {% if doc.photo_path %}
-        <img src="{{ url_for('static', filename=doc.photo_path) }}" alt="{{ doc.name }}" style="width:100%;height:240px;object-fit:cover;object-position:top;">
-        {% else %}
-        <div style="width:100%;height:240px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-md" style="font-size:4rem;color:#93c5fd;"></i></div>
-        {% endif %}
-        <div style="padding:16px 14px 20px;">
-          <h4 style="font-size:.95rem;font-weight:700;color:var(--blue);margin-bottom:3px;">{{ doc.name }}</h4>
-          <div style="font-size:.82rem;color:var(--teal);font-weight:600;margin-bottom:4px;">{{ doc.specialization }}</div>
-          {% if doc.qualification %}<div style="font-size:.75rem;color:var(--muted);">{{ doc.qualification }}</div>{% endif %}
-          {% if doc.experience_years %}<div style="font-size:.73rem;color:var(--muted);margin-top:2px;">{{ doc.experience_years }} Years Experience</div>{% endif %}
+      <div class="doc-card" data-reveal="delay-{{ loop.index0 % 4 }}">
+        <div class="doc-card-img">
+          {% if doc.photo_path %}
+          <img src="{{ url_for('static', filename=doc.photo_path) }}" alt="{{ doc.name }}">
+          {% else %}
+          <div class="ph"><i class="fas fa-user-md"></i></div>
+          {% endif %}
+        </div>
+        <div class="info">
+          <h4>{{ doc.name }}</h4>
+          <div class="spec">{{ doc.specialization }}</div>
+          {% if doc.qualification %}<div class="qual"><i class="fas fa-graduation-cap"></i> {{ doc.qualification }}</div>{% endif %}
+          {% if doc.experience_years %}<div class="experience"><i class="fas fa-award"></i> {{ doc.experience_years }}+ Years Experience</div>{% endif %}
+          <a href="{{ url_for('auth.patient_register') }}" class="doc-book-btn"><i class="fas fa-calendar-check"></i> Book Appointment</a>
         </div>
       </div>
       {% endfor %}
@@ -332,150 +622,102 @@ a{text-decoration:none;color:inherit;}
 </section>
 {% endif %}
 
-<!-- ═══ SERVICES — Full-width alternating visual sections ═══ -->
-<section id="departments" style="padding:70px 0;background:var(--white);">
+<hr class="luxury-divider">
+
+<!-- ═══ SERVICES ═══ -->
+<section id="departments" style="padding:80px 0;background:#ffffff;">
   <div class="container">
-    <div class="sec-hd"><h2>Our <em>Services</em></h2><p>Complete healthcare for patients of all ages</p><div class="sec-line"></div></div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden;">
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#dbeafe;color:#2563eb;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-stethoscope"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">General Medicine</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Consultation, diagnosis, chronic disease management and preventive care</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#fce7f3;color:#db2777;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-baby"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Pediatrics</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Child healthcare, growth monitoring, and adolescent wellness</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#ecfdf5'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#d1fae5;color:#059669;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-heartbeat"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Health Checkup</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Comprehensive screening packages for early detection</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-bottom:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#fef3c7;color:#d97706;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-syringe"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Vaccination</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">All-age immunization and preventive vaccination schedules</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-procedures"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Minor Procedures</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Wound care, dressing, suturing, and outpatient treatments</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#ccfbf1;color:#0d9488;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-vial"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Lab & Diagnostics</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">AI-assisted pathology, blood work, and diagnostic imaging</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;border-right:1px solid var(--border);transition:all .2s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-pills"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Pharmacy</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">In-house medicine dispensing with prescription tracking</p>
-      </div>
-      <div style="padding:32px 20px;text-align:center;transition:all .2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
-        <div style="width:60px;height:60px;border-radius:50%;background:#fee2e2;color:#dc2626;display:grid;place-items:center;margin:0 auto 12px;font-size:1.4rem;"><i class="fas fa-user-nurse"></i></div>
-        <h4 style="font-size:.92rem;font-weight:700;margin-bottom:4px;">Nursing Care</h4>
-        <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Professional bedside care, vitals monitoring, and patient support</p>
-      </div>
+    <div class="sec-hd" data-reveal>
+      <div class="tag">What We Offer</div>
+      <h2>Our <em>Services</em></h2>
+      <p>Complete healthcare for patients of all ages</p>
+    </div>
+    <div class="svc-grid" data-reveal>
+      <div class="svc"><div class="svc-ico" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-stethoscope"></i></div><h4>General Medicine</h4><p>Consultation, diagnosis, chronic disease management and preventive care</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#fce7f3;color:#db2777;"><i class="fas fa-baby"></i></div><h4>Pediatrics</h4><p>Child healthcare, growth monitoring, and adolescent wellness</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#d1fae5;color:#059669;"><i class="fas fa-heartbeat"></i></div><h4>Health Checkup</h4><p>Comprehensive screening packages for early detection</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#fef3c7;color:#d97706;"><i class="fas fa-syringe"></i></div><h4>Vaccination</h4><p>All-age immunization and preventive vaccination schedules</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-procedures"></i></div><h4>Minor Procedures</h4><p>Wound care, dressing, suturing, and outpatient treatments</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#ccfbf1;color:#0d9488;"><i class="fas fa-vial"></i></div><h4>Lab & Diagnostics</h4><p>AI-assisted pathology, blood work, and diagnostic imaging</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#e0f2fe;color:#0284c7;"><i class="fas fa-pills"></i></div><h4>Pharmacy</h4><p>In-house medicine dispensing with prescription tracking</p></div>
+      <div class="svc"><div class="svc-ico" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-user-nurse"></i></div><h4>Nursing Care</h4><p>Professional bedside care, vitals monitoring, and patient support</p></div>
     </div>
   </div>
 </section>
 
-<!-- ═══ FULL-WIDTH IMAGE BANNER WITH STATS ═══ -->
-<section style="position:relative;overflow:hidden;">
-  <img src="{{ url_for('static', filename='img/hospital-building.jpg') }}" alt="CarePoint Hospital" style="width:100%;height:320px;object-fit:cover;filter:brightness(.3);">
-  <div style="position:absolute;inset:0;display:flex;align-items:center;">
+<!-- ═══ STATS BANNER ═══ -->
+<section class="stats-section">
+  <img src="{{ url_for('static', filename='img/hospital-building.jpg') }}" alt="CarePoint Hospital" class="bg-img">
+  <div class="stats-inner">
     <div class="container">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;">
-        <div><div style="font-size:2.8rem;font-weight:800;color:#fff;">5,000+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Patients Served</div></div>
-        <div><div style="font-size:2.8rem;font-weight:800;color:#67e8f9;">10+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Experienced Doctors</div></div>
-        <div><div style="font-size:2.8rem;font-weight:800;color:#fff;">8+</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Years of Trust</div></div>
-        <div><div style="font-size:2.8rem;font-weight:800;color:#67e8f9;">6</div><div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:4px;">Days a Week</div></div>
+      <div class="stats-grid" data-reveal>
+        <div class="stat-card"><div class="stat-num" data-count="5000">0</div><div class="stat-label">Patients Served</div></div>
+        <div class="stat-card"><div class="stat-num accent" data-count="10">0</div><div class="stat-label">Experienced Doctors</div></div>
+        <div class="stat-card"><div class="stat-num" data-count="8">0</div><div class="stat-label">Years of Trust</div></div>
+        <div class="stat-card"><div class="stat-num accent" data-count="6">0</div><div class="stat-label">Days a Week</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ WHY CAREPOINT — Side-by-side layout ═══ -->
-<section style="padding:70px 0;background:var(--bg);">
+<!-- ═══ WHY ARUL ═══ -->
+<section style="padding:80px 0;background:#f0f4f8;">
   <div class="container">
-    <div class="row align-items-center" style="gap:0;">
-      <div class="col-lg-5" style="margin-bottom:24px;">
-        <div style="display:inline-block;background:rgba(37,99,235,.08);color:var(--blue-l);padding:5px 14px;border-radius:50px;font-size:.75rem;font-weight:600;margin-bottom:14px;">WHY CHOOSE US</div>
-        <h2 style="font-size:2rem;font-weight:800;color:var(--blue);line-height:1.2;margin-bottom:12px;">Modern Healthcare<br>for <span style="color:var(--teal);">Every Family</span></h2>
-        <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:20px;">CarePoint combines experienced physicians with AI technology to deliver accurate, affordable, and compassionate healthcare for the Tirupattur community.</p>
-        <a href="{{ url_for('auth.patient_register') }}" style="background:var(--blue);color:#fff;padding:12px 24px;border-radius:8px;font-weight:700;font-size:.88rem;display:inline-flex;align-items:center;gap:8px;">Book Appointment <i class="fas fa-arrow-right"></i></a>
+    <div class="why-row">
+      <div class="why-left" data-reveal>
+        <div class="tag">WHY CHOOSE US</div>
+        <h2>Modern Healthcare<br>for <span>Every Family</span></h2>
+        <p>ARUL combines experienced physicians with AI technology to deliver accurate, affordable, and compassionate healthcare for the Tirupattur community.</p>
+        <a href="{{ url_for('auth.patient_register') }}" class="btn-why">Book Appointment <i class="fas fa-arrow-right"></i></a>
       </div>
-      <div class="col-lg-7">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #2563eb;">
-            <div style="font-size:1.3rem;color:#2563eb;margin-bottom:8px;"><i class="fas fa-robot"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">AI Diagnostics</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Smart symptom analysis and health insights powered by artificial intelligence</p>
-          </div>
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #059669;">
-            <div style="font-size:1.3rem;color:#059669;margin-bottom:8px;"><i class="fas fa-hand-holding-heart"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Affordable Care</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Quality treatment at reasonable costs for every family</p>
-          </div>
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #7c3aed;">
-            <div style="font-size:1.3rem;color:#7c3aed;margin-bottom:8px;"><i class="fas fa-chart-line"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Digital Records</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Complete digital health records, lab reports, and prescriptions online</p>
-          </div>
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #db2777;">
-            <div style="font-size:1.3rem;color:#db2777;margin-bottom:8px;"><i class="fas fa-users"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Family Medicine</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">From newborns to elderly — care for every member of your family</p>
-          </div>
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #d97706;">
-            <div style="font-size:1.3rem;color:#d97706;margin-bottom:8px;"><i class="fas fa-shield-alt"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">Data Security</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Encrypted health data — only you and your doctor can access</p>
-          </div>
-          <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:22px 18px;border-left:4px solid #dc2626;">
-            <div style="font-size:1.3rem;color:#dc2626;margin-bottom:8px;"><i class="fas fa-pills"></i></div>
-            <h4 style="font-size:.88rem;font-weight:700;margin-bottom:4px;">In-house Pharmacy</h4>
-            <p style="font-size:.78rem;color:var(--muted);margin:0;line-height:1.5;">Get medicines immediately without visiting outside</p>
-          </div>
-        </div>
+      <div class="why-cards" data-reveal="delay-1">
+        <div class="wc"><div class="bar" style="background:#2563eb;"></div><div class="ico" style="color:#2563eb;"><i class="fas fa-robot"></i></div><h4>AI Diagnostics</h4><p>Smart symptom analysis and health insights powered by artificial intelligence</p></div>
+        <div class="wc"><div class="bar" style="background:#059669;"></div><div class="ico" style="color:#059669;"><i class="fas fa-hand-holding-heart"></i></div><h4>Affordable Care</h4><p>Quality treatment at reasonable costs for every family</p></div>
+        <div class="wc"><div class="bar" style="background:#7c3aed;"></div><div class="ico" style="color:#7c3aed;"><i class="fas fa-chart-line"></i></div><h4>Digital Records</h4><p>Complete digital health records, lab reports, and prescriptions online</p></div>
+        <div class="wc"><div class="bar" style="background:#db2777;"></div><div class="ico" style="color:#db2777;"><i class="fas fa-users"></i></div><h4>Family Medicine</h4><p>From newborns to elderly — care for every member of your family</p></div>
+        <div class="wc"><div class="bar" style="background:#d97706;"></div><div class="ico" style="color:#d97706;"><i class="fas fa-shield-alt"></i></div><h4>Data Security</h4><p>Encrypted health data — only you and your doctor can access</p></div>
+        <div class="wc"><div class="bar" style="background:#dc2626;"></div><div class="ico" style="color:#dc2626;"><i class="fas fa-pills"></i></div><h4>In-house Pharmacy</h4><p>Get medicines immediately without visiting outside</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ HOSPITAL INFO — Clean card layout ═══ -->
-<section style="padding:70px 0;background:var(--white);" id="info">
+<!-- ═══ HOSPITAL INFO ═══ -->
+<section style="padding:80px 0;background:#ffffff;" id="info">
   <div class="container">
-    <div class="sec-hd"><h2>Visit <em>CarePoint</em></h2><p>Plan your visit — here's everything you need to know</p><div class="sec-line"></div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:14px;padding:30px 28px;">
-        <h4 style="font-size:1rem;font-weight:700;color:var(--blue);margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-clock" style="color:var(--blue-l);"></i> Consultation Hours</h4>
-        <div style="font-size:.88rem;color:var(--text);line-height:2;">
+    <div class="sec-hd" data-reveal>
+      <div class="tag">Plan Your Visit</div>
+      <h2>Visit <em>ARUL</em></h2>
+      <p>Here's everything you need to know</p>
+    </div>
+    <div class="info-grid" data-reveal>
+      <div class="info-card" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+        <h4 style="color:var(--blue);"><i class="fas fa-clock" style="color:var(--blue-l);"></i> Consultation Hours</h4>
+        <div class="content" style="color:var(--text);">
           <div><strong>Mon – Thu, Sat:</strong> 9:00 AM – 1:30 PM</div>
           <div><strong>Sunday:</strong> 10:00 AM – 2:00 PM</div>
           <div><strong>Friday:</strong> <span style="color:var(--red);">Closed</span></div>
         </div>
       </div>
-      <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:14px;padding:30px 28px;">
-        <h4 style="font-size:1rem;font-weight:700;color:#065f46;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-map-marker-alt" style="color:#059669;"></i> Location</h4>
-        <div style="font-size:.88rem;color:var(--text);line-height:1.7;">
-          <strong>CarePoint Hospital</strong><br>Ashok Nagar, Tirupattur<br>(Near Housing Board Area)<br>Tamil Nadu, India<br><br>
+      <div class="info-card" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
+        <h4 style="color:#065f46;"><i class="fas fa-map-marker-alt" style="color:#059669;"></i> Location</h4>
+        <div class="content" style="color:var(--text);line-height:1.7;">
+          <strong>ARUL Hospital</strong><br>Ashok Nagar, Tirupattur<br>(Near Housing Board Area)<br>Tamil Nadu, India<br><br>
           <a href="tel:+919443966329" style="color:#059669;font-weight:700;"><i class="fas fa-phone-alt me-1"></i> +91 94439 66329</a>
         </div>
       </div>
-      <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:14px;padding:30px 28px;">
-        <h4 style="font-size:1rem;font-weight:700;color:#4c1d95;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-user-md" style="color:#7c3aed;"></i> Our Approach</h4>
-        <ul style="font-size:.85rem;color:var(--text);line-height:1.9;padding-left:16px;margin:0;">
+      <div class="info-card" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
+        <h4 style="color:#4c1d95;"><i class="fas fa-user-md" style="color:#7c3aed;"></i> Our Approach</h4>
+        <ul style="color:var(--text);">
           <li>Personal attention to every patient</li>
           <li>AI-supported accurate diagnosis</li>
           <li>Simple, effective treatment</li>
           <li>Care for all age groups</li>
         </ul>
       </div>
-      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:14px;padding:30px 28px;">
-        <h4 style="font-size:1rem;font-weight:700;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-check-circle" style="color:#d97706;"></i> We Treat</h4>
-        <ul style="font-size:.85rem;color:var(--text);line-height:1.9;padding-left:16px;margin:0;">
+      <div class="info-card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
+        <h4 style="color:#92400e;"><i class="fas fa-check-circle" style="color:#d97706;"></i> We Treat</h4>
+        <ul style="color:var(--text);">
           <li>Fever, infections, general illness</li>
           <li>Health checkups & screenings</li>
           <li>Child healthcare & vaccinations</li>
@@ -486,36 +728,43 @@ a{text-decoration:none;color:inherit;}
   </div>
 </section>
 
-<!-- ═══ TEAM CTA ═══ -->
-<section style="position:relative;overflow:hidden;">
-  <img src="{{ url_for('static', filename='img/medical-team.jpg') }}" alt="CarePoint Team" style="width:100%;height:280px;object-fit:cover;filter:brightness(.3);">
-  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;">
+<!-- ═══ CTA BANNER ═══ -->
+<section class="cta-sec" data-reveal>
+  <img src="{{ url_for('static', filename='img/medical-team.jpg') }}" alt="CarePoint Team" class="bg-img">
+  <div class="cta-over">
     <div>
-      <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:8px;">Your Family's Health Partner</h2>
-      <p style="color:rgba(255,255,255,.7);font-size:.95rem;margin-bottom:20px;">Compassionate care. Accurate diagnosis. Affordable treatment.</p>
-      <a href="{{ url_for('auth.patient_register') }}" style="background:#fff;color:var(--blue);padding:12px 28px;border-radius:8px;font-weight:700;font-size:.9rem;display:inline-flex;align-items:center;gap:8px;">Register Now <i class="fas fa-arrow-right"></i></a>
+      <h2>Your Family's Health Partner</h2>
+      <p>Compassionate care. Accurate diagnosis. Affordable treatment.</p>
+      <a href="{{ url_for('auth.patient_register') }}" class="btn-cta">Register Now <i class="fas fa-arrow-right"></i></a>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- ═══ FOOTER ═══ -->
 <footer class="ft" id="contact">
   <div class="container">
     <div class="row g-4">
       <div class="col-lg-4">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="logo-mark" style="width:32px;height:32px;font-size:.85rem;"><i class="fas fa-heartbeat"></i></div>
-          <div class="logo-txt" style="font-size:1.05rem;color:#fff;">Care<span style="color:#38bdf8;">Point</span></div>
+          <div class="logo-mark" style="width:34px;height:34px;font-size:.88rem;"><i class="fas fa-heartbeat"></i></div>
+          <div class="logo-txt" style="font-size:1.1rem;color:#fff;">ARUL</div>
         </div>
-        <p style="line-height:1.7;">Community healthcare centre in Ashok Nagar, Tirupattur providing quality medical care with AI-powered diagnostics for local residents and families.</p>
+        <p style="line-height:1.75;">Community healthcare centre in Ashok Nagar, Tirupattur providing quality medical care with AI-powered diagnostics for local residents and families.</p>
       </div>
       <div class="col-lg-2"><h5>Hospital</h5><a href="#departments">Services</a><a href="#info">Timings</a><a href="#info">Location</a><a href="#info">Our Team</a></div>
       <div class="col-lg-3"><h5>Patient</h5><a href="{{ url_for('auth.patient_login') }}">Patient Login</a><a href="{{ url_for('auth.patient_register') }}">Register</a><a href="{{ url_for('auth.patient_login') }}">Lab Reports</a><a href="{{ url_for('auth.patient_login') }}">Prescriptions</a></div>
       <div class="col-lg-3"><h5>Contact</h5><a href="tel:+919443966329"><i class="fas fa-phone-alt me-2"></i>+91 94439 66329</a><a href="mailto:info@carepointhosp.com"><i class="fas fa-envelope me-2"></i>info@carepointhosp.com</a><a href="#"><i class="fas fa-map-marker-alt me-2"></i>Ashok Nagar, Tirupattur, TN</a></div>
     </div>
-    <div class="ft-bot">&copy; 2025 CarePoint Hospital, Tirupattur. All rights reserved.</div>
+    <div class="ft-bot">&copy; 2025 ARUL Hospital, Tirupattur. All rights reserved.</div>
   </div>
 </footer>
+
+<!-- FLOATING APPOINTMENT WIDGET -->
+<div class="float-appt">
+  <a href="tel:+919443966329" class="float-appt-btn phone" title="Call Hospital"><i class="fas fa-phone-alt"></i></a>
+  <a href="https://wa.me/{{ whatsapp_number }}?text=Hi%2C%20I%20would%20like%20to%20book%20an%20appointment" target="_blank" class="float-appt-btn wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  <a href="{{ url_for('auth.patient_register') }}" class="float-appt-btn appt" title="Book Appointment"><i class="fas fa-calendar-check"></i></a>
+</div>
 
 <!-- STAFF MODAL -->
 <div class="modal fade mod-staff" id="staffModal" tabindex="-1">
@@ -531,7 +780,53 @@ a{text-decoration:none;color:inherit;}
     </div>
   </div>
 </div>
+
 <script>
+/* ── Navbar scroll ── */
+!function(){
+  var nav=document.getElementById('mainNav');
+  if(!nav)return;
+  window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>40);});
+}();
+
+/* ── Scroll reveal ── */
+!function(){
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+  },{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('[data-reveal]').forEach(function(el){obs.observe(el);});
+}();
+
+/* ── Animated counters ── */
+!function(){
+  var done=false;
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting&&!done){
+        done=true;
+        document.querySelectorAll('.stat-num[data-count]').forEach(function(el){
+          var target=parseInt(el.getAttribute('data-count'));
+          var isAccent=el.classList.contains('accent');
+          var suffix=target>=1000?'+':'+';
+          var duration=1600;
+          var start=performance.now();
+          function step(now){
+            var p=Math.min((now-start)/duration,1);
+            p=1-Math.pow(1-p,3);// ease-out cubic
+            var v=Math.floor(p*target);
+            el.textContent=(target>=1000?v.toLocaleString():v)+suffix;
+            if(p<1)requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        });
+      }
+    });
+  },{threshold:.3});
+  var s=document.querySelector('.stats-section');
+  if(s)obs.observe(s);
+}();
+
+/* ── Staff modal ── */
 !function(){
   var C='9443966329',b=document.getElementById('sGo'),i=document.getElementById('sCode'),e=document.getElementById('sErr');
   function go(){if(i.value.trim()===C){e.style.display='none';location.href='{{ url_for("auth.choose_login") }}';}else{e.textContent='Invalid code.';e.style.display='block';i.value='';i.focus();}}

@@ -1125,6 +1125,47 @@
     }
 }
 
+/* ─── LIGHT MODE OVERRIDES ───────────────────────────────────── */
+body.dashboard-body.light-mode .pro-btn-ghost {
+    background: rgba(0, 0, 0, 0.03);
+    color: #475569;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dashboard-body.light-mode .pro-btn-ghost:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #1a1f36;
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+body.dashboard-body.light-mode .pro-btn-outline {
+    color: #6366f1;
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+body.dashboard-body.light-mode .pro-btn-outline:hover {
+    color: #4f46e5;
+}
+
+body.dashboard-body.light-mode .pro-badge-danger {
+    color: #1e293b;
+}
+
+body.dashboard-body.light-mode .pro-tooltip::after {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #334155;
+}
+
+body.dashboard-body.light-mode .pro-glass {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+body.dashboard-body.light-mode .pro-mesh-bg {
+    opacity: 0.3;
+}
+
 /* ─── PRINT STYLES ───────────────────────────────────────────── */
 @media print {
 

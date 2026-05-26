@@ -434,77 +434,129 @@
         </div>
         {% endif %}
 
-        <!-- Orders Grid -->
+        <!-- Grouped Prescription Orders -->
         <div class="col-12">
-            {% if orders %}
+            {% if grouped_orders|default([])|length > 0 or orphan_orders|default([])|length > 0 %}
             <div class="row g-3">
-                {% for order in orders %}
-                <div class="col-lg-6 col-xl-4">
-                    <div class="card border-0 shadow-sm h-100 position-relative overflow-hidden"
-                        style="border-radius: 16px; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.1); transition: transform 0.2s;"
-                        onmouseenter="this.style.transform='translateY(-4px)'"
+                {% for grp in grouped_orders|default([]) %}
+                <div class="col-lg-6 col-xl-6">
+                    <div class="card border-0 shadow-sm h-100 overflow-hidden"
+                        style="border-radius: 16px; background: rgba(15,23,42,0.6); border: 1px solid {{ 'rgba(16,185,129,0.25)' if grp.status == 'Dispensed' else 'rgba(245,158,11,0.25)' }}; transition: transform 0.2s;"
+                        onmouseenter="this.style.transform='translateY(-3px)'"
                         onmouseleave="this.style.transform='none'">
-                        <!-- Status -->
-                        <div class="position-absolute top-0 end-0 m-3">
-                            {% if order.status == 'Dispensed' %}
+
+                        <!-- Header: Patient + Doctor + Status -->
+                        <div class="card-header border-0 d-flex align-items-center justify-content-between px-4 pt-3 pb-2"
+                             style="background:transparent;">
+                            <div>
+                                <h6 class="fw-bold mb-0" style="color: #e2e8f0;">
+                                    <i class="fas fa-file-prescription me-2" style="color: #a78bfa;"></i>
+                                    Rx #{{ grp.prescription_id }}
+                                </h6>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <span class="small" style="color: #f59e0b;">
+                                        <i class="fas fa-user me-1"></i>{{ grp.patient.name if grp.patient else 'Unknown' }}
+                                    </span>
+                                    {% if grp.doctor %}
+                                    <span class="small" style="color: #94a3b8;">
+                                        | <i class="fas fa-user-md me-1"></i>Dr. {{ grp.doctor.first_name }} {{ grp.doctor.last_name }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if grp.status == 'Dispensed' %}
                             <span class="badge rounded-pill px-3 py-2"
                                 style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3);">
-                                <i class="fas fa-check-double me-1"></i>Dispensed
+                                <i class="fas fa-check-double me-1"></i>All Dispensed
                             </span>
                             {% else %}
                             <span class="badge rounded-pill px-3 py-2"
                                 style="background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3);">
-                                <i class="fas fa-clock me-1"></i>Pending
+                                <i class="fas fa-clock me-1"></i>{{ grp.pending_count }} of {{ grp.total_count }} Pending
                             </span>
                             {% endif %}
                         </div>
 
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold mb-1" style="color: #e2e8f0;">
-                                <i class="fas fa-capsules me-2" style="color: #f59e0b;"></i>{{ order.medicine_name }}
-                            </h6>
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                    style="width: 28px; height: 28px; background: rgba(245,158,11,0.2);">
-                                    <i class="fas fa-user" style="font-size: 0.7rem; color: #f59e0b;"></i>
-                                </div>
-                                <span class="small" style="color: #94a3b8;">{{ order.patient.first_name }} {{
-                                    order.patient.last_name }}</span>
+                        <div class="card-body px-4 pt-1 pb-3">
+                            <!-- Medicines Table -->
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(148,163,184,0.15);">
+                                        <th style="padding:6px 8px; font-size:0.7rem; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Medicine</th>
+                                        <th style="padding:6px 8px; font-size:0.7rem; color:#64748b; text-transform:uppercase; text-align:center;">Qty</th>
+                                        <th style="padding:6px 8px; font-size:0.7rem; color:#64748b; text-transform:uppercase;">Dosage</th>
+                                        <th style="padding:6px 8px; font-size:0.7rem; color:#64748b; text-transform:uppercase; text-align:center;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in grp.orders %}
+                                    <tr style="border-bottom: 1px solid rgba(148,163,184,0.08);">
+                                        <td style="padding:8px; color:#e2e8f0; font-size:0.88rem; font-weight:500;">
+                                            <i class="fas fa-capsules me-1" style="color:#f59e0b; font-size:0.75rem;"></i>
+                                            {{ order.medicine_name }}
+                                        </td>
+                                        <td style="padding:8px; color:#cbd5e1; font-size:0.85rem; text-align:center;">{{ order.quantity or 1 }}</td>
+                                        <td style="padding:8px; color:#94a3b8; font-size:0.8rem;">{{ order.dosage or '-' }}</td>
+                                        <td style="padding:8px; text-align:center;">
+                                            {% if order.status == 'Dispensed' %}
+                                            <span style="color:#34d399; font-size:0.75rem; font-weight:600;"><i class="fas fa-check-circle"></i> Done</span>
+                                            {% else %}
+                                            <span style="color:#fbbf24; font-size:0.75rem; font-weight:600;"><i class="fas fa-clock"></i> Pending</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <!-- Timestamp -->
+                            <div class="small mb-3" style="color: #64748b;">
+                                <i class="fas fa-clock me-1"></i>{{ grp.created_at.strftime('%b %d, %Y %I:%M %p') if grp.created_at else '' }}
+                                <span style="color:#94a3b8;"> | {{ grp.total_count }} medicine{{ 's' if grp.total_count > 1 else '' }}</span>
                             </div>
 
-                            {% if order.doctor %}
-                            <div class="small mb-1" style="color: #94a3b8;">
-                                <i class="fas fa-user-md me-1"></i>Dr. {{ order.doctor.first_name }} {{
-                                order.doctor.last_name }}
-                            </div>
-                            {% endif %}
-
-                            <div class="small mb-1" style="color: #cbd5e1;">
-                                <strong>Qty:</strong> {{ order.quantity }} &nbsp;|&nbsp;
-                                <strong>Dosage:</strong> {{ order.dosage or 'N/A' }}
-                            </div>
-
-                            <div class="small text-secondary mb-3">
-                                <i class="fas fa-clock me-1"></i>{{ order.created_at.strftime('%b %d, %Y %I:%M %p') }}
-                                {% if order.dispensed_at %}
-                                &nbsp;|&nbsp;<i class="fas fa-check me-1 text-success"></i>{{
-                                order.dispensed_at.strftime('%b %d, %I:%M %p') }}
+                            <!-- Actions -->
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if grp.status != 'Dispensed' and current_user.role.value in ['PHARMACIST', 'ADMIN', 'HOST'] %}
+                                <button class="btn btn-sm btn-success rounded-3 flex-grow-1"
+                                    onclick="dispenseAllRx({{ grp.prescription_id }})">
+                                    <i class="fas fa-hand-holding-medical me-1"></i>Dispense All &amp; Generate Bill
+                                </button>
                                 {% endif %}
+                                <a href="{{ url_for('pharmacy_ops.view_prescription', id=grp.prescription_id) }}"
+                                    target="_blank" class="btn btn-sm btn-outline-info rounded-3">
+                                    <i class="fas fa-file-pdf me-1"></i>View Rx
+                                </a>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
 
-                            {% if order.status == 'Pending' and current_user.role.value in ['PHARMACIST',
-                            'ADMIN'] %}
-                            <button class="btn btn-sm btn-success rounded-3 w-100 mb-2"
-                                onclick="dispenseOrder({{ order.id }})">
-                                <i class="fas fa-hand-holding-medical me-1"></i>Mark as Dispensed
-                            </button>
+                <!-- Orphan orders (no prescription_id) -->
+                {% for order in orphan_orders|default([]) %}
+                <div class="col-lg-6 col-xl-4">
+                    <div class="card border-0 shadow-sm h-100 position-relative overflow-hidden"
+                        style="border-radius: 16px; background: rgba(15,23,42,0.6); border: 1px solid rgba(148,163,184,0.1);">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            {% if order.status == 'Dispensed' %}
+                            <span class="badge rounded-pill px-3 py-2" style="background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3);">
+                                <i class="fas fa-check-double me-1"></i>Dispensed</span>
+                            {% else %}
+                            <span class="badge rounded-pill px-3 py-2" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);">
+                                <i class="fas fa-clock me-1"></i>Pending</span>
                             {% endif %}
-
-                            {% if order.prescription_id %}
-                            <a href="{{ url_for('pharmacy_ops.view_prescription', id=order.prescription_id) }}"
-                                target="_blank" class="btn btn-sm btn-outline-info rounded-3 w-100">
-                                <i class="fas fa-file-pdf me-1"></i>View Original Prescription
-                            </a>
+                        </div>
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-1" style="color:#e2e8f0;">
+                                <i class="fas fa-capsules me-2" style="color:#f59e0b;"></i>{{ order.medicine_name }}</h6>
+                            <div class="small mb-1" style="color:#94a3b8;">
+                                <i class="fas fa-user me-1"></i>{{ order.patient.name if order.patient else 'Unknown' }}</div>
+                            <div class="small mb-1" style="color:#cbd5e1;">
+                                <strong>Qty:</strong> {{ order.quantity }} | <strong>Dosage:</strong> {{ order.dosage or 'N/A' }}</div>
+                            {% if order.status == 'Pending' and current_user.role.value in ['PHARMACIST','ADMIN','HOST'] %}
+                            <button class="btn btn-sm btn-success rounded-3 w-100 mt-2" onclick="dispenseOrder({{ order.id }})">
+                                <i class="fas fa-hand-holding-medical me-1"></i>Dispense</button>
                             {% endif %}
                         </div>
                     </div>
@@ -762,6 +814,142 @@
         });
     }
 
+    // ══════ DISPENSE MODAL ══════
+    let _dispRxId = null;
+    let _dispMeds = [];
+    let _dispExtras = [];
+
+    function dispenseAllRx(rxId) {
+        _dispRxId = rxId;
+        // Fetch prescription details from server
+        fetch(`/pharmacy-ops/api/prescription-details/${rxId}`, {
+            credentials: 'include', headers
+        }).then(r => r.json()).then(data => {
+            if (!data.success) { alert(data.error || 'Failed to load'); return; }
+            _dispMeds = data.medicines;
+            _dispExtras = data.extra_charges;
+            renderDispenseModal(data);
+        }).catch(err => alert('Error: ' + err));
+    }
+
+    function renderDispenseModal(data) {
+        const modal = document.getElementById('dispenseModal');
+        document.getElementById('dm_patient').textContent = data.patient_name + (data.uhid ? ' (' + data.uhid + ')' : '');
+        document.getElementById('dm_doctor').textContent = data.doctor_name || 'N/A';
+        document.getElementById('dm_rxid').textContent = 'Rx #' + _dispRxId;
+
+        // Build medicines rows
+        let medsHtml = '';
+        data.medicines.forEach((m, i) => {
+            medsHtml += `<tr data-idx="${i}" data-type="med">
+                <td style="color:#e2e8f0;font-weight:600;font-size:0.9rem;">
+                    <i class="fas fa-capsules me-1" style="color:#f59e0b;"></i>${m.medicine_name}
+                    <div style="font-size:0.72rem;color:#64748b;">${m.dosage}</div>
+                </td>
+                <td style="text-align:center;color:#94a3b8;font-size:0.78rem;">${m.stock}</td>
+                <td><input type="number" class="dm-input dm-qty" value="${m.quantity}" min="1" data-idx="${i}" onchange="recalcDispense()"></td>
+                <td><input type="number" class="dm-input dm-price" value="${m.unit_price.toFixed(2)}" min="0" step="0.01" data-idx="${i}" onchange="recalcDispense()"></td>
+                <td class="dm-line-total" style="text-align:right;font-weight:700;color:#e2e8f0;" data-idx="${i}">${(m.quantity * m.unit_price).toFixed(2)}</td>
+            </tr>`;
+        });
+
+        // Extra charges (lab, consultation) — editable
+        data.extra_charges.forEach((ec, i) => {
+            medsHtml += `<tr data-idx="${i}" data-type="extra" style="background:rgba(99,102,241,0.05);">
+                <td style="color:#a5b4fc;font-weight:600;font-size:0.9rem;">
+                    <i class="fas ${ec.category === 'Laboratory' ? 'fa-flask' : 'fa-user-md'} me-1"></i>${ec.item_name}
+                    <div style="font-size:0.72rem;color:#64748b;">${ec.category}</div>
+                </td>
+                <td style="text-align:center;color:#64748b;">-</td>
+                <td><input type="number" class="dm-input dm-extra-qty" value="${ec.quantity}" min="0" data-idx="${i}" onchange="recalcDispense()"></td>
+                <td><input type="number" class="dm-input dm-extra-price" value="${ec.unit_price.toFixed(2)}" min="0" step="0.01" data-idx="${i}" onchange="recalcDispense()"></td>
+                <td class="dm-extra-total" style="text-align:right;font-weight:700;color:#a5b4fc;" data-idx="${i}">${(ec.quantity * ec.unit_price).toFixed(2)}</td>
+            </tr>`;
+        });
+
+        document.getElementById('dm_tbody').innerHTML = medsHtml;
+        document.getElementById('dm_discount').value = '0';
+        recalcDispense();
+        modal.style.display = 'flex';
+    }
+
+    function recalcDispense() {
+        let subtotal = 0;
+        // Medicines
+        document.querySelectorAll('tr[data-type="med"]').forEach(tr => {
+            const i = tr.dataset.idx;
+            const qty = parseFloat(tr.querySelector('.dm-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.dm-price').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.dm-line-total').textContent = total.toFixed(2);
+            subtotal += total;
+        });
+        // Extras
+        document.querySelectorAll('tr[data-type="extra"]').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('.dm-extra-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.dm-extra-price').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.dm-extra-total').textContent = total.toFixed(2);
+            subtotal += total;
+        });
+        const discount = parseFloat(document.getElementById('dm_discount').value) || 0;
+        const grand = Math.max(subtotal - discount, 0);
+        document.getElementById('dm_subtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('dm_grand').textContent = grand.toFixed(2);
+    }
+
+    function closeDispenseModal() {
+        document.getElementById('dispenseModal').style.display = 'none';
+    }
+
+    function confirmDispense() {
+        // Collect pharmacist-entered values
+        const medicines = [];
+        document.querySelectorAll('tr[data-type="med"]').forEach(tr => {
+            const i = parseInt(tr.dataset.idx);
+            medicines.push({
+                order_id: _dispMeds[i].order_id,
+                quantity: parseInt(tr.querySelector('.dm-qty').value) || 1,
+                unit_price: parseFloat(tr.querySelector('.dm-price').value) || 0,
+            });
+        });
+        const extra_charges = [];
+        document.querySelectorAll('tr[data-type="extra"]').forEach(tr => {
+            const i = parseInt(tr.dataset.idx);
+            const qty = parseInt(tr.querySelector('.dm-extra-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.dm-extra-price').value) || 0;
+            if (qty > 0 && price > 0) {
+                extra_charges.push({
+                    item_name: _dispExtras[i].item_name,
+                    category: _dispExtras[i].category,
+                    quantity: qty,
+                    unit_price: price,
+                });
+            }
+        });
+        const discount = parseFloat(document.getElementById('dm_discount').value) || 0;
+
+        if (!confirm('Confirm dispense and generate bill?')) return;
+
+        fetch('{{ url_for("pharmacy_ops.dispense_prescription") }}', {
+            method: 'POST', credentials: 'include', headers,
+            body: JSON.stringify({
+                prescription_id: _dispRxId,
+                medicines: medicines,
+                extra_charges: extra_charges,
+                discount: discount,
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                closeDispenseModal();
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.error || 'Dispense failed');
+            }
+        }).catch(err => alert('Error: ' + err));
+    }
+
     // ══════════════════════════════════════════════════
     //  AUTO-VERIFY: Check all pending order medicines
     // ══════════════════════════════════════════════════
@@ -874,4 +1062,82 @@
         // silently wait for next frame
     }
 </script>
+
+<!-- ═══ DISPENSE MODAL ═══ -->
+<style>
+.dm-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:flex-start; padding:30px 16px; overflow-y:auto; backdrop-filter:blur(4px); }
+.dm-box { background:#1e293b; border:1px solid rgba(148,163,184,0.2); border-radius:16px; width:100%; max-width:780px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.dm-header { padding:18px 24px; border-bottom:1px solid rgba(148,163,184,0.15); display:flex; justify-content:space-between; align-items:center; }
+.dm-header h5 { margin:0; color:#a5b4fc; font-size:1.1rem; font-weight:700; }
+.dm-close { background:none; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; }
+.dm-body { padding:20px 24px; }
+.dm-meta { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:16px; font-size:0.85rem; }
+.dm-meta span { color:#94a3b8; }
+.dm-meta strong { color:#e2e8f0; }
+.dm-table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+.dm-table th { padding:8px 10px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; font-weight:600; text-align:left; border-bottom:1px solid rgba(148,163,184,0.2); }
+.dm-table td { padding:8px 10px; border-bottom:1px solid rgba(148,163,184,0.08); }
+.dm-input { width:80px; padding:6px 8px; background:rgba(30,41,59,0.9); border:1px solid rgba(148,163,184,0.2); border-radius:6px; color:#e2e8f0; font-size:0.88rem; text-align:right; }
+.dm-input:focus { border-color:#6366f1; outline:none; }
+.dm-totals { display:flex; flex-direction:column; align-items:flex-end; gap:6px; margin-bottom:16px; padding-right:10px; }
+.dm-totals .row-t { display:flex; gap:20px; font-size:0.9rem; }
+.dm-totals .row-t .label-t { color:#94a3b8; min-width:100px; text-align:right; }
+.dm-totals .row-t .val-t { color:#e2e8f0; font-weight:700; min-width:80px; text-align:right; }
+.dm-totals .grand { font-size:1.15rem; color:#34d399; border-top:1px solid rgba(148,163,184,0.2); padding-top:8px; }
+.dm-footer { padding:16px 24px; border-top:1px solid rgba(148,163,184,0.15); display:flex; gap:10px; justify-content:flex-end; }
+.dm-btn { padding:10px 22px; border:none; border-radius:10px; font-weight:700; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.dm-btn-primary { background:#059669; color:#fff; }
+.dm-btn-primary:hover { background:#047857; }
+.dm-btn-cancel { background:rgba(148,163,184,0.15); color:#94a3b8; }
+.dm-btn-cancel:hover { background:rgba(148,163,184,0.25); }
+</style>
+
+<div class="dm-overlay" id="dispenseModal">
+    <div class="dm-box">
+        <div class="dm-header">
+            <h5><i class="fas fa-hand-holding-medical me-2"></i>Dispense Prescription &mdash; <span id="dm_rxid"></span></h5>
+            <button class="dm-close" onclick="closeDispenseModal()">&times;</button>
+        </div>
+        <div class="dm-body">
+            <div class="dm-meta">
+                <span><i class="fas fa-user me-1"></i> Patient: <strong id="dm_patient"></strong></span>
+                <span><i class="fas fa-user-md me-1"></i> Doctor: <strong id="dm_doctor"></strong></span>
+            </div>
+
+            <table class="dm-table">
+                <thead>
+                    <tr>
+                        <th style="min-width:200px;">Item</th>
+                        <th style="text-align:center;">Stock</th>
+                        <th>Qty</th>
+                        <th>Unit Price (Rs.)</th>
+                        <th style="text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="dm_tbody"></tbody>
+            </table>
+
+            <div class="dm-totals">
+                <div class="row-t">
+                    <span class="label-t">Subtotal:</span>
+                    <span class="val-t">Rs. <span id="dm_subtotal">0.00</span></span>
+                </div>
+                <div class="row-t">
+                    <span class="label-t">Discount:</span>
+                    <span class="val-t"><input type="number" class="dm-input" id="dm_discount" value="0" min="0" step="0.01" onchange="recalcDispense()" style="width:90px;"></span>
+                </div>
+                <div class="row-t grand">
+                    <span class="label-t">Grand Total:</span>
+                    <span class="val-t" style="color:#34d399;">Rs. <span id="dm_grand">0.00</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="dm-footer">
+            <button class="dm-btn dm-btn-cancel" onclick="closeDispenseModal()">Cancel</button>
+            <button class="dm-btn dm-btn-primary" onclick="confirmDispense()">
+                <i class="fas fa-check-circle"></i> Dispense &amp; Generate Bill
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

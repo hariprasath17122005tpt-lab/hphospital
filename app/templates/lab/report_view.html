@@ -106,6 +106,28 @@
             font-weight: 700;
             color: #0f172a;
         }
+        .value-cell.flag-critical {
+            color: #dc2626;
+            background: rgba(239,68,68,0.08);
+        }
+        .value-cell.flag-abnormal {
+            color: #d97706;
+            background: rgba(245,158,11,0.08);
+        }
+        .value-cell.flag-normal {
+            color: #059669;
+        }
+        .flag-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .flag-indicator.critical { background: #dc2626; box-shadow: 0 0 6px rgba(220,38,38,0.5); }
+        .flag-indicator.abnormal { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+        .flag-indicator.normal { background: #10b981; }
         .footer-note {
             text-align: center;
             color: #94a3b8;
@@ -208,7 +230,17 @@
                 {% for row in report_rows %}
                 <tr>
                     <td>{{ row.name }}</td>
-                    <td class="value-cell">{{ row.value }}</td>
+                    <td class="value-cell {% if row.flag == 'critical' %}flag-critical{% elif row.flag == 'abnormal' %}flag-abnormal{% elif row.flag == 'normal' %}flag-normal{% endif %}">
+                        {% if row.flag in ('critical', 'abnormal', 'normal') %}
+                        <span class="flag-indicator {{ row.flag }}"></span>
+                        {% endif %}
+                        {{ row.value }}
+                        {% if row.flag == 'critical' %}
+                            <i class="fas fa-exclamation-triangle ms-1" style="color:#dc2626;font-size:0.75rem;" title="CRITICAL VALUE"></i>
+                        {% elif row.flag == 'abnormal' %}
+                            <i class="fas fa-arrow-up ms-1" style="color:#d97706;font-size:0.75rem;" title="Outside normal range"></i>
+                        {% endif %}
+                    </td>
                     <td>{{ row.unit }}</td>
                     <td style="color: #64748b; font-size: 0.85rem;">{{ row.range }}</td>
                 </tr>

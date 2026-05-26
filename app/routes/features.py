@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models.models import db, Medicine, BloodInventory, Bed, DoctorEvent, Staff, PatientCheckIn, Patient, Doctor
 from app.routes.auth import patient_required
 from sqlalchemy import or_, case, func
+from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -827,8 +828,28 @@ def digital_checkin():
             )
             
             db.session.add(checkin)
+
+            # Create Visit + QR for this check-in
+            try:
+                from app.models.models import Visit
+                from app.routes.qr_visit import create_visit_qr
+                visit = Visit(
+                    patient_id=patient.id,
+                    visit_type='OP',
+                    doctor_id=doctor_id,
+                    notes=f"Express check-in. Reason: {check_in_reason}",
+                    visit_reason=check_in_reason,
+                    visit_date=datetime.utcnow(),
+                )
+                db.session.add(visit)
+                db.session.flush()
+                create_visit_qr(visit)
+            except Exception as qr_err:
+                import logging
+                logging.getLogger(__name__).warning(f"QR generation in check-in skipped: {qr_err}")
+
             db.session.commit()
-            
+
             # Fetch content for success message
             assigned_doctor = Doctor.query.get(doctor_id)
             doctor_name = f"Dr. {assigned_doctor.first_name} {assigned_doctor.last_name}" if assigned_doctor else "the doctor"

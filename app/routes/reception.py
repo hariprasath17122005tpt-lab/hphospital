@@ -1,6 +1,6 @@
 """
-Reception / Queue Management Module â€” Patient flow management
-Flow: Patient (books appointment/check-in) â†’ Reception (accepts/rejects) â†’ Doctor (accepts/cancels)
+Reception / Queue Management Module â€" Patient flow management
+Flow: Patient (books appointment/check-in) â†' Reception (accepts/rejects) â†' Doctor (accepts/cancels)
 Accessible by: RECEPTIONIST (full), DOCTOR (view queue, respond), ADMIN/HOST
 """
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, session
@@ -149,7 +149,7 @@ def _resolve_queue_entry_for_doctor_action(entry_id=None, patient_id=None):
     return query.order_by(ReceptionQueue.created_at.desc()).first()
 
 
-def _record_visit(patient_id, visit_type, doctor_id=None, notes=None, visit_date=None):
+def _record_visit(patient_id, visit_type, doctor_id=None, notes=None, visit_date=None, generate_qr=True):
     visit = Visit(
         patient_id=patient_id,
         visit_type=visit_type,
@@ -158,18 +158,26 @@ def _record_visit(patient_id, visit_type, doctor_id=None, notes=None, visit_date
         visit_date=visit_date or datetime.utcnow(),
     )
     db.session.add(visit)
+    # Generate QR for the visit (flush first to get visit.id)
+    if generate_qr:
+        try:
+            from app.routes.qr_visit import create_visit_qr
+            db.session.flush()
+            create_visit_qr(visit)
+        except Exception as e:
+            logger.warning(f"QR generation skipped for visit: {e}")
     return visit
 
 
-# â”€â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Dashboard â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/')
 @reception_bp.route('/dashboard')
 @reception_access_required
 def dashboard():
-    """Reception dashboard â€” incoming bookings, queue, and stats"""
+    """Reception dashboard â€" incoming bookings, queue, and stats"""
     today_start = datetime.combine(date.today(), datetime.min.time())
 
-    # â”€â”€ Incoming appointments (booked by patients, not yet in queue) â”€â”€
+    # â"€â"€ Incoming appointments (booked by patients, not yet in queue) â"€â"€
     incoming_appointments = Appointment.query.filter(
         Appointment.status.in_(['pending', 'confirmed']),
         Appointment.appointment_date >= today_start
@@ -181,7 +189,7 @@ def dashboard():
     ).all()]
     incoming_appointments = [a for a in incoming_appointments if a.id not in queued_appt_ids]
 
-    # â”€â”€ Incoming check-ins (submitted by patients, not yet in queue) â”€â”€
+    # â"€â"€ Incoming check-ins (submitted by patients, not yet in queue) â"€â"€
     incoming_checkins = PatientCheckIn.query.filter(
         PatientCheckIn.status.in_(['pending']),
         PatientCheckIn.created_at >= today_start
@@ -192,7 +200,7 @@ def dashboard():
     ).all()]
     incoming_checkins = [c for c in incoming_checkins if c.id not in queued_checkin_ids]
 
-    # â”€â”€ Today's queue entries â”€â”€
+    # â"€â"€ Today's queue entries â"€â"€
     today_queue = ReceptionQueue.query.filter(
         ReceptionQueue.created_at >= today_start
     ).order_by(ReceptionQueue.token_number.asc()).all()
@@ -203,6 +211,34 @@ def dashboard():
     with_doctor = sum(1 for q in today_queue if q.doctor_status in ('Accepted', 'In Consultation'))
     completed = sum(1 for q in today_queue if q.status == 'Completed')
     cancelled_by_doctor = sum(1 for q in today_queue if q.doctor_status == 'Cancelled')
+
+    # --- Queue Analytics: Average Wait Time ---
+    wait_times = []
+    for q in today_queue:
+        if q.doctor_responded_at and q.created_at:
+            delta = (q.doctor_responded_at - q.created_at).total_seconds() / 60.0
+            if 0 <= delta <= 480:  # cap at 8 hours to exclude outliers
+                wait_times.append(delta)
+    avg_wait_time = round(sum(wait_times) / len(wait_times), 1) if wait_times else 0
+    currently_waiting = sum(1 for q in today_queue
+                           if q.reception_status == 'Accepted'
+                           and q.doctor_status == 'Pending')
+
+    # --- Queue Size by Doctor ---
+    queue_by_doctor = {}
+    for q in today_queue:
+        if q.doctor and q.reception_status == 'Accepted' and q.doctor_status in ('Pending', 'Accepted', 'In Consultation'):
+            doc_name = f"Dr. {q.doctor.first_name} {q.doctor.last_name}"
+            queue_by_doctor[doc_name] = queue_by_doctor.get(doc_name, 0) + 1
+
+    # --- Today's Summary: Peak Hour ---
+    hour_counts = {}
+    for q in today_queue:
+        if q.created_at:
+            hour = q.created_at.strftime('%I %p')
+            hour_counts[hour] = hour_counts.get(hour, 0) + 1
+    peak_hour = max(hour_counts, key=hour_counts.get) if hour_counts else 'N/A'
+    peak_hour_count = hour_counts.get(peak_hour, 0) if peak_hour != 'N/A' else 0
 
     # If doctor, filter to their queue
     doctor_queue = today_queue
@@ -225,7 +261,12 @@ def dashboard():
                            completed_count=completed,
                            cancelled_by_doctor=cancelled_by_doctor,
                            total=len(today_queue),
-                           doctors=doctors)
+                           doctors=doctors,
+                           avg_wait_time=avg_wait_time,
+                           currently_waiting=currently_waiting,
+                           queue_by_doctor=queue_by_doctor,
+                           peak_hour=peak_hour,
+                           peak_hour_count=peak_hour_count)
 
 
 @reception_bp.route('/history')
@@ -235,7 +276,7 @@ def patient_history():
     return render_template('reception/patient_history.html')
 
 
-# â”€â”€â”€ Accept Appointment into Queue (Reception) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Accept Appointment into Queue (Reception) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/accept-appointment', methods=['POST'])
 @receptionist_only
 def accept_appointment():
@@ -290,7 +331,7 @@ def accept_appointment():
     })
 
 
-# â”€â”€â”€ Accept Check-in into Queue (Reception) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Accept Check-in into Queue (Reception) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/accept-checkin', methods=['POST'])
 @receptionist_only
 def accept_checkin():
@@ -345,7 +386,7 @@ def accept_checkin():
     })
 
 
-# â”€â”€â”€ Reject Appointment (Reception) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Reject Appointment (Reception) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/reject-appointment', methods=['POST'])
 @receptionist_only
 def reject_appointment():
@@ -366,7 +407,7 @@ def reject_appointment():
     return jsonify({'success': True, 'message': 'Appointment rejected.'})
 
 
-# â”€â”€â”€ Reject Check-in (Reception) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Reject Check-in (Reception) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/reject-checkin', methods=['POST'])
 @receptionist_only
 def reject_checkin():
@@ -387,7 +428,7 @@ def reject_checkin():
     return jsonify({'success': True, 'message': 'Check-in rejected.'})
 
 
-# â”€â”€â”€ Doctor Accepts Patient from Queue â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Doctor Accepts Patient from Queue â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/doctor-accept', methods=['POST'])
 @reception_access_required
 def doctor_accept():
@@ -417,7 +458,7 @@ def doctor_accept():
     return jsonify({'success': True, 'message': 'Patient accepted. Ready for consultation.'})
 
 
-# â”€â”€â”€ Doctor Cancels/Rejects Patient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Doctor Cancels/Rejects Patient â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/doctor-cancel', methods=['POST'])
 @reception_access_required
 def doctor_cancel():
@@ -445,7 +486,7 @@ def doctor_cancel():
     return jsonify({'success': True, 'message': 'Patient cancelled. Reception notified.'})
 
 
-# â”€â”€â”€ Doctor Completes Consultation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Doctor Completes Consultation â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/doctor-complete', methods=['POST'])
 @reception_access_required
 def doctor_complete():
@@ -466,7 +507,7 @@ def doctor_complete():
     return jsonify({'success': True, 'message': 'Consultation completed.'})
 
 
-# â”€â”€â”€ Search Patients (reception AJAX) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Search Patients (reception AJAX) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/search-patients')
 @receptionist_only
 def search_patients():
@@ -502,7 +543,7 @@ def search_patients():
     } for p in patients])
 
 
-# â”€â”€â”€ Register Existing / Returning Patient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Register Existing / Returning Patient â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/register-existing', methods=['POST'])
 @receptionist_only
 def register_existing():
@@ -542,7 +583,7 @@ def register_existing():
             arrival_time=datetime.utcnow()
         )
         db.session.add(entry)
-        _record_visit(
+        visit = _record_visit(
             patient_id=patient.id,
             visit_type='OP',
             doctor_id=parsed_doctor_id,
@@ -555,13 +596,26 @@ def register_existing():
             msg += f' | UHID: {patient.uhid}'
         if parsed_doctor_id:
             doc = Doctor.query.get(parsed_doctor_id)
-            msg += f' â€” Sent to Dr. {doc.first_name} {doc.last_name}'
+            msg += f' â€" Sent to Dr. {doc.first_name} {doc.last_name}'
+
+        # Build QR response data
+        qr_data = {}
+        if visit.qr_token:
+            qr_data = {
+                'qr_token': visit.qr_token,
+                'qr_image_url': url_for('static', filename=visit.qr_image_path) if visit.qr_image_path else None,
+                'qr_visit_url': url_for('qr.view_visit', qr_token=visit.qr_token, _external=True),
+                'visit_id': visit.id,
+            }
 
         return jsonify({
             'success': True,
             'token': token,
             'uhid': patient.uhid,
-            'message': msg
+            'patient_name': patient.name,
+            'phone': patient.phone or '',
+            'message': msg,
+            **qr_data,
         })
     except Exception as e:
         db.session.rollback()
@@ -569,12 +623,12 @@ def register_existing():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-# â”€â”€â”€ Register Walk-in Patient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Register Walk-in Patient â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/register-walkin', methods=['POST'])
 @receptionist_only
 def register_walkin():
     """Register a walk-in patient and generate token.
-    Uses PatientService â€” NO fake User accounts created.
+    Uses PatientService â€" NO fake User accounts created.
     """
     from app.services.patient_service import PatientService
     from app.models.models import Hospital
@@ -647,7 +701,7 @@ def register_walkin():
             arrival_time=datetime.utcnow()
         )
         db.session.add(entry)
-        _record_visit(
+        visit = _record_visit(
             patient_id=patient.id,
             visit_type='OP',
             doctor_id=parsed_doctor_id,
@@ -660,16 +714,29 @@ def register_walkin():
             msg += f' | UHID: {patient.uhid}'
         if parsed_doctor_id:
             doc = Doctor.query.get(parsed_doctor_id)
-            msg += f' â€” Sent to Dr. {doc.first_name} {doc.last_name}'
+            msg += f' â€" Sent to Dr. {doc.first_name} {doc.last_name}'
         else:
-            msg += ' â€” No doctor assigned yet. Assign from the queue.'
+            msg += ' â€" No doctor assigned yet. Assign from the queue.'
+
+        # Build QR response data
+        qr_data = {}
+        if visit.qr_token:
+            qr_data = {
+                'qr_token': visit.qr_token,
+                'qr_image_url': url_for('static', filename=visit.qr_image_path) if visit.qr_image_path else None,
+                'qr_visit_url': url_for('qr.view_visit', qr_token=visit.qr_token, _external=True),
+                'visit_id': visit.id,
+            }
 
         return jsonify({
             'success': True,
             'token': token,
             'uhid': patient.uhid,
+            'patient_id': patient.id,
             'patient_name': f"{first_name} {last_name}",
-            'message': msg
+            'phone': patient.phone or '',
+            'message': msg,
+            **qr_data,
         })
 
     except Exception as e:
@@ -679,13 +746,13 @@ def register_walkin():
 
 
 
-# â”€â”€â”€ Lab-only walk-in (independent lab; no doctor referral) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Lab-only walk-in (independent lab; no doctor referral) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/lab-only-visit', methods=['POST'])
 @receptionist_only
 def lab_only_visit():
     """
     Register or resolve patient and create walk-in lab orders (doctor_id NULL).
-    Uses PatientService â€” NO fake User accounts created.
+    Uses PatientService â€" NO fake User accounts created.
     JSON: { patient_id?, first_name?, last_name?, phone?, age?, gender?, tests: [str, ...] }
     """
     from app.models.models import Hospital
@@ -754,7 +821,7 @@ def lab_only_visit():
     })
 
 
-# â”€â”€â”€ Update Queue Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Update Queue Status â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/update-status', methods=['POST'])
 @reception_access_required
 def update_status():
@@ -775,11 +842,11 @@ def update_status():
         entry.doctor_status = 'Completed'
 
     db.session.commit()
-    logger.info(f"Queue #{entry_id} â†’ {new_status}")
+    logger.info(f"Queue #{entry_id} â†' {new_status}")
     return jsonify({'success': True})
 
 
-# â”€â”€â”€ Assign Doctor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Assign Doctor â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/assign-doctor', methods=['POST'])
 @receptionist_only
 def assign_doctor():
@@ -803,7 +870,7 @@ def assign_doctor():
     return jsonify({'success': True, 'message': f'Assigned to {doc_name}'})
 
 
-# â”€â”€â”€ Doctor's Incoming Patients (API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Doctor's Incoming Patients (API) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/api/doctor-queue')
 @reception_access_required
 def doctor_queue_api():
@@ -836,7 +903,7 @@ def doctor_queue_api():
 
 
 
-# â”€â”€â”€ Queue Display (Public-ish â€” token board) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â"€â"€â"€ Queue Display (Public-ish â€" token board) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 @reception_bp.route('/queue-display')
 def queue_display():
     """Large-screen queue display for waiting area"""

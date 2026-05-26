@@ -96,31 +96,56 @@ function initAppointmentButtons() {
 /* ─── DARK/LIGHT MODE TOGGLE ────────────────────────────────── */
 function initThemeToggle() {
     const themeBtn = document.getElementById('themeToggleBtn');
-    const body = document.body;
+    const root = document.documentElement;
 
-    const savedTheme = safeStorage.get('cp-theme');
-    if (savedTheme === 'light') {
-        body.classList.add('light-mode');
-        if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+    // Read current theme from data-theme attribute (set by inline script in <head>)
+    function getCurrentTheme() {
+        return root.getAttribute('data-theme') || 'light';
     }
 
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            // Add transition class for smooth theme switch
-            body.style.transition = 'background 0.5s ease, color 0.3s ease';
+    // Apply theme
+    function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        safeStorage.set('cp-theme', theme);
+        if (themeBtn) {
+            themeBtn.innerHTML = theme === 'dark'
+                ? '<i class="fas fa-sun"></i>'
+                : '<i class="fas fa-moon"></i>';
+        }
+    }
 
-            body.classList.toggle('light-mode');
-            const isLight = body.classList.contains('light-mode');
-            safeStorage.set('cp-theme', isLight ? 'light' : 'dark');
+    // Set initial icon based on current theme
+    var currentTheme = getCurrentTheme();
+    if (themeBtn) {
+        themeBtn.innerHTML = currentTheme === 'dark'
+            ? '<i class="fas fa-sun"></i>'
+            : '<i class="fas fa-moon"></i>';
+    }
+
+    // Toggle on click
+    if (themeBtn) {
+        themeBtn.addEventListener('click', function() {
+            var newTheme = getCurrentTheme() === 'dark' ? 'light' : 'dark';
 
             // Animate icon change
             themeBtn.style.transform = 'rotate(360deg) scale(0)';
-            setTimeout(() => {
-                themeBtn.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+            setTimeout(function() {
+                applyTheme(newTheme);
                 themeBtn.style.transform = 'rotate(0deg) scale(1)';
             }, 200);
 
             window.dispatchEvent(new Event('themeChanged'));
+        });
+    }
+
+    // Listen for OS theme changes
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            // Only auto-switch if user hasn't manually set a preference
+            var saved = safeStorage.get('cp-theme');
+            if (!saved) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
         });
     }
 }

@@ -62,12 +62,12 @@
         font-size: clamp(1.8rem, 2.5vw, 2.6rem);
         font-weight: 800;
         letter-spacing: -0.03em;
-        color: #f1f5f9;
+        color: var(--cp-text);
         margin: 0;
     }
 
     .rx-subtitle {
-        color: rgba(241, 245, 249, 0.45);
+        color: var(--cp-text-muted);
         font-size: 0.88rem;
         margin-top: 2px;
     }
@@ -81,10 +81,10 @@
 
     /* Individual Prescription Card */
     .rx-card {
-        background: rgba(15, 15, 30, 0.65);
+        background: var(--cp-surface);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--cp-border);
         border-radius: 24px;
         padding: 28px;
         position: relative;
@@ -151,13 +151,13 @@
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1.25rem;
         font-weight: 700;
-        color: #f1f5f9;
+        color: var(--cp-text);
         margin: 6px 0 2px;
     }
 
     .rx-doctor-name {
         font-size: 0.8rem;
-        color: rgba(241, 245, 249, 0.45);
+        color: var(--cp-text-muted);
     }
 
     .rx-doctor-name i {
@@ -203,8 +203,8 @@
         display: flex;
         align-items: center;
         gap: 16px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--cp-glass);
+        border: 1px solid var(--cp-border);
         border-radius: 16px;
         padding: 16px 18px;
         margin-bottom: 18px;
@@ -232,20 +232,20 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1.2px;
-        color: rgba(241, 245, 249, 0.35);
+        color: var(--cp-text-muted);
     }
 
     .rx-dosage-value {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1rem;
         font-weight: 700;
-        color: #f1f5f9;
+        color: var(--cp-text);
     }
 
     .rx-divider {
         width: 1px;
         height: 36px;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--cp-border);
     }
 
     .rx-freq-value {
@@ -257,13 +257,13 @@
 
     .rx-duration-value {
         font-size: 0.72rem;
-        color: rgba(241, 245, 249, 0.4);
+        color: var(--cp-text-muted);
     }
 
     /* Doctor's Note */
     .rx-note {
-        background: rgba(99, 102, 241, 0.06);
-        border-left: 3px solid #6366f1;
+        background: var(--cp-accent-soft, rgba(99, 102, 241, 0.06));
+        border-left: 3px solid var(--cp-accent);
         border-radius: 0 12px 12px 0;
         padding: 14px 16px;
         margin-bottom: 18px;
@@ -274,12 +274,12 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: rgba(241, 245, 249, 0.4);
+        color: var(--cp-text-muted);
         margin-bottom: 4px;
     }
 
     .rx-note-text {
-        color: rgba(241, 245, 249, 0.7);
+        color: var(--cp-text-secondary);
         font-size: 0.85rem;
         font-style: italic;
         line-height: 1.5;
@@ -291,7 +291,7 @@
         justify-content: space-between;
         align-items: center;
         padding-top: 18px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-top: 1px solid var(--cp-border);
     }
 
     .rx-tracker-label {
@@ -299,7 +299,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: rgba(241, 245, 249, 0.3);
+        color: var(--cp-text-muted);
     }
 
     .rx-tracker-btns {
@@ -372,32 +372,32 @@
         font-family: 'Space Grotesk', sans-serif;
         font-size: 1.5rem;
         font-weight: 700;
-        color: #f1f5f9;
+        color: var(--cp-text);
         margin-bottom: 8px;
     }
 
     .rx-empty p {
-        color: rgba(241, 245, 249, 0.4);
+        color: var(--cp-text-muted);
         font-size: 0.95rem;
     }
 
     /* Modal Styling */
     .modal-content {
-        background: rgba(15, 15, 30, 0.95) !important;
+        background: var(--cp-surface) !important;
         backdrop-filter: blur(24px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid var(--cp-border) !important;
         border-radius: 24px !important;
     }
 
     .modal-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-bottom: 1px solid var(--cp-border) !important;
         padding: 24px 28px !important;
     }
 
     .modal-title {
         font-family: 'Space Grotesk', sans-serif !important;
         font-weight: 700 !important;
-        color: #f1f5f9 !important;
+        color: var(--cp-text) !important;
     }
 
     .modal-body {
@@ -405,7 +405,7 @@
     }
 
     .modal .form-label {
-        color: rgba(241, 245, 249, 0.6) !important;
+        color: var(--cp-text-secondary) !important;
         font-size: 0.8rem !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
@@ -414,17 +414,17 @@
 
     .modal .form-control,
     .modal .form-select {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: var(--cp-glass) !important;
+        border: 1px solid var(--cp-border) !important;
         border-radius: 12px !important;
-        color: #f1f5f9 !important;
+        color: var(--cp-text) !important;
         padding: 12px 16px !important;
     }
 
     .modal .form-control:focus,
     .modal .form-select:focus {
-        border-color: rgba(99, 102, 241, 0.4) !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+        border-color: var(--cp-accent) !important;
+        box-shadow: 0 0 0 3px var(--cp-accent-soft, rgba(99, 102, 241, 0.1)) !important;
     }
 
     .modal .btn-close {
@@ -432,11 +432,11 @@
     }
 
     .modal-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-top: 1px solid var(--cp-border) !important;
     }
 
     .modal .btn-primary {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+        background: var(--cp-gradient-1, linear-gradient(135deg, #6366f1, #8b5cf6)) !important;
         border: none !important;
         border-radius: 12px !important;
         padding: 10px 24px !important;
@@ -444,9 +444,9 @@
     }
 
     .modal .btn-secondary {
-        background: rgba(255, 255, 255, 0.06) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: rgba(241, 245, 249, 0.7) !important;
+        background: var(--cp-glass) !important;
+        border: 1px solid var(--cp-border) !important;
+        color: var(--cp-text-secondary) !important;
         border-radius: 12px !important;
     }
 
@@ -510,6 +510,10 @@
                     {% endif %}
                     <div class="rx-doctor-name"><i class="fas fa-user-md me-1"></i> Dr. {{ prescription.doctor.last_name
                         }}</div>
+                    <div style="font-size:0.72rem; color:rgba(148,163,184,0.8); margin-top:3px;">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ prescription.prescribed_at.strftime('%b %d, %Y %I:%M %p') if prescription.prescribed_at else 'N/A' }}
+                    </div>
                 </div>
                 {% if prescription.is_verified %}
                 <div class="rx-verified-stamp">

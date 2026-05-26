@@ -6,8 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Staff Portal — CarePoint</title>
-    
-    
+
+    <!-- Restore saved theme -->
+    <script>
+        (function() {
+            var saved = null;
+            try { saved = localStorage.getItem('cp-theme'); } catch(e) {}
+            var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
         rel="stylesheet">
@@ -614,10 +623,30 @@
                 font-size: 1.4rem;
             }
         }
+
+        /* ── Light Mode ── */
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --glass: rgba(255,255,255,.85);
+            --border: rgba(0,0,0,.08);
+            --text: #0f172a;
+        }
+        [data-theme="light"] body { background: #f1f5f9 !important; color: #0f172a !important; }
+        [data-theme="light"] .cosmos .orb { opacity: .15; }
+        [data-theme="light"] input { background: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+        [data-theme="light"] input::placeholder { color: #94a3b8 !important; }
+        [data-theme="light"] .staff-header h1, [data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3 { color: #0f172a !important; }
+        [data-theme="light"] p, [data-theme="light"] label, [data-theme="light"] .text-muted { color: #475569 !important; }
     </style>
 </head>
 
 <body>
+    <!-- Theme Toggle -->
+    <button id="staffThemeToggle" onclick="(function(){var r=document.documentElement,t=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',t);try{localStorage.setItem('cp-theme',t)}catch(e){};var b=document.getElementById('staffThemeToggle');b.innerHTML=t==='dark'?'<i class=\'fas fa-sun\'></i>':'<i class=\'fas fa-moon\'></i>';b.style.background=t==='dark'?'rgba(30,41,59,.85)':'rgba(255,255,255,.9)';b.style.color=t==='dark'?'#fbbf24':'#1e293b'})()" style="position:fixed;bottom:24px;left:24px;z-index:99999;width:48px;height:48px;border-radius:50%;border:2px solid rgba(148,163,184,.25);background:rgba(30,41,59,.85);color:#e2e8f0;font-size:1.1rem;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s;"><i class="fas fa-sun"></i></button>
+    <script>
+    (function(){var b=document.getElementById('staffThemeToggle');if(!b)return;var t=document.documentElement.getAttribute('data-theme')||'dark';b.innerHTML=t==='dark'?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';b.style.background=t==='dark'?'rgba(30,41,59,.85)':'rgba(255,255,255,.9)';b.style.color=t==='dark'?'#fbbf24':'#1e293b';})();
+    </script>
+
     <!-- Background -->
     <div class="cosmos">
         <div class="orb a"></div>

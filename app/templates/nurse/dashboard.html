@@ -78,39 +78,88 @@
         </div>
     </div>
 
-    <!-- Critical Alerts Banner -->
+    <!-- Critical Vitals Alert Banner -->
+    {% if critical_alerts %}
+    <div class="alert alert-danger border-danger shadow-sm mb-4 py-2 px-3" style="border-left: 5px solid #dc3545 !important; background: rgba(220,53,69,0.08);">
+        <div class="d-flex align-items-center mb-2">
+            <i class="fas fa-exclamation-triangle text-danger fa-lg me-2 fa-beat" style="--fa-animation-duration: 1.5s;"></i>
+            <strong class="text-danger">CRITICAL VITALS ALERT &mdash; {{ critical_alerts|length }} abnormal reading{{ 's' if critical_alerts|length > 1 else '' }} detected today</strong>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% for alert in critical_alerts[:12] %}
+            <a href="{{ url_for('nurse.patient_detail', patient_id=alert.patient.id) }}" class="text-decoration-none">
+                <span class="badge rounded-pill px-3 py-2 {% if alert.type in ('fever', 'high_bp', 'low_oxygen', 'high_sugar') %}bg-danger{% else %}bg-warning text-dark{% endif %}" style="font-size: 0.78rem;">
+                    <i class="fas fa-user me-1"></i>{{ alert.patient.first_name }} {{ alert.patient.last_name }} &mdash;
+                    {% if alert.type == 'fever' %}Temp {{ alert.vitals.temperature }}°F
+                    {% elif alert.type == 'high_bp' %}BP {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}
+                    {% elif alert.type == 'low_bp' %}Low BP {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}
+                    {% elif alert.type == 'low_oxygen' %}SpO2 {{ alert.vitals.oxygen_level }}%
+                    {% elif alert.type == 'tachycardia' %}HR {{ alert.vitals.heart_rate }} bpm
+                    {% elif alert.type == 'bradycardia' %}HR {{ alert.vitals.heart_rate }} bpm
+                    {% elif alert.type == 'high_sugar' %}Sugar {{ alert.vitals.blood_sugar }} mg/dL
+                    {% else %}{{ alert.type }}{% endif %}
+                    <small class="ms-1 opacity-75">{{ alert.vitals.recorded_at.strftime('%H:%M') }}</small>
+                </span>
+            </a>
+            {% endfor %}
+            {% if critical_alerts|length > 12 %}
+            <span class="badge rounded-pill bg-secondary px-3 py-2" style="font-size: 0.78rem;">+{{ critical_alerts|length - 12 }} more</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Original Critical Alerts Table (detailed view) -->
     {% if critical_alerts %}
     <div class="card border-danger shadow-sm mb-4">
-        <div class="card-header bg-danger text-white py-2">
-            <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Critical Alerts</h6>
+        <div class="card-header bg-danger text-white py-2 d-flex justify-content-between align-items-center" role="button" data-bs-toggle="collapse" data-bs-target="#criticalAlertsDetail" aria-expanded="false">
+            <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Critical Alerts Detail</h6>
+            <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
-                    <tbody>
-                        {% for alert in critical_alerts[:8] %}
-                        <tr>
-                            <td class="fw-bold">
-                                <a href="{{ url_for('nurse.patient_detail', patient_id=alert.patient.id) }}">
-                                    {{ alert.patient.first_name }} {{ alert.patient.last_name }}
-                                </a>
-                            </td>
-                            <td>
-                                {% if alert.type == 'fever' %}<span class="badge bg-danger">High Temp: {{ alert.vitals.temperature }}°F</span>
-                                {% elif alert.type == 'high_bp' %}<span class="badge bg-danger">High BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
-                                {% elif alert.type == 'low_bp' %}<span class="badge bg-warning text-dark">Low BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
-                                {% elif alert.type == 'low_oxygen' %}<span class="badge bg-danger">Low O2: {{ alert.vitals.oxygen_level }}%</span>
-                                {% elif alert.type == 'tachycardia' %}<span class="badge bg-warning text-dark">Tachycardia: {{ alert.vitals.heart_rate }} bpm</span>
-                                {% elif alert.type == 'bradycardia' %}<span class="badge bg-warning text-dark">Bradycardia: {{ alert.vitals.heart_rate }} bpm</span>
-                                {% elif alert.type == 'high_sugar' %}<span class="badge bg-danger">High Sugar: {{ alert.vitals.blood_sugar }} mg/dL</span>
-                                {% else %}<span class="badge bg-secondary">{{ alert.type }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-muted small">{{ alert.vitals.recorded_at.strftime('%H:%M') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="collapse" id="criticalAlertsDetail">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Patient</th>
+                                <th>Alert</th>
+                                <th>Time</th>
+                                <th>Full Vitals</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in critical_alerts[:20] %}
+                            <tr>
+                                <td class="fw-bold">
+                                    <a href="{{ url_for('nurse.patient_detail', patient_id=alert.patient.id) }}">
+                                        {{ alert.patient.first_name }} {{ alert.patient.last_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if alert.type == 'fever' %}<span class="badge bg-danger">High Temp: {{ alert.vitals.temperature }}°F</span>
+                                    {% elif alert.type == 'high_bp' %}<span class="badge bg-danger">High BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
+                                    {% elif alert.type == 'low_bp' %}<span class="badge bg-warning text-dark">Low BP: {{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }}</span>
+                                    {% elif alert.type == 'low_oxygen' %}<span class="badge bg-danger">Low O2: {{ alert.vitals.oxygen_level }}%</span>
+                                    {% elif alert.type == 'tachycardia' %}<span class="badge bg-warning text-dark">Tachycardia: {{ alert.vitals.heart_rate }} bpm</span>
+                                    {% elif alert.type == 'bradycardia' %}<span class="badge bg-warning text-dark">Bradycardia: {{ alert.vitals.heart_rate }} bpm</span>
+                                    {% elif alert.type == 'high_sugar' %}<span class="badge bg-danger">High Sugar: {{ alert.vitals.blood_sugar }} mg/dL</span>
+                                    {% else %}<span class="badge bg-secondary">{{ alert.type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">{{ alert.vitals.recorded_at.strftime('%H:%M') }}</td>
+                                <td class="small text-muted">
+                                    T:{{ alert.vitals.temperature }}°F |
+                                    BP:{{ alert.vitals.systolic_bp }}/{{ alert.vitals.diastolic_bp }} |
+                                    HR:{{ alert.vitals.heart_rate }} |
+                                    SpO2:{{ alert.vitals.oxygen_level }}%
+                                    {% if alert.vitals.blood_sugar %} | Sugar:{{ alert.vitals.blood_sugar }}{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -1,15 +1,18 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models.models import (db, Doctor, Patient, HealthData, PatientVitals, Appointment, 
+from app.models.models import (db, Doctor, Patient, HealthData, PatientVitals, Appointment,
                                Prescription, PrescriptionMedicine, Medicine, Message,
                                Billing, LabReport, LabOrder, PatientCheckIn, ReceptionQueue,
-                               PharmacyOrder, MedicalImage, DoctorEvent)
+                               PharmacyOrder, MedicalImage, DoctorEvent,
+                               Consultation, PatientMedicalHistory,
+                               IPAdmission, IPMedication, IPProgressNote, Visit,
+                               MedicationAdministration, MedicationDispensing)
 from werkzeug.utils import secure_filename
 import os
 import json
 import hashlib
 from app.routes.auth import doctor_required
-from datetime import datetime, date as date_cls
+from datetime import datetime, date as date_cls, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func, case, inspect
 
@@ -162,7 +165,12 @@ def _doctor_has_access(doctor, patient_id):
     # Access via express check-in (patient selected this doctor for express check-in)
     has_checkin = db.session.query(PatientCheckIn.id).filter_by(
         doctor_id=doctor.id, patient_id=patient_id).first() is not None
-    return has_checkin
+    if has_checkin:
+        return True
+    # Access via IP admission (patient admitted under this doctor)
+    has_ip = db.session.query(IPAdmission.id).filter_by(
+        doctor_id=doctor.id, patient_id=patient_id).first() is not None
+    return has_ip
 
 
 def _format_checkin_symptoms(raw_symptoms):
@@ -352,6 +360,11 @@ def api_portal_summary():
     if not notifications:
         notifications.append({'message': 'All clear. No urgent alerts right now.', 'severity': 'info', 'time': now.strftime('%H:%M')})
 
+    # IP patient count for the portal badge
+    ip_patient_count = IPAdmission.query.filter_by(
+        doctor_id=doctor.id, admission_status='Admitted'
+    ).count()
+
     return jsonify({
         'success': True,
         'server_time': now.strftime('%Y-%m-%d %H:%M:%S'),
@@ -362,7 +375,8 @@ def api_portal_summary():
             'abnormal_lab_alerts': abnormal_lab_alerts,
             'recent_prescriptions': len(recent_prescriptions),
             'express_checkins': len(express_checkins),
-            'op_patients': len(waiting_queue) + len(express_checkins)
+            'op_patients': len(waiting_queue) + len(express_checkins),
+            'ip_patients': ip_patient_count,
         },
         'waiting_queue': waiting_queue,
         'notifications': notifications,
@@ -600,6 +614,10 @@ def view_patient(patient_id):
         patient_id=patient_id).order_by(PatientVitals.recorded_at.desc()).limit(20).all()
     latest_nurse_vitals = nurse_vitals[0] if nurse_vitals else None
 
+    # Past consultations for this patient
+    patient_consultations = Consultation.query.filter_by(patient_id=patient_id)\
+        .order_by(Consultation.created_at.desc()).limit(20).all()
+
     return render_template('doctor/view_patient.html',
                          patient=patient,
                          health_data=health_data,
@@ -610,7 +628,8 @@ def view_patient(patient_id):
                          lab_orders=lab_orders,
                          lab_reports=lab_reports,
                          nurse_vitals=nurse_vitals,
-                         latest_nurse_vitals=latest_nurse_vitals)
+                         latest_nurse_vitals=latest_nurse_vitals,
+                         patient_consultations=patient_consultations)
 
 @doctor_bp.route('/appointments')
 @login_required
@@ -866,58 +885,181 @@ def send_message(patient_id):
 def analytics():
     """Analytics dashboard for doctor"""
     doctor = current_user.doctor
-    
+    today = datetime.utcnow().date()
+    month_start = today.replace(day=1)
+
     # Get unique patients from appointments
     appointment_patient_ids = db.session.query(Appointment.patient_id.distinct()).filter_by(
         doctor_id=doctor.id).all()
     patient_ids = [ap[0] for ap in appointment_patient_ids] if appointment_patient_ids else []
-    
+
     total_patients = len(patient_ids) if patient_ids else 0
-    
+
     # Get appointment statistics
     total_appointments = Appointment.query.filter_by(doctor_id=doctor.id).count()
     completed_appointments = Appointment.query.filter_by(
         doctor_id=doctor.id, status='completed').count()
     pending_appointments = Appointment.query.filter_by(
         doctor_id=doctor.id, status='pending').count()
-    
+
+    # ── New patients this month ──
+    new_patients_month_ids = db.session.query(Appointment.patient_id.distinct()).filter(
+        Appointment.doctor_id == doctor.id,
+        func.date(Appointment.created_at) >= month_start
+    ).all()
+    # Filter to those whose first appointment with this doctor was this month
+    new_patients_month = 0
+    for (pid,) in new_patients_month_ids:
+        first_appt = Appointment.query.filter_by(
+            doctor_id=doctor.id, patient_id=pid
+        ).order_by(Appointment.created_at.asc()).first()
+        if first_appt and first_appt.created_at.date() >= month_start:
+            new_patients_month += 1
+
+    # ── IP patients for this doctor ──
+    ip_patient_count = IPAdmission.query.filter_by(
+        doctor_id=doctor.id, admission_status='Admitted'
+    ).count()
+
+    # ── Follow-up rate ──
+    followup_count = 0
+    if total_patients > 0:
+        for pid in patient_ids:
+            appt_count = Appointment.query.filter_by(doctor_id=doctor.id, patient_id=pid).count()
+            if appt_count > 1:
+                followup_count += 1
+    followup_rate = round((followup_count / total_patients * 100), 1) if total_patients > 0 else 0
+
+    # ── Revenue data (monthly trend, last 6 months) ──
+    revenue_monthly = []
+    revenue_labels = []
+    for i in range(5, -1, -1):
+        m_start = (today.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+        if m_start.month == 12:
+            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1)
+        else:
+            m_end = m_start.replace(month=m_start.month + 1, day=1)
+        rev = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+            Billing.doctor_id == doctor.id,
+            Billing.status == 'Paid',
+            Billing.created_at >= m_start,
+            Billing.created_at < m_end
+        ).scalar() or 0
+        revenue_monthly.append(float(rev))
+        revenue_labels.append(m_start.strftime('%b %Y'))
+
+    total_revenue = db.session.query(func.coalesce(func.sum(Billing.grand_total), 0)).filter(
+        Billing.doctor_id == doctor.id, Billing.status == 'Paid'
+    ).scalar() or 0
+
+    # ── Appointment trend (last 8 weeks) ──
+    appt_trend_labels = []
+    appt_trend_data = []
+    for i in range(7, -1, -1):
+        week_start = today - timedelta(days=today.weekday()) - timedelta(weeks=i)
+        week_end = week_start + timedelta(days=7)
+        cnt = Appointment.query.filter(
+            Appointment.doctor_id == doctor.id,
+            func.date(Appointment.appointment_date) >= week_start,
+            func.date(Appointment.appointment_date) < week_end
+        ).count()
+        appt_trend_data.append(cnt)
+        appt_trend_labels.append(week_start.strftime('%d %b'))
+
+    # ── Top diagnoses (from Consultation.final_diagnosis or Prescription.diagnosis) ──
+    diagnosis_counts = {}
+    consultations = Consultation.query.filter_by(doctor_id=doctor.id).all()
+    for c in consultations:
+        diag = (c.final_diagnosis or c.provisional_diagnosis or '').strip()
+        if diag:
+            diagnosis_counts[diag] = diagnosis_counts.get(diag, 0) + 1
+    prescriptions_diag = Prescription.query.filter_by(doctor_id=doctor.id).all()
+    for p in prescriptions_diag:
+        diag = (p.diagnosis or '').strip()
+        if diag and diag not in diagnosis_counts:
+            diagnosis_counts[diag] = diagnosis_counts.get(diag, 0) + 1
+    top_diagnoses = sorted(diagnosis_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    # ── Lab order patterns (most ordered tests) ──
+    lab_test_counts = db.session.query(
+        LabOrder.test_name, func.count(LabOrder.id)
+    ).filter(LabOrder.doctor_id == doctor.id).group_by(
+        LabOrder.test_name
+    ).order_by(func.count(LabOrder.id).desc()).limit(10).all()
+
+    # ── Patient demographics ──
+    age_groups = {'0-18': 0, '19-30': 0, '31-45': 0, '46-60': 0, '60+': 0}
+    gender_counts = {'Male': 0, 'Female': 0, 'Other': 0}
+
     # Get patient risk distribution
     high_risk_count = 0
     medium_risk_count = 0
     low_risk_count = 0
     conditions = []
     age_stats = 0
-    
+
     if patient_ids:
         # Get latest health data for each patient
-        health_records = db.session.query(HealthData).filter(
-            HealthData.patient_id.in_(patient_ids)
-        ).order_by(HealthData.patient_id, HealthData.recorded_at.desc()).distinct(
-            HealthData.patient_id).all()
-        
-        for health in health_records:
-            avg_risk = (health.diabetes_risk + health.heart_disease_risk + health.hypertension_risk) / 3
-            if avg_risk > 60:
-                high_risk_count += 1
-            elif avg_risk > 30:
-                medium_risk_count += 1
-            else:
-                low_risk_count += 1
-        
-        # Calculate average age
+        try:
+            health_records = db.session.query(HealthData).filter(
+                HealthData.patient_id.in_(patient_ids)
+            ).order_by(HealthData.patient_id, HealthData.recorded_at.desc()).all()
+
+            seen_patients = set()
+            for health in health_records:
+                if health.patient_id in seen_patients:
+                    continue
+                seen_patients.add(health.patient_id)
+                try:
+                    avg_risk = (
+                        (health.diabetes_risk or 0) +
+                        (health.heart_disease_risk or 0) +
+                        (health.hypertension_risk or 0)
+                    ) / 3
+                    if avg_risk > 60:
+                        high_risk_count += 1
+                    elif avg_risk > 30:
+                        medium_risk_count += 1
+                    else:
+                        low_risk_count += 1
+                except (TypeError, ZeroDivisionError):
+                    low_risk_count += 1
+        except Exception:
+            pass
+
+        # Calculate average age & demographics
         patients = Patient.query.filter(Patient.id.in_(patient_ids)).all()
         if patients:
             ages = [p.age for p in patients if p.age]
             if ages:
                 age_stats = sum(ages) / len(ages)
-        
+            for p in patients:
+                # Age groups
+                a = p.age or 0
+                if a <= 18:
+                    age_groups['0-18'] += 1
+                elif a <= 30:
+                    age_groups['19-30'] += 1
+                elif a <= 45:
+                    age_groups['31-45'] += 1
+                elif a <= 60:
+                    age_groups['46-60'] += 1
+                else:
+                    age_groups['60+'] += 1
+                # Gender
+                g = (p.gender or 'Other').strip().capitalize()
+                if g in gender_counts:
+                    gender_counts[g] += 1
+                else:
+                    gender_counts['Other'] += 1
+
         # Compile common conditions
         conditions = [
             ('Diabetes Risk', high_risk_count),
             ('Medium Risk', medium_risk_count),
             ('Low Risk', low_risk_count)
         ]
-    
+
     return render_template('doctor/analytics.html',
                          total_patients=total_patients,
                          total_appointments=total_appointments,
@@ -927,7 +1069,19 @@ def analytics():
                          medium_risk_count=medium_risk_count,
                          low_risk_count=low_risk_count,
                          conditions=conditions,
-                         age_stats=int(age_stats) if age_stats else 0)
+                         age_stats=int(age_stats) if age_stats else 0,
+                         new_patients_month=new_patients_month,
+                         ip_patient_count=ip_patient_count,
+                         followup_rate=followup_rate,
+                         total_revenue=total_revenue,
+                         revenue_labels=revenue_labels,
+                         revenue_monthly=revenue_monthly,
+                         appt_trend_labels=appt_trend_labels,
+                         appt_trend_data=appt_trend_data,
+                         top_diagnoses=top_diagnoses,
+                         lab_test_counts=lab_test_counts,
+                         age_groups=age_groups,
+                         gender_counts=gender_counts)
 
 
 @doctor_bp.route('/billing/create/<int:patient_id>', methods=['GET', 'POST'])
@@ -981,22 +1135,8 @@ def create_bill(patient_id):
 @login_required
 @doctor_required
 def create_prescription(patient_id):
-    """Render the hospital-style prescription editor page"""
-    patient = Patient.query.get_or_404(patient_id)
-    doctor = current_user.doctor
-    try:
-        medicines = Medicine.query.order_by(Medicine.name).all()
-    except SQLAlchemyError:
-        current_app.logger.exception("Failed to load medicines for prescription editor")
-        medicines = []
-
-    try:
-        health_data = HealthData.query.filter_by(patient_id=patient.id).order_by(HealthData.recorded_at.desc()).all()
-    except SQLAlchemyError:
-        current_app.logger.exception("Failed to load health data for prescription editor")
-        health_data = []
-
-    return render_template('doctor/create_prescription.html', patient=patient, doctor=doctor, medicines=medicines, health_data=health_data)
+    """Redirect to the full consultation page (Write Prescription now opens the consultation workflow)."""
+    return redirect(url_for('doctor.consultation_page', patient_id=patient_id))
 
 
 @doctor_bp.route('/api/search-medicine')
@@ -1012,7 +1152,7 @@ def api_search_medicine():
         limit = int(request.args.get('limit', 12))
     except (TypeError, ValueError):
         limit = 12
-    limit = max(1, min(limit, 25))
+    limit = max(1, min(limit, 50))
 
     prefix = f"{q}%"
     contains = f"%{q}%"
@@ -2474,3 +2614,942 @@ def api_doctor_schedule():
         return jsonify({'success': True, 'message': 'Schedule event added', 'event_id': event.id})
 
     return jsonify({'success': False, 'error': 'Unsupported action'}), 400
+
+
+# ═══ DOCTOR AI ASSISTANT ═══
+@doctor_bp.route('/ai-assistant')
+@login_required
+@doctor_required
+def ai_assistant():
+    """AI Medical Assistant for doctors — uses Groq API."""
+    return render_template('doctor/ai_assistant.html')
+
+
+@doctor_bp.route('/ai-assistant/ask', methods=['POST'])
+@login_required
+@doctor_required
+def ai_assistant_ask():
+    """API endpoint for doctor AI chat."""
+    data = request.get_json(silent=True) or {}
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({'success': False, 'error': 'Message is required'}), 400
+
+    try:
+        from app.services.ai_service import LocalAIService
+
+        # Override system prompt for doctor-specific context
+        import os, requests as req
+
+        api_key = os.getenv('GROQ_API_KEY')
+        if api_key and api_key != "YOUR_GROQ_KEY_HERE":
+            doctor_system_prompt = """You are a Clinical AI Assistant for doctors in a hospital management system.
+You help doctors with:
+- Medical knowledge and clinical references
+- Drug interactions, dosage guidelines, contraindications
+- Differential diagnosis suggestions based on symptoms
+- Lab result interpretation
+- Treatment protocol references
+- ICD codes and medical terminology
+
+RULES:
+1. You are assisting a LICENSED DOCTOR, so provide detailed clinical information.
+2. Include specific values, ranges, and medical terminology.
+3. For drug queries, mention common dosages, interactions, and contraindications.
+4. For symptoms, suggest differential diagnoses ranked by likelihood.
+5. Format responses clearly with bullet points or numbered lists.
+6. Always note when specialist referral may be needed.
+7. Be concise but thorough — doctors need precise information fast.
+8. If unsure, say so clearly rather than guessing."""
+
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+                "messages": [
+                    {"role": "system", "content": doctor_system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                "temperature": 0.5,
+                "max_tokens": 800
+            }
+
+            response = req.post("https://api.groq.com/openai/v1/chat/completions",
+                              headers=headers, json=payload, timeout=20)
+
+            if response.status_code == 200:
+                ai_text = response.json()['choices'][0]['message']['content'].strip()
+                return jsonify({'success': True, 'response': ai_text})
+
+        # Fallback to general AI service
+        result = LocalAIService.get_ai_response(message)
+        return jsonify({'success': True, 'response': result})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSULTATION WORKFLOW — Proper visit-level separation from patient history
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@doctor_bp.route('/consultation/<int:patient_id>')
+@login_required
+@doctor_required
+def consultation_page(patient_id):
+    """Render the full 6-section consultation page."""
+    patient = Patient.query.get_or_404(patient_id)
+    doctor = current_user.doctor
+    if not _doctor_has_access(doctor, patient.id):
+        flash('Unauthorized access to this patient.', 'danger')
+        return redirect(url_for('doctor.patient_list'))
+
+    # Structured history entries
+    history_entries = PatientMedicalHistory.query.filter_by(patient_id=patient.id)\
+        .order_by(PatientMedicalHistory.created_at.desc()).all()
+
+    # Latest vitals from nurse
+    latest_vitals = None
+    try:
+        latest_vitals = PatientVitals.query.filter_by(patient_id=patient.id)\
+            .order_by(PatientVitals.recorded_at.desc()).first()
+    except Exception:
+        pass
+
+    # Past consultations
+    past_consultations = Consultation.query.filter_by(patient_id=patient.id)\
+        .order_by(Consultation.created_at.desc()).limit(10).all()
+
+    # Medicines for autocomplete
+    try:
+        medicines = Medicine.query.order_by(Medicine.name).all()
+    except Exception:
+        medicines = []
+
+    return render_template('doctor/consultation.html',
+                           patient=patient,
+                           doctor=doctor,
+                           history_entries=history_entries,
+                           latest_vitals=latest_vitals,
+                           past_consultations=past_consultations,
+                           medicines=medicines)
+
+
+def _safe_int(val):
+    """Parse int from form value, return None if invalid."""
+    try:
+        v = str(val).strip()
+        return int(v) if v else None
+    except (ValueError, TypeError):
+        return None
+
+def _safe_float(val):
+    """Parse float from form value, return None if invalid."""
+    try:
+        v = str(val).strip()
+        return float(v) if v else None
+    except (ValueError, TypeError):
+        return None
+
+
+@doctor_bp.route('/api/consultation/full-save', methods=['POST'])
+@login_required
+@doctor_required
+def api_consultation_full_save():
+    """
+    Save full consultation with proper separation:
+    - Consultation record (visit-level)
+    - Prescription linked to consultation (medicine-only, NO history duplication)
+    - PrescriptionMedicine items with route + special_instruction
+    - PharmacyOrders
+    - Lab orders
+    - Follow-up appointment
+    """
+    data = request.get_json(silent=True) or {}
+    doctor = current_user.doctor
+    patient_id = data.get('patient_id')
+    appointment_id = data.get('appointment_id')
+
+    patient = Patient.query.get(patient_id)
+    if not patient:
+        return jsonify({'success': False, 'error': 'Patient not found'}), 404
+    if not _doctor_has_access(doctor, patient.id):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        # ── 1. Create Consultation record ────────────────────────────────
+        vitals = data.get('vitals') or {}
+
+        consultation = Consultation(
+            patient_id=patient.id,
+            doctor_id=doctor.id,
+            appointment_id=appointment_id or None,
+            chief_complaint=(data.get('chief_complaint') or '').strip() or None,
+            present_condition=(data.get('present_condition') or '').strip() or None,
+            past_medication=(data.get('past_medication') or '').strip() or None,
+            examination_notes=(data.get('examination_notes') or '').strip() or None,
+            provisional_diagnosis=(data.get('provisional_diagnosis') or '').strip() or None,
+            final_diagnosis=(data.get('final_diagnosis') or '').strip() or None,
+            clinical_notes=(data.get('clinical_notes') or '').strip() or None,
+            treatment_plan=(data.get('treatment_plan') or '').strip() or None,
+            advice=(data.get('advice') or '').strip() or None,
+            diet_advice=(data.get('diet_advice') or '').strip() or None,
+            rest_activity_advice=(data.get('rest_activity_advice') or '').strip() or None,
+            investigation_suggested=(data.get('investigation_suggested') or '').strip() or None,
+            procedures_advised=(data.get('procedures_advised') or '').strip() or None,
+            doctor_internal_notes=(data.get('doctor_internal_notes') or '').strip() or None,
+            # Vitals
+            vitals_bp_systolic=_safe_int(vitals.get('bp_systolic')),
+            vitals_bp_diastolic=_safe_int(vitals.get('bp_diastolic')),
+            vitals_pulse=_safe_int(vitals.get('pulse')),
+            vitals_temperature=_safe_float(vitals.get('temperature')),
+            vitals_spo2=_safe_int(vitals.get('spo2')),
+            vitals_respiratory_rate=_safe_int(vitals.get('respiratory_rate')),
+            vitals_weight=_safe_float(vitals.get('weight')),
+            vitals_grbs=_safe_float(vitals.get('grbs')),
+        )
+
+        # Follow-up date
+        followup_raw = (data.get('followup_date') or '').strip()
+        if followup_raw:
+            for fmt in ('%Y-%m-%d', '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M'):
+                try:
+                    consultation.followup_date = datetime.strptime(followup_raw, fmt).date()
+                    break
+                except ValueError:
+                    continue
+
+        db.session.add(consultation)
+        db.session.flush()
+
+        created = {
+            'consultation_id': consultation.id,
+            'prescription_id': None,
+            'pharmacy_order_ids': [],
+            'lab_order_ids': [],
+            'followup_appointment_id': None,
+        }
+
+        # ── 2. Prescription (linked to consultation, NO history fields) ──
+        medicines = _medicines_from_payload(data.get('medicines', []))
+        diagnosis = consultation.final_diagnosis or consultation.provisional_diagnosis
+
+        if medicines or diagnosis:
+            rx = Prescription(
+                patient_id=patient.id,
+                doctor_id=doctor.id,
+                appointment_id=appointment_id or None,
+                consultation_id=consultation.id,
+                diagnosis=diagnosis,
+                notes=consultation.examination_notes,
+                medicines='[]',
+            )
+            db.session.add(rx)
+            db.session.flush()
+            created['prescription_id'] = rx.id
+
+            for med in medicines:
+                rx_med = PrescriptionMedicine(
+                    prescription_id=rx.id,
+                    medicine_name=med.get('medicine_name', ''),
+                    dosage=med.get('dosage', ''),
+                    route=med.get('route', ''),
+                    frequency=med.get('frequency', ''),
+                    duration=med.get('duration', ''),
+                    instruction=med.get('instruction', ''),
+                    food_relation=med.get('food_relation', ''),
+                    special_instruction=med.get('special_instruction', ''),
+                )
+                db.session.add(rx_med)
+
+                order = PharmacyOrder(
+                    patient_id=patient.id,
+                    doctor_id=doctor.id,
+                    prescription_id=rx.id,
+                    medicine_name=med.get('medicine_name', ''),
+                    quantity=1,
+                    dosage=f"{med.get('dosage','')} | {med.get('route','')} | {med.get('frequency','')} | {med.get('duration','')}",
+                    status='Pending',
+                    notes=med.get('special_instruction') or med.get('instruction', ''),
+                )
+                db.session.add(order)
+                db.session.flush()
+                created['pharmacy_order_ids'].append(order.id)
+
+        # ── 3. Lab orders ────────────────────────────────────────────────
+        lab_tests = [str(x).strip() for x in (data.get('lab_tests') or []) if str(x).strip()]
+        if lab_tests:
+            from app.routes.lab import _create_lab_order_row, SOURCE_DOCTOR
+            for test_name in lab_tests:
+                lo = _create_lab_order_row(
+                    patient.id, test_name, SOURCE_DOCTOR, doctor.id,
+                    notes=diagnosis or 'Ordered during consultation',
+                )
+                db.session.flush()
+                created['lab_order_ids'].append(lo.id)
+
+        # ── 4. Follow-up appointment ─────────────────────────────────────
+        if consultation.followup_date:
+            fup_dt = datetime.combine(consultation.followup_date, datetime.min.time().replace(hour=10))
+            fup = Appointment(
+                patient_id=patient.id,
+                doctor_id=doctor.id,
+                appointment_date=fup_dt,
+                reason=f"Follow-up: {diagnosis or 'Consultation review'}",
+                status='pending',
+                notes=consultation.advice or 'Follow-up scheduled by doctor',
+            )
+            db.session.add(fup)
+            db.session.flush()
+            created['followup_appointment_id'] = fup.id
+
+        # ── 5. Mark linked appointment completed ─────────────────────────
+        if appointment_id:
+            appt = Appointment.query.filter_by(
+                id=appointment_id, doctor_id=doctor.id, patient_id=patient.id
+            ).first()
+            if appt and appt.status in ('pending', 'confirmed'):
+                appt.status = 'completed'
+                appt.updated_at = datetime.utcnow()
+
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Consultation saved successfully',
+            'created': created,
+        })
+
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.exception("Full consultation save failed")
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+# ─── Patient Medical History CRUD ─────────────────────────────────────────────
+
+@doctor_bp.route('/api/patient/<int:patient_id>/history', methods=['GET'])
+@login_required
+@doctor_required
+def api_get_patient_history(patient_id):
+    """Get structured medical history for a patient."""
+    patient = Patient.query.get_or_404(patient_id)
+    entries = PatientMedicalHistory.query.filter_by(patient_id=patient.id)\
+        .order_by(PatientMedicalHistory.created_at.desc()).all()
+
+    return jsonify({
+        'success': True,
+        'text_history': {
+            'medical_history': patient.medical_history or '',
+            'allergy_history': patient.allergy_history or patient.allergies or '',
+            'chronic_conditions': patient.chronic_conditions or '',
+            'family_history': patient.family_history or '',
+        },
+        'structured': [{
+            'id': e.id,
+            'condition': e.condition,
+            'type': e.type,
+            'notes': e.notes,
+            'created_at': e.created_at.strftime('%Y-%m-%d') if e.created_at else None,
+        } for e in entries],
+    })
+
+
+@doctor_bp.route('/api/patient/<int:patient_id>/history', methods=['POST'])
+@login_required
+@doctor_required
+def api_save_patient_history(patient_id):
+    """Save/update patient permanent medical history."""
+    patient = Patient.query.get_or_404(patient_id)
+    doctor = current_user.doctor
+    if not _doctor_has_access(doctor, patient.id):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    data = request.get_json(silent=True) or {}
+
+    try:
+        if 'medical_history' in data:
+            patient.medical_history = (data['medical_history'] or '').strip() or None
+        if 'allergy_history' in data:
+            patient.allergy_history = (data['allergy_history'] or '').strip() or None
+            patient.allergies = patient.allergy_history
+        if 'chronic_conditions' in data:
+            patient.chronic_conditions = (data['chronic_conditions'] or '').strip() or None
+        if 'family_history' in data:
+            patient.family_history = (data['family_history'] or '').strip() or None
+
+        new_entries = data.get('new_entries') or []
+        for entry in new_entries:
+            condition = (entry.get('condition') or '').strip()
+            entry_type = (entry.get('type') or '').strip()
+            if condition and entry_type in ('medical', 'allergy', 'chronic', 'family'):
+                pmh = PatientMedicalHistory(
+                    patient_id=patient.id,
+                    condition=condition,
+                    type=entry_type,
+                    notes=(entry.get('notes') or '').strip() or None,
+                )
+                db.session.add(pmh)
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Patient history updated'})
+
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.exception("Failed saving patient history")
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+@doctor_bp.route('/api/patient/<int:patient_id>/history/<int:entry_id>', methods=['DELETE'])
+@login_required
+@doctor_required
+def api_delete_history_entry(patient_id, entry_id):
+    """Delete a structured history entry."""
+    entry = PatientMedicalHistory.query.filter_by(id=entry_id, patient_id=patient_id).first()
+    if not entry:
+        return jsonify({'success': False, 'error': 'Entry not found'}), 404
+    try:
+        db.session.delete(entry)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Entry deleted'})
+    except Exception as exc:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+@doctor_bp.route('/api/patient/<int:patient_id>/consultations', methods=['GET'])
+@login_required
+@doctor_required
+def api_get_patient_consultations(patient_id):
+    """Get past consultation records for a patient."""
+    patient = Patient.query.get_or_404(patient_id)
+    consultations = Consultation.query.filter_by(patient_id=patient.id)\
+        .order_by(Consultation.created_at.desc()).limit(20).all()
+
+    return jsonify({
+        'success': True,
+        'consultations': [{
+            'id': c.id,
+            'doctor': f"Dr. {c.doctor.first_name} {c.doctor.last_name}" if c.doctor else 'N/A',
+            'complaint': c.chief_complaint,
+            'provisional_diagnosis': c.provisional_diagnosis,
+            'final_diagnosis': c.final_diagnosis,
+            'treatment_plan': c.treatment_plan,
+            'advice': c.advice,
+            'created_at': c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else None,
+        } for c in consultations],
+    })
+
+
+# ─── Detailed Record & Consultation Prescription Views ────────────────────────
+
+@doctor_bp.route('/consultation/<int:consultation_id>/detail')
+@login_required
+@doctor_required
+def consultation_detail(consultation_id):
+    """Full internal hospital consultation record — shows EVERYTHING."""
+    consultation = Consultation.query.get_or_404(consultation_id)
+    patient = consultation.patient
+
+    # Get prescription medicines linked to this consultation
+    rx = Prescription.query.filter_by(consultation_id=consultation.id).first()
+    medicines = []
+    if rx:
+        medicines = [{
+            'name': m.medicine_name, 'dosage': m.dosage or '', 'route': m.route or '',
+            'frequency': m.frequency or '', 'duration': m.duration or '',
+            'food_relation': m.food_relation or '', 'instruction': m.instruction or '',
+            'special_instruction': m.special_instruction or '',
+        } for m in rx.medicine_items]
+
+    # Structured history entries
+    history_entries = PatientMedicalHistory.query.filter_by(patient_id=patient.id).all()
+
+    return render_template('doctor/consultation_detail.html',
+                           consultation=consultation, patient=patient,
+                           doctor_record=consultation.doctor, medicines=medicines,
+                           prescription=rx, history_entries=history_entries)
+
+
+@doctor_bp.route('/consultation/<int:consultation_id>/prescription')
+@login_required
+def consultation_prescription(consultation_id):
+    """Clean patient-facing prescription print — shows only relevant info."""
+    consultation = Consultation.query.get_or_404(consultation_id)
+    patient = consultation.patient
+    doc = consultation.doctor
+
+    rx = Prescription.query.filter_by(consultation_id=consultation.id).first()
+    medicines = []
+    if rx:
+        medicines = [{
+            'name': m.medicine_name, 'dosage': m.dosage or '', 'route': m.route or '',
+            'frequency': m.frequency or '', 'duration': m.duration or '',
+            'food_relation': m.food_relation or '', 'instruction': m.instruction or '',
+            'special_instruction': m.special_instruction or '',
+        } for m in rx.medicine_items]
+
+    # Only show critical allergy as warning
+    allergy_warning = None
+    if patient.allergy_history or patient.allergies:
+        allergy_warning = patient.allergy_history or patient.allergies
+
+    return render_template('doctor/consultation_prescription.html',
+                           consultation=consultation, patient=patient,
+                           doctor_record=doc, medicines=medicines,
+                           prescription=rx, allergy_warning=allergy_warning)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IP (INPATIENT) MODE — Doctor Portal APIs
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@doctor_bp.route('/api/ip/summary')
+@login_required
+@doctor_required
+def api_ip_summary():
+    """Return all active IP admissions assigned to this doctor."""
+    doctor = current_user.doctor
+    if not doctor:
+        return jsonify({'success': False, 'error': 'Doctor profile missing'}), 400
+
+    admissions = IPAdmission.query.filter_by(
+        doctor_id=doctor.id, admission_status='Admitted'
+    ).order_by(IPAdmission.admission_date.desc()).all()
+
+    results = []
+    for adm in admissions:
+        patient = adm.patient
+        bed_label = ''
+        if adm.bed:
+            bed_label = f"{adm.bed.ward_type} - {adm.bed.bed_number}" if hasattr(adm.bed, 'bed_number') else str(adm.bed.id)
+
+        active_meds = IPMedication.query.filter_by(admission_id=adm.id, status='Active').count()
+
+        latest_note = IPProgressNote.query.filter_by(admission_id=adm.id).order_by(
+            IPProgressNote.note_time.desc()).first()
+
+        results.append({
+            'admission_id': adm.id,
+            'ip_number': adm.ip_number,
+            'patient_id': patient.id if patient else None,
+            'patient_name': patient.full_name if patient else f"Patient #{adm.patient_id}",
+            'uhid': patient.uhid if patient else '',
+            'age': patient.age if patient else None,
+            'gender': patient.gender if patient else '',
+            'ward_type': adm.ward_type or '',
+            'room_number': adm.room_number or '',
+            'bed': bed_label,
+            'admission_date': adm.admission_date.strftime('%Y-%m-%d %H:%M') if adm.admission_date else '',
+            'admission_date_short': adm.admission_date.strftime('%d %b %Y') if adm.admission_date else '',
+            'days_admitted': adm.length_of_stay,
+            'provisional_diagnosis': adm.provisional_diagnosis or '',
+            'admission_reason': adm.admission_reason or '',
+            'status': adm.admission_status,
+            'active_medications': active_meds,
+            'latest_note_date': latest_note.note_time.strftime('%d %b %H:%M') if latest_note else 'No notes yet',
+        })
+
+    return jsonify({'success': True, 'admissions': results, 'count': len(results)})
+
+
+@doctor_bp.route('/api/ip/admission/<int:admission_id>')
+@login_required
+@doctor_required
+def api_ip_admission_detail(admission_id):
+    """Full detail for a single IP admission."""
+    doctor = current_user.doctor
+    adm = IPAdmission.query.get_or_404(admission_id)
+
+    if adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    patient = adm.patient
+
+    # Medical background
+    medical_bg = {
+        'medical_history': patient.medical_history or '',
+        'allergy_history': getattr(patient, 'allergy_history', '') or patient.allergies or '',
+        'chronic_conditions': getattr(patient, 'chronic_conditions', '') or '',
+        'family_history': getattr(patient, 'family_history', '') or '',
+        'current_medications': patient.current_medications or '',
+    }
+
+    # Latest vitals
+    latest_vitals = None
+    vitals_row = PatientVitals.query.filter_by(patient_id=patient.id).order_by(
+        PatientVitals.recorded_at.desc()).first()
+    if vitals_row:
+        latest_vitals = {
+            'bp': f"{vitals_row.systolic_bp}/{vitals_row.diastolic_bp}",
+            'pulse': vitals_row.heart_rate,
+            'temperature': vitals_row.temperature,
+            'spo2': vitals_row.oxygen_level,
+            'respiratory_rate': getattr(vitals_row, 'respiratory_rate', None),
+            'grbs': getattr(vitals_row, 'blood_sugar', None),
+            'recorded_at': vitals_row.recorded_at.strftime('%d %b %Y %H:%M') if vitals_row.recorded_at else '',
+        }
+
+    # Medications
+    meds = IPMedication.query.filter_by(admission_id=adm.id).order_by(
+        IPMedication.status.asc(), IPMedication.created_at.desc()).all()
+
+    # Progress notes
+    notes = IPProgressNote.query.filter_by(admission_id=adm.id).order_by(
+        IPProgressNote.note_time.desc()).all()
+
+    # Lab orders for this patient
+    lab_orders = LabOrder.query.filter_by(patient_id=patient.id).order_by(
+        LabOrder.created_at.desc()).limit(20).all()
+    labs = [{
+        'id': lo.id, 'test_name': lo.test_name, 'status': lo.status,
+        'category': lo.test_category or '',
+        'result_preview': lo.result_preview() if hasattr(lo, 'result_preview') else '',
+        'created_at': lo.created_at.strftime('%d %b %Y') if lo.created_at else '',
+    } for lo in lab_orders]
+
+    # Nurse notes (from PatientVitals notes field)
+    nurse_notes = []
+    vitals_with_notes = PatientVitals.query.filter(
+        PatientVitals.patient_id == patient.id,
+        PatientVitals.notes.isnot(None), PatientVitals.notes != ''
+    ).order_by(PatientVitals.recorded_at.desc()).limit(10).all()
+    for v in vitals_with_notes:
+        nurse_notes.append({
+            'note': v.notes,
+            'recorded_at': v.recorded_at.strftime('%d %b %Y %H:%M') if v.recorded_at else '',
+            'nurse': v.nurse.username if v.nurse else 'Nurse',
+        })
+
+    return jsonify({
+        'success': True,
+        'admission': {
+            'id': adm.id, 'ip_number': adm.ip_number,
+            'admission_date': adm.admission_date.strftime('%d %b %Y %H:%M') if adm.admission_date else '',
+            'days_admitted': adm.length_of_stay,
+            'ward_type': adm.ward_type or '', 'room_number': adm.room_number or '',
+            'provisional_diagnosis': adm.provisional_diagnosis or '',
+            'admission_reason': adm.admission_reason or '',
+            'notes': adm.notes or '', 'status': adm.admission_status,
+        },
+        'patient': {
+            'id': patient.id, 'name': patient.full_name, 'uhid': patient.uhid,
+            'age': patient.age, 'gender': patient.gender or '',
+            'phone': patient.phone or '', 'blood_type': patient.blood_type or '',
+            'address': patient.address or '',
+        },
+        'medical_background': medical_bg,
+        'latest_vitals': latest_vitals,
+        'medications': [m.to_dict() for m in meds],
+        'progress_notes': [n.to_dict() for n in notes],
+        'lab_orders': labs,
+        'nurse_notes': nurse_notes,
+    })
+
+
+# ── IP Medications CRUD ──────────────────────────────────────────────────────
+
+def _generate_rx_batch():
+    """Generate prescription batch ID: RX-YYYY-XXXX"""
+    year = datetime.utcnow().strftime('%Y')
+    last = IPMedication.query.filter(
+        IPMedication.order_batch.like(f'RX-{year}-%')
+    ).order_by(IPMedication.id.desc()).first()
+    if last and last.order_batch:
+        try:
+            seq = int(last.order_batch.split('-')[-1]) + 1
+        except (ValueError, IndexError):
+            seq = 1
+    else:
+        seq = 1
+    return f'RX-{year}-{seq:04d}'
+
+
+@doctor_bp.route('/api/ip/medication/add', methods=['POST'])
+@login_required
+@doctor_required
+def api_ip_medication_add():
+    """Add IP medication orders — supports single medicine or batch of medicines."""
+    doctor = current_user.doctor
+    data = request.get_json(silent=True) or {}
+
+    admission_id = data.get('admission_id')
+    adm = IPAdmission.query.get(admission_id)
+    if not adm or adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Invalid admission'}), 400
+
+    # Support both single medicine and batch
+    medicines_list = data.get('medicines', [])
+    if not medicines_list:
+        # Legacy single-medicine format
+        name = (data.get('medicine_name') or '').strip()
+        if not name:
+            return jsonify({'success': False, 'error': 'Medicine name is required. Received keys: ' + str(list(data.keys()))}), 400
+        medicines_list = [data]
+
+    batch_id = _generate_rx_batch()
+    now = datetime.utcnow()
+    saved = []
+
+    for item in medicines_list:
+        medicine_name = (item.get('medicine_name') or '').strip()
+        if not medicine_name:
+            continue
+
+        med = IPMedication(
+            admission_id=adm.id,
+            patient_id=adm.patient_id,
+            doctor_id=doctor.id,
+            order_batch=batch_id,
+            order_time=now,
+            medicine_name=medicine_name,
+            dosage=item.get('dosage', ''),
+            route=item.get('route', 'Oral'),
+            frequency=item.get('frequency', ''),
+            duration=item.get('duration', ''),
+            special_instruction=item.get('special_instruction', ''),
+            food_relation=item.get('food_relation', ''),
+            start_date=now,
+            status='Active',
+        )
+        db.session.add(med)
+        db.session.flush()
+
+        # Auto-create Pharmacy dispensing request
+        dispensing = MedicationDispensing(
+            ip_medication_id=med.id,
+            patient_id=adm.patient_id,
+            admission_id=adm.id,
+            medicine_name=medicine_name,
+            requested_quantity=item.get('duration', '') or '—',
+            dispensing_status='Pending',
+            stock_status='Pending',
+        )
+        db.session.add(dispensing)
+
+        # Auto-create Nurse administration task
+        admin_task = MedicationAdministration(
+            ip_medication_id=med.id,
+            patient_id=adm.patient_id,
+            admission_id=adm.id,
+            medicine_name=medicine_name,
+            dosage=item.get('dosage', ''),
+            route=item.get('route', 'Oral'),
+            frequency=item.get('frequency', ''),
+            administration_status='Pending',
+        )
+        db.session.add(admin_task)
+        saved.append(med)
+
+    if not saved:
+        return jsonify({'success': False, 'error': 'No valid medicines provided'}), 400
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': f'{len(saved)} medicine(s) added — {batch_id}',
+        'batch_id': batch_id,
+        'medications': [m.to_dict() for m in saved],
+    })
+
+
+@doctor_bp.route('/api/ip/medication/<int:med_id>/update', methods=['POST'])
+@login_required
+@doctor_required
+def api_ip_medication_update(med_id):
+    """Edit an active IP medication."""
+    doctor = current_user.doctor
+    med = IPMedication.query.get_or_404(med_id)
+    adm = IPAdmission.query.get(med.admission_id)
+    if not adm or adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    data = request.get_json(silent=True) or {}
+    for field in ['dosage', 'route', 'frequency', 'duration', 'special_instruction', 'food_relation']:
+        if field in data:
+            setattr(med, field, data[field])
+    if 'medicine_name' in data and data['medicine_name'].strip():
+        med.medicine_name = data['medicine_name'].strip()
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Medication updated', 'medication': med.to_dict()})
+
+
+@doctor_bp.route('/api/ip/medication/<int:med_id>/stop', methods=['POST'])
+@login_required
+@doctor_required
+def api_ip_medication_stop(med_id):
+    """Stop an active IP medication."""
+    doctor = current_user.doctor
+    med = IPMedication.query.get_or_404(med_id)
+    adm = IPAdmission.query.get(med.admission_id)
+    if not adm or adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    data = request.get_json(silent=True) or {}
+    med.status = 'Stopped'
+    med.end_date = datetime.utcnow()
+    med.stopped_reason = data.get('reason', '')
+
+    # Cancel pending downstream records
+    MedicationAdministration.query.filter_by(
+        ip_medication_id=med.id, administration_status='Pending'
+    ).update({'administration_status': 'Cancelled'})
+    MedicationDispensing.query.filter_by(
+        ip_medication_id=med.id, dispensing_status='Pending'
+    ).update({'dispensing_status': 'Cancelled'})
+
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': f'{med.medicine_name} stopped'})
+
+
+@doctor_bp.route('/api/ip/medication/<int:med_id>/restart', methods=['POST'])
+@login_required
+@doctor_required
+def api_ip_medication_restart(med_id):
+    """Restart a stopped IP medication."""
+    doctor = current_user.doctor
+    med = IPMedication.query.get_or_404(med_id)
+    adm = IPAdmission.query.get(med.admission_id)
+    if not adm or adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    med.status = 'Active'
+    med.end_date = None
+    med.stopped_reason = ''
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': f'{med.medicine_name} restarted'})
+
+
+@doctor_bp.route('/api/ip/medications/<int:admission_id>')
+@login_required
+@doctor_required
+def api_ip_medications_list(admission_id):
+    """List all medications for an admission."""
+    doctor = current_user.doctor
+    adm = IPAdmission.query.get_or_404(admission_id)
+    if adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    meds = IPMedication.query.filter_by(admission_id=admission_id).order_by(
+        IPMedication.status.asc(), IPMedication.created_at.desc()).all()
+
+    return jsonify({
+        'success': True,
+        'medications': [m.to_dict() for m in meds],
+        'active_count': sum(1 for m in meds if m.status == 'Active'),
+        'stopped_count': sum(1 for m in meds if m.status == 'Stopped'),
+    })
+
+
+# ── IP Progress Notes CRUD ───────────────────────────────────────────────────
+
+@doctor_bp.route('/api/ip/progress-note/save', methods=['POST'])
+@login_required
+@doctor_required
+def api_ip_progress_note_save():
+    """Create or update a progress note."""
+    doctor = current_user.doctor
+    data = request.get_json(silent=True) or {}
+
+    admission_id = data.get('admission_id')
+    adm = IPAdmission.query.get(admission_id)
+    if not adm or adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Invalid admission'}), 400
+
+    note_id = data.get('note_id')
+    if note_id:
+        note = IPProgressNote.query.get(note_id)
+        if not note or note.admission_id != adm.id:
+            return jsonify({'success': False, 'error': 'Note not found'}), 404
+    else:
+        note = IPProgressNote(
+            admission_id=adm.id,
+            patient_id=adm.patient_id,
+            doctor_id=doctor.id,
+            note_date=date_cls.today(),
+            note_time=datetime.utcnow(),
+        )
+        db.session.add(note)
+
+    note.subjective = data.get('subjective', note.subjective or '')
+    note.objective = data.get('objective', note.objective or '')
+    note.assessment = data.get('assessment', note.assessment or '')
+    note.plan = data.get('plan', note.plan or '')
+    note.clinical_notes = data.get('clinical_notes', note.clinical_notes or '')
+    note.instructions_to_nurse = data.get('instructions_to_nurse', note.instructions_to_nurse or '')
+    note.procedure_notes = data.get('procedure_notes', note.procedure_notes or '')
+
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Progress note saved', 'note': note.to_dict()})
+
+
+@doctor_bp.route('/api/ip/progress-notes/<int:admission_id>')
+@login_required
+@doctor_required
+def api_ip_progress_notes_list(admission_id):
+    """List all progress notes for an admission."""
+    doctor = current_user.doctor
+    adm = IPAdmission.query.get_or_404(admission_id)
+    if adm.doctor_id != doctor.id:
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    notes = IPProgressNote.query.filter_by(admission_id=admission_id).order_by(
+        IPProgressNote.note_time.desc()).all()
+
+    return jsonify({'success': True, 'notes': [n.to_dict() for n in notes]})
+
+
+# ── IP Vitals History ─────────────────────────────────────────────────────────
+
+@doctor_bp.route('/api/ip/vitals/<int:patient_id>')
+@login_required
+@doctor_required
+def api_ip_vitals_history(patient_id):
+    """Return recent vitals for an IP patient."""
+    doctor = current_user.doctor
+    if not _doctor_has_access(doctor, patient_id):
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+
+    vitals = PatientVitals.query.filter_by(patient_id=patient_id).order_by(
+        PatientVitals.recorded_at.desc()).limit(30).all()
+
+    return jsonify({
+        'success': True,
+        'vitals': [{
+            'id': v.id,
+            'bp': f"{v.systolic_bp}/{v.diastolic_bp}",
+            'systolic': v.systolic_bp, 'diastolic': v.diastolic_bp,
+            'pulse': v.heart_rate,
+            'temperature': v.temperature,
+            'spo2': v.oxygen_level,
+            'respiratory_rate': getattr(v, 'respiratory_rate', None),
+            'grbs': getattr(v, 'blood_sugar', None),
+            'weight': v.weight,
+            'notes': v.notes or '',
+            'recorded_at': v.recorded_at.strftime('%d %b %Y %H:%M') if v.recorded_at else '',
+        } for v in vitals]
+    })
+
+
+# ── IP Patient Detail Page ────────────────────────────────────────────────────
+
+@doctor_bp.route('/ip-patient/<int:admission_id>')
+@login_required
+@doctor_required
+def ip_patient_detail(admission_id):
+    """Full-page IP patient detail view."""
+    doctor = current_user.doctor
+    adm = IPAdmission.query.get_or_404(admission_id)
+    if adm.doctor_id != doctor.id:
+        flash('Access denied — this patient is not under your care.', 'danger')
+        return redirect(url_for('doctor.portal'))
+
+    return render_template('doctor/ip_patient_detail.html',
+                           admission=adm, patient=adm.patient, doctor=doctor)

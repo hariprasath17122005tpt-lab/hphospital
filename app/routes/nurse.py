@@ -8,8 +8,9 @@ from flask_login import login_required, current_user
 from app.models.models import (
     db, Nurse, NurseTask, NurseNote, Patient, PatientVitals, UserRole,
     Prescription, PrescriptionMedicine, LabOrder, Bed,
-    MedicationAdministration, NurseHandover, Appointment, PatientCheckIn,
-    NursePatientAssignment
+    MedicationAdministration, MedicationDispensing, NurseHandover,
+    Appointment, PatientCheckIn, NursePatientAssignment,
+    IPAdmission, IPMedication
 )
 from functools import wraps
 from datetime import datetime, timedelta
@@ -171,20 +172,18 @@ def dashboard():
             LabOrder.status.in_(['CREATED', 'PENDING'])
         ).count()
 
-    # Critical alerts from recent vitals
+    # Critical alerts from recent vitals (all patients today, not just assigned)
     critical_alerts = []
-    if patient_ids:
-        recent_vitals = PatientVitals.query.filter(
-            PatientVitals.patient_id.in_(patient_ids),
-            func.date(PatientVitals.recorded_at) == today
-        ).all()
-        for v in recent_vitals:
-            for alert_type in (v.has_alerts or []):
-                critical_alerts.append({
-                    'patient': v.patient,
-                    'type': alert_type,
-                    'vitals': v,
-                })
+    all_today_vitals = PatientVitals.query.filter(
+        func.date(PatientVitals.recorded_at) == today
+    ).order_by(PatientVitals.recorded_at.desc()).all()
+    for v in all_today_vitals:
+        for alert_type in (v.has_alerts or []):
+            critical_alerts.append({
+                'patient': v.patient,
+                'type': alert_type,
+                'vitals': v,
+            })
 
     # Pending tasks list (top 10)
     pending_tasks = (
@@ -702,10 +701,12 @@ def medications():
     nurse = _get_nurse()
     patient_ids = [p.id for p in _my_patients_query().all()]
 
-    med_records = []
+    # OP medication records (legacy)
+    op_records = []
     if patient_ids:
-        med_records = MedicationAdministration.query.filter(
-            MedicationAdministration.patient_id.in_(patient_ids)
+        op_records = MedicationAdministration.query.filter(
+            MedicationAdministration.patient_id.in_(patient_ids),
+            MedicationAdministration.ip_medication_id.is_(None),
         ).order_by(
             db.case(
                 (MedicationAdministration.administration_status == 'Pending', 0),
@@ -716,10 +717,46 @@ def medications():
             MedicationAdministration.created_at.desc()
         ).limit(50).all()
 
+    # IP medication administration tasks (from doctor IP orders)
+    ip_records = MedicationAdministration.query.filter(
+        MedicationAdministration.ip_medication_id.isnot(None),
+        MedicationAdministration.administration_status.in_(['Pending', 'Delayed']),
+    ).order_by(
+        db.case(
+            (MedicationAdministration.administration_status == 'Pending', 0),
+            (MedicationAdministration.administration_status == 'Delayed', 1),
+            else_=2
+        ),
+        MedicationAdministration.created_at.desc()
+    ).limit(100).all()
+
+    # Enrich IP records with admission + dispensing info
+    ip_med_data = []
+    for rec in ip_records:
+        ip_med = IPMedication.query.get(rec.ip_medication_id) if rec.ip_medication_id else None
+        adm = IPAdmission.query.get(rec.admission_id) if rec.admission_id else None
+        patient = Patient.query.get(rec.patient_id) if rec.patient_id else None
+        disp = MedicationDispensing.query.filter_by(ip_medication_id=rec.ip_medication_id).first() if rec.ip_medication_id else None
+        ip_med_data.append({
+            'record': rec,
+            'ip_med': ip_med,
+            'admission': adm,
+            'patient': patient,
+            'dispensing': disp,
+        })
+
+    # Also fetch recently completed IP tasks
+    ip_completed = MedicationAdministration.query.filter(
+        MedicationAdministration.ip_medication_id.isnot(None),
+        MedicationAdministration.administration_status.in_(['Given', 'Missed']),
+    ).order_by(MedicationAdministration.administration_time.desc()).limit(30).all()
+
     return render_template(
         'nurse/medications.html',
         nurse=nurse,
-        med_records=med_records,
+        med_records=op_records,
+        ip_med_data=ip_med_data,
+        ip_completed=ip_completed,
     )
 
 
@@ -736,6 +773,14 @@ def medication_update():
         return redirect(url_for('nurse.medications'))
 
     record = MedicationAdministration.query.get_or_404(med_id)
+
+    # Prevent administering if pharmacy hasn't dispensed yet (for IP meds)
+    if record.ip_medication_id and status == 'Given':
+        disp = MedicationDispensing.query.filter_by(ip_medication_id=record.ip_medication_id).first()
+        if disp and disp.dispensing_status not in ('Dispensed', 'Partially Dispensed'):
+            flash('Cannot mark as Given — medicine not yet dispensed by pharmacy.', 'warning')
+            return redirect(url_for('nurse.medications'))
+
     record.administration_status = status
     record.administered_by_nurse_id = current_user.id
     if status == 'Given':

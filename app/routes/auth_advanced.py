@@ -452,13 +452,19 @@ def google_callback():
                 db.session.flush()
 
                 from app.models.models import Patient
+                from app.services.patient_service import PatientService
                 name_parts = name.split(' ', 1)
+                first_name = name_parts[0]
+                last_name = name_parts[1] if len(name_parts) > 1 else ''
                 patient = Patient(
                     user_id=user.id,
-                    first_name=name_parts[0],
-                    last_name=name_parts[1] if len(name_parts) > 1 else '',
+                    uhid=PatientService.generate_uhid(),
+                    name=f"{first_name} {last_name}".strip(),
+                    first_name=first_name,
+                    last_name=last_name,
                     age=0,
                     gender='Not Specified',
+                    phone=email,
                     hospital_id=default_hospital.id if default_hospital else None,
                 )
                 db.session.add(patient)
